@@ -1,0 +1,708 @@
+# Default values for lightstreamer.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+replicaCount: 1
+
+# This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+image:
+  repository: lightstreamer
+  # This sets the pull policy for images.
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+# This is for the secretes for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+imagePullSecrets: []
+# This is to override the chart name.
+nameOverride: ""
+fullnameOverride: ""
+
+#This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# This is for setting Kubernetes Annotations to a Pod.
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/ 
+podAnnotations: {}
+# This is for setting Kubernetes Labels to a Pod.
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+podLabels: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+# This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
+service:
+  # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+  type: LoadBalancer
+  # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
+  port: 8088
+  targetPort: server1
+
+# This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
+ingress:
+  enabled: true
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: #chart-example.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+logging:
+  appenders:
+    dailiyRolling:
+      type: DailyRollingFile
+      pattern: '%d{"dd-MMM-yy HH:mm:ss,SSS"}|%-5.5(%p%marker)|%-19.19c{19}|%-27.27t|%m%n'
+    console:
+      type: Console
+      pattern: '%d{"dd.MMM.yy HH:mm:ss,SSS"} <%5.5(%p%marker)> %m%n'
+
+  loggers:
+    # These two loggers are used by the internal monitoring system to log
+    # load statistics at INFO level.
+    # LightstreamerMonitorText logs statistics with a human-readable syntax;
+    # LightstreamerMonitorTAB logs statistics with a CSV syntax.
+    # The frequency of the samples produced by the internal monitoring system
+    # is governed by the <collector_millis> configuration element.
+    # However, a resampling to lower frequencies can be performed, based on the
+    # level specified for each logger; in particular:
+    #   at TRACE level, all samples are logged;
+    #   at DEBUG level, one sample out of 10 is logged;
+    #   at INFO level, one sample out of 60 is logged;
+    #   at a higher level, no log is produced.
+    # The resampling behavior can be changed at runtime, by changing the level;
+    # however, if the level is set to ERROR on startup, the logger will be
+    # disabled throughout the life of the Server, regardless of further changes.
+
+    # When resampling is in place, note that, for each displayed sample, values
+    # that are supposed to be averaged over a timeframe still refer to the
+    # current sample's timeframe (based on <collector_millis>); however, values
+    # that are supposed to be the maximum over all timeframes refer also to the
+    # samples that were not displayed.
+    # On the other hand, delta statistics, like "new connections", are always
+    # collected starting from the previous logged sample.
+    lightstreamerMonitorText:
+      appenders:
+        - console
+      level: INFO
+    lightstreamerMonitorTAB:
+      appenders:
+        - console
+      level: INFO
+
+    # The following is the base logger of all logging messages printed by
+    # Lightstreamer Kernel (with a few exceptions).
+    # Messages logged at INFO level notify major server activities,
+    # like session starting and ending. If these messages are enabled,
+    # they are also supplied to the internal MONITOR data adapter,
+    # together with WARN and ERROR messages.
+    # Messages logged at DEBUG level notify minor operations
+    # and all data flow inside the Server. They should not be enabled
+    # with production load levels.
+    # No useful messages are logged at TRACE level. The level is reserved
+    # for debug versions of the Server.
+    # Severe ERROR messages are logged with a "FATAL" marker; in fact, a FATAL
+    # level is not natively supported by logback.
+    # Thanks to the marker, these messages can be filtered through logback's
+    # MarkerFilter.
+    # By the factory pattern configuration, FATAL is logged instead of ERROR
+    # for these messages (note the tricky "%-5.5(%p%marker)" pattern).
+    lightstreamerLogger:
+      appenders:
+        - console
+      level: INFO
+
+      # The following subloggers are used to separate logging messages in families
+      subLoggers:
+        # Logging of system components initialization.
+        # At DEBUG level, initialization details, error details and all configuration
+        # settings are reported.
+        lightstreamerLogger.init: INFO
+        # Logging of license check phase.
+        # At DEBUG level, check details and error details can be found in case
+        # of license check failure.
+        lightstreamerLogger.license: INFO
+        # Logging of background activities and related configuration and issues
+        lightstreamerLogger.kernel: INFO
+        # Logging of external services activity.
+        # At DEBUG level, details on external services activities and configuration,
+        # as well as details on connectivity issues, are reported
+        lightstreamerLogger.external: INFO
+        # Logging of activity and issues in connection management
+        lightstreamerLogger.io: WARN
+        # Logging of activity and issues in TLS configuration.
+        # at DEBUG level, details on the protocol and cipher suite configuration are reported
+        lightstreamerLogger.io.ssl: WARN
+        # Logging of client request dispatching.
+        # At DEBUG level, request processing details are reported.
+        # All log from this logger and its subloggers reports the IP and port of the involved connection
+        lightstreamerLogger.connections: WARN
+        # Logging of issues related to TLS/SSL configuration and handshake management.
+        # At DEBUG level, details on the cipher suites are report.
+        lightstreamerLogger.connections.ssl: WARN
+        # Logging of client request interpretation issues.
+        # At WARN level, each time a request contains an unexpected HTTP header,
+        # which the Server refuses or ignores, a notification is reported
+        # that an interpretation error is possible.
+        # At INFO level, details upon request refusals are reported.
+        # At DEBUG level, details for all requests and responses are reported.
+        lightstreamerLogger.connections.http: ERROR
+        # Logging of details for issues related to requests over WebSockets.
+        # At DEBUG level, details for all requests and responses are reported.
+        lightstreamerLogger.connections.WS: WARN
+        # Logging of issues related to information received via the proxy protocol,when enabled.
+        # At DEBUG level, details of all information received are reported.
+        lightstreamerLogger.connections.proxy: INFO
+        # Logging of internal web server activity; it also logs requests ofstatic resources 
+        # related to push request.
+        # At DEBUG level, error details are reported.
+        # All log from this logger and its subloggers reports the IP and port of the involved connection.
+        lightstreamerLogger.webServer: WARN
+        # Logging of request management related to the JMX Tree feature.
+        # At DEBUG level, error details are reported.
+        lightstreamerLogger.webServer.jmxTree: WARN
+        # Logging of handling of special requests from apple clients related to MPN.
+        # At DEBUG level, error details are reported.
+        lightstreamerLogger.webServer.appleWebService: WARN
+        # Logging of parsing and elaboration of client requests
+        # At DEBUG level, client request details are reported.
+        # All log from this logger and its subloggers reports the IP and port of the involved connection.
+        lightstreamerLogger.requests: INFO
+        # Logging of elaboration of client polling request
+        lightstreamerLogger.requests.polling: WARN
+        # Logging of elaboration of client message request
+        lightstreamerLogger.requests.messages: INFO
+        # Logging of Data Adapters interactions
+        # At DEBUG level, details on subscription operations are reported.
+        lightstreamerLogger.subscriptions: DEBUG
+        # Logging of events coming from the Data Adapters.
+        # At DEBUG level, all update events are dumped.
+        lightstreamerLogger.subscriptions.upd: DEBUG
+        # Logging of events preprocessing stage
+        # At DEBUG level, events dispatched to ItemEventBuffers are dumped.
+        lightstreamerLogger.preprocessor: INFO
+        # Logging of internal thread management and events dispatching
+        lightstreamerLogger.scheduler: INFO
+        # Logging of InfoPump and ItemEventBuffers internal activity.
+        # At DEBUG level, updates to be sent to the clients are dumped.
+        lightstreamerLogger.pump: INFO
+        # Logging of management of messages received from the clients.
+        # At DEBUG level, details of message processing are logged.
+        # All log from this logger reports the IP and port of the involved connection.
+        lightstreamerLogger.pump.messages: INFO
+        # Logging of socket write activity.
+        # At DEBUG level, all socket writes are dumped.
+        # All log from this logger reports the IP and port of the involved connection.
+        lightstreamerLogger.push: INFO
+        # Logging of mobile push notifications activity, done through the various subloggers
+        lightstreamerLogger.mpn: INFO
+        # Logging of MPN Module recurrent activity.
+        # At INFO level, main operation exit points and outcomes are dumped.
+        # At DEBUG level, the various operation entry entry and exit points are logged.
+        lightstreamerLogger.mpn.lifecycle: INFO
+        lightstreamerLogger.mpn.operations: INFO
+        lightstreamerLogger.mpn.requests: WARN
+        lightstreamerLogger.mpn.pump: WARN
+        lightstreamerLogger.mpn.database: WARN
+        lightstreamerLogger.mpn.database.transactions: WARN
+        lightstreamerLogger.mpn.apple: WARN
+        lightstreamerLogger.mpn.google: WARN
+        lightstreamerLogger.mpn.status_adapters: WARN
+        lightstreamerLogger.webclient: DEBUG
+        # logging of JMX setup issues; note that full JMX features could be restricted
+        # depending on Edition and License Type.
+        # At DEBUG level, JMX connectors initialization details are logged.
+        lightstreamerLogger.monitoring: INFO
+
+    # The following logger logs healthcheck request processing at INFO level.
+    # The logger does not inherit from "LightstreamerLogger" in order
+    # to simplify sending the log to a dedicated appender.
+    # All log from this logger reports the IP and port of the involved connection.
+    lightstreamerHealthCheck: 
+      appenders:
+        - console
+      level: INFO
+
+    # This logger is only used by the provided Proxy Data and Metadata Adapters,
+    # when used.
+    # It logs Adapter activity at INFO, WARN, ERROR and FATAL level
+    # (the latter through the "FATAL" marker).
+    # At DEBUG level, outcoming request and incoming response messages are also dumped.
+    # At TRACE level, incoming real-time update messages are also dumped.
+    lightstreamerProxyAdapters:
+      appenders:
+        - console
+      level: DEBUG
+
+    # These loggers are related to Hibernate, a component used by the MPN Module
+    # for its persistence with the database. In case of need, please refer to
+    # Hibernate documentation for more information on its logging categories and
+    # their configuration.
+    org.hibernate:
+      appenders:
+        - console
+      level: WARN
+    java.sql:
+      appenders:
+        - console
+      level: WARN
+    org.jboss.logging:
+      appenders:
+        - console
+      level: WARN
+    com.zaxxer.hikari:
+      appenders:
+        - console
+      level: INFO
+
+    # These loggers are related to other third-party libraries used internally
+    # by the Server.
+    org.apache.http:
+      appenders:
+        - console
+      level: ERROR
+    com.github.markusbernhardt.proxy:
+      appenders:
+        - console
+      level: WARN
+    org.restlet:
+      appenders:
+        - console
+      level: ERROR
+    org.jminix:
+      appenders:
+        - console
+      level: ERROR
+    common.jmx.velocity:
+      appenders:
+        - console
+      level: ERROR
+    com.turo:
+      appenders:
+        - console
+      level: ERROR
+    com.google:
+      appenders:
+        - console
+      level: ERROR
+    io.netty:
+      appenders:
+        - console
+    org.codehaus.janino:
+      appenders:
+        - console
+      level: WARN
+    io.grpc:
+      appenders:
+        - console
+      level: WARN
+    io.opencensus:
+      appenders:
+        - console
+      level: WARN
+    org.conscrypt:
+      appenders:
+        - console
+      level: ERROR
+
+    # These loggers are related to JDK services.
+    javax.management.remote:
+      appenders:
+        - console
+      level: ERROR
+    javax.management.mbeanserver:
+      appenders:
+        - console
+      level: ERROR
+    com.sun.jmx.remote:
+      appenders:
+        - console
+      level: ERROR
+
+    # This also requires that the JVM property javax.net.debug is set as an empty string (supported since java 9)
+    javax.net.ssl:
+      appenders:
+        - console
+      level: "OFF"
+  extraLoggers:
+    "mio logger":
+      appenders:
+        - console
+      level: INFO
+        
+       
+
+# HTTP/HTTPS server configuration
+servers:
+  server1:
+    name: "Lightstreamer HTTP Server"
+    port: 8080
+    protocol: http
+    # backlog: 500
+    # portType: PRIORITY
+    responseHttpHeaders:
+      # echo:
+      #   - "cookie"
+      add:
+        - name: "X-Accel-Buffering"
+          value: "no"
+        # - name: "my-header"
+        #   value: "MyValue"
+    # listeningInterface: 200.0.0.1
+    clientIdentification:
+      private: false
+      # enableProxyProtocol: true
+      # proxyProtocolTimeoutMillis: 3000
+      # skipLocalForwards: 2
+      # logForwards: false
+    
+  server2:
+    # enabled: false
+    name: "Lightstreamer HTTPS Server"
+    port: 8081
+    protocol: https
+    portType: CONTROL_ONLY
+    responseHttpHeaders:
+      echo:
+        - "cookie"
+      add:
+        - name: "X-Accel-Buffering"
+          value: "no"
+        - name: "my-header"
+          value: "MyValue"
+    # listeningInterface: 200.0.0.1
+    clientIdentification: 
+      private: true
+      enableProxyProtocol: true
+      proxyProtocolTimeoutMillis: 3000
+      # skipLocalForwards: 2
+      logForwards: true
+    # tlsProvider: Conscrypt
+    keyStoreRef: keystore
+    # allowCipherSuites:
+    #   - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+    removeCipherSuites:
+      - TLS_RSA_
+    enforceServerCipherSuitePreference:
+      enabled: true
+      order: "JVM"
+    disableTlsRenegotiation: true
+    allowProtocols: []
+      # - TLSv1.2
+      # - TLSv1.3
+    removeProtocols:
+      - SSL
+      - TLSv1$
+      - TLSv1.1
+    # enableStatelessTlsSessionResumption: false
+    tlsSessionCacheSize: 10000
+    tlsSessionTimeout: 3600
+    enableClientHintsForTlsSessionResumption: false
+    enableClientAuth: false
+    enabeForceClientAuth: false
+    # trustStoreRef: truststore
+
+# Keystores definition
+keyStores:
+  keystore:
+    type: JKS
+    file:
+      secretKeyRef:
+        name: keystore-secret
+        key: myserver.keystore
+    password:
+      secretKeyRef:
+        name: keystore-secret
+        key: myserver.keypass
+
+# Trustores definition
+trustStores:
+  truststore:
+    type: JKS
+    file:
+      secretKeyRef:
+        name: truststore-secret
+        key: myserver.keystore
+    password:
+      secretKeyRef:
+        name: truststore-secret
+        key: myserver.keypass
+
+# Global socket settings
+globalSocket:
+  readTimeoutMillis: 20000
+  # handshake_timeout_millis: 2000
+  requestLimit: 50000
+  writeTimeoutMillis: 120000
+  # useHttpVersion: "1.0"
+  # (Optional). WebSocket support configuration. The support is enabled by default.
+  webSocket:
+    # enabled: false
+    # maxPongDelayMillis: 1000
+    # maxClosingWaitMillis: 1000
+    maxOutboundFrameSize: 4096
+
+# Security configuration
+security:
+  useProtectedJs: false
+  forwardCookies: false
+  crossDomainPolicy:
+    optionsMaxAge: 36001
+    acceptExtraHeaders: ""
+    acceptCredentials: true
+    allowAccessFrom:
+      fromEveryWere:
+        scheme: "*"
+        host: "*"
+        port: "*"
+      # fromWwwMyDomain:
+      #   scheme: https
+      #   host: "www.my-domain.com"
+      #   port: 443
+      # fromMyDomain:
+      #   scheme: https
+      #   host: "*.my-domain.com"
+      #   port: 443
+      # fromLocal:
+      #   scheme: https
+      #   host: "192.168.0.101"
+      #   port: "*"
+      # fromHttpsIpv6:
+      #   scheme: https
+      #   host: "2001:0db8:aaaa:0000:0000:dddd:eeee:0000"
+      #   port: 443
+      # fromIpvs:
+      #   scheme: "*"
+      #   host: "2001:0db8:aaaa::dddd:eeee:0"
+      #   port: "*"
+  allowedDomains: {}
+  #   myDomain: "my-domain.com"
+  #   altDomain: "my-alt-domain.com"
+  serverTokens: FULL
+
+## Logging and management configuration
+management:
+  # noLoggingIp:
+    # - "20.0.0.10"
+  # showPasswordOnRequestLog: true
+  # unexpectedWaitThresholdMillis: 0
+  asyncProcessingThresholdMillis: 60000
+  # maxTaskWaitMillis: 0
+  collectorMillis: 2000
+  jmx:
+    rmiConnector:
+      port:
+        value: 8888
+        ssl: false
+      dataPort: {}
+        # value: 4444
+        # ssl: true
+      # hostName: push.mycompany.com
+      testPorts: false
+      testTimeoutMillis: 5001
+      # listeningInterface: 200.0.0.1
+      # keyStoreRef: jks
+      allowCipherSuites: []
+      # - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+      removeCipherSuites: []
+        # - TLS_RSA_
+      enforceServerCipherSuitePreference:
+        enabled: true
+        order: "JVM"
+      allowProtocols: 
+        # - TLSv1.2
+        # - TLSv1.3
+      removeProtocols:
+        - SSL
+        - TLSv1$
+        - TLSv1.1 
+      public: false
+      credentials:
+        changeMe:
+          user: user_changeme
+          password: "password_changeme"
+        # other:
+        #   user: user_other
+        #   password: "password_other"
+    jmxmpConnectorPort: 8889
+    # disableSessionMbeans: true
+    # disableLongListProperties: false
+  # ensureStoppingService: true
+  dashboard:
+    enableJmxTree: true
+    public: false 
+    # availableOnAllServers: false
+    availableOnServers:
+      - serverRef: server1
+        # jmxTreeVisible: true
+      - serverRef: server1
+        # jmxTreeVisible: false
+    # urlPath: /my_dashboard
+    # enableHostnameLookup: false
+  healthCheck:
+    # # availableOnAllServers: false
+    availableOnServers:
+      - server1
+      # - server2
+
+# Push Session configuration
+pushSession:
+  serviceUrlPrefixes: []
+  # - "/server1"
+  # - "/server1"
+  contentLength:
+    default: 4000000
+    specialCases: []
+    #  - value: 100000
+    #    userAgents:
+    #      - "Symbian OS"
+  # maxStreamingMillis: 480000
+  # useChunkedEncoding: false
+  # useGizpCompression: false DA VERIFICARE
+  # compressionTthreshold: 0
+  # useEnrichedContentType: true
+  # maxBufferSize: 1000
+  sessionTimeoutMillis: 10000
+  # sessionRecoveryMillis: 13000
+  # maxRecoveryLength: 5000
+  # maxRecoveryPollLength: 0
+  # subscription_timeout_millis: 5000
+  # missingMessageTimeoutMillis: 1000
+  # deltaDelivery: false
+  # defaultDiffOrder: jsonpatch
+  # jsonpatchMinLength: 500
+  # preserveUnfilteredCommandOrdering: true
+  # reusePumpBuffers: true DA VERIFICARE
+streamingMode:
+  # sendbuf: 5000
+  # maxDelayMillis: 30
+  defaultKeepaliveMillis:
+    randomize: false
+    value: 5000
+  minKeepaliveMillis: 1000
+  maxKeepaliveMillis: 30000
+smartPollingMode:
+  # minInterpollMillis: 1000
+  maxPollingMillis: 15000
+  maxIdleMillis:
+    randomize: false
+    value: 30000
+  
+webServer:
+  enabled: true
+  errorPage: "./ErrorPage.html"
+  # pagesDir: "../my_pages"
+  # persistencyMinutes: 1000000
+  # mime_types_config: "./my_mime_types.propertie"
+  # notfound_page: "./404Page.html"
+  useCompression:
+    enabled: false
+    specialCases:
+      - enabled: true
+        contentTypeContains: "text"
+  # compression_threshold: 0
+cluster:
+  # controlLinkAddress: "push1.mycompany.com"
+  # controlLinkMachineName: "push1"
+  # maxSessionDurationMinutes: 5
+load:
+  # maxSessions: 1000
+  # maxMpnDevices: 1000
+  # maxCommonNioBufferAllocation: 0
+  # maxCommonPumpBufferAllocation: 0
+  # selectorPoolSize: 1
+  # selectorMaxLoad: 1000
+  # timerPoolSize: 2
+  # eventsPoolSize: 10
+  # snapshotPoolSize: 10
+  # pumpPoolSize: 10
+  # pumpPoolMaxQueue: 1000
+  # serverPoolMaxSize: 100
+  # serverPoolMaxFree: 0
+  # serverPoolMaxQueue: -1
+  # acceptPoolMaxSize: 100
+  # acceptPoolMaxQueue: 100
+  # handshakePoolSize: 10
+  # handshakePoolMaxQueue: -1
+  # httpsAuthPoolMaxSize: 10
+  # httpsAuthPoolMaxFree: 0
+  # httpsAuthPoolMaxQueue: -1
+  # prestartedMaxQueue: 1000
+  # forceEarlyConversions: false
+
+
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+# This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+livenessProbe:
+  httpGet:
+    path: /lightstreamer/healthcheck
+    port: server1
+readinessProbe:
+  httpGet:
+    path: /lightstreamer/healthcheck
+    port: server1
+
+#This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+# Additional volumes on the output Deployment definition.
+#volumes: []
+# - name: foo
+#   secret:
+#     secretName: mysecret
+#     optional: false
+
+# Additional volumeMounts on the output Deployment definition.
+#volumeMounts: []
+# - name: foo
+#   mountPath: "/etc/foo"
+#   readOnly: true
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
