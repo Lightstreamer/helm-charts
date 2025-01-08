@@ -32,7 +32,7 @@ serviceAccount:
   name: ""
 
 # This is for setting Kubernetes Annotations to a Pod.
-# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/ 
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
 podAnnotations: {}
 # This is for setting Kubernetes Labels to a Pod.
 # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
@@ -73,6 +73,107 @@ ingress:
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
+
+edition:
+  license:
+    # Lightstreamer edition to use.
+    # To know full details, open the Welcome Page or the Monitoring Dashboard
+    # (Edition tab) of your running Lightstreamer Server.
+    # Can be one of the following:
+    #  - COMMUNITY
+    #  - ENTERPRISE
+    edition: ENTERPRISE
+
+    # If you chose COMMUNITY edition, you can set the following options:
+    enabledCommunityEditionClientApi: javascript_client
+
+    # If yoy chose ENTERPRISE edition, you can set the following options:
+    enterpriseEditionDetails:
+      # The type of the ENTERPRSE license
+      licenseType: DEMO
+      # Identifier of the contract in place.
+      # Use DEMO  to run with the embedded Demo license.
+      contractId: DEMO
+      # Choose between online (cloud-based) and file-based license validation.
+      # Can be one of the following:
+      # - ONLINE
+      #   The host names below must be reachable on port 443:
+      #   - https://clm1.lightstreamer.com/
+      #   - https://clm2.lightstreamer.com/
+      # - FILE
+      #   Based on <license_type> above, one or both the values are possible.
+      #   For EVALUATION and STARTUP: ONLINE is mandatory.
+      #   For PRODUCTION, HOT-STANDBY, NON-PRODUCTION-FULL, and NON-PRODUCTION-LIMITED:
+      #   you can choose between ONLINE and FILE.
+      #  For DEMO: the value is ignored, as no validation is done.
+      licenseValidation: ONLINE
+      # Used only if <license_validation> above set to ONLINE.
+      # Password used for validation of online licenses.
+      # Leave blank if "contract_id" set to DEMO or "license_validation" set to FILE.
+      onlinePassword: ""
+      # Used only if "license_validation" above set to FILE.
+      # Cumulative. Path and name of the license file, relative to the conf
+      # directory. If multiple occurrences of this element are supplied,
+      # the files are all evaluated and the first acceptable one is considered.
+      # Example: mylicensefile.lic
+      filePath:
+      # Restrict the feature set with respect to the license in use.
+      # If enabled, use the feature set detailed in the "optional_features" entry below.
+      # If a required feature is not allowed by the license in use, the server will not start
+      # If not enabled, use the feature set specified by the license in use.
+      enableRestrictedFeaturesSet: false
+
+    auditLogs:
+      path:
+      # enableAutomaticUpload: true
+
+    optionalFeatures:
+      enableMpn: false
+      maxDownstreamRate: 1
+      enableBandwidthControl: false
+      enableTlsSsl: false
+      enableJmx: false
+      enableJavascriptClient: false
+      enableNodeJsClient: false
+      enableAndroidClient: false
+      enableIOSClient: false
+      enableFlexClient: false
+      enableSilverlightClient: false
+      enableJavaSEClient: false
+      enablePythonClient: false
+      enableDotNETStandardClient: false
+      enableMacOSClient: false
+      enableTvOSClient: false
+      enableWatchOSClient: false
+      enableBlackBerryClient: false
+      enableJavaMEClient: false
+      enableFlashClient: false
+      enableGenericClient: false
+
+    enableAutomaticUpdateCheck: false
+
+  proxy:
+    httpProxy:
+      host:
+      port: 8080
+      scheme:
+      user:
+      password:
+    socksProxy:
+      host:
+      port:
+      version: SOCKS5
+      user:
+      password:
+    pacFiles:
+      fileUrl:
+      filePath: 
+    enableProxyAutodiscovery: true
+    networkInterface:
+    
+
+
+
 
 logging:
   appenders:
@@ -179,7 +280,7 @@ logging:
         # Logging of issues related to information received via the proxy protocol,when enabled.
         # At DEBUG level, details of all information received are reported.
         lightstreamerLogger.connections.proxy: INFO
-        # Logging of internal web server activity; it also logs requests ofstatic resources 
+        # Logging of internal web server activity; it also logs requests ofstatic resources
         # related to push request.
         # At DEBUG level, error details are reported.
         # All log from this logger and its subloggers reports the IP and port of the involved connection.
@@ -244,7 +345,7 @@ logging:
     # The logger does not inherit from "LightstreamerLogger" in order
     # to simplify sending the log to a dedicated appender.
     # All log from this logger reports the IP and port of the involved connection.
-    lightstreamerHealthCheck: 
+    lightstreamerHealthCheck:
       appenders:
         - console
       level: INFO
@@ -355,8 +456,8 @@ logging:
       appenders:
         - console
       level: INFO
-        
-       
+
+
 
 # HTTP/HTTPS server configuration
 servers:
@@ -381,7 +482,7 @@ servers:
       # proxyProtocolTimeoutMillis: 3000
       # skipLocalForwards: 2
       # logForwards: false
-    
+
   server2:
     # enabled: false
     name: "Lightstreamer HTTPS Server"
@@ -397,7 +498,7 @@ servers:
         - name: "my-header"
           value: "MyValue"
     # listeningInterface: 200.0.0.1
-    clientIdentification: 
+    clientIdentification:
       private: true
       enableProxyProtocol: true
       proxyProtocolTimeoutMillis: 3000
@@ -535,13 +636,13 @@ management:
       enforceServerCipherSuitePreference:
         enabled: true
         order: "JVM"
-      allowProtocols: 
+      allowProtocols:
         # - TLSv1.2
         # - TLSv1.3
       removeProtocols:
         - SSL
         - TLSv1$
-        - TLSv1.1 
+        - TLSv1.1
       public: false
       credentials:
         changeMe:
@@ -556,7 +657,7 @@ management:
   # ensureStoppingService: true
   dashboard:
     enableJmxTree: true
-    public: false 
+    public: false
     # availableOnAllServers: false
     availableOnServers:
       - serverRef: server1
@@ -613,7 +714,7 @@ smartPollingMode:
   maxIdleMillis:
     randomize: false
     value: 30000
-  
+
 webServer:
   enabled: true
   errorPage: "./ErrorPage.html"
