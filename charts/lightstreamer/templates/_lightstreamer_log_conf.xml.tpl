@@ -1,4 +1,5 @@
 {{/*
+Render the logger appenders
 */}}
 {{- define "lightstreamer.configuration.log.appender_ref" }}
 {{- range .appenders }}
