@@ -86,9 +86,8 @@
   ===============================
 -->
 
-
-  {{- range .Values.servers }}
-  {{- if eq .protocol "http" }}
+{{- range .Values.servers }}
+  {{- if and (eq .protocol "http") .enabled }}
     <!-- Optional and cumulative (but at least one from <http_server> and
          <https_server> should be defined). HTTP server socket configuration.
          Multiple listening sockets can be defined, by specifying multiple
@@ -167,7 +166,7 @@
              those fields.
              No syntax and consistency checks are performed on the resulting
              HTTP headers; only custom or non-critical fields should be used.
-              The header names involved are always converted to lower case. -->
+             The header names involved are always converted to lower case. -->
         <response_http_headers>
     {{- with .responseHttpHeaders}}
 
@@ -339,7 +338,7 @@
     </http_server>
     {{ end }}
 
-  {{- if eq .protocol "https" }}
+  {{- if and (eq .protocol "https") .enabled }}
     <!-- Optional and cumulative (but at least one from <http_server> and
          <https_server> should be defined). HTTPS server socket configuration.
          Multiple listening sockets can be defined, by specifying multiple
@@ -798,10 +797,10 @@
 
     </https_server>
     {{- end }}
-  {{- end }}
+{{- end }}
 
     <!-- GLOBAL SOCKET SETTINGS -->
-{{ with .Values.globalSocket }}
+{{- with .Values.globalSocket }}
     <!-- Mandatory. Longest inactivity time accepted while waiting for a slow
          request to be received. If this value is exceeded, the socket is
          closed. Reusable HTTP connections are also closed if they are not
@@ -1821,6 +1820,7 @@
   ==========================
 -->
 
+{{- with .Values.pushSession }}
     <!-- Optional and cumulative. If used, defines one or multiple alternative
          url paths for all requests related to the streaming services, which
          will be composed by the specified prefix followed by /lightstreamer.
@@ -1835,12 +1835,18 @@
          based on the prefix, even if the prefix is not stripped off by the proxy.
          However, this support does not apply to the Internal Web Server
          and to the Monitoring Dashboard. -->
+    {{- if .serviceUrlPrefixes }}
+      {{- range .serviceUrlPrefixes }}
+    <service_url_prefix>{{ . }}</service_url_prefix>
+      {{- end }}
+    {{- else }}    
     <!--
     <service_url_prefix>/server1</service_url_prefix>
     -->
     <!--
     <service_url_prefix>/server1ws</service_url_prefix>
     -->
+    {{- end }}
 
     <!-- Mandatory. Maximum size of HTTP streaming responses; when the maximum size is
          reached, the connection is closed but the session remains active and
@@ -1860,10 +1866,11 @@
          The lowest possible value for the content-length is decided by the Server,
          so as to allow the connection to send a minimal amount of data. -->
     <content_length>
+    {{- with .contentLength }}
 
         <!-- Mandatory for this block. Define the maximum size of HTTP streaming
              responses (and the upper limit for polling responses). -->
-        <default>4000000</default>
+        <default>{{ int .default }}</default>
 
         <!-- Optional and cumulative. Through the "value" attribute, defines the
              HTTP content-length to be used for stream/poll responses (overriding
@@ -1871,6 +1878,18 @@
              the subelements are met.
              Multiple occurrences of "special_case" are evaluated in sequence,
              until one is enabled. -->
+        {{- if .specialCases }}
+          {{- range .specialCases }}
+        <special_case value={{ .value | quote }}>
+            <!-- Mandatory and cumulative. Defines a condition on the user-agent
+                 supplied with the request, which should include the string
+                 specified through the "contains" attribute. -->
+            {{- range .userAgentContains }}     
+            <user_agent contains={{ . | quote }} />
+            {{- end }}
+        </special_case>
+          {{- end }}
+        {{- else }}
         <!--
         <special_case value="100000">
         -->
@@ -1883,7 +1902,8 @@
         <!--
         </special_case>
         -->
-
+        {{- end }}
+    {{- end}}
     </content_length>
 
     <!-- Optional. Maximum lifetime allowed for single HTTP streaming responses;
@@ -1898,9 +1918,13 @@
          If not specified, no limit is set; the streaming session duration
          will be limited only by the "content_length" setting and, at least,
          by the keep-alive message activity. -->
+    {{- if (quote .maxStreamingMillis | empty) }}         
     <!--
     <max_streaming_millis>480000</max_streaming_millis>
     -->
+    {{- else }}
+    <max_streaming_millis>{{ int .maxStreamingMillis }}</max_streaming_millis>
+    {{- end }}
 
     <!-- Optional. Enabling the use of the "chunked" transfer encoding,
          as defined by the HTTP 1.1 specifications, for sending the response
@@ -1949,9 +1973,13 @@
          that no benefit would come. It is not applied to streaming responses,
          which are compressed incrementally.
          Default: 1024 bytes. -->
+    {{- if (quote .compressionThreshold | empty) }}
     <!--
     <compression_threshold>0</compression_threshold>
     -->
+    {{- else }}
+    <compression_threshold>{{ int .compressionThreshold }}</compression_threshold>
+    {{- end }}
 
     <!-- Optional. Configuration of the content-type to be specified in the
          response headers when answering to session requests issued by native
@@ -1962,9 +1990,13 @@
          that may otherwise buffer streaming connections.
          - N: the server will specify the text/plain content-type.
          Default: Y. -->
+    {{- if (quote .useEnrichedContentType | empty) }}
     <!--
     <use_enriched_content_type>Y</use_enriched_content_type>
     -->
+    {{- else }}
+    <use_enriched_content_type>{{ .useEnrichedContentType | ternary "Y" "N" }}</use_enriched_content_type>
+    {{- end }}
 
     <!-- Optional. Maximum size for any ItemEventBuffer. It applies to RAW and
          COMMAND mode and to any other case of unfiltered subscription.
@@ -1986,7 +2018,13 @@
          limit is set, it is advisable also setting this logger at WARN level.
          Aggregate statistics on lost updates are also provided by the JMX
          interface (if available) and by the Internal Monitor. -->
-    <max_buffer_size>1000</max_buffer_size>
+    {{- if (quote .maxBufferSize | empty) }}
+    <!-- 
+    <max_buffer_size>1000</max_buffer_size> 
+    -->
+    {{- else }}
+    <max_buffer_size>{{ int .maxBufferSize }}</max_buffer_size>
+    {{- end }}
 
     <!-- Mandatory. Longest time a disconnected session can be kept alive
          while waiting for the Client to rebind such session to another
@@ -2000,7 +2038,7 @@
          the current streaming connection will be ended and the client
          will be requested to rebind to the session (which triggers the
          previous case). -->
-    <session_timeout_millis>10000</session_timeout_millis>
+    <session_timeout_millis>{{ .sessionTimeoutMillis }}</session_timeout_millis>
 
     <!-- Optional. Longest time a session can be kept alive, after the
          interruption of a connection at network level, waiting for the Client
@@ -2018,7 +2056,13 @@
          other version were involved, the session would be closed immediately.
          A 0 value also prevents any accumulation of memory.
          Default: 0. -->
+    {{- if (quote .sessionRecoveryMillis | empty) }}
+    <!--
     <session_recovery_millis>13000</session_recovery_millis>
+    -->
+    {{- else }}
+    <session_recovery_millis>{{ int .sessionRecoveryMillis }}</session_recovery_millis>
+    {{- end }}
 
     <!-- Optional. Maximum number of bytes of streaming data, already sent
          or being sent to the Client, that should be kept, in order to allow
@@ -2029,9 +2073,13 @@
          if any other version were involved, no data would be kept.
          A 0 value also prevents any accumulation of memory.
          Default: the value configured for "sendbuf". -->
+    {{- if (quote .maxRecoveryLength | empty) }}
     <!--
     <max_recovery_length>5000</max_recovery_length>
     -->
+    {{- else }}
+    <max_recovery_length>{{ int .maxRecoveryLength }}</max_recovery_length>
+    {{- end }}
 
     <!-- Optional. Maximum size supported for keeping a polling response,
          already sent or being sent to the Client, in order to allow the Client
@@ -2043,9 +2091,13 @@
          A 0 value also prevents any accumulation of memory. On the other
          hand, a value of -1 relieves any limit.
          Default: -1. -->
+    {{- if (quote .maxRecoveryPollLength | empty) }}         
     <!--
     <max_recovery_poll_length>0</max_recovery_poll_length>
     -->
+    {{- else }}
+    <max_recovery_poll_length>{{ int .maxRecoveryPollLength }}</max_recovery_poll_length>
+    {{- end }}    
 
     <!-- Optional. Longest time the subscriptions currently in place on a
          session can be kept active after the session has been closed,
@@ -2059,7 +2111,13 @@
          the accomplished wait is considered as valid also for the
          subscription wait purpose.
          Default: the time configured for "session_timeout_millis". -->
+    {{- if (quote .subscriptionTimeoutMillis | empty) }}      
+    <!--
     <subscription_timeout_millis>5000</subscription_timeout_millis>
+    -->
+    {{- else }}
+    <subscription_timeout_millis>{{ int .subscriptionTimeoutMillis }}</subscription_timeout_millis>
+    {{- end }}    
 
     <!-- Optional. Timeout used to ensure the proper ordering of client-sent
          messages, within the specified message sequence, before sending them
@@ -2080,9 +2138,13 @@
          a request has got lost and can be used if message dropping is
          acceptable.
          Default: 30000. -->
+    {{- if (quote .missingMessageTimeoutMillis | empty) }}         
     <!--
     <missing_message_timeout_millis>1000</missing_message_timeout_millis>
     -->
+    {{- else }}
+    <missing_message_timeout_millis>{{ int .missingMessageTimeoutMillis }}</missing_message_timeout_millis>
+    {{- end }}    
 
     <!-- Optional. Configuration of the policy adopted for the delivery of
          updates to the clients. Can be one of the following:
@@ -2112,9 +2174,13 @@
          Forcing a redundant delivery would simplify the client code in all
          the above cases.
          Default: Y. -->
+    {{- if (quote .enableDeltaDelivery | empty) }}      
     <!--
     <delta_delivery>N</delta_delivery>
     -->
+    {{- else }}
+    <delta_delivery>{{ .enableDeltaDelivery | ternary "Y" "N" }}</delta_delivery>
+    {{- end }}    
 
     <!-- Optional. List of algorithms to be tried by default to perform the
          "delta delivery" of changed fields in terms of difference between
@@ -2137,9 +2203,13 @@
          way to enforce algorithms is to do that on a field-by-field basis
          through the Data Adapter interface.
          Default: an empty list. -->
+    {{- if .defaultDiffOrders }}         
+    <default_diff_order>{{ join "," .defaultDiffOrders }}</default_diff_order>
+    {{- else }}
     <!--
     <default_diff_order>jsonpatch</default_diff_order>
     -->
+    {{- end }}
 
     <!-- Optional. Minimum length among two update values (old and new) which
          enables the use of the JSON Patch format to express the new value as
@@ -2153,9 +2223,13 @@
          require to directly retrieve the updates in the form of JSON Patch
          differences.
          Default: 50. -->
+    {{- if (quote .jsonPatchMinLength | empty) }}
     <!--
     <jsonpatch_min_length>500</jsonpatch_min_length>
     -->
+    {{- else }}
+    <jsonpatch_min_length>{{ .jsonPatchMinLength }}</jsonpatch_min_length>
+    {{- end }}    
 
     <!-- Optional. Configuration of the update management for items subscribed to
          in COMMAND mode with unfiltered dispatching, with regard to updates
@@ -2175,9 +2249,13 @@
          No item-level choice is possible. However, setting this flag as Y
          allows for backward compatibility to versions before 4.0, if needed.
          Default: N. -->
+    {{- if (quote .preserveUnfilteredCommandOrdering | empty) }}        
     <!--
     <preserve_unfiltered_command_ordering>Y</preserve_unfiltered_command_ordering>
     -->
+    {{- else }}
+    <preserve_unfiltered_command_ordering>{{ .preserveUnfilteredCommandOrdering | ternary "Y" "N" }}</preserve_unfiltered_command_ordering>
+    {{- end }}
 
     <!--
          Optional. Policy to be adopted for the handling of session-related
@@ -2195,9 +2273,13 @@
                  setting "delta_delivery" as N may denote the need for
                  reducing permanent per-session memory.
          Default: AUTO. -->
+    {{- if (quote .reusePumpBuffers | empty) }} 
     <!--
     <reuse_pump_buffers>Y</reuse_pump_buffers>
     -->
+    {{- else }}
+    <reuse_pump_buffers>{{ .reusePumpBuffers }}</reuse_pump_buffers>
+    {{- end }}  
 
     <!-- STREAMING MODE -->
 
@@ -2222,9 +2304,13 @@
          Higher values should make sense only if the expected throughput is
          high and responsive updates are desired.
          Default: 1600. -->
+    {{- if (quote .sendbuf | empty) }}         
     <!--
     <sendbuf>5000</sendbuf>
     -->
+    {{- else }}
+    <sendbuf>{{ int .sendbuf }}</sendbuf>
+    {{- end }}        
 
     <!-- Optional. Longest delay that the Server is allowed to apply to
          outgoing updates in order to collect more updates in the same
@@ -2233,7 +2319,13 @@
          maximum update frequency for items not subscribed with unlimited
          or unfiltered frequency.
          Default: 0. -->
+    {{- if (quote .maxDelayMillis | empty) }}
+    <!--
     <max_delay_millis>30</max_delay_millis>
+     -->
+    {{- else }}
+    <max_delay_millis>{{ int .maxDelayMillis }}</max_delay_millis>
+    {{- end }}     
 
     <!-- Mandatory. Longest write inactivity time allowed on the socket.
          If no updates have been sent after this time, then a small
@@ -2248,15 +2340,17 @@
          setting). This can be useful if many sessions subscribe to the same
          items and updates for these items are rare, to avoid that also the
          keepalives for these sessions occur at the same times. -->
-    <default_keepalive_millis randomize="N">5000</default_keepalive_millis>
+    {{- with .defaultKeepaliveMillis }}
+    <default_keepalive_millis{{ if not (quote .randomize | empty) }} randomize={{ .randomize | ternary "Y" "N" | quote }}{{- end}}>{{ int .value }}</default_keepalive_millis>
+    {{- end }}
 
     <!-- Mandatory. Lower bound to the keep-alive time requested by a Client.
          Must be lower than the "default_keepalive_millis" setting. -->
-    <min_keepalive_millis>1000</min_keepalive_millis>
+    <min_keepalive_millis>{{ int .minKeepaliveMillis }}</min_keepalive_millis>
 
     <!-- Mandatory. Upper bound to the keep-alive time requested by a Client.
          Must be greater than the "default_keepalive_millis" setting. -->
-    <max_keepalive_millis>30000</max_keepalive_millis>
+    <max_keepalive_millis>{{ int .maxKeepaliveMillis }}</max_keepalive_millis>
 
     <!-- SMART-POLLING MODE -->
 
@@ -2269,7 +2363,7 @@
          shorter time, if limited by this setting.
          The session keeping time for polling may cumulate with the keeping
          time upon disconnection, as set by "session_timeout_millis". -->
-    <max_polling_millis>15000</max_polling_millis>
+    <max_polling_millis>{{  int .maxPollingMillis }}</max_polling_millis>
 
     <!-- Mandatory. Longest inactivity time allowed on the socket while waiting
          for updates to be sent to the client through the response to an
@@ -2282,7 +2376,9 @@
          inactivity time. This can be useful if many sessions subscribe to
          the same items and updates for these items are rare, to avoid that
          also the following polls for these sessions occur at the same times. -->
-    <max_idle_millis randomize="N">30000</max_idle_millis>
+    {{- with .maxIdleMillis }}         
+    <max_idle_millis{{ if not (quote .randomize | empty) }} randomize={{ .randomize | ternary "Y" "N" | quote }}{{- end}}>{{ int .value }}</max_idle_millis>
+    {{- end }}
 
     <!-- Optional. Shortest time allowed between consecutive polls on a
          session. If the client issues a new polling request and less than
@@ -2297,9 +2393,14 @@
          on the Server, this setting can be used as a protection, to limit the
          polling frequency.
          Default: 0. -->
+    {{- if (quote .minPollingMillis | empty) }}
     <!--
     <min_interpoll_millis>1000</min_interpoll_millis>
     -->
+    {{- else }}
+    <min_interpoll_millis>{{ int .minPollingMillis }}</min_interpoll_millis>
+    {{- end }}        
+{{- end }}
 
 <!--
   ======================================
@@ -2574,7 +2675,10 @@
          The file content should be encoded with the iso-8859-1 charset.
          The file path is relative to the conf directory.
          Default: the proper page is provided by the Server. -->
-    <error_page>./ErrorPage.html</error_page>
+{{- with .Values.errorPageRef }}
+    <error_page>./error-page/{{ .key }}</error_page>
+{{- end }}
+     
 
     <!-- Optional. Internal web server configuration.
          Note that some of the included settings may also apply to the
@@ -2583,6 +2687,7 @@
          <compression_threshold> settings. Anyway, this does not hold for
          the <enabled> setting, as the Monitoring Dashboard accessibility
          is only configured through the <dashboard> block. -->
+{{- with .Values.webServer }}
     <web_server>
 
         <!-- Optional. Enabling of the internal web server.
@@ -2590,7 +2695,7 @@
              - Y: the Server accepts requests for file resources;
              - N: the Server ignores requests for file resources.
              Default: N. -->
-        <enabled>Y</enabled>
+        <enabled>{{ .enabled | default false | ternary "Y" "N"}}</enabled>
 
         <!-- Optional. Path of the file system directory to be used
              by the internal web server as the root for URL path mapping.
@@ -2602,34 +2707,50 @@
              hence, subdirectories of the pages directory with conflicting
              names would be ignored.
              Default: ../pages -->
+        {{- if .pagesDir }}
+        <pages_dir>{{ .pagesDir }}</pages_dir>
+        {{- else }}
         <!--
         <pages_dir>../my_pages</pages_dir>
         -->
+        {{- end }}
 
         <!-- Optional. Caching time, in minutes, to be allowed to the browser
              (through the "expires" HTTP header) for all the resources supplied
              by the internal web server.
              A zero value disables caching by the browser.
              Default: 0. -->
+        {{- if (quote .persistencyMinutes | empty) }}
         <!--
         <persistency_minutes>1000000</persistency_minutes>
         -->
+        {{- else }}
+        <persistency_minutes>{{ .persistencyMinutes }}</persistency_minutes>
+        {{- end }}
 
         <!-- Optional. Path of the MIME types configuration property file.
              The file path is relative to the conf directory.
              Default: ./mime_types.properties -->
+        {{- if empty .mimeTypesConfig }}
         <!--
         <mime_types_config>./my_mime_types.properties</mime_types_config>
         -->
+        {{- else }}
+        <mime_types_config>{{ .mimeTypesConfig }}</mime_types_config>
+        {{- end }}
 
         <!-- Optional. Path of an HTML page to be returned as the body upon
              a "404 Not Found" answer caused by the request of a nonexistent URL.
              The file content should be encoded with the iso-8859-1 charset.
              The file path is relative to the conf directory.
              Default: the proper page is provided by the Server. -->
+        {{- if empty .notFoundPage }}
         <!--
         <notfound_page>./404Page.html</notfound_page>
         -->
+        {{- else }}
+        <notfound_page>{{ .notFoundPage }}</notfound_page>
+        {{- end }}
 
         <!-- Optional. Use of the "gzip" content encoding, as defined by the
              HTTP 1.1 specifications, for sending the resource contents.
@@ -2656,11 +2777,11 @@
                  the subelements are met.
                  Multiple occurrences of "special_case" are evaluated in sequence,
                  until one is enabled. -->
-            <special_case value="Y">
+            <special_case value="Y">   
                 <!-- Mandatory for this block and cumulative. Defines a condition
                      on the content_type to be used for the response, which should
                      include the string specified through the "contains" attribute. -->
-                <content_type contains="text/" />
+                <content_type contains="text" />
             </special_case>
 
         </use_compression>
@@ -2669,9 +2790,13 @@
              is not applied, regardless of the "use_compression" setting, as we
              guess that no overall benefit would be reached.
              Default: 8192 bytes. -->
+        {{- if (quote .compressionThreshold | empty) }}
         <!--
         <compression_threshold>0</compression_threshold>
         -->
+        {{- else}}
+        <compression_threshold>{{ .compressionThreshold }}</compression_threshold>
+        {{- end }}
 
         <!-- Optional. Enables the processing of the "/crossdomain.xml" URL,
              required by the Flash player in order to allow pages from
@@ -2697,9 +2822,13 @@
              Note that "/crossdomain.xml" is also used by the Silverlight
              runtime when "/clientaccesspolicy.xml" is not provided.
              Default: N. -->
+        {{- if (quote .enableFlexCrossdomain | empty) }}
         <!--
         <flex_crossdomain_enabled>Y</flex_crossdomain_enabled>
         -->
+        {{- else}}
+        <flex_crossdomain_enabled>{{ .enableFlexCrossdomain | ternary "Y" "N" }}</flex_crossdomain_enabled>
+        {{- end }}        
 
         <!-- Mandatory when "flex_crossdomain_enabled" is set as "Y".
              Path of the file to be returned upon requests for the
@@ -2707,9 +2836,13 @@
              "flex_crossdomain_enabled" is not set as "Y".
              The file content should be encoded with the iso-8859-1 charset.
              The file path is relative to the conf directory. -->
+        {{- if .flexCrossdomainPath }}
+        <flex_crossdomain_path>{{ .flexCrossdomainPath }}</flex_crossdomain_path>
+        {{- else }}
         <!--
         <flex_crossdomain_path>./flexcrossdomain.xml</flex_crossdomain_path>
         -->
+        {{- end }}
 
         <!-- Optional. Enables the processing of the "/clientaccesspolicy.xml"
              URL, required by the Silverlight runtime in order to allow pages
@@ -2734,9 +2867,13 @@
              Note that "/crossdomain.xml" is also used by the Silverlight
              runtime when "/clientaccesspolicy.xml" is not provided.
              Default: N. -->
+        {{- if (quote .enableSilverlightAccessPolicy | empty) }}
         <!--
         <silverlight_accesspolicy_enabled>Y</silverlight_accesspolicy_enabled>
         -->
+        {{- else }}
+        <silverlight_accesspolicy_enabled>{{ .enableSilverlightAccessPolicy | ternary "Y" "N" }}</silverlight_accesspolicy_enabled>
+        {{- end }}
 
         <!-- Mandatory when "silverlight_accesspolicy_enabled" is set as "Y".
              Path of the file to be returned upon requests for the
@@ -2744,11 +2881,16 @@
              "silverlight_accesspolicy_enabled" is not set as "Y".
              The file content should be encoded with the iso-8859-1 charset.
              The file path is relative to the conf directory. -->
+        {{- if .silverlightAccessPolicyPath }}
+        <silverlight_accesspolicy_path>{{ .silverlightAccessPolicyPath }}</silverlight_accesspolicy_path>
+        {{- else }}
         <!--
         <silverlight_accesspolicy_path>./silverlightaccesspolicy.xml</silverlight_accesspolicy_path>
         -->
+        {{- end }}
 
     </web_server>
+{{- end }} 
 
 <!--
   ========================
@@ -2756,6 +2898,7 @@
   ========================
 -->
 
+{{- with .Values.cluster }}
     <!-- Optional. Host address to be used for control/poll/rebind connections.
          A numeric IP address can be specified as well. The use of non standard,
          unicode names may not be supported yet by some Client SDKs.
@@ -2774,9 +2917,13 @@
          comment for <control_link_machine_name> for details.
          Support for clustering is an optional feature, available depending
          on Edition and License Type. When not available, this setting is ignored. -->
+    {{- if .controlLinkAddress }}
+    <control_link_address>{{ .controlLinkAddress }}</control_link_address>
+    {{- else }}
     <!--
     <control_link_address>push1.mycompany.com</control_link_address>
     -->
+    {{- end }}
 
     <!-- Optional. Host name to be used, in addition to the domain name specified
          on the front-end pages, for control/poll/rebind connections coming
@@ -2804,9 +2951,13 @@
          Refer to <control_link_address> for other remarks.
          Support for clustering is an optional feature, available depending
          on Edition and License Type. When not available, this setting is ignored. -->
+    {{- if .controlLinkMachineName }}
+    <control_link_machine_name>{{ .controlLinkMachineName }}</control_link_machine_name>
+    {{- else }}
     <!--
     <control_link_machine_name>push1</control_link_machine_name>
     -->
+    {{- end }}
 
     <!-- Optional. If set and positive, specifies a maximum duration to be enforced
          on each session. If the limit expires, the session is closed and the
@@ -2815,9 +2966,15 @@
          opportunity to migrate the new session to a different instance.
          See the Clustering document for details on this mechanism and on how
          rebalancing can be pursued. -->
+    {{- if (quote .maxSessionDurationMinutes | empty) }}
     <!--
     <max_session_duration_minutes>5</max_session_duration_minutes>
     -->
+    {{- else }}
+    <max_session_duration_minutes>{{ .maxSessionDurationMinutes }}</max_session_duration_minutes>
+    {{- end }}
+
+{{- end }}
 
 <!--
   ==================
@@ -2825,6 +2982,7 @@
   ==================
 -->
 
+{{- with .Values.load }}
     <!-- Optional. Maximum number of concurrent client sessions allowed.
          Requests for new sessions received when this limit is currently
          exceeded will be refused; on the other hand, operation on sessions
@@ -2834,9 +2992,13 @@
          The limit can be set as a simple, heuristic protection from Server
          overload.
          Default: unlimited. -->
+    {{- if (quote .maxSessions | empty) }}         
     <!--
     <max_sessions>1000</max_sessions>
     -->
+    {{- else }}
+    <max_sessions>{{ .maxSessions }}</max_sessions>
+    {{- end }}
 
     <!-- Optional. Maximum number of concurrent MPN devices sessions allowed.
          Once this number of devices has been reached, requests to active
@@ -2844,9 +3006,13 @@
          The limit can be set as a simple, heuristic protection from Server
          overload from MPN subscriptions.
          Default: unlimited. -->
+    {{- if (quote .maxMpnDevices | empty) }}         
     <!--
     <max_mpn_devices>1000</max_mpn_devices>
     -->
+    {{- else }}
+    <max_mpn_devices>{{ .maxMpnDevices }}</max_mpn_devices>
+    {{- end }}
 
     <!-- Optional. Limit to the overall size, in bytes, of the buffers
          devoted to I/O operations that can be kept allocated for reuse.
@@ -2855,9 +3021,13 @@
          If -1, disables buffer reuse at all and causes all allocated
          buffers to be released immediately.
          Default: 200000000 -->
+    {{- if (quote .maxCommonNioBufferAllocation | empty) }}
     <!--
     <max_common_nio_buffer_allocation>0</max_common_nio_buffer_allocation>
     -->
+    {{- else }}
+    <max_common_nio_buffer_allocation>{{ .maxCommonNioBufferAllocation }}</max_common_nio_buffer_allocation>
+    {{- end }}
 
     <!-- Optional. Limit to the overall size, in bytes, of the buffers
          used internally to compose update packets that can be kept
@@ -2867,9 +3037,13 @@
          If -1, disables buffer reuse at all and causes all allocated
          buffers to be released immediately.
          Default: 200000000 -->
+    {{- if (quote .maxCommonPumpBufferAllocation | empty) }}
     <!--
     <max_common_pump_buffer_allocation>0</max_common_pump_buffer_allocation>
     -->
+    {{- else }}
+    <max_common_pump_buffer_allocation>{{ .maxCommonPumpBufferAllocation }}</max_common_pump_buffer_allocation>
+    {{- end }}
 
     <!--
          Optional. Number of distinct NIO selectors (each one with its own
@@ -2879,9 +3053,13 @@
          Further selectors may be created because of the <selector_max_load>
          setting.
          Default: The number of available total cores, as detected by the JVM. -->
+    {{- if (quote .selectorPoolSize | empty) }}         
     <!--
     <selector_pool_size>1</selector_pool_size>
     -->
+    {{- else }}
+    <selector_pool_size>{{ .selectorPoolSize }}</selector_pool_size>
+    {{- end }}
 
     <!-- Optional. Maximum number of keys allowed for a single NIO selector.
          If more keys have to be processed, new temporary selectors will be
@@ -2890,9 +3068,13 @@
          The base number of selectors is determined by the <selector_pool_size>
          setting.
          Default: 0. -->
+    {{- if (quote .selectorMaxLoad | empty) }}         
     <!--
     <selector_max_load>1000</selector_max_load>
     -->
+    {{- else }}
+    <selector_max_load>{{ .selectorMaxLoad }}</selector_max_load>
+    {{- end }}
 
     <!--
          Optional. Number of threads used to parallelize the implementation
@@ -2901,9 +3083,13 @@
          may be heavy under high update activity; hence, on multiprocessor
          machines, allocating multiple threads for this task may be beneficial.
          Default: 1. -->
+    {{- if (quote .timerPoolSize | empty) }}
     <!--
     <timer_pool_size>2</timer_pool_size>
     -->
+    {{- else }}
+    <timer_pool_size>{{ .timerPoolSize }}</timer_pool_size>
+    {{- end }}
 
     <!--
          Optional. Size of the "EVENTS" internal thread pool, which is devoted
@@ -2913,9 +3099,13 @@
          multiprocessor machines, allocating multiple threads for this task
          may be beneficial.
          Default: The number of available total cores, as detected by the JVM. -->
+    {{- if (quote .eventsPoolSize | empty) }}
     <!--
     <events_pool_size>10</events_pool_size>
     -->
+    {{- else }}
+    <events_pool_size>{{ .eventsPoolSize }}</events_pool_size>
+    {{- end }}
 
     <!--
          Optional. Size of the "SNAPSHOT" internal thread pool, which is devoted
@@ -2926,9 +3116,13 @@
          may be beneficial.
          Default: The number of available total cores, as detected by the JVM,
          or 10, if the number of cores is less. -->
+    {{- if (quote .snapshotPoolSize | empty) }}
     <!--
     <snapshot_pool_size>10</snapshot_pool_size>
     -->
+    {{- else }}
+    <snapshot_pool_size>{{ .snapshotPoolSize }}</snapshot_pool_size>
+    {{- end }}
 
     <!--
          Optional. Size of the "PUMP" internal thread pool, which is devoted
@@ -2938,9 +3132,13 @@
          multiprocessor machines, allocating multiple threads for this task
          may be beneficial.
          Default: The number of available total cores, as detected by the JVM. -->
+    {{- if (quote .pumpPoolSize | empty) }}
     <!--
     <pump_pool_size>10</pump_pool_size>
     -->
+    {{- else }}
+    <pump_pool_size>{{ .pumpPoolSize }}</pump_pool_size>
+    {{- end }}
 
     <!--
         Optional. Maximum number of tasks allowed to be queued to enter
@@ -2952,9 +3150,13 @@
         a CPU shortage due to a huge streaming activity.
         A negative value disables the check.
         Default: -1. -->
+    {{- if (quote .pumpPoolMaxQueue | empty) }}        
     <!--
     <pump_pool_max_queue>1000</pump_pool_max_queue>
     -->
+    {{- else }}
+    <pump_pool_max_queue>{{ .pumpPoolMaxQueue }}</pump_pool_max_queue>
+    {{- end }}
 
     <!--
         Optional. Maximum number of threads allowed for the "SERVER" internal
@@ -2977,9 +3179,13 @@
         templates provided in the In-Process Adapter SDK for details.
         A zero value means a potentially unlimited number of threads.
         Default: 1000. -->
+    {{- if (quote .serverPoolMaxSize | empty) }}
     <!--
     <server_pool_max_size>100</server_pool_max_size>
     -->
+    {{- else }}
+    <server_pool_max_size>{{ .serverPoolMaxSize }}</server_pool_max_size>
+    {{- end }}
 
     <!--
         Optional, but mandatory if "server_pool_max_size" is set to 0.
@@ -2998,9 +3204,13 @@
         Default: 10, if "server_pool_max_size" is not defined;
         otherwise, the same as "server_pool_max_size", unless the latter
         is set to 0, i.e. unlimited, in which case this setting is mandatory. -->
+    {{- if (quote .serverPoolMaxFree | empty) }}
     <!--
     <server_pool_max_free>0</server_pool_max_free>
     -->
+    {{- else }}
+    <server_pool_max_free>{{ .serverPoolMaxFree }}</server_pool_max_free> 
+    {{- end }}
 
     <!--
         Optional. Maximum number of tasks allowed to be queued to enter
@@ -3018,9 +3228,13 @@
         is not included in the check.
         A negative value disables the check.
         Default: 100. -->
+    {{- if (quote .serverPoolMaxQueue | empty) }}
     <!--
     <server_pool_max_queue>-1</server_pool_max_queue>
     -->
+    {{- else }}
+    <server_pool_max_queue>{{ .serverPoolMaxQueue }}</server_pool_max_queue>
+    {{- end }}
 
     <!--
         Optional. Maximum number of threads allowed for the "ACCEPT" internal
@@ -3038,9 +3252,13 @@
         A zero value means a potentially unlimited number of threads.
         Default: The number of available total cores, as detected by the JVM,
         which is also the minimum number of threads left in the pool. -->
+    {{- if (quote .acceptPoolMaxSize | empty) }}
     <!--
     <accept_pool_max_size>100</accept_pool_max_size>
     -->
+    {{- else }}
+    <accept_pool_max_size>{{ .acceptPoolMaxSize }}</accept_pool_max_size>
+    {{- end }}
 
     <!--
         Optional. Maximum number of tasks allowed to be queued to enter
@@ -3056,9 +3274,13 @@
         shortage during (or caused by) a high client connection activity.
         A negative value disables the check.
         Default: -1. -->
+    {{- if (quote .acceptPoolMaxQueue | empty) }}
     <!--
     <accept_pool_max_queue>100</accept_pool_max_queue>
     -->
+    {{- else }}
+    <accept_pool_max_queue>{{ .acceptPoolMaxQueue }}</accept_pool_max_queue>
+    {{- end }}
 
     <!--
         Optional. Size of the "TLS-SSL HANDSHAKE" internal pool, which is
@@ -3072,9 +3294,13 @@
         available cores.
         Default: Half the number of available total cores, as detected by the JVM
         (obviously, if there is only one core, the default will be 1). -->
+    {{- if (quote .handshakePoolSize | empty) }}        
     <!--
     <handshake_pool_size>10</handshake_pool_size>
     -->
+    {{- else }}
+    <handshake_pool_size>{{ .handshakePoolSize }}</handshake_pool_size>
+    {{- end }}
 
     <!--
         Optional. Maximum number of tasks allowed to be queued to enter the
@@ -3099,9 +3325,13 @@
         no backpressure action will take place.
         A negative value disables the check.
         Default: 100. -->
+    {{- if (quote .handshakePoolMaxQueue | empty) }}  
     <!--
     <handshake_pool_max_queue>-1</handshake_pool_max_queue>
     -->
+    {{- else }}
+    <handshake_pool_max_queue>{{ .handshakePoolMaxQueue }}</handshake_pool_max_queue>    
+    {{- end }}     
 
     <!--
         Optional. Maximum number of threads allowed for the
@@ -3111,18 +3341,26 @@
         a blocking behavior in some cases.
         A zero value means a potentially unlimited number of threads.
         Default: The same as configured for the SERVER thread pool. -->
+    {{- if (quote .httpsAuthPoolMaxSize | empty) }}
     <!--
     <https_auth_pool_max_size>10</https_auth_pool_max_size>
     -->
+    {{- else }}
+    <https_auth_pool_max_size>{{ .httpsAuthPoolMaxSize }}</https_auth_pool_max_size>
+    {{- end }}
 
     <!--
         Optional. Maximum number of idle threads allowed for the
         "TLS-SSL AUTHENTICATION" internal pool.
         It behaves in the same way as the "server_pool_max_free" setting.
         Default: The same as configured for the SERVER thread pool. -->
+    {{- if (quote .httpsAuthPoolMaxFree | empty) }}
     <!--
     <https_auth_pool_max_free>0</https_auth_pool_max_free>
     -->
+    {{- else }}
+    <https_auth_pool_max_free>{{ .httpsAuthPoolMaxFree }}</https_auth_pool_max_free>
+    {{- end }}
 
     <!--
         Optional. Maximum number of tasks allowed to be queued to enter
@@ -3134,9 +3372,13 @@
         (see <use_client_auth> and <force_client_auth>).
         A negative value disables the check.
         Default: 100. -->
+    {{- if (quote .httpsAuthPoolMaxQueue | empty) }}  
     <!--
     <https_auth_pool_max_queue>-1</https_auth_pool_max_queue>
     -->
+    {{- else }}    
+    <https_auth_pool_max_queue>{{ .httpsAuthPoolMaxQueue }}</https_auth_pool_max_queue>
+    {{- end }}
 
     <!--
         Optional. Maximum number of sessions that can be left in "prestarted"
@@ -3158,9 +3400,13 @@
         from affecting the accept loop of CONTROL_ONLY ports in https.
         A negative value disables the check.
         Default: -1. -->
+    {{- if (quote .prestartedMaxQueue | empty) }}
     <!--
     <prestarted_max_queue>1000</prestarted_max_queue>
     -->
+    {{- else }}
+    <prestarted_max_queue>{{ .prestartedMaxQueue }}</prestarted_max_queue>
+    {{- end }}
 
     <!--
         Optional. Policy to be adopted in order to manage the extraction
@@ -3180,9 +3426,15 @@
              lead to poor scaling in case many clients subscribe to the same
              item.
         Default: Y. -->
+    {{- if (quote .forceEarlyConversions | empty) }}
     <!--
     <force_early_conversions>N</force_early_conversions>
     -->
+    {{- else }}
+    <force_early_conversions>{{ .forceEarlyConversions | ternary "Y" "N" }}</force_early_conversions>
+    {{- end }}
+
+{{- end }}    
 
 </lightstreamer_conf>
 {{- end -}}

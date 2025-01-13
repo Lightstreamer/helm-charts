@@ -38,9 +38,11 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
           {{- range $key, $value := .Values.servers }}
+          {{- if $value.enabled }}
             - name: {{ $key }}
               containerPort: {{ $value.port }}
               protocol: TCP
+          {{- end }}
           {{- end }}
           livenessProbe:
              {{- toYaml .Values.livenessProbe | nindent 12 }}
@@ -65,11 +67,20 @@ spec:
                   key: {{ $value.password.secretKeyRef.key }}
           {{- end }}
           {{- end }}
+          {{- with .Values.license.enterprise.onlinePasswordSecretRef }}
+            - name: ENTERPRISE_LICENSE_{{ .key | upper | replace "-" "_" }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .name }}
+                  key: {{ .key }}
+          {{- end}}
           volumeMounts:
             - name: config
               mountPath: /lightstreamer/conf
-              # mountPath: /lightstreamer/conf/lightstreamer_conf.xml
-              # subPath: lightstreamer_conf.xml
+          {{- with .Values.errorPageRef }}
+            - name: error-page
+              mountPath: /lightstreamer/conf/error-page
+          {{- end }}
           {{- range $key, $value := .Values.keyStores }}
             - name: keystore-{{ $key }}
               mountPath: /lightstreamer/conf/keystore/{{ $key }}
@@ -78,10 +89,22 @@ spec:
             - name: truststore-{{ $key }}
               mountPath: /lightstreamer/conf/truststore/{{ $key }}
           {{- end }}
+          {{- with .Values.license.enterprise.filePathSecretRef }}
+            - name: enterprise-license
+              mountPath: /lightstreamer/conf/enterprise-license/
+          {{- end}}
+          {{- with .Values.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
       volumes:
         - name: config
           configMap:
             name: {{ include "lightstreamer.name" . }}-configmap
+      {{- with .Values.errorPageRef }}
+        - name: error-page
+          configMap:
+            name: {{ .name }}
+      {{- end }}
       {{- range $key, $value := .Values.keyStores }}
         - name: keystore-{{ $key }}
           secret:
@@ -93,6 +116,14 @@ spec:
           secret:
             secretName: {{ $value.file.secretKeyRef.name }}
       {{- end }}
+      {{- end }}
+      {{- with .Values.license.enterprise.filePathSecretRef }}
+        - name: enterprise-license
+          secret:
+            secretName: {{ .name }}
+      {{- end }}
+      {{- with .Values.volumes }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:

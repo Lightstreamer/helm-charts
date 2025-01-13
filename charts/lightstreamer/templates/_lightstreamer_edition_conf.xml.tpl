@@ -19,11 +19,10 @@
   =================================
 -->
 
-{{- with $.Values.edition }}
    <!-- Configure the edition, the optional features, and the type of license
         that should be used to run Lightstreamer Server. -->
    <license>
-   {{- with .license }}
+   {{- with $.Values.license }}
 
       <!-- #########################################
            CONFIGURE YOUR LIGHTSTREAMER EDITION HERE
@@ -66,7 +65,7 @@
            IF YOU CHOSE ENTERPRISE EDITION
            ############################### -->
       <enterprise_edition_details>
-      {{- with .enterpriseEditionDetails }}
+      {{- with .enterprise }}
 
          <!-- Choose the type of ENTERPRISE license.
               Can be one of the following:
@@ -101,14 +100,18 @@
               Password used for validation of online licenses.
               Leave blank if <contract_id> set to DEMO or <license_validation>
               set to FILE. -->
-         <online_password></online_password>
+         {{- with .onlinePasswordSecretRef}} 
+         <online_password>$env.ENTERPRISE_LICENSE_{{ .key | upper | replace "-" "_" }}</online_password>
+         {{- end }}
 
          <!-- Used only if <license_validation> above set to FILE.
               Cumulative. Path and name of the license file, relative to the conf
               directory. If multiple occurrences of this element are supplied,
               the files are all evaluated and the first acceptable one is considered.
               Example: mylicensefile.lic -->
-         <file_path></file_path>
+         {{- with .filePathSecretRef }}
+         <file_path>enterprise-license/{{ .key }}</file_path>
+         {{- end }}
 
          <!-- Restrict the feature set with respect to the license in use.
               Can be one of the following:
@@ -124,7 +127,6 @@
       <!-- Audit logs are produced for Per-User Licenses only.
            See the README.TXT file in the audit directory for full details. -->
       <audit_logs>
-      {{- with .auditLogs }}
 
          <!-- Path of the directory in which to store the audit log files,
               relative to the conf directory.
@@ -148,9 +150,8 @@
                    - https://service.lightstreamer.com/
               - N: Do not perform automatic audit log upload; if audit logs are
                    required by license terms, they must be delivered manually. -->
-         <automatic_upload>{{ .enableAutomaticUpload | default false | ternary "Y" "N" }}</automatic_upload>
+         <automatic_upload>{{ .enableAutomaticAuditLogUpload | default false | ternary "Y" "N" }}</automatic_upload>
 
-      {{- end}}
       </audit_logs>
 
       <!-- CONFIGURATION OF OPTIONAL FEATURES
@@ -334,15 +335,15 @@
         Several methods are provided for the proxy configuration, including
         PAC files, auto-discovery, and direct HTTP and SOCKS configuration. -->
    <proxy>
-   {{- with .proxy }}
+   {{- with $.Values.proxy }}
 
       <!-- Cumulative. HTTP Proxy Server configuration.
            If multiple occurrences of <http_proxy> are supplied, the proxies
            are all checked and the first acceptable one is used.
            If any <socks_proxy> element is configured too, it is checked
            in parallel with the <http_proxy> elements. -->
+      {{- range .httpProxy }}
       <http_proxy>
-      {{- with .httpProxy }}
 
          <!-- Hostname or IP address of the proxy server.
               Example: proxy.mycompany.com
@@ -362,16 +363,16 @@
          <!-- User password if proxy authentication is required. -->
          <proxy_password></proxy_password>
 
-      {{- end }}
       </http_proxy>
+      {{- end }}
 
       <!-- Cumulative. SOCKS Proxy Server configuration.
            If multiple occurrences of <socks_proxy> are supplied, the servers
            are all checked and the first acceptable one is used.
            If any <http_proxy> element is configured too, it is checked
            in parallel with the <socks_proxy> elements. -->
+      {{- range .socksProxy }}
       <socks_proxy>
-      {{- with .socksProxy }}
 
          <!-- Host name or IP address of the SOCKS server.
               Example: socks.mycompany.com
@@ -394,9 +395,9 @@
 
          <!-- User password if proxy authentication is required. -->
          <proxy_password></proxy_password>
-
-      {{- end }}
+      
       </socks_proxy>
+      {{- end }}
 
       <!-- Configure one or multiple proxy auto-config (PAC) files, for simpler
            proxy configuration. -->
@@ -432,9 +433,8 @@
 
     <!-- Optional. If set and not empty, modifies the behavior of the
          variable-expansion feature in this configuration file (see below). -->
-    <env_prefix></env_prefix>
+    <env_prefix>env.</env_prefix>
 
-{{- end }}
 </lightstreamer_edition_conf>
 
 <!-- A very simple variable-expansion feature is available for this file.

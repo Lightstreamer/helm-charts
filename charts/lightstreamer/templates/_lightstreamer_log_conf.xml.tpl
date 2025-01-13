@@ -100,7 +100,7 @@ Create the Lightstreamer logging configuration file
     -->
     {{- end }}
     <encoder>
-      <pattern>{{ $val.pattern }}</pattern>
+      <pattern>{{ $val.pattern | replace "<" "&lt;" | replace ">" "&gt;" }}</pattern>
     </encoder>
   </appender>
   {{- end }}
