@@ -55,7 +55,7 @@ service:
   type: LoadBalancer
   # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
   port: 8088
-  targetPort: server1
+  targetPort: httpServer
 
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
@@ -74,106 +74,151 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
-edition:
-  license:
-    # Lightstreamer edition to use.
-    # To know full details, open the Welcome Page or the Monitoring Dashboard
-    # (Edition tab) of your running Lightstreamer Server.
+
+# -- Configure the edition, the optional features, and the type of license 
+# that should be used to run Lightstreamer Server.
+license:
+  # -- Lightstreamer edition to use.
+  # To know full details, open the Welcome Page or the Monitoring Dashboard
+  # (Edition tab) of your running Lightstreamer Server.
+  # Can be one of the following:
+  #  - COMMUNITY
+  #  - ENTERPRISE
+  # edition: ENTERPRISE
+  edition: COMMUNITY
+
+  # -- If you chose COMMUNITY edition, you can set the following options:
+  enabledCommunityEditionClientApi: javascript_client
+
+  # -- Configure the ENTERPRISE edition
+  enterprise:
+    # -- The type of the ENTERPRSE edition.
+    #  Can be one of the following:
+    #  - DEMO
+    #  - EVALUATION
+    #  - STARTUP
+    #  - NON-PRODUCTION-LIMITED
+    #  - NON-PRODUCTION-FULL
+    #  - PRODUCTION
+    #  - HOT-STANDBY
+    # licenseType: EVALUATION
+    licenseType: DEMO
+    # -- Identifier of the contract in place.
+    # Use "DEMO" to run with the embedded Demo license.
+    # contractId: E340547130
+    contractId: DEMO
+    # -- Choose between online (cloud-based) and file-based license validation.
     # Can be one of the following:
-    #  - COMMUNITY
-    #  - ENTERPRISE
-    edition: ENTERPRISE
+    # - ONLINE
+    #   The host names below must be reachable on port 443:
+    #   - https://clm1.lightstreamer.com/
+    #   - https://clm2.lightstreamer.com/
+    # - FILE
+    #   Based on `license.enterprise.licenseType`, one or both the values are possible.
+    #   For EVALUATION and STARTUP: ONLINE is mandatory.
+    #   For PRODUCTION, HOT-STANDBY, NON-PRODUCTION-FULL, and NON-PRODUCTION-LIMITED:
+    #   you can choose between ONLINE and FILE.
+    #   For DEMO: the value is ignored, as no validation is done.
+    licenseValidation: ONLINE
+    # -- Used only if `license.enterprise.licenseValidation` set to "ONLINE".
+    # Secret name and key where the password used for validation of online 
+    # licenses is stored.
+    # Leave blank if `license.enterprise.contract_id` set to "DEMO" or 
+    # `license.enterprise.licenseValidation` set to "FILE".
+    onlinePasswordSecretRef:
+      name: online-license
+      key: password
+    # -- Used only if `license.enterprise.licenseValidation` set to "FILE".
+    # Secret name and key where the license file is stored.
+    filePathSecretRef:
+      name: license-secret
+      key: license
+    # -- Restrict the feature set with respect to the license in use.
+    # If enabled, use the feature set detailed in the "optional_features" key.
+    # If a required feature is not allowed by the license in use, the server will not start.
+    # If not enabled, use the feature set specified by the license in use.
+    enableRestrictedFeaturesSet: false
 
-    # If you chose COMMUNITY edition, you can set the following options:
-    enabledCommunityEditionClientApi: javascript_client
+    # -- In case of file-based license validation, this element allows to
+    # activate periodic automatic upload. This makes it much easier for
+    # the systems admins to deliver the logs, as contractually agreed.
+    # In case of online license validation, the audit logs are always
+    # automatically uploaded to the Online License Manager, irrespective
+    # of this element.
+    # If enabled, the th following host name must be reachable on port 443:
+    #      - https://service.lightstreamer.com/
+    # If not enabled, audit logs myst be delivered manually if required by
+    # license terms.
+    enableAutomaticAuditLogUpload: false
 
-    # If yoy chose ENTERPRISE edition, you can set the following options:
-    enterpriseEditionDetails:
-      # The type of the ENTERPRSE license
-      licenseType: DEMO
-      # Identifier of the contract in place.
-      # Use DEMO  to run with the embedded Demo license.
-      contractId: DEMO
-      # Choose between online (cloud-based) and file-based license validation.
-      # Can be one of the following:
-      # - ONLINE
-      #   The host names below must be reachable on port 443:
-      #   - https://clm1.lightstreamer.com/
-      #   - https://clm2.lightstreamer.com/
-      # - FILE
-      #   Based on <license_type> above, one or both the values are possible.
-      #   For EVALUATION and STARTUP: ONLINE is mandatory.
-      #   For PRODUCTION, HOT-STANDBY, NON-PRODUCTION-FULL, and NON-PRODUCTION-LIMITED:
-      #   you can choose between ONLINE and FILE.
-      #  For DEMO: the value is ignored, as no validation is done.
-      licenseValidation: ONLINE
-      # Used only if <license_validation> above set to ONLINE.
-      # Password used for validation of online licenses.
-      # Leave blank if "contract_id" set to DEMO or "license_validation" set to FILE.
-      onlinePassword: ""
-      # Used only if "license_validation" above set to FILE.
-      # Cumulative. Path and name of the license file, relative to the conf
-      # directory. If multiple occurrences of this element are supplied,
-      # the files are all evaluated and the first acceptable one is considered.
-      # Example: mylicensefile.lic
-      filePath:
-      # Restrict the feature set with respect to the license in use.
-      # If enabled, use the feature set detailed in the "optional_features" entry below.
-      # If a required feature is not allowed by the license in use, the server will not start
-      # If not enabled, use the feature set specified by the license in use.
-      enableRestrictedFeaturesSet: false
+  optionalFeatures:
+    enableMpn: false
+    maxDownstreamRate: 1
+    enableBandwidthControl: false
+    enableTlsSsl: false
+    enableJmx: false
+    enableJavascriptClient: false
+    enableNodeJsClient: false
+    enableAndroidClient: false
+    enableIOSClient: false
+    enableFlexClient: false
+    enableSilverlightClient: false
+    enableJavaSEClient: false
+    enablePythonClient: false
+    enableDotNETStandardClient: false
+    enableMacOSClient: false
+    enableTvOSClient: false
+    enableWatchOSClient: false
+    enableBlackBerryClient: false
+    enableJavaMEClient: false
+    enableFlashClient: false
+    enableGenericClient: false
 
-    auditLogs:
-      path:
-      # enableAutomaticUpload: true
+  enableAutomaticUpdateCheck: true
 
-    optionalFeatures:
-      enableMpn: false
-      maxDownstreamRate: 1
-      enableBandwidthControl: false
-      enableTlsSsl: false
-      enableJmx: false
-      enableJavascriptClient: false
-      enableNodeJsClient: false
-      enableAndroidClient: false
-      enableIOSClient: false
-      enableFlexClient: false
-      enableSilverlightClient: false
-      enableJavaSEClient: false
-      enablePythonClient: false
-      enableDotNETStandardClient: false
-      enableMacOSClient: false
-      enableTvOSClient: false
-      enableWatchOSClient: false
-      enableBlackBerryClient: false
-      enableJavaMEClient: false
-      enableFlashClient: false
-      enableGenericClient: false
-
-    enableAutomaticUpdateCheck: false
-
-  proxy:
-    httpProxy:
-      host:
-      port: 8080
-      scheme:
-      user:
-      password:
-    socksProxy:
-      host:
-      port:
-      version: SOCKS5
-      user:
-      password:
-    pacFiles:
-      fileUrl:
-      filePath: 
-    enableProxyAutodiscovery: true
-    networkInterface:
-    
-
-
-
+# -- Configure a proxy server for outbound Internet access, if necessary.
+# Internet access is needed, depending on the above configuration,
+# to reach the Online License Manager, to upload audit logs,
+# and to check for software updates.
+# The host names below must be reachable from the proxy on port 443:
+# - https://clm1.lightstreamer.com/    (depending on the configuration)
+# - https://clm2.lightstreamer.com/    (depending on the configuration)
+# - https://service.lightstreamer.com/ (regardless of the configuration)
+# Several methods are provided for the proxy configuration, including
+# PAC files, auto-discovery, and direct HTTP and SOCKS configuration.
+proxy:
+  httpProxy:
+  #   - host:
+  #     port: 8080
+  #     scheme:
+  #     user:
+  #     password:
+  #   - host:
+  #     port: 8081
+  #     scheme:
+  #     user:
+  #     password:
+  # socksProxy:
+  #   - host:
+  #     port:
+  #     version: SOCKS5
+  #     user:
+  #     password:
+  #   - host:
+  #     port:
+  #     version: SOCKS5
+  #     user:
+  #     password:
+  pacFiles:
+    fileUrl:
+    filePath: 
+  # -- In case no proxy configuration is provided or the provided
+  # configuration does not work, automatic proxy discovery is
+  # attempted (via system environment check and WPAD).
+  enableProxyAutodiscovery: false
+  # -- Specifies a NIC to use to access the external services, with or
+  # without a proxy.
+  networkInterface:
 
 logging:
   appenders:
@@ -215,7 +260,7 @@ logging:
     lightstreamerMonitorTAB:
       appenders:
         - console
-      level: INFO
+      level: ERROR
 
     # The following is the base logger of all logging messages printed by
     # Lightstreamer Kernel (with a few exceptions).
@@ -237,7 +282,7 @@ logging:
     lightstreamerLogger:
       appenders:
         - console
-      level: INFO
+      level: TRACE
 
       # The following subloggers are used to separate logging messages in families
       subLoggers:
@@ -248,7 +293,7 @@ logging:
         # Logging of license check phase.
         # At DEBUG level, check details and error details can be found in case
         # of license check failure.
-        lightstreamerLogger.license: INFO
+        lightstreamerLogger.license: TRACE
         # Logging of background activities and related configuration and issues
         lightstreamerLogger.kernel: INFO
         # Logging of external services activity.
@@ -415,6 +460,7 @@ logging:
     io.netty:
       appenders:
         - console
+      level: ERROR
     org.codehaus.janino:
       appenders:
         - console
@@ -461,7 +507,8 @@ logging:
 
 # HTTP/HTTPS server configuration
 servers:
-  server1:
+  httpServer:
+    enabled: true
     name: "Lightstreamer HTTP Server"
     port: 8080
     protocol: http
@@ -483,8 +530,8 @@ servers:
       # skipLocalForwards: 2
       # logForwards: false
 
-  server2:
-    # enabled: false
+  httpsServer:
+    enabled: false
     name: "Lightstreamer HTTPS Server"
     port: 8081
     protocol: https
@@ -500,7 +547,7 @@ servers:
     # listeningInterface: 200.0.0.1
     clientIdentification:
       private: true
-      enableProxyProtocol: true
+      enableProxyProtocol: false
       proxyProtocolTimeoutMillis: 3000
       # skipLocalForwards: 2
       logForwards: true
@@ -607,7 +654,7 @@ security:
   #   altDomain: "my-alt-domain.com"
   serverTokens: FULL
 
-## Logging and management configuration
+# Logging and management configuration
 management:
   # noLoggingIp:
     # - "20.0.0.10"
@@ -660,103 +707,831 @@ management:
     public: false
     # availableOnAllServers: false
     availableOnServers:
-      - serverRef: server1
+      - serverRef: httpServer
         # jmxTreeVisible: true
-      - serverRef: server1
+      - serverRef: httpsServer
         # jmxTreeVisible: false
     # urlPath: /my_dashboard
     # enableHostnameLookup: false
   healthCheck:
-    # # availableOnAllServers: false
+    availableOnAllServers: true
     availableOnServers:
-      - server1
-      # - server2
+      # - httpServer
+      # - httpsServer
 
-# Push Session configuration
+# -- Push session configuration
 pushSession:
+  # -- Optional. If used, defines one or multiple alternative
+  # url paths for all requests related to the streaming services, which
+  # will be composed by the specified prefix followed by /lightstreamer.
+  # Then it will be possible to instruct the Unified Client SDKs to use
+  # an alternative path by adding its prefix to the supplied Server address.
+  # The specified path prefixes must be absolute.
+  # Note that, regardless of this setting, the standard path, which is
+  # /lightstreamer, is always active.
+  # By supporting dedicated paths, it becomes possible to address different
+  # Server installations with the same hostname, by instructing an
+  # intermediate proxy to forward each client request to the proper place
+  # based on the prefix, even if the prefix is not stripped off by the proxy.
+  # However, this support does not apply to the Internal Web Server
+  # and to the Monitoring Dashboard.
   serviceUrlPrefixes: []
-  # - "/server1"
-  # - "/server1"
+    # - "/server1"
+    # - "/server1ws"
+  # -- Mandatory. Maximum size of HTTP streaming responses; when the maximum size is
+  # reached, the connection is closed but the session remains active and
+  # the Client can continue listening to the item update events by binding
+  # the session to another connection.
+  # This setting is also used as the maximum length allowed for poll
+  # responses; if more data were available, they would be kept for the next
+  # poll request.
+  # The Setting is not used for streaming responses over WebSockets.
+  # The optimal content-length for web clients (i.e. browser user agents)
+  # should not be too high, in order to reduce the maximum allocated memory
+  # on the client side. Also note that some browsers, in case of a very
+  # high content-length, may reduce streaming capabilities (noticed with
+  # IE8 and 4GB).
+  # This setting can be overridden by the Clients (some LS client libraries
+  # actually set their own default).
+  # The lowest possible value for the content-length is decided by the Server,
+  # so as to allow the connection to send a minimal amount of data.
   contentLength:
+    # -- (int) Mandatory. Define the maximum size of HTTP streaming
+    # responses (and the upper limit for polling responses)
     default: 4000000
-    specialCases: []
-    #  - value: 100000
-    #    userAgents:
-    #      - "Symbian OS"
-  # maxStreamingMillis: 480000
+    # -- Optional. List of special cases for defining the HTTP content-length
+    # to be used for stream/poll response (through `specialCases[].value`) when 
+    # the user-agent supplied with the reqest contains all the specified string
+    # (through the`specialCases[].userAgentContains`).
+    # Special cases are evaulated in sequence, until one is enabled.
+    specialCases: {}
+      # - value: 100000
+      #   userAgentContains:
+      #     - "Symbian OS"
+  # -- (int) Optional. Maximum lifetime allowed for single HTTP streaming 
+  # responses;when this timeout expires, the connection is closed, though 
+  # the session remains active and the Client can continue listening to 
+  # the UpdateEvents by binding the session to another connection.
+  # Setting this timeout is not needed in normal cases; it is provided
+  # just in case any user agent or intermediary node turned out to be
+  # causing issues on very long-lasting HTTP responses.
+  # The Setting is not applied to polling responses and to streaming
+  # responses over WebSockets.
+  # If not specified, no limit is set; the streaming session duration
+  # will be limited only by the "content_length" setting and, at least,
+  # by the keep-alive message activity.
+  maxStreamingMillis:
   # useChunkedEncoding: false
   # useGizpCompression: false DA VERIFICARE
-  # compressionTthreshold: 0
-  # useEnrichedContentType: true
-  # maxBufferSize: 1000
+  # -- (int) Optional. Size in bytes of the response body below which compression 
+  # is not applied, regardless of the "use_compression" setting, as we guess
+  # that no benefit would come. It is not applied to streaming responses,
+  # which are compressed incrementally.
+  # @default -- 1024
+  compressionThreshold:
+  # -- Optional. Configuration of the content-type to be specified in the
+  # response headers when answering to session requests issued by native
+  # client libraries and custom clients.
+  # If set to `true`, the server will specify the text/enriched content-type. This setting
+  # might be preferable when communicating over certain service providers
+  # that may otherwise buffer streaming connections.
+  # if set to `false`. the server will specify the text/plain content-type.
+  # @default -- true
+  useEnrichedContentType: true
+  # -- (int) Optional. Maximum size for any ItemEventBuffer. It applies to RAW and
+  # COMMAND mode and to any other case of unfiltered subscription.
+  # For filtered subscriptions, it poses an upper limit on the maximum
+  # buffer size that can be granted by the Metadata Adapter or requested
+  # through the subscription parameters. Similarly, it poses an upper
+  # limit to the length of the snapshot that can be sent in DISTINCT mode,
+  # regardless of the value returned by getDistinctSnapshotLength.
+  # See the General Concepts document for details on when these buffers
+  # are used. An excessive use of these buffers may give rise to a
+  # significant memory footprint; to prevent this, a lower size limit
+  # can be set.
+  # Note that the buffer size setting refers to the number of update
+  # events that can be kept in the buffer, hence the consequent memory
+  # usage also depends on the size of the values carried by the enqueued
+  # updates.
+  # As lost updates for unfiltered subscriptions are logged on the
+  # `lightstreamerLogger.pump` logger at INFO level, if a low buffer size
+  # limit is set, it is advisable also setting this logger at WARN level.
+  # Aggregate statistics on lost updates are also provided by the JMX
+  # interface (if available) and by the Internal Monitor.
+  maxBufferSize: 1000
+  # -- (int) Mandatory. Longest time a disconnected session can be kept alive
+  # while waiting for the Client to rebind such session to another
+  # connection, in order to make up for client or network latencies.
+  # Note that the wait is not performed when the session is being closed
+  # because of an explicit disconnection by the client.
+  # If the client has requested an inactivity check on a streaming
+  # connection, the same timeout is also started when no control request
+  # or reverse heartbeat) has been received for the agreed time (again,
+  # in order to make up for client or network latencies). If it expires,
+  # the current streaming connection will be ended and the client
+  # will be requested to rebind to the session (which triggers the
+  # previous case).
   sessionTimeoutMillis: 10000
-  # sessionRecoveryMillis: 13000
-  # maxRecoveryLength: 5000
-  # maxRecoveryPollLength: 0
-  # subscription_timeout_millis: 5000
-  # missingMessageTimeoutMillis: 1000
-  # deltaDelivery: false
-  # defaultDiffOrder: jsonpatch
-  # jsonpatchMinLength: 500
-  # preserveUnfilteredCommandOrdering: true
-  # reusePumpBuffers: true DA VERIFICARE
-streamingMode:
-  # sendbuf: 5000
-  # maxDelayMillis: 30
+  # -- (int) Optional. Longest time a session can be kept alive, after the
+  # interruption of a connection at network level, waiting for the Client
+  # to attempt a recovery. Since a disconnection may affect the Client
+  # without affecting the Server, this also instructs the Server to keep
+  # track of the events already sent for this time duration, to support
+  # unexpected recovery requests.
+  # The client should try a recovery request immediately after detecting
+  # the interruption; but, the request may come later when, for instance,
+  # - there is a network outage of a few seconds and the client must retry,
+  # - the client detects the interruption because of the stalled timeout.
+  # Hence, the optimal value should be tuned according with client-side
+  # timeouts to ensure the better coverage of cases.
+  # Note that recovery is available only for some client versions; if any
+  # other version were involved, the session would be closed immediately.
+  # A 0 value also prevents any accumulation of memory.
+  # @default -- 0
+  sessionRecoveryMillis: 13000
+  # -- (int) Optional. Maximum number of bytes of streaming data, already sent
+  # or being sent to the Client, that should be kept, in order to allow
+  # the Client to recover the session, in case a network issue should
+  # interrupt the streaming connection and prevent the client from
+  # receiving the latest packets.
+  # Note that recovery is available only for some client versions;
+  # if any other version were involved, no data would be kept.
+  # A 0 value also prevents any accumulation of memory.
+  # @default -- the value configured for `pushSessiob.sendbuf`
+  maxRecoveryLength:
+  # -- (int) Optional. Maximum size supported for keeping a polling response,
+  # already sent or being sent to the Client, in order to allow the Client
+  # to recover the session, in case a network issue should interrupt
+  # the polling connection and prevent the client from receiving the
+  # latest response.
+  # Note that recovery is available only for some client versions;
+  # if any other version were involved, no data would be kept.
+  # A 0 value also prevents any accumulation of memory. On the other
+  # hand, a value of -1 relieves any limit.
+  # @default -- -1
+  maxRecoveryPollLength:
+  # -- (int) Optional. Longest time the subscriptions currently in place on a
+  # session can be kept active after the session has been closed,
+  # in order to prevent unsubscriptions from the Data Adapter that would
+  # be immediately followed by new subscriptions in case the client
+  # were just refreshing the page.
+  # As a consequence of this wait, some items might temporarily appear
+  # as being subscribed to, even if no session were using them.
+  # If a session is closed after being kept active because of the
+  # `pushSession.sessionTimeoutMillis` or "pushSession.sessionRecoveryMillis`
+  # setting, the accomplished wait is considered as valid also for the
+  # subscription wait purpose.
+  # @default - the time configured for `pushSession.sessionTimeoutMillis`.
+  subscriptionTimeoutMillis: 5000
+  # -- (int) Optional. Timeout used to ensure the proper ordering of 
+  # client-sent messages, within the specified message sequence, before sending
+  # them to the Metadata Adapter through notifyUserMessage.
+  # In case a client request is late or does not reach the Server,
+  # the next request may be delayed until this timeout expires, while
+  # waiting for the late request to be received; then, the next request
+  # is forwarded and the missing one is discarded with no further recovery
+  # and the client application is notified.
+  # Message ordering does not concern the old synchronous interfaces for
+  # message submission. Ordering and delaying also does not apply to the
+  # special "UNORDERED_MESSAGES" sequence, although, in this case,
+  # discarding of late messages is still possible, in order to ensure
+  # that the client eventually gets a notification.
+  # A high timeout (as the default one) reduces the discarded messages,
+  # by allowing the client library to reissue requests that have got lost.
+  # A low timeout reduces the delays of subsequent messages in case
+  # a request has got lost and can be used if message dropping is
+  # acceptable.
+  # @default -- 30000
+  missingMessageTimeoutMillis:
+  # -- Optional. Configuration of the policy adopted for the delivery of
+  # updates to the clients.
+  # If set to `true`, the Server is allowed to perform "delta delivery"; 
+  # it will send special notifications to notify the clients of values 
+  # that are unchanged with respect to the previous update for the same 
+  # item; moreover, if supported by the client SDK, it may send the
+  # difference between previous and new value for updates which involve 
+  # a small change.
+  # If set to `false`, the Server always sends to the clients the actual
+  # values in the updates; note that any missing field in an update from 
+  # the Data Adapter for an item in MERGE mode is just a shortcut for an
+  # unchanged value, hence the old value will be resent anyway.
+  # Adopting the "delta delivery" is in general more efficient than always
+  # sending the values. On the other hand, checking for unchanged values
+  # and/or evaluating the difference between values puts heavier memory
+  # and processing requirements on the Server.
+  # In case "delta delivery" is adopted, the burden of recalling the
+  # previous values is left to the clients.
+  # This holds for clients based on the "SDK for Generic Client
+  # Development".
+  # This also holds for clients based on some old versions of the provided
+  # SDK libraries, which just forward the special unchanged notifications
+  # through the API interface. Old versions of the .NET, Java SE (but for
+  # the ls_proxy interface layer), Native Flex and Java ME libraries share
+  # this behaviour.
+  # Forcing a redundant delivery would simplify the client code in all
+  # the above cases.
+  # @default -- true.
+  enableDeltaDelivery:
+  # -- (list) Optional. List of algorithms to be tried by default to 
+  # perform the "delta delivery" of changed fields in terms of difference
+  # between previous and new value. This list is applied only on fields of 
+  # items for which no specific information is provided by the Data 
+  # Adapter.
+  # For each value to be sent to some client, the algorithms are tried
+  # in the order specified by this list, until one is found which is
+  # compatible with both client capabilities and the involved values.
+  # Available names are:
+  # - jsonpatch: computes the difference in JSON Patch format, provided 
+  # that the values are valid JSON representations;
+  # - diff_match_patch: computes the difference with 
+  # Google's "diff-match-patch" algorithm ( the result is then serialized 
+  # to the custom "TLCP-diff" format).
+  # Note that trying "diff" algorithms on unsuitable data may waste
+  # resources. For this reason, the default algorithm list is empty,
+  # which means that no algorithm is ever tried by default. The best
+  # way to enforce algorithms is to do that on a field-by-field basis
+  # through the Data Adapter interface.
+  # @default -- []
+  defaultDiffOrders: []
+    # - jsonpatch
+    # - diff_match_patch
+  # -- (any) Optional. Minimum length among two update values (old and new) 
+  # which enables the use of the JSON Patch format to express the new value as
+  # the difference with respect to the old one, when this is possible.
+  # If any value is shorter, it will be assumed that the computation of the
+  # difference in this way will yield no benefit.
+  # The special value `none` is also available. In this case, when the
+  # computation of the difference in JSON Patch format is possible,
+  # it will always be used, regardless of efficiency reasons. This can
+  # be leveraged in special application scenarios, when the clients
+  # require to directly retrieve the updates in the form of JSON Patch
+  # differences.
+  # @default -- 50
+  jsonPatchMinLength:
+  # -- (bool) Optional. Configuration of the update management for items subscribed to
+  # in COMMAND mode with unfiltered dispatching.
+  # If set to `true`, the order in which updates are received from the Data 
+  # Adapter is preserved when sending updates to the clients; in this case, any
+  # frequency limits imposed by license limitations are applied to the whole 
+  # item and may result in a very slow update flow.
+  # If set to `false`, provided that no updates are lost, the Server can send
+  # enqueued updates in whichever order; it must only ensure that, for updates
+  # pertaining to the same key, the order in which updates are received from 
+  # the Data Adapter is preserved; in this case, any frequency limits imposed
+  # by license limitations are applied for each key independently.
+  # No item-level choice is possible. However, setting this flag as `true`
+  # allows for backward compatibility to versions before 4.0, if needed.
+  # @default -- false.
+  preserveUnfilteredCommandOrdering: true
+  # -- (string) Optional. Policy to be adopted for the handling of 
+  # session-related data when a session is closed.
+  # Can be one of the following:
+  # - Y: Internal buffers used for composing and sending updates 
+  #      are kept among session-related data throughout the life of each 
+  #      session; this speeds up update management.
+  # - N: Internal buffers used for composing and sending updates
+  #      are allocated and deallocated on demand; this minimizes the 
+  #      requirements in terms of permanent per-session memory and may be 
+  #      needed in order to handle a very high number of concurrent sessions,
+  #      provided that the per-session update activity is low from memory when
+  #      the session is closed.
+  # - AUTO: The current setting of `pushSession.enableDeltaDelivery` is used;
+  #         in fact, setting `pushSession.enableDeltaDeliver` as `false` may 
+  #         denote  the need for reducing permanent per-session memory.
+  # @default -- AUTO
+  reusePumpBuffers: "AUTO"
+  # -- (int) Optional. Size to be set for the socket TCP send buffer in case of
+  # streaming connections.
+  # The ideal setting should be a compromise between throughput, data aging,
+  # and memory usage. A large value may increase throughput, particularly in
+  # sessions with a high update activity and a high roundtrip time; however, in
+  # case of sudden network congestion, the queue of outbound updates would need
+  # longer to be cleared and these updates would reach the client with 
+  # significant delays. On the other hand, with a small buffer, in case of 
+  # sudden network congestion, most of the ready updates would not be enqueued 
+  # in the TCP send buffer, but inside the Server, where there would be an
+  # opportunity to conflate them with newer updates.
+  # The main problem with a small buffer is when a single update is very big, 
+  # or a big snapshot has to be sent, and the roundtrip time is high; in this
+  # case, the delivery could be slow. However, the Server tries to detect these
+  # cases and temporarily enlarge the buffer.
+  # Hence, the factory setting is very small and it is comparable with a 
+  # typical packet size. There shouldn't be any need for an even smaller value;
+  # also note that the system may force a minimum size.
+  # Higher values should make sense only if the expected throughput is high and
+  # responsive updates are desired.
+  # @default -- 1600.
+  sendbuf:
+  # -- (int) Optional. Longest delay that the Server is allowed to apply to
+  # outgoing updates to collect more updates in the same packet. This value 
+  # sets a trade-off between Server scalability and maximum data latency. It
+  # also sets an upper bound to the maximum update frequency for items not 
+  # subscribed with unlimited or unfiltered frequency.
+  # @default -- 0.
+  maxDelayMillis: 30
+  # -- Mandatory. Default keep-alive configuration
   defaultKeepaliveMillis:
-    randomize: false
+    # -- (int) Mandatory. Longest write inactivity time allowed on the socket.
+    # If no updates have been sent after this time, then a small keep-alive 
+    # message is sent.
+    # Note that the Server also tries other types of checks of the 
+    # availability of current sockets, which don't involve writing data to the 
+    # sockets.
+    # This setting can be overridden by the Client.
     value: 5000
+    # -- Optional. If set to `true`, causes keepalives immediately 
+    # following a data event to be sent after a random, shorter interval
+    # (possibly even shorter than the "min_keepalive_millis" setting). This can
+    # be useful if many sessions subscribe to the same items and updates for 
+    # these items are rare, to avoid that also the keepalives for these 
+    # sessions occur at the same times.
+    # @default -- false
+    randomize: false
+  # -- (int) Mandatory. Lower bound to the keep-alive time requested by a 
+  # Client.
+  # Must be lower than the `pushSession.defaultKeepaliveMillis` setting.
   minKeepaliveMillis: 1000
+  # -- (int) Mandatory. Upper bound to the keep-alive time requested by a 
+  # Client.
+  # Must be greater than the `pushSession.defaultKeepaliveMillis` setting.
   maxKeepaliveMillis: 30000
-smartPollingMode:
-  # minInterpollMillis: 1000
+  # -- (int) Mandatory. Longest time a client is allowed to wait, after 
+  # receivinga poll answer, before issuing the next poll request. Note that, on
+  # exit from a poll request, a session has to be kept active, while waiting 
+  # for the next poll request.
+  # The session keeping time has to be requested by the Client within a poll
+  # request, but the Server, within the response, can notify a shorter time, if
+  # limited by this setting.
+  # The session keeping time for polling may cumulate with the keeping time 
+  # upon disconnection, as set by `pushSession.sessionTimeoutMillis`
   maxPollingMillis: 15000
   maxIdleMillis:
-    randomize: false
+    # -- Mandatory. Longest inactivity time allowed on the socket while 
+    # waiting for updates to be sent to the client through the response to an
+    # asynchronous poll request.
+    # If this time elapses, the request is answered with no data, but the 
+    # client can still rebind to the session with a new poll request.
+    # A shorter inactivity time limit can be requested by the client.
     value: 30000
+    # -- Optional. If set to `true`, causes polls immediately following a data
+    # event to wait for a random, shorter inactivity time. This can be useful 
+    # if many sessions subscribe to the same items and updates for these items 
+    # are rare, to avoid that also the following polls for these sessions occur
+    # at the same times.
+    randomize: false
+  # -- (int) Optional. Shortest time allowed between consecutive polls on a 
+  # session. If the client issues a new polling request and less than this time
+  # has elapsed since the STARTING of the previous polling request, the polling
+  # connection is kept waiting until this time has elapsed.
+  # In fact, neither a `pushSession.minPollingMillis` nor a
+  # `pushSession.maxPollingMillis` setting are provided, hence a client is 
+  # allowed to request 0 for both, so that the real polling frequency will only
+  # be determined by roundtrip times.
+  # However, in order to avoid that a similar case causes too much load on the
+  # Server, this setting can be used as a protection, to limit the polling 
+  # frequency.
+  # @default -- 0
+  minPollingMillis:
+
+# Optional. The configmap name and the key where an HTML page to be returned 
+# upon unexpected request URLs is stored. This applies to URLs in reserved 
+# ranges that have no meaning.
+# If the Internal web server is not enabled, this also applies to all 
+# non-reserved URLs; otherwise, nonexisting non-reserved URLs will get the 
+# HTTP 404 error as usual.
+# The file content should be encoded with the iso-8859-1 charset.
+# The file path is relative to the conf directory.
+# @default -- the proper page is provided by the Server
+errorPageRef: 
+  name: resources
+  key: ErrorPage.html
 
 webServer:
+  # -- Optional. Enabling of the internal web server.
+  # Can be one of the following:
+  # - true:  the Server accepts requests for file resources;
+  # - false: the Server ignores requests for file resources.
+  # @default -- false.
   enabled: true
-  errorPage: "./ErrorPage.html"
-  # pagesDir: "../my_pages"
-  # persistencyMinutes: 1000000
-  # mime_types_config: "./my_mime_types.propertie"
-  # notfound_page: "./404Page.html"
-  useCompression:
-    enabled: false
-    specialCases:
-      - enabled: true
-        contentTypeContains: "text"
-  # compression_threshold: 0
-cluster:
-  # controlLinkAddress: "push1.mycompany.com"
-  # controlLinkMachineName: "push1"
-  # maxSessionDurationMinutes: 5
-load:
-  # maxSessions: 1000
-  # maxMpnDevices: 1000
-  # maxCommonNioBufferAllocation: 0
-  # maxCommonPumpBufferAllocation: 0
-  # selectorPoolSize: 1
-  # selectorMaxLoad: 1000
-  # timerPoolSize: 2
-  # eventsPoolSize: 10
-  # snapshotPoolSize: 10
-  # pumpPoolSize: 10
-  # pumpPoolMaxQueue: 1000
-  # serverPoolMaxSize: 100
-  # serverPoolMaxFree: 0
-  # serverPoolMaxQueue: -1
-  # acceptPoolMaxSize: 100
-  # acceptPoolMaxQueue: 100
-  # handshakePoolSize: 10
-  # handshakePoolMaxQueue: -1
-  # httpsAuthPoolMaxSize: 10
-  # httpsAuthPoolMaxFree: 0
-  # httpsAuthPoolMaxQueue: -1
-  # prestartedMaxQueue: 1000
-  # forceEarlyConversions: false
+  # -- Optional. Path of the file system directory to be used
+  # by the internal web server as the root for URL path mapping.
+  # The path is relative to the conf directory.
+  # Note that the /lightstreamer URL path (as any alternative
+  # paths defined through `pushSession.serviceUrlPrefix`) is reserved,
+  # as well as the base URL path of the Monitoring Dashboard
+  # (see `management.dashboard.urlPath`);
+  # hence, subdirectories of the pages directory with conflicting
+  # names would be ignored.
+  # @default -- ../pages
+  pagesDir:
+  # -- (int) Optional. Caching time, in minutes, to be allowed to the browser
+  # (through the "expires" HTTP header) for all the resources supplied
+  # by the internal web server.
+  # A zero value disables caching by the browser.
+  # @default -- 0
+  persistencyMinutes:
+  # -- Optional. Path of the MIME types configuration property file.
+  # The file path is relative to the conf directory.
+  # @default --  ./mime_types.properties
+  mimeTypesConfig:
+  # -- Optional. Path of an HTML page to be returned as the body upon
+  # a "404 Not Found" answer caused by the request of a nonexistent URL.
+  # The file content should be encoded with the iso-8859-1 charset.
+  # The file path is relative to the conf directory.
+  # @default -- the proper page is provided by the Server
+  notFoundPage:
+  # -- (int) Optional. Size of the resource contents below which compression
+  # is not applied, regardless of the `webServer.compression.default` setting, as we
+  # guess that no overall benefit would be reached.
+  # @default -- 8192
+  compressionThreshold:
+  # -- Optional. Enables the processing of the "/crossdomain.xml" URL,
+  # required by the Flash player in order to allow pages from
+  # a different host to request data to Lightstreamer Server host.
+  # See the "WebSite Controls" section on
+  # http://www.adobe.com/devnet/flashplayer/articles/flash_player_9_security.pdf
+  # for details on the contents of the document to be returned.
+  # Can be one of the following:
+  # - true:  The Server accepts requests for "/crossdomain.xml";
+  #          the file configured through the "flex_crossdomain_path"
+  #          setting is returned.
+  #          Setting the internal web server enabling setting as "Y"
+  #          is not needed; note that if the internal web server is
+  #          enabled, the processing of the "/crossdomain.xml" URL is
+  #          different than the processing of the other URLs.
+  # - false: No special processing for the "/crossdomain.xml" requests
+  #          is performed.
+  #          Note that if the internal web server is enabled, then the
+  #          processing of the "/crossdomain.xml" URL is performed as for
+  #          any other URL (i.e. a file named "crossdomain.xml" is looked
+  #          for in the directory configured as the root for URL path
+  #          mapping).
+  #          Note that "/crossdomain.xml" is also used by the Silverlight
+  #          runtime when "/clientaccesspolicy.xml" is not provided.
+  # @default -- false
+  enableFlexCrossdomain: false
+  # -- Mandatory when `webServer.enableFlexCrossdomain` is true.
+  # Path of the file to be returned upon requests for the
+  # "/crossdomain.xml" URL. It is ignored when
+  # `webServer.enableFlexCrossdomain` is false.
+  #  The file content should be encoded with the iso-8859-1 charset.
+  #  The file path is relative to the conf directory.
+  flexCrossdomainPath:
+  # -- Optional. Enables the processing of the "/clientaccesspolicy.xml"
+  # URL, required by the Silverlight runtime in order to allow pages
+  # from a different host to request data to Lightstreamer Server host.
+  # See http://msdn.microsoft.com/en-us/library/cc838250(VS.95).aspx#crossdomain_communication
+  # for details on the contents of the document to be returned.
+  # Can be one of the following:
+  # - true:  The Server accepts requests for "/clientaccesspolicy.xml";
+  #          the file configured through the "silverlight_accesspolicy_path"
+  #          setting is returned.
+  #          Setting the internal web server enabling setting as "Y"
+  #          is not needed; note that if the internal web server is
+  #          enabled, the processing of the "/clientaccesspolicy.xml" URL
+  #          is different than the processing of the other URLs.
+  # - false: No special processing for the "/clientaccesspolicy.xml"
+  #          requests is performed.
+  #          Note that if the internal web server is enabled, then the
+  #          processing of the "/clientaccesspolicy.xml" URL is performed
+  #          as for any other URL (i.e. a file named "clientaccesspolicy.xml"
+  #          is looked for in the directory configured as the root for
+  #          URL path mapping).
+  # Note that "/crossdomain.xml" is also used by the Silverlight
+  # runtime when "/clientaccesspolicy.xml" is not provided.
+  # @default -- false
+  enableSilverlightAccessPolicy:
+  # -- Mandatory when `web.enableSilverlightAccessPolicy` is true.
+  # Path of the file to be returned upon requests for the
+  # "/clientaccesspolicy.xml" URL. It is ignored when
+  # `web.enableSilverlightAccessPolicy` is false.
+  # The file content should be encoded with the iso-8859-1 charset.
+  # The file path is relative to the conf directory.
+  silverlightAccessPolicyPath:
 
+# -- Optional. Clustering configuration
+cluster:
+  #  -- Optional. Host address to be used for control/poll/rebind connections.
+  #  A numeric IP address can be specified as well. The use of non standard,
+  #  unicode names may not be supported yet by some Client SDKs.
+  #  This setting can be used in case a cluster of Server instances is in
+  #  place, to ensure that all client requests pertaining to the same session
+  #  are issued against the same Server instance. If the Load Balancer can
+  #  ensure that all requests coming from the same client are always routed
+  #  to the same Server instance, then this setting is not needed.
+  #  See the Clustering.pdf document for details.
+  #  Note: When this setting is used, clients based on any Unified Client SDK
+  #  that supports the optional setEarlyWSOpenEnabled method in the
+  #  ConnectionOptions class should invoke this method with false, to improve
+  #  startup performances.
+  #  In case a request comes from a web client and `cluster.controlLinkMachineName`
+  #  is also specified, the latter setting may be applied instead; see the
+  #  comment for `cluster.controlLinkMachineName` for details.
+  #  Support for clustering is an optional feature, available depending
+  #  on Edition and License Type. When not available, this setting is ignored.
+  controlLinkAddress:
+  #  -- (int) Optional. Host name to be used, in addition to the domain name specified
+  #  on the front-end pages, for control/poll/rebind connections coming
+  #  from web clients. This only regards clients based on old versions of the
+  #  Web (Unified API) Client SDK (earlier than 8.0.0). The use of non standard,
+  #  unicode names may not be supported by old versions of the Web Client SDK.
+  #  This setting will override the `cluster.controlLinkAddress` setting when the
+  #  request comes from such Web Client SDKs and the access to Server data pages
+  #  requires that the latter share a common subdomain with application pages.
+  #  This was one of the ways used by these SDKs to request streaming data;
+  #  see the Client Guide in the Web (Unified API) Client SDK for these versions 
+  #  for details on the cases in which this setting will be preferred; note that, 
+  #  in this regard, the behavior will be slightly different when the older HTML 
+  #  Client Library is in use, so as to ensure backward compatibility.
+  #  This option is useful if the subdomain-name part of the hostname is subject
+  #  to changes or if the same machine needs to be addressed through multiple
+  #  subdomain names (e.g. for multihosting purpose).
+  #  The configured name should contain all the portions of the address except
+  #  for the subdomain name. For example, assuming the "mycompany.com" subdomain
+  #  is declared in the front-end pages:
+  #  - If the full address is "push1.mycompany.com", the name should be "push1";
+  #  - If the full address is "push.int2.cnt3.mycompany.com", the name
+  #    should be "push.int2.cnt3".
+  #  Refer to `cluster.controlLinkAddress` for other remarks.
+  #  Support for clustering is an optional feature, available depending
+  #  on Edition and License Type. When not available, this setting is ignored.
+  controlLinkMachineName: 
+  # -- Optional. If set and positive, specifies a maximum duration to be enforced
+  # on each session. If the limit expires, the session is closed and the
+  # client can only establish a new session. This is useful when a cluster
+  # of Server instances is in place, as it leaves the Load Balancer the
+  # opportunity to migrate the new session to a different instance.
+  # See the Clustering document for details on this mechanism and on how
+  # rebalancing can be pursued.
+  maxSessionDurationMinutes:
+
+# -- Optional. Load configuration
+load:
+  # -- (any) Optional. Maximum number of concurrent client sessions allowed.
+  # Requests for new sessions received when this limit is currently
+  # exceeded will be refused; on the other hand, operation on sessions
+  # already established is not limited in any way.
+  # Note that closing and reopening a session on a client when this limit
+  # is currently met may cause the new session request to be refused.
+  # The limit can be set as a simple, heuristic protection from Server
+  # overload.
+  # @default -- unlimited
+  maxSessions:
+  # -- (any) Optional. Maximum number of concurrent MPN devices sessions allowed.
+  # Once this number of devices has been reached, requests to active
+  # mobile push notifications will be refused.
+  # The limit can be set as a simple, heuristic protection from Server
+  # overload from MPN subscriptions.
+  # @default -- unlimited
+  maxMpnDevices:
+  # -- (int) Optional. Limit to the overall size, in bytes, of the buffers
+  # devoted to I/O operations that can be kept allocated for reuse.
+  # If 0, removes any limit to the allocation (which should remain
+  # limited, based on the maximum concurrent buffer needs).
+  # If -1, disables buffer reuse at all and causes all allocated
+  # buffers to be released immediately.
+  # @default -- 200000000
+  maxCommonNioBufferAllocation:
+  #  -- Optional. Number of distinct NIO selectors (each one with its own
+  #  thread) that will share the same operation. Different pools will be
+  #  prepared for different I/O operations and server sockets, which may
+  #  give rise to a significant overall number of selectors.
+  #  Further selectors may be created because of the `load.selectorMaxLoad`
+  #  setting.
+  #  @default -- the number of available total cores, as detected by the JVM
+  maxCommonPumpBufferAllocation:
+  # -- (int) Optional. Number of distinct NIO selectors (each one with its own
+  # thread) that will share the same operation. Different pools will be
+  # prepared for different I/O operations and server sockets, which may
+  # give rise to a significant overall number of selectors.
+  # Further selectors may be created because of the `load.selectorMaxLoad`
+  # setting.
+  # @default -- the number of available total cores, as detected by the JVM
+  selectorPoolSize:
+  # -- (int) Optional. Maximum number of keys allowed for a single NIO selector.
+  # If more keys have to be processed, new temporary selectors will be
+  # created. If the value is 0, then no limitations are applied and extra
+  # selectors will never be created.
+  # The base number of selectors is determined by the <selector_pool_size>
+  # setting.
+  # @default -- 0
+  selectorMaxLoad:
+  # -- (int) Optional. Number of threads used to parallelize the implementation
+  # of the internal timers.
+  # This task does not include blocking operations, but its computation
+  # may be heavy under high update activity; hence, on multiprocessor
+  # machines, allocating multiple threads for this task may be beneficial.
+  # @default -- 1
+  timerPoolSize:
+  # -- (int) Optional. Size of the "EVENTS" internal thread pool, which is devoted
+  # to dispatching the update events received from a Data Adapter to the
+  # proper client sessions, according with each session subscriptions.
+  # This task does not include blocking operations; however, on
+  # multiprocessor machines, allocating multiple threads for this task
+  # may be beneficial.
+  # @default -- the number of available total cores, as detected by the JVM
+  eventsPoolSize:
+  # -- (int) Optional. Size of the "SNAPSHOT" internal thread pool, which is devoted
+  # to dispatching the snapshot events upon new subscriptions from client
+  # sessions.
+  # This task does not include blocking operations; however, on
+  # multiprocessor machines, allocating multiple threads for this task
+  # may be beneficial.
+  # @default -- the number of available total cores, as detected by the JVM,
+  # or 10, if the number of cores is less
+  snapshotPoolSize:
+  # -- (int) Optional. Size of the "PUMP" internal thread pool, which is devoted
+  # to integrating the update events pertaining to each session and to
+  # creating the update commands for the client, whenever needed.
+  # This task does not include blocking operations; however, on
+  # multiprocessor machines, allocating multiple threads for this task
+  # may be beneficial.
+  # @default -- the number of available total cores, as detected by the JVM
+  pumpPoolSize:
+  # -- (int) Optional. Maximum number of tasks allowed to be queued to enter
+  # the "PUMP" thread pool before undertaking backpressure actions.
+  # In particular, the same restrictive actions associated to the
+  # `load.serverPoolMaxQueue` check will be performed (regardless
+  # that `load.serverPoolMaxQueue` itself is set).
+  # A steadily long queue on the PUMP pool may be the consequence of
+  # a CPU shortage due to a huge streaming activity.
+  # A negative value disables the check.
+  # @default -- -1
+  pumpPoolMaxQueue:
+  # -- (int) Optional. Maximum number of threads allowed for the "SERVER" internal
+  # pool, which is devoted to the management of the client requests.
+  # This kind of tasks includes operations that are potentially blocking:
+  # - getHostName;
+  # - socket close;
+  # - calls to a Metadata Adapter that may need to access to some external
+  #   resource (i.e. mainly notifyUser, getItems, getSchema;
+  #   other methods should be implemented as nonblocking, by leaning
+  #   on data cached by notifyUser);
+  # - calls to a Data Adapter that may need to access to some external
+  #   resource (i.e. subscribe and unsubscribe, though it should always
+  #   be possible to implement such calls asynchronously);
+  # - file access by the internal web server, though it should be used
+  #   only in demo and test scenarios.
+  # Note that specific thread pools can optionally be defined in order
+  # to handle some of the tasks that, by default, are handled by the 
+  # SERVER thread pool. They are defined in "adapters.xml"; see the
+  # templates provided in the In-Process Adapter SDK for details.
+  # A zero value means a potentially unlimited number of threads.
+  # @default -- 1000
+  serverPoolMaxSize:
+  # -- (int) Optional, but mandatory if `load.serverPoolMaxSize`is set to 0.
+  # Maximum number of idle threads allowed for the "SERVER" internal
+  # pool, which is devoted to the management of the client requests.
+  # Put in a different way, it is the minimum number of threads that can
+  # be present in the pool. To accomplish this setting, at pool
+  # initialization, suitable idle threads are created; then, each time
+  # a thread becomes idle, it is discarded only if enough threads are
+  # already in the pool.
+  # It must not be greater than `load.serverPoolMaxSize` (unless the latter
+  # is set to 0, i.e. unlimited); however, it may be lower, in case
+  # `load.serverPoolMaxSize` is kept high in order to face request bursts;
+  # a zero value means no idle threads allowed in the pool, though this
+  # is not recommended for performance reasons.
+  # @default -- 10, if `load.serverPoolMaxSize` is not defined;
+  # otherwise, the same as `load.serverPoolMaxSize`, unless the latter
+  # is set to 0, i.e. unlimited, in which case this setting is mandatory
+  serverPoolMaxFree:
+  # -- (int) Optional. Maximum number of tasks allowed to be queued to enter
+  # the "SERVER" thread pool before undertaking backpressure actions.
+  # In particular, as long as the number is exceeded, the creation
+  # of new sessions will be refused and made to fail; additionally,
+  # the same restrictive action on the accept loops associated to the
+  # `load.acceptPoolMaxQueue` check will be performed (regardless
+  # that `load.acceptPoolMaxQueue` itself is set).
+  # On the other hand, if the MPN DEVICE HANDLER pool is defined in the `mpn`
+  # block, it also overrides the SERVER or dedicated pools, but its queue
+  # is not included in the check.
+  # A negative value disables the check.
+  # @default -- 100
+  serverPoolMaxQueue:
+  # -- (int) Optional. Maximum number of threads allowed for the "ACCEPT" internal
+  # pool, which is devoted to the parsing of the client requests.
+  # This task does not include blocking operations; however, on
+  # multiprocessor machines, allocating multiple threads for this task
+  # may be beneficial.
+  # Only in corner cases, it is possible that some operations turn
+  # out to be blocking; in particular:
+  # - getHostName, only if banned hostnames are configured;
+  # - socket close, only if banned hostnames are configured;
+  # - read from the "proxy protocol", only if configured;
+  # - service of requests on a "priority port", only available for
+  #   internal use.
+  # A zero value means a potentially unlimited number of threads.
+  # @default -- the number of available total cores, as detected by the JVM,
+  # which is also the minimum number of threads left in the pool.
+  acceptPoolMaxSize:
+  #  -- (int) Optional. Maximum number of tasks allowed to be queued to enter
+  #  the "ACCEPT" thread pool before undertaking backpressure actions.
+  #  The setting only affects the listening sockets with `servers.http(s)Server.portType`
+  #  configured as CREATE_ONLY. As long as the number is exceeded,
+  #  the accept loops of these sockets will be kept waiting.
+  #  By suspending the accept loop, some SYN packets from the clients may be 
+  #  discarded; the effect may vary depending on the backlog settings.
+  #  Note that, in the absence of sockets configured as CREATE_ONLY,
+  #  no backpressure action will take place.
+  #  A long queue on the ACCEPT pool may be the consequence of a CPU
+  #  shortage during (or caused by) a high client connection activity.
+  #  A negative value disables the check.
+  #  @default -- -1
+  acceptPoolMaxQueue:
+  # -- (int) Optional. Size of the "TLS-SSL HANDSHAKE" internal pool, which is
+  # devoted to the management of operations needed to accomplish TLS/SSL
+  # handshakes on the listening sockets specified through `servers.httpsServer`.
+  # In particular, this pool is only used when the socket is not configured
+  # to request the client certificate (see `security.enableClientAuth` and
+  # `security.enabeForceClientAuth`); in this case, the tasks are not
+  # expected to be blocking. Note that the operation may be CPU-intensive;
+  # hence, it is advisable to set a value smaller than the number of
+  # available cores.
+  # @default -- half the number of available total cores, as detected by the JVM
+  # (obviously, if there is only one core, the default will be 1)
+  handshakePoolSize:
+  # -- (int) Optional. Maximum number of tasks allowed to be queued to enter the
+  # "TLS-SSL HANDSHAKE" thread pool before undertaking backpressure actions.
+  # The setting only regards the listening sockets specified through
+  # `servers.httpsServer` that are not configured to request the client certificate.
+  # More precisely:
+  # - If there are https sockets with `servers.httpsServer.portType` configured as CREATE_ONLY,
+  #   then, as long as the number is exceeded, the accept loops of these sockets
+  #   will be kept waiting.
+  #   By suspending the accept loop, some SYN packets from the clients may be
+  #   discarded; the effect may vary depending on the backlog settings.
+  # - Otherwise, if there are https sockets configured as CONTROL_ONLY and none
+  #   is configured as the default GENERAL_PURPOSE, then, as long as the
+  #   number is exceeded, the accept loops of these sockets will be kept
+  #   waiting instead.
+  #   Additionally, the same action on the accept loops associated to the
+  #   `load.acceptPoolMaxQueue` check will be performed (regardless that
+  #   `load.acceptPoolMaxQueue` itself is set). Note that the latter action
+  #   may affect both http and https sockets.
+  # Note that, in the absence of sockets configured as specified above,
+  # no backpressure action will take place.
+  # A negative value disables the check.
+  # @default -- 100
+  handshakePoolMaxQueue:
+  # -- (int) Optional. Size of the "TLS-SSL AUTHENTICATION" internal pool, which is
+  # used instead of the "TLS-SSL HANDSHAKE" pool for listening sockets that are
+  # configured to request the client certificate. This kind of task may exhibit
+  # a blocking behavior in some cases.
+  # @default -- the same as configured for the SERVER thread pool
+  httpsAuthPoolMaxSize:
+  # -- (int) Optional. Maximum number of idle threads allowed for the
+  # "TLS-SSL AUTHENTICATION" internal pool.
+  # It behaves in the same way as the `load.serverPoolMaxFree` setting.
+  # @default -- the same as configured for the SERVER thread pool
+  httpsAuthPoolMaxFree:
+  # -- (int) Optional. Maximum number of tasks allowed to be queued to enter
+  # the "TLS-SSL AUTHENTICATION" thread pool before undertaking
+  # backpressure actions.
+  # The effect is similar to the more common `load.handShakePoolMaxQueue`,
+  # with the difference that it regards listening sockets specified through
+  # `server.httpsServer` that are configured to request the client certificate
+  # (see `useClientAuth` and `forceClientAuth`).
+  # A negative value disables the check.
+  # @default -- 100
+  httpsAuthPoolMaxQueue:
+  # -- (int) Optional. Maximum number of sessions that can be left in 
+  # "prestarted" state, that is, waiting for the first bind or control 
+  # operation, before undertaking backpressure actions.
+  # In particular, the same restrictive actions associated to the
+  # `load.serverPoolMaxQueue` check will be performed (regardless
+  # that `load.serverPoolMaxQueue` itself is set).
+  # The setting is meant to be used in configurations which define
+  # a CREATE_ONLY port in http and a CONTROL_ONLY port in https.
+  # In these cases, and when a massive client reconnection is occurring,
+  # the number of pending bind operations can grow so much that the
+  # needed TLS handshakes can take arbitrarily long and cause the
+  # clients to time-out and restart session establishment from scratch.
+  # However, consider that the presence of many clients that don't
+  # perform their bind in due time could keep other clients blocked.
+  # Note that, if defined, the setting will also inhibit
+  # `load.handshakePoolMaxQueue` and `load.httpsAuthPoolMaxQueue`
+  # from affecting the accept loop of CONTROL_ONLY ports in https.
+  # A negative value disables the check.
+  # @default -- -1
+  prestartedMaxQueue:
+  # -- Optional. Policy to be adopted in order to manage the extraction
+  # of the field values from the item events and their conversion to
+  # Can be one of the following:
+  # - true:  causes field conversion to be performed before the events
+  #          are dispatched to the various sessions; this may lead to some
+  #          wasted conversions, in case an event is filtered out later by all
+  #          interested clients or in case a field is not subscribed to by any 
+  #          client.
+  #          Note that events which don't provide an iterator (see the Data
+  #          Adapter interface documentation) cannot be managed in this way.
+  # - false: causes field conversion to be performed only as soon as it is
+  #          needed; in this case, as the same event object may be shared by
+  #          many sessions, some synchronization logic is needed and this may
+  #          lead to poor scaling in case many clients subscribe to the same
+  #          item.
+  # @default -- true
+  forceEarlyConversions:
 
 
 resources: {}
@@ -775,11 +1550,13 @@ resources: {}
 livenessProbe:
   httpGet:
     path: /lightstreamer/healthcheck
-    port: server1
+    port: httpServer
+    # scheme: HTTPS
 readinessProbe:
   httpGet:
     path: /lightstreamer/healthcheck
-    port: server1
+    port: httpServer
+    # scheme: HTTPS
 
 #This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
@@ -790,17 +1567,17 @@ autoscaling:
   # targetMemoryUtilizationPercentage: 80
 
 # Additional volumes on the output Deployment definition.
-#volumes: []
-# - name: foo
-#   secret:
-#     secretName: mysecret
-#     optional: false
+volumes:
+- name: pages-dir
+  emptyDir:
+    sizeLimit: 500Mi
+    
 
 # Additional volumeMounts on the output Deployment definition.
-#volumeMounts: []
-# - name: foo
-#   mountPath: "/etc/foo"
-#   readOnly: true
+volumeMounts:
+- name: pages-dir
+  mountPath: "/lightstreamer/mypages"
+  readOnly: true
 
 nodeSelector: {}
 
