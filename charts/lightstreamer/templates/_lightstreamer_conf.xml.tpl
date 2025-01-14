@@ -1149,13 +1149,15 @@
     <no_logging_ip>
 
         <!-- Cumulative. IP address of a Client to exclude from logging. -->
-  {{- range .noLoggingIp }}
+  {{- if .noLoggingIpAddresses }}
+     {{- range .noLoggingIpAddresses }}
         <ip_value>{{ . }}</ip_value>
-  {{- end }}
+     {{- end }}
+  {{- else }}
         <!--
         <ip_value>200.0.0.10</ip_value>
         -->
-
+  {{- end }} 
     </no_logging_ip>
 
     <!-- Optional. Enabling of the inclusion of the user password in the log
@@ -1169,12 +1171,12 @@
          but only at DEBUG level, which is never enabled in the default
          configuration.
          Default: N. -->
-  {{- if hasKey . "showPasswordOnRequestLog" }}
-    <show_password_on_request_log>{{ .showPasswordOnRequestLog | ternary "Y" "N" }}</show_password_on_request_log>
-  {{- else }}
+  {{- if (quote .enablePasswordVisibilityOnRequestLog | empty) }}
     <!--
     <show_password_on_request_log>Y</show_password_on_request_log>
-    -->
+    -->  
+  {{- else }}    
+    <show_password_on_request_log>{{ .enablePasswordVisibilityOnRequestLog | ternary "Y" "N" }}</show_password_on_request_log>
   {{- end }}
 
     <!-- Optional. Threshold time for long Adapter call alerts.
@@ -1186,12 +1188,12 @@
          takes more than this time.
          A 0 value disables the check.
          Default: 1000. -->
-  {{- if hasKey . "unexpectedWaitThresholdMillis" }}
-    <unexpected_wait_threshold_millis>{{ .unexpectedWaitThresholdMillis }}</unexpected_wait_threshold_millis>
-  {{- else }}
+  {{- if (quote .unexpectedWaitThresholdMillis | empty) }}
     <!--
     <unexpected_wait_threshold_millis>1000</unexpected_wait_threshold_millis>
     -->
+  {{- else }}
+    <unexpected_wait_threshold_millis>{{ int .unexpectedWaitThresholdMillis }}</unexpected_wait_threshold_millis>  
   {{- end }}
 
     <!-- Optional. Threshold time for long asynchronous processing alerts.
@@ -1205,10 +1207,12 @@
          threshold on a pool, a warning is logged. Note that warning messages
          can be issued repeatedly. A 0 value disables the check.
          Default: 10000. -->
-  {{- if hasKey . "asyncProcessingThresholdMillis" }}
-    <async_processing_threshold_millis>{{ .asyncProcessingThresholdMillis }}</async_processing_threshold_millis>
+  {{- if (quote .asyncProcessingThresholdMillis | empty) }}
+    <!--
+    <async_processing_threshold_millis>1000</async_processing_threshold_millis> 
+    -->
   {{- else }}
-    <async_processing_threshold_millis>1000</async_processing_threshold_millis>
+    <async_processing_threshold_millis>{{ int .asyncProcessingThresholdMillis }}</async_processing_threshold_millis>
   {{- end }}
 
     <!-- Optional. Threshold wait time for a task enqueued for running on any
@@ -1218,12 +1222,12 @@
          a warning is logged. Note that warning messages can be issued
          repeatedly. A 0 value disables the check.
          Default: 10000. -->
-  {{- if hasKey . "maxTaskWaitMillis" }}
-    <max_task_wait_millis>{{ .maxTaskWaitMillis }}</max_task_wait_millis>
-  {{- else }}
+  {{- if (quote  .maxTaskWaitMillis | empty) }}
     <!--
-    <max_task_wait_millis>10000</max_task_wait_millis>
+    <max_task_wait_millis>0</max_task_wait_millis>
     -->
+  {{- else }}
+    <max_task_wait_millis>{{ int .maxTaskWaitMillis }}</max_task_wait_millis>
   {{- end }}
 
     <!-- Mandatory. Sampling time for internal load statistics (Server
@@ -1232,7 +1236,7 @@
          or can be subscribed to through the internal Monitoring Adapter Set.
          Full JMX features is an optional feature, available depending
          on Edition and License Type. -->
-    <collector_millis>{{ .collectorMillis }}</collector_millis>
+    <collector_millis>{{ int (required "management.collectorMillis must be set" .collectorMillis) }}</collector_millis>
 
     <!-- Mandatory (if you wish to use the provided "stop" script).
          JMX preferences and external access configuration.
@@ -1271,8 +1275,12 @@
                  The optional "ssl" attribute, when set to "Y", enables TLS/SSL
                  communication. Note that this case is not managed by some JMX
                  clients, like jconsole. -->
-      {{- with .port }}
-            <port ssl={{ .ssl | default false | ternary "Y" "N" | quote}}>{{ .value }}</port>
+      {{- if empty .port }}
+        {{- fail "management.jmx.rmiConnector.port must be set"}}
+      {{- else }}
+        {{- with .port }}
+            <port{{- if not (quote .enableSsl | empty) }} ssl={{ .enableSsl | ternary "Y" "N" | quote }}{{- end }}>{{ int (required "management.jmx.rmiConnector.port.value must be set" .value) }}</port>
+        {{- end }}
       {{- end }}
 
             <!-- Optional. TCP port that will be used by the RMI connector for
@@ -1286,7 +1294,9 @@
                  is considered.
                  Default: the same as configured in <port>. -->
       {{- if .dataPort }}
-            <data_port ssl={{ .dataPort.ssl | default false | ternary "Y" "N" | quote }}>{{ .dataPort.value }}</data_port>
+        {{- with .dataPort }}
+            <data_port{{- if not (quote .enableSsl | empty) }} ssl={{ .enableSsl | ternary "Y" "N" | quote }}{{- end }}>{{ int (required "management.jmx.rmiConnector.dataPort.value must be set" .value) }}</data_port>
+        {{- end }}
       {{- else }}
             <!--
             <data_port ssl="N">4444</data_port>
@@ -1322,12 +1332,12 @@
                  - N: Disables the test, but this setting can be overridden by
                       setting <ensure_stopping_service> to Y.
                  Default: Y. -->
-      {{- if hasKey . "testPorts" }}
-            <test_ports>{{ .testPorts | ternary "Y" "N" }}</test_ports>
-      {{- else }}
+      {{- if (quote .enableTestPorts | empty) }}
             <!--
             <test_ports>Y</test_ports>
             -->
+      {{- else }}
+            <test_ports>{{ .enableTestPorts | ternary "Y" "N" }}</test_ports>
       {{- end }}
 
             <!-- Optional. Timeout to be posed on the connection attempts through
@@ -1344,12 +1354,12 @@
                    preventing the connector setup would be ignored.
                  On the other hand, the setting is ignored by the "stop" script.
                  Default: 0. -->
-      {{- if hasKey . "testTimeoutMillis "}}
-            <test_timeout_millis>5000</test_timeout_millis>
-      {{- else }}
+      {{- if (quote .testTimeoutMillis | empty) }}
             <!--
-            <test_timeout_millis>0</test_timeout_millis>
+            <test_timeout_millis>5000</test_timeout_millis>
             -->
+      {{- else }}
+            <test_timeout_millis>{{ int .testTimeoutMillis}}</test_timeout_millis>
       {{- end }}
 
             <!-- Optional. Can be used on a multihomed host to specify the IP
@@ -1393,9 +1403,11 @@
                  Specifies all the cipher suites allowed for the interaction, in case
                  TLS/SSL is enabled for part or all the communication.
                  See notes for <allow_cipher_suite> under <https_server>. -->
+      {{- if .allowCipherSuites }}
         {{- range .allowCipherSuites }}
             <allow_cipher_suite>{{ . }}</allow_cipher_suite>
         {{- end }}
+      {{- else }}
             <!--
             <allow_cipher_suite>TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384</allow_cipher_suite>
             -->
@@ -1405,61 +1417,84 @@
             <!--
             <allow_cipher_suite>........</allow_cipher_suite>
             -->
+      {{- end }}
 
             <!-- Optional and cumulative, but forbidden if <allow_cipher_suite> is used.
                  Pattern to be matched against the names of the enabled cipher suites
                  in order to remove the matching ones from the enabled cipher suites set
                  to be used in case TLS/SSL is enabled for part or all the communication.
                  See notes for <remove_cipher_suites> under <https_server>. -->
+      {{- if .removeCipherSuites }}
         {{- range .removeCipherSuites }}
             <remove_cipher_suites>{{ . }}</remove_cipher_suites>
         {{- end }}
+      {{- else }} 
             <!--
             <remove_cipher_suites>TLS_RSA_</remove_cipher_suites>
             -->
+      {{- end }}
 
             <!-- Optional. Determines which side should express the preference when
                  multiple cipher suites are in common between server and client
                  (in case TLS/SSL is enabled for part or all the communication).
                  See notes for <enforce_server_cipher_suite_preference> under <https_server>.
                  Default: N. -->
+      {{- if .enforceServerCipherSuitePreference }}
         {{- with .enforceServerCipherSuitePreference }}
-            <enforce_server_cipher_suite_preference{{ if hasKey . "order" }} order={{ .order | quote }}{{ end }}>{{ .enabled | default false | ternary "Y" "N" }}</enforce_server_cipher_suite_preference>
+            <enforce_server_cipher_suite_preference{{ if not (quote .order | empty) }} order={{ .order | quote }}{{ end }}>{{ .enabled | default false | ternary "Y" "N" }}</enforce_server_cipher_suite_preference>
         {{- end }}
+      {{- else }}
+            <!--
+            <enforce_server_cipher_suite_preference order="JVM">Y</enforce_server_cipher_suite_preference>      
+            -->
+      {{- end}}
 
             <!-- Optional and cumulative, but forbidden if <remove_protocols> is used.
                  Specifies one or more protocols allowed for the TLS/SSL interaction,
                  in case TLS/SSL is enabled for part or all the communication.
                  See notes for <allow_protocol> under <https_server>. -->
+      {{- if .allowProtocols }}
         {{- range .allowProtocols }}
             <allow_protocol>{{ . }}</allow_protocol>
         {{- end }}
+      {{- else }}
             <!--
             <allow_protocol>TLSv1.2</allow_protocol>
             -->
             <!--
             <allow_protocol>TLSv1.3</allow_protocol>
             -->
+      {{- end }}
 
-        {{- range .removeProtocols }}
             <!-- Optional and cumulative, but forbidden if <allow_protocol> is used.
                  Pattern to be matched against the names of the enabled TLS/SSL
                  protocols in order to remove the matching ones from the enabled
                  protocols set to be used in case TLS/SSL is enabled for part
                  or all the communication.
                  See notes for <remove_protocols> under <https_server>. -->
+      {{- if .removeProtocols }}
+        {{- range .removeProtocols }}
             <remove_protocols>{{ . }}</remove_protocols>
         {{- end }}
+      {{- else }}
+            <!--
+            <remove_protocols>SSL</remove_protocols>
+            -->
+      {{- end }}
 
-        {{ if hasKey . "public" }}
             <!-- Optional. Enabling of the RMI connector access without credentials.
                  Can be one of the following:
                  - Y: requests to the RMI connector are always allowed;
                  - N: requests to the RMI connector are subject to user authentication;
                       the allowed users are set in the "user" elements.
                  Default: N. -->
-            <public>{{ .public | ternary "Y" "N"}}</public>
-        {{- end }}
+      {{- if (quote .enablePublicAccess | empty) }}
+            <!--
+            <public>Y</public>
+            -->
+      {{- else }}
+            <public>{{ .enablePublicAccess | ternary "Y" "N"}}</public>
+      {{- end }}
 
             <!-- Optional and cumulative (but ineffective if "public" is set to "Y").
                  Credentials of the users enabled to access the RMI connector.
@@ -1468,16 +1503,16 @@
                  be supplied in order to allow access through the connector.
                  This is also needed if you wish to use the provided "stop" script;
                  the script will always use the first user supplied. -->
-        {{- if .credentials }}
-          {{- range .credentials}}
+      {{- if .credentials }}
+        {{- range .credentials}}
             <user id={{ .user | quote }} password={{ .password | quote }} />
-          {{- end }}
-        {{- else}}
+        {{- end }}
+      {{- else}}
             <!--
             <user id="other_user" password="other_password" />
             -->
-        {{- end }}
       {{- end }}
+    {{- end }}
         </rmi_connector>
 
         <!-- Optional. Enables Sun/Oracle's JMXMP connector.
@@ -1486,20 +1521,19 @@
              see README.TXT in the JMX SDK for details.
              The remote server will be accessible through the url:
              "service:jmx:jmxmp://<host>:<port>". -->
-      {{- if .jmxmpConnectorPort }}
+    {{- if and .jmxmpConnector .jmxmpConnector.enabled }}
         <jmxmp_connector>
 
             <!-- Mandatory for this block. TCP port on which Sun/Oracle's JMXMP
                  connector will be listening. This is the port that has to be
                  specified in the client access url. -->
-            <port>{{ .jmxmpConnectorPort }}</port>
+            <port>{{ int (required "management.jmx.jmxmpConnector.port must be set" .jmxmpConnector.port) }}</port>
 
         </jmxmp_connector>
-      {{- else }}
+    {{- else }}
         <!--
         <jmxmp_connector>
         -->
-
             <!-- Mandatory for this block. TCP port on which Sun/Oracle's JMXMP
                  connector will be listening. This is the port that has to be
                  specified in the client access url. -->
@@ -1510,7 +1544,7 @@
         <!--
         </jmxmp_connector>
         -->
-      {{- end }}
+    {{- end }}
 
         <!-- Optional. Disabling of the availability of session-related mbeans,
              the ones identified by type="Session". Can be one of the following:
@@ -1526,8 +1560,9 @@
              are continuously created and closed. For this reason, the support is
              disabled by default.
              Default: Y. -->
-    {{- if hasKey . "disableSessionMbeans" }}
-        <disable_session_mbeans>{{ .disableSessionMbeans | ternary "Y" "N"}}</disable_session_mbeans>
+    {{- if .sessionMbeanAvailability }}
+      {{- $values := dict "active" "N" "inactive" "Y" "sampled_statistics_only" "sampled_statistics_only" }}
+        <disable_session_mbeans>{{ required "management.jmx.must.sessionMbeanAvailability be set with a proper value" (get $values .sessionMbeanAvailability) }}</disable_session_mbeans>    
     {{- else }}
         <!--
         <disable_session_mbeans>N</disable_session_mbeans>
@@ -1548,12 +1583,12 @@
                   may be an extremely long list; consider, for instance,
                   'CurrentSessionList' in the ResourceMBean.
              Default: N. -->
-    {{- if hasKey . "disableLongListProperties" }}
-        <disable_long_list_properties>{{ .disableLongListProperties | ternary "Y" "N"}}</disable_long_list_properties>
-    {{- else }}
+    {{- if (quote .enableLongListProperties | empty) }}
         <!--
         <disable_long_list_properties>Y</disable_long_list_properties>
         -->
+    {{- else }}
+        <disable_long_list_properties>{{ .enableLongListProperties | ternary "N" "Y"}}</disable_long_list_properties>
     {{- end }}
   {{- end }}
     </jmx>
@@ -1870,7 +1905,7 @@
 
         <!-- Mandatory for this block. Define the maximum size of HTTP streaming
              responses (and the upper limit for polling responses). -->
-        <default>{{ int .default }}</default>
+        <default>{{ int (required "pushSession.contentLength.default must be set" .default) }}</default>
 
         <!-- Optional and cumulative. Through the "value" attribute, defines the
              HTTP content-length to be used for stream/poll responses (overriding
@@ -1880,12 +1915,16 @@
              until one is enabled. -->
         {{- if .specialCases }}
           {{- range .specialCases }}
-        <special_case value={{ .value | quote }}>
+        <special_case value={{ required "pushSession.specialCases[].value must be set" .value | quote }}>
             <!-- Mandatory and cumulative. Defines a condition on the user-agent
                  supplied with the request, which should include the string
                  specified through the "contains" attribute. -->
-            {{- range .userAgentContains }}     
+            {{- if empty .userAgentContains }}
+               {{- fail "pushSession.specalCases[].userAgentContains must be set" }}
+            {{- else }}
+               {{- range .userAgentContains }}     
             <user_agent contains={{ . | quote }} />
+               {{- end }}
             {{- end }}
         </special_case>
           {{- end }}
@@ -1941,9 +1980,13 @@
          length for the Server is still mandatory and the setting is obeyed
          in order to put a limit to the response length.
          Default: Y. -->
+    {{- if .useChunkedEncoding }}
+    <use_chunked_encoding>{{ .useChunkedEncoding }}</use_chunked_encoding>
+    {{- else }}
     <!--
     <use_chunked_encoding>Y</use_chunked_encoding>
     -->
+    {{- end }}
 
     <!-- Optional. Enabling the use of the "gzip" content encoding,
          as defined by the HTTP 1.1 specifications, for sending the resource
@@ -1964,9 +2007,13 @@
          of the Server performance. Note that bandwidth control and output
          statistics are still based on the non-compressed content.
          Default: AUTO. -->
+    {{- if .useCompression}} 
+    <use_compression>{{ .useCompression }}</use_compression>
+    {{- else }}
     <!--
     <use_compression>N</use_compression>
     -->
+    {{- end }}
 
     <!-- Optional. Size of the response body below which compression is not
          applied, regardless of the "use_compression" setting, as we guess
@@ -1990,12 +2037,12 @@
          that may otherwise buffer streaming connections.
          - N: the server will specify the text/plain content-type.
          Default: Y. -->
-    {{- if (quote .useEnrichedContentType | empty) }}
+    {{- if (quote .enableEnrichedContentType | empty) }}
     <!--
     <use_enriched_content_type>Y</use_enriched_content_type>
     -->
     {{- else }}
-    <use_enriched_content_type>{{ .useEnrichedContentType | ternary "Y" "N" }}</use_enriched_content_type>
+    <use_enriched_content_type>{{ .enableEnrichedContentType | ternary "Y" "N" }}</use_enriched_content_type>
     {{- end }}
 
     <!-- Optional. Maximum size for any ItemEventBuffer. It applies to RAW and
@@ -2038,7 +2085,7 @@
          the current streaming connection will be ended and the client
          will be requested to rebind to the session (which triggers the
          previous case). -->
-    <session_timeout_millis>{{ .sessionTimeoutMillis }}</session_timeout_millis>
+    <session_timeout_millis>{{ int (required "pushSession.sessionTimeoutMillis must be set" .sessionTimeoutMillis) }}</session_timeout_millis>
 
     <!-- Optional. Longest time a session can be kept alive, after the
          interruption of a connection at network level, waiting for the Client
@@ -2228,7 +2275,7 @@
     <jsonpatch_min_length>500</jsonpatch_min_length>
     -->
     {{- else }}
-    <jsonpatch_min_length>{{ .jsonPatchMinLength }}</jsonpatch_min_length>
+    <jsonpatch_min_length>{{ int .jsonPatchMinLength }}</jsonpatch_min_length>
     {{- end }}    
 
     <!-- Optional. Configuration of the update management for items subscribed to
@@ -2340,17 +2387,21 @@
          setting). This can be useful if many sessions subscribe to the same
          items and updates for these items are rare, to avoid that also the
          keepalives for these sessions occur at the same times. -->
-    {{- with .defaultKeepaliveMillis }}
-    <default_keepalive_millis{{ if not (quote .randomize | empty) }} randomize={{ .randomize | ternary "Y" "N" | quote }}{{- end}}>{{ int .value }}</default_keepalive_millis>
-    {{- end }}
+    {{- if empty .defaultKeepaliveMillis }}
+      {{- fail "pushSession.defaultKeepaliveMillis must be set" }}
+    {{- else }}
+      {{- with .defaultKeepaliveMillis }}
+    <default_keepalive_millis{{ if not (quote .randomize | empty) }} randomize={{ .randomize | ternary "Y" "N" | quote }}{{- end}}>{{ int (required "pushSession.defaultKeepaliveMillis.value must be set" .value) }}</default_keepalive_millis>
+      {{- end }}
+    {{- end }} 
 
     <!-- Mandatory. Lower bound to the keep-alive time requested by a Client.
          Must be lower than the "default_keepalive_millis" setting. -->
-    <min_keepalive_millis>{{ int .minKeepaliveMillis }}</min_keepalive_millis>
+    <min_keepalive_millis>{{ int (required "pushSession.minKeepaliveMillis must be set" .minKeepaliveMillis) }}</min_keepalive_millis>
 
     <!-- Mandatory. Upper bound to the keep-alive time requested by a Client.
          Must be greater than the "default_keepalive_millis" setting. -->
-    <max_keepalive_millis>{{ int .maxKeepaliveMillis }}</max_keepalive_millis>
+    <max_keepalive_millis>{{ int (required "pushSession.maxKeepaliveMillis must be set" .maxKeepaliveMillis) }}</max_keepalive_millis>
 
     <!-- SMART-POLLING MODE -->
 
@@ -2363,7 +2414,7 @@
          shorter time, if limited by this setting.
          The session keeping time for polling may cumulate with the keeping
          time upon disconnection, as set by "session_timeout_millis". -->
-    <max_polling_millis>{{  int .maxPollingMillis }}</max_polling_millis>
+    <max_polling_millis>{{ int (required "pushSession.maxPollingMillis must be set" .maxPollingMillis) }}</max_polling_millis>
 
     <!-- Mandatory. Longest inactivity time allowed on the socket while waiting
          for updates to be sent to the client through the response to an
@@ -2376,8 +2427,12 @@
          inactivity time. This can be useful if many sessions subscribe to
          the same items and updates for these items are rare, to avoid that
          also the following polls for these sessions occur at the same times. -->
-    {{- with .maxIdleMillis }}         
-    <max_idle_millis{{ if not (quote .randomize | empty) }} randomize={{ .randomize | ternary "Y" "N" | quote }}{{- end}}>{{ int .value }}</max_idle_millis>
+    {{- if empty .maxIdleMillis }}
+      {{- fail "pushSession.maxIdleMillis must be set" }}
+    {{- else }}         
+      {{- with .maxIdleMillis }}         
+    <max_idle_millis{{ if not (quote .randomize | empty) }} randomize={{ .randomize | ternary "Y" "N" | quote }}{{- end}}>{{ int (required "pushSession.maxIdle.value must be set" .value) }}</max_idle_millis>
+      {{- end }}
     {{- end }}
 
     <!-- Optional. Shortest time allowed between consecutive polls on a
@@ -2393,12 +2448,12 @@
          on the Server, this setting can be used as a protection, to limit the
          polling frequency.
          Default: 0. -->
-    {{- if (quote .minPollingMillis | empty) }}
+    {{- if (quote .minInterPollMillis | empty) }}
     <!--
     <min_interpoll_millis>1000</min_interpoll_millis>
     -->
     {{- else }}
-    <min_interpoll_millis>{{ int .minPollingMillis }}</min_interpoll_millis>
+    <min_interpoll_millis>{{ int .minInterPollMillis }}</min_interpoll_millis>
     {{- end }}        
 {{- end }}
 
@@ -2971,7 +3026,7 @@
     <max_session_duration_minutes>5</max_session_duration_minutes>
     -->
     {{- else }}
-    <max_session_duration_minutes>{{ .maxSessionDurationMinutes }}</max_session_duration_minutes>
+    <max_session_duration_minutes>{{ int .maxSessionDurationMinutes }}</max_session_duration_minutes>
     {{- end }}
 
 {{- end }}
@@ -2997,7 +3052,7 @@
     <max_sessions>1000</max_sessions>
     -->
     {{- else }}
-    <max_sessions>{{ .maxSessions }}</max_sessions>
+    <max_sessions>{{ int .maxSessions }}</max_sessions>
     {{- end }}
 
     <!-- Optional. Maximum number of concurrent MPN devices sessions allowed.
@@ -3011,7 +3066,7 @@
     <max_mpn_devices>1000</max_mpn_devices>
     -->
     {{- else }}
-    <max_mpn_devices>{{ .maxMpnDevices }}</max_mpn_devices>
+    <max_mpn_devices>{{ int .maxMpnDevices }}</max_mpn_devices>
     {{- end }}
 
     <!-- Optional. Limit to the overall size, in bytes, of the buffers
@@ -3026,7 +3081,7 @@
     <max_common_nio_buffer_allocation>0</max_common_nio_buffer_allocation>
     -->
     {{- else }}
-    <max_common_nio_buffer_allocation>{{ .maxCommonNioBufferAllocation }}</max_common_nio_buffer_allocation>
+    <max_common_nio_buffer_allocation>{{ int .maxCommonNioBufferAllocation }}</max_common_nio_buffer_allocation>
     {{- end }}
 
     <!-- Optional. Limit to the overall size, in bytes, of the buffers
@@ -3042,7 +3097,7 @@
     <max_common_pump_buffer_allocation>0</max_common_pump_buffer_allocation>
     -->
     {{- else }}
-    <max_common_pump_buffer_allocation>{{ .maxCommonPumpBufferAllocation }}</max_common_pump_buffer_allocation>
+    <max_common_pump_buffer_allocation>{{ int .maxCommonPumpBufferAllocation }}</max_common_pump_buffer_allocation>
     {{- end }}
 
     <!--
@@ -3058,7 +3113,7 @@
     <selector_pool_size>1</selector_pool_size>
     -->
     {{- else }}
-    <selector_pool_size>{{ .selectorPoolSize }}</selector_pool_size>
+    <selector_pool_size>{{ int .selectorPoolSize }}</selector_pool_size>
     {{- end }}
 
     <!-- Optional. Maximum number of keys allowed for a single NIO selector.
@@ -3073,7 +3128,7 @@
     <selector_max_load>1000</selector_max_load>
     -->
     {{- else }}
-    <selector_max_load>{{ .selectorMaxLoad }}</selector_max_load>
+    <selector_max_load>{{ int .selectorMaxLoad }}</selector_max_load>
     {{- end }}
 
     <!--
@@ -3088,7 +3143,7 @@
     <timer_pool_size>2</timer_pool_size>
     -->
     {{- else }}
-    <timer_pool_size>{{ .timerPoolSize }}</timer_pool_size>
+    <timer_pool_size>{{ int .timerPoolSize }}</timer_pool_size>
     {{- end }}
 
     <!--
@@ -3104,7 +3159,7 @@
     <events_pool_size>10</events_pool_size>
     -->
     {{- else }}
-    <events_pool_size>{{ .eventsPoolSize }}</events_pool_size>
+    <events_pool_size>{{ int .eventsPoolSize }}</events_pool_size>
     {{- end }}
 
     <!--
@@ -3121,7 +3176,7 @@
     <snapshot_pool_size>10</snapshot_pool_size>
     -->
     {{- else }}
-    <snapshot_pool_size>{{ .snapshotPoolSize }}</snapshot_pool_size>
+    <snapshot_pool_size>{{ int .snapshotPoolSize }}</snapshot_pool_size>
     {{- end }}
 
     <!--
@@ -3137,7 +3192,7 @@
     <pump_pool_size>10</pump_pool_size>
     -->
     {{- else }}
-    <pump_pool_size>{{ .pumpPoolSize }}</pump_pool_size>
+    <pump_pool_size>{{ int .pumpPoolSize }}</pump_pool_size>
     {{- end }}
 
     <!--
@@ -3155,7 +3210,7 @@
     <pump_pool_max_queue>1000</pump_pool_max_queue>
     -->
     {{- else }}
-    <pump_pool_max_queue>{{ .pumpPoolMaxQueue }}</pump_pool_max_queue>
+    <pump_pool_max_queue>{{ int .pumpPoolMaxQueue }}</pump_pool_max_queue>
     {{- end }}
 
     <!--
@@ -3184,7 +3239,7 @@
     <server_pool_max_size>100</server_pool_max_size>
     -->
     {{- else }}
-    <server_pool_max_size>{{ .serverPoolMaxSize }}</server_pool_max_size>
+    <server_pool_max_size>{{ int .serverPoolMaxSize }}</server_pool_max_size>
     {{- end }}
 
     <!--
@@ -3209,7 +3264,7 @@
     <server_pool_max_free>0</server_pool_max_free>
     -->
     {{- else }}
-    <server_pool_max_free>{{ .serverPoolMaxFree }}</server_pool_max_free> 
+    <server_pool_max_free>{{ int .serverPoolMaxFree }}</server_pool_max_free> 
     {{- end }}
 
     <!--
@@ -3233,7 +3288,7 @@
     <server_pool_max_queue>-1</server_pool_max_queue>
     -->
     {{- else }}
-    <server_pool_max_queue>{{ .serverPoolMaxQueue }}</server_pool_max_queue>
+    <server_pool_max_queue>{{ int .serverPoolMaxQueue }}</server_pool_max_queue>
     {{- end }}
 
     <!--
@@ -3257,7 +3312,7 @@
     <accept_pool_max_size>100</accept_pool_max_size>
     -->
     {{- else }}
-    <accept_pool_max_size>{{ .acceptPoolMaxSize }}</accept_pool_max_size>
+    <accept_pool_max_size>{{ int .acceptPoolMaxSize }}</accept_pool_max_size>
     {{- end }}
 
     <!--
@@ -3279,7 +3334,7 @@
     <accept_pool_max_queue>100</accept_pool_max_queue>
     -->
     {{- else }}
-    <accept_pool_max_queue>{{ .acceptPoolMaxQueue }}</accept_pool_max_queue>
+    <accept_pool_max_queue>{{ int .acceptPoolMaxQueue }}</accept_pool_max_queue>
     {{- end }}
 
     <!--
@@ -3299,7 +3354,7 @@
     <handshake_pool_size>10</handshake_pool_size>
     -->
     {{- else }}
-    <handshake_pool_size>{{ .handshakePoolSize }}</handshake_pool_size>
+    <handshake_pool_size>{{ int .handshakePoolSize }}</handshake_pool_size>
     {{- end }}
 
     <!--
@@ -3330,7 +3385,7 @@
     <handshake_pool_max_queue>-1</handshake_pool_max_queue>
     -->
     {{- else }}
-    <handshake_pool_max_queue>{{ .handshakePoolMaxQueue }}</handshake_pool_max_queue>    
+    <handshake_pool_max_queue>{{ int .handshakePoolMaxQueue }}</handshake_pool_max_queue>    
     {{- end }}     
 
     <!--
@@ -3346,7 +3401,7 @@
     <https_auth_pool_max_size>10</https_auth_pool_max_size>
     -->
     {{- else }}
-    <https_auth_pool_max_size>{{ .httpsAuthPoolMaxSize }}</https_auth_pool_max_size>
+    <https_auth_pool_max_size>{{ int .httpsAuthPoolMaxSize }}</https_auth_pool_max_size>
     {{- end }}
 
     <!--
@@ -3359,7 +3414,7 @@
     <https_auth_pool_max_free>0</https_auth_pool_max_free>
     -->
     {{- else }}
-    <https_auth_pool_max_free>{{ .httpsAuthPoolMaxFree }}</https_auth_pool_max_free>
+    <https_auth_pool_max_free>{{ int .httpsAuthPoolMaxFree }}</https_auth_pool_max_free>
     {{- end }}
 
     <!--
@@ -3377,7 +3432,7 @@
     <https_auth_pool_max_queue>-1</https_auth_pool_max_queue>
     -->
     {{- else }}    
-    <https_auth_pool_max_queue>{{ .httpsAuthPoolMaxQueue }}</https_auth_pool_max_queue>
+    <https_auth_pool_max_queue>{{ int .httpsAuthPoolMaxQueue }}</https_auth_pool_max_queue>
     {{- end }}
 
     <!--
@@ -3405,7 +3460,7 @@
     <prestarted_max_queue>1000</prestarted_max_queue>
     -->
     {{- else }}
-    <prestarted_max_queue>{{ .prestartedMaxQueue }}</prestarted_max_queue>
+    <prestarted_max_queue>{{ int .prestartedMaxQueue }}</prestarted_max_queue>
     {{- end }}
 
     <!--
