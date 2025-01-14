@@ -44,6 +44,16 @@ spec:
               protocol: TCP
           {{- end }}
           {{- end }}
+          {{- with .Values.management.jmx.rmiConnector.port}}
+            - name: jmxPort
+              containerPort: {{ .value }}
+              protocol: TCP
+          {{- end}}
+          {{- with .Values.management.jmx.rmiConnector.dataPort}}
+            - name: jmxDataPort
+              containerPort: {{ .value }}
+              protocol: TCP
+          {{- end}}
           livenessProbe:
              {{- toYaml .Values.livenessProbe | nindent 12 }}
           readinessProbe:
