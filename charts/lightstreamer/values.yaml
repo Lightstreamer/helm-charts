@@ -600,32 +600,187 @@ trustStores:
         name: truststore-secret
         key: myserver.keypass
 
-# Global socket settings
+# -- Mandatory. Global socket configuration
 globalSocket:
+  # -- (int) Mandatory. Longest inactivity time accepted while waiting for a 
+  # slow request to be received. If this value is exceeded, the socket is
+  # closed. Reusable HTTP connections are also closed if they are not reused 
+  # for longer than this time.
+  # The time actually considered may be approximated and may be a few seconds
+  # higher, for internal performance reasons.
+  # A 0 value suppresses the check.
   readTimeoutMillis: 20000
-  # handshake_timeout_millis: 2000
+  # -- (int) Optional. Longest inactivity time accepted while waiting for a 
+  # slow operation during a TLS/SSL handshake. This involves both reads,
+  # writes, and encryption tasks managed by the "TLS-SSL HANDSHAKE" or 
+  # "TLS-SSL AUTHENTICATION" internal pools. If this value is exceeded, the
+  # socket is closed.
+  # The time actually considered may be approximated and may be a few seconds
+  # higher, for internal performance reasons.
+  # A 0 value suppresses the check.
+  # @default -- 4000
+  handshakeTimeoutMillis:
+  # -- (int) Optional. Maximum length in bytes accepted for a request.
+  # For an HTTP GET request, the limit applies to the whole request, including 
+  # the headers.
+  # For an HTTP POST request, the limit applies to the header part and the body
+  # part separately.
+  # For a request over a WebSocket, the limit applies to the request message 
+  # payload.
+  # @default -- unlimited length
   requestLimit: 50000
+  # -- Optional. Longest operation time accepted while writing data on a 
+  # socket. If this value is exceeded, the socket is closed. Note that this may
+  # also affect very slow clients.
+  # The time actually considered may be approximated and may be a few seconds 
+  # higher, for internal performance reasons.
+  # If missing or 0, the check is suppressed.
+  # @default -- the check is suppressed
   writeTimeoutMillis: 120000
-  useHttpVersion: "1.0"
-  # (Optional). WebSocket support configuration. The support is enabled by default.
+  # -- (string) Optional. Enabling the use of the full HTTP 1.1 syntax for all 
+  # the responses, upon HTTP 1.1 requests.
+  # If set to `1.1`, HTTP 1.1 is always used, when possible.
+  # If set to `1.0`, HTTP 1.0 is always used; this is possible for all HTTP 
+  # requests, but it will prevent WebSocket support.
+  # If set to `AUTO`, HTTP 1.0 is used, unless HTTP 1.1 is required in order to
+  # support specific response features.
+  # @default -- "1.1"
+  useHttpVersion:
+  # -- Optional. WebSocket support configuration
   webSocket:
-    # enabled: false
-    # maxPongDelayMillis: 1000
-    # maxClosingWaitMillis: 1000
-    maxOutboundFrameSize: 4096
+    # -- Optional. Enabling of the WebSocket support.
+    # If set to `true`, the Server accepts requests for initiating a WebSocket
+    # interaction through a custom protocol.
+    # If set to `false`, the Server refuses requests for WebSocket interaction.
+    # Disabling WebSocket support may be needed when the local network 
+    # infrastructure (for instance the Load Balancer) does not handle WebSocket
+    # communication correctly and the WebSocket transport is not already 
+    # disabled on the client side through the Lightstreamer Client Library in 
+    # use. The Client Library, upon the Server refusal, will resort to HTTP 
+    # streaming without any additional delay to session establishment.
+    # @default -- true
+    enabled: 
+    # -- (int) Optional. Maximum time the Server is allowed to wait before 
+    # answering to a client "ping" request. In case a client sends very 
+    # frequent "ping" requests, only the "pong" associated to the most recent
+    # request received is sent, while the previous requests will be ignored.
+    # Note that the above is possible also when 0 is specified.
+    # @default -- 0
+    maxPongDelayMillis:
+    # -- (int) Optional. Maximum time the Server is allowed to wait for the 
+    # client "close" frame, in case the Server is sending its own close" frame
+    # first, in order to try to close the connection in a clean way.
+    # @default -- no timeout is set and the global `global.readTimeoutMillis` applies
+    maxClosingWaitMillis:
+    # -- Optional.  Maximum payload size allowed for an outbound frame.
+    # When larger updates have to be sent, the related WebSocket messages will
+    # be split into multiple frames.
+    # A lower limit for the setting may be enforced by the Server.
+    # @default -- 16384
+    maxOutboundFrameSize:
 
-# Security configuration
+# -- Security configuration
 security:
-  useProtectedJs: false
-  forwardCookies: false
+  # -- Optional. Disabling of the protection for JavaScript pages, supplied by 
+  # the Server, that carry user data.
+  # JavaScript pages can be supplied upon requests by old versions of the Web 
+  # and Node.js (Unified API) Client Libraries, whereas recent versions no 
+  # longer make use of this kind of pages. The protection prevents such pages 
+  # from being imported in a <script> block and, as a consequence, from being
+  # directly executed within a hosting page regardless of its origin.
+  # This protection allows the Server to fully comply with the prescriptions to
+  # prevent the so-called "JavaScript Hijacking".
+  # If set to `true`, the protection is enabled.
+  # If set to `false`, the protection is disabled. It can be set in order to 
+  # support communication between the application front-end pages and 
+  # Lightstreamer Server in specific use cases; see the Client Guide for the 
+  # Web (Unified API) Client SDK earlier than 8.0.0 for details. It can also be
+  # set in order to ensure compatibility with even older Web Client Libraries
+  # (version 4.1 build 1308 or previous). Note, however, that basic protection 
+  # against JavaScript Hijacking can still be granted, simply by ensuring that 
+  # request authorization is never based on information got from the request 
+  # cookies. This already holds for any session-related request other than 
+  # session-creation ones, for which the request URL is always checked against
+  # the Server-generated session ID. For session-creation requests, this 
+  # depends on the Metadata Adapter implementation, but can be enforced by 
+  # setting `enableForwardCookies` to `false`.
+  # @default -- true
+  enableProtectedJs: true
+  # -- Optional. Use this setting to enable the forwarding of the cookies to 
+  # the Metadata Adapter through the httpHeaders argument of the "notifyUser"
+  # method.
+  # Please note that in any case cookies should not be used to authenticate 
+  # users, otherwise, having `enableProtectedJs` set to `false` and/or a too 
+  # permissive policy in the `crossDomainPolicy` will expose the server to CSRF
+  # attacks.
+  # If set to `true`, cookies are forwarded to the Metadata Adapter.
+  # If set to `false`, cookies are hidden from the Metadata Adapter.
+  # @default -- false
+  enableCookiesForwarding: false
+  # -- Optional. List of origins to be allowed by the browsers to consume 
+  # responses to requests sent to this Server through cross-origin XHR or 
+  # through WebSockets; in fact, when a requesting page asks for streaming data
+  # in this way, the browser should specify the page origin through the 
+  # "Origin" HTTP header, to give the Server a chance to accept or refuse the
+  # request. This is the most common way streaming data is requested by the Web
+  # (Unified API) Client Library. You can see the Client Guide for the Web
+  # (Unified API) Client SDK earlier than 8.0.0 for details on all the possible
+  # use cases.
+  # If a request origin is not matched against any of the configured rules, a 
+  # Websocket initiation request will be refused, whereas a HTTP request will 
+  # not be denied (i.e.: a 200 OK will be returned) but the response body will
+  # be left empty, in accordance with the CORS specifications.
+  # If no origin is specified by the user-agent, the request will always be 
+  # accepted.
+  # Note that sending the Origin header is a client-side duty. In fact, most 
+  # modern browsers, upon a request for a cross-origin XHR or WebSocket by a 
+  # page, will send the Origin header, while older browsers will directly fail
+  # to send the request. Non-browser clients usually don't have to perform 
+  # origin checks; so they don't send the Origin header and thus their requests
+  # are always authorized.
   crossDomainPolicy:
-    optionsMaxAge: 36001
-    acceptExtraHeaders: ""
+    # -- Optional. In case an HTTP OPTIONS request is sent to authorize future 
+    # requests, the server allows the client to store the result of such 
+    # OPTIONS for the specified number of seconds. Thus a previously authorized
+    # client may not give up its authorization, even if the related origin is
+    # removed from the list and the server is restarted, until its 
+    # authorization expires.
+    # @default 3600
+    optionsMaxAge: 3600
+    # -- Optional. In case the client wishes to send custom headers to the 
+    # server, it requiresan approval from the server itself. This setting
+    # permits to specify a comma separated list of extra headers to be allowed 
+    # in the client requests. Note that a space is expected after each comma 
+    # (e.g.: `acceptExtraHeaders: "custom-header1, custom-header2"`).
+    # @default -- ""
+    acceptExtraHeaders:
+    # -- Optional. Specify f the server should authorize the client to send its
+    # credentials on a CORS request. This setting does not impact the 
+    # user/password sent over the Lightstreamer protocol,but, if set to 
+    # `false`, might prevent, or force a fallback connection, on clients 
+    # sending CORS requests carrying cookies, http-basic-authentication or 
+    # client-side certificates.
+    # @default -- false
     acceptCredentials: true
+    # -- Optional. List of Origin allowed to consume responses to cross-origin 
+    # requests.
     allowAccessFrom:
+      # -- Optional. Defines define a rule against which Origin headers will be
+      # checked.rule must define a scheme, a host and a port in the following way:
       fromEveryWere:
+        # -- Mandatory. A valid scheme name (usually http or https) or `*`; the
+        # latter matches both http and https scheme, but it doesn't match other
+        # schemes.
         scheme: "*"
+        # -- Mandatory. A valid host name, IPv4 or IPv6 representing, an 
+        # authorized Origin. Also a `*` is accepted with the meaning of 
+        # "any host or IP".
+        # If a host name is specified it can be prefixed with a wildcard as 
+        # long as at least the second level domain is explicitly specified 
+        # (i.e.:*.my-domain.com and *.sites.my-domain.com are valid entries 
+        # while *.com is not)
         host: "*"
+        # -- Mandatory. A a valid port or `*` to specify any port.
         port: "*"
       # fromWwwMyDomain:
       #   scheme: https
@@ -647,10 +802,44 @@ security:
       #   scheme: "*"
       #   host: "2001:0db8:aaaa::dddd:eeee:0"
       #   port: "*"
-  allowedDomains: {}
-  #   myDomain: "my-domain.com"
-  #   altDomain: "my-alt-domain.com"
-  serverTokens: FULL
+    # -- Optional. List of Origin domains or subdomains to be allowed by the 
+    # browsers to access data on HTML pages supplied by this Server.
+    # This was one of the ways used by the Web (Unified API) Client SDK earlier
+    # than 8.0.0 to request streaming data; see the Client Guide for these Web
+    # (Unified API) Client SDK versions for details on which use cases involve
+    # accessing data through HTML pages.
+    # In this kind of requests, the requesting page should be allowed by the 
+    # browser to access data contained in the Server-originated page only if 
+    # both pages declare a common subdomain. So, the page should declare a
+    # subdomain as its "document.domain" property and will ask the Server to 
+    # declare the same subdomain on the response page.
+    # In that case, the Server will be allowed to set the requested subdomain 
+    # as the "document.domain" property of the data page only if configured
+    # here, otherwise the whole request will be refused.
+    # On the other hand, if no setting is provided, then this check is 
+    # disabled. Note that, in any case, the consistency of the declared 
+    # subdomain with the url used to request the data page must be ensured by 
+    # the browser.
+    # If the requesting page doesn't specify any subdomain for the response, 
+    # the request will always be allowed; in this case, a same-domain access to
+    # the Server data page will be performed by the browser.
+    # @default -- []
+  allowedDomains: []
+    # - "my-domain.com"
+    # - "my-alt-domain.com"
+  # -- (string) Optional. Server identification policy to be used for all 
+  # server responses. Upon any HTTP request, the Server identifies itself 
+  # through the "Server" HTTP response header. However, omitting version
+  # information may make external attacks more difficult.
+  # If set to `FULL`, the Server identifies itself as:
+  # Lightstreamer Server/X.Y.Z build BBBB (Lightstreamer Push Server - 
+  # www.lightstreamer.com) EEEEEE edition.
+  # If set to `MINIMAL`, the Server identifies itself, depending on the 
+  # Edition: for Enterprise edition, as Lightstreamer Server; for Community 
+  # edition, as Lightstreamer Server (Lightstreamer Push Server - 
+  # www.lightstreamer.com) COMMUNITY edition.
+  # @default -- "FULL"
+  serverIdentificationPolicy:
 
 # -- Logging and management configuration
 management:
@@ -767,7 +956,7 @@ management:
       # startup will fail. If successful and the "stop" script is launched in
       # the same environment of the Server, the script should work.
       # If set to `false`, disables the test, but this setting can be 
-      # overridden by setting jmx.ensureStoppingService to `true`.
+      # overridden by setting jmx.enableStoppingServiceCheck to `true`.
       # @default -- true
       enableTestPorts: true
       # -- Optional. Timeout to be posed on the connection attempts through the
@@ -893,21 +1082,112 @@ management:
     # lists won't yield the correct value, but just a reminder text; for 
     # instance, this applies to 'CurrentSessionList' in the ResourceMBean.
     # @default -- true
-    enableLongListProperties: 
-  ensureStoppingService: true
+    enableLongListProperties: false
+    # -- Optional. Startup check that the conditions for the correct working of
+    # the provided "stop" script are met (see the <jmx> block).
+    # If set to `true`, the startup will wail if the JMX RMI connector is not 
+    # configured or the ServerMBean cannot bet started. This also enforces the
+    # check of the JMX port reachability ( see `rmiConnector.enableTestPorts` 
+    # and the remarks on the test effectiveness); if the test fails, the 
+    # startup will also fail.
+    # If set to `false`, no check is made that the "stop" script should work.
+    # This may not be a problem, because the Server can be stopped in other 
+    # ways. The provided installation scripts also close the Server without 
+    # resorting to the "stop" script.
+    # @default -- false
+  enableStoppingServiceCheck:
+  # -- Optional. Configuration of the Monitoring Dashboard.
+  # The dashboard is a webapp whose pages are embedded in Lightstreamer Server
+  # and supplied by the internal web server. The main page has several tabs,
+  # which provide basic monitoring statistics in graphical form; the last one
+  # shows the newly introduced JMX Tree, which enables JMX data view and 
+  # management from the browser.
+  # The Dashboard leans on an internal Adapter Set, named "MONITOR".
+  # The following settings configure access restrictions to Monitoring Dashboard
+  # pages.
+  # *** IMPORTANT *** The Monitoring Dashboard enables data view and 
+  # management, including the Server shutdown operation, from a remote browser.
+  # We recommend configuring the credentials and protecting them by making the
+  # Monitoring Dashboard only available on https server sockets through the 
+  # settings below. Further restrictions can be applied to the JMX Tree only.
+  # See PRODUCTION_SECURITY_NOTES.TXT for a full check-list.
+  # Note that basic monitoring statistics are also available to any 
+  # Lightstreamer application; in fact, an instance of a special internal 
+  # monitoring Data Adapter can be embedded in any custom Adapter Set, by 
+  # specifying "MONITOR" in place of the Data Adapter class name.
+  # For a listing of the supplied items, see the General Concepts document.
+  # The `dashobard.enableHostnameLookup` setting below also affects the 
+  # monitoring Data Adapter. On the other hand, access restrictions to a 
+  # monitoring Data Adapter instance embedded in a custom Adapter Set is only 
+  # managed by the custom Metadata Adapter included.
   dashboard:
+    # -- Optional. Enabling of the requests for the JMX Tree page, which is 
+    # part of the Monitoring Dashboard.
+    # This page, whose implementation is based on the "jminix" library, enables
+    # JMX data view and management, including the Server shutdown operation, 
+    # from the browser.
+    # If set to `true`, the Server supports requests for JMX Tree pages, though
+    # further fine-grained restrictions may also apply.
+    # If set to `false`, the Server ignores requests for JMX Tree pages, 
+    # regardless of the credentials supplied and the server socket in use; the
+    # dashboard tab will just show a "disabled page" notification.
+    # @default -- false
     enableJmxTree: true
-    public: false
-    # availableOnAllServers: false
+    # -- Optional. Enabling of the access to the Monitoring Dashboard pages 
+    # without credentials.
+    # If set to `true`, requests for the Monitoring Dashboard are always 
+    # accepted.
+    # If set to `false`, requests for the Monitoring Dashboard are subject to a
+    # check for credentials to be specified through the `users` settings; 
+    # hence, a user credential submission dialog may be presented by the 
+    # browser. If no "users" settings is defined, the Monitoring Dashboard will
+    # not be accessible in any way.
+    # @default -- false
+    enablePublicAccess: true
+    # -- Optional. Enabling of the access to the Monitoring Dashboard pages 
+    # through all server sockets.
+    # If set to `true`,requests to the Monitoring Dashboard can be issued 
+    # through all the defined server sockets.
+    # If set to `false`, requests to the Monitoring Dashboard can be issued 
+    # onlythrough the server sockets specified in the "availableOnServers" 
+    # setting, if any; otherwise, requests to the dashboard url will get a 
+    # "page not found" error. If no "availableOnServers" setting is defined,
+    # requests to the Monitoring Dashboard will not be possible in any way.
+    # Disabling the Dashboard on a server socket causes the internal "MONITOR"
+    # Adapter Set to also become unavailable from that socket. This does not
+    # affect in any way the special "MONITOR" Data Adapter.
+    # @default -- false
+    enableAvailabilityOnAllServers: true
     availableOnServers:
       - serverRef: httpServer
         # jmxTreeVisible: true
       - serverRef: httpsServer
         # jmxTreeVisible: false
-    # urlPath: /my_dashboard
-    # enableHostnameLookup: false
+    # -- Optional. URL path to map the Monitoring Dashboard pages to.
+    # An absolute path must be specified.
+    # @default -- "/dashboard"
+    urlPath: 
+    # -- Optional. Enabling of the reverse lookup on Client IPs and inclusion
+    # of the Client hostnames while monitoring client activity.
+    # This setting affects the Monitor Console page and also affects any 
+    # instance of the monitoring Data Adapter embedded in a custom Adapter Set.
+    # If set to `true`, the Client hostname is determined on Client activity 
+    # monitoring; note that the determination of the client hostname may be 
+    # heavy for some systems.
+    # If set to `false`, no reverse lookup is performed and the Client hostname
+    # is not included on Client activity monitoring.
+    # @default -- false
+    enableHostnameLookup:
+    # -- Optional. Configuration of the "/lightstreamer/healthcheck" request
+    # url, which allows a load balancer to test for Server responsiveness to
+    # external requests. The Server should always answer to the request with 
+    # the `OK\r\n` content string (unless overridden through e JMX interface).
+    # The Server may log further information to the dedicated
+    # `lightstreamerHealthCheck` logger.
+    # Support for clustering is an optional feature, available depending on 
+    # Edition and License Type.
   healthCheck:
-    availableOnAllServers: true
+    enableAvailabilityOnAllServers: 
     availableOnServers:
       # - httpServer
       # - httpsServer
@@ -1044,7 +1324,7 @@ pushSession:
   # is set, it is advisable also setting this logger at WARN level.
   # Aggregate statistics on lost updates are also provided by the JMX interface
   # (if available) and by the Internal Monitor.
-  # @default -- unlimited
+  # @default -- unlimited size
   maxBufferSize: 1000
   # -- (int) Mandatory. Longest time a disconnected session can be kept alive
   # while waiting for the Client to rebind such session to another connection,
@@ -1496,7 +1776,7 @@ load:
   # currently met may cause the new session request to be refused.
   # The limit can be set as a simple, heuristic protection from Server 
   # overload.
-  # @default -- unlimited
+  # @default -- unlimited number of concurrent client sessions
   maxSessions:
   # -- (int) Optional. Maximum number of concurrent MPN devices sessions  
   # allowed.
@@ -1504,7 +1784,7 @@ load:
   # push notifications will be refused.
   # The limit can be set as a simple, heuristic protection from Server overload
   # from MPN subscriptions.
-  # @default -- unlimited
+  # @default -- unlimited number of concurrent MPN devices sessions
   maxMpnDevices:
   # -- (int) Optional. Limit to the overall size, in bytes, of the buffers 
   # devoted to I/O operations that can be kept allocated for reuse.
