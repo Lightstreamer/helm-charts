@@ -800,7 +800,7 @@
 {{- end }}
 
     <!-- GLOBAL SOCKET SETTINGS -->
-{{- with .Values.globalSocket }}
+{{- with required "globalSocket must be set" .Values.globalSocket }}
     <!-- Mandatory. Longest inactivity time accepted while waiting for a slow
          request to be received. If this value is exceeded, the socket is
          closed. Reusable HTTP connections are also closed if they are not
@@ -808,7 +808,7 @@
          The time actually considered may be approximated and may be a few
          seconds higher, for internal performance reasons.
          A 0 value suppresses the check. -->
-    <read_timeout_millis>{{ .readTimeoutMillis }}</read_timeout_millis>
+    <read_timeout_millis>{{ int (required "globalSocket.readTimeoutMillis must be set" .readTimeoutMillis) }}</read_timeout_millis>
 
     <!-- Optional. Longest inactivity time accepted while waiting for a slow
          operation during a TLS/SSL handshake. This involves both reads,
@@ -819,14 +819,14 @@
          seconds higher, for internal performance reasons.
          A 0 value suppresses the check.
          Default: 4000 ms. -->
-  {{- if .handshakeTimeoutMillis }}
-    <handshake_timeout_millis>{{ .handshakeTimeoutMillis }}
-  {{- end }}
+  {{- if not (quote .handshakeTimeoutMillis | empty) }}
+    <handshake_timeout_millis>{{ int .handshakeTimeoutMillis }}</handshake_timeout_millis>
+  {{- else }}
     <!--
     <handshake_timeout_millis>2000</handshake_timeout_millis>
     -->
+  {{- end }}
 
-  {{- if .requestLimit }}
     <!-- Optional. Maximum length in bytes accepted for a request.
          For an HTTP GET request, the limit applies to the whole request,
          including the headers.
@@ -834,17 +834,26 @@
          body part separately.
          For a request over a WebSocket, the limit applies to the request
          message payload. -->
-    <request_limit>{{ .requestLimit }}</request_limit>
+  {{- if not (quote .requestLimit | empty) }}
+    <request_limit>{{ int .requestLimit }}</request_limit>
+  {{- else }}
+    <!--
+    <request_limit>5000</request_limit>
+    -->
   {{- end }}
 
-  {{- if .writeTimeoutMillis }}
     <!-- Optional. Longest operation time accepted while writing data on a
          socket. If this value is exceeded, the socket is closed. Note that
          this may also affect very slow clients.
          The time actually considered may be approximated and may be a few
          seconds higher, for internal performance reasons.
          If missing or 0, the check is suppressed. -->
-    <write_timeout_millis>{{ .writeTimeoutMillis }}</write_timeout_millis>
+  {{- if not (quote .writeTimeoutMillis | empty) }}         
+    <write_timeout_millis>{{ int .writeTimeoutMillis }}</write_timeout_millis>
+  {{- else }}
+    <!-- 
+    <write_timeout_millis>120000</write_timeout_millis>
+    -->
   {{- end }}
 
     <!-- Optional. Enabling the use of the full HTTP 1.1 syntax for all the
@@ -855,17 +864,15 @@
          - AUTO: HTTP 1.0 is used, unless HTTP 1.1 is required in order to
                  support specific response features.
          Default: Y. -->
-  {{- if eq .useHttpVersion "1.1" }}
-    <use_http_11>Y</use_http_11>
-  {{ else if eq .useHttpVersion "1.0" }}
-    <use_http_11>N</use_http_11>
-  {{ else if eq .useHttpVersion "AUTO" }}
-    <use_http_11>AUTO</use_http_11>
+  {{- if .useHttpVersion }}
+    {{- $versions := dict "1.1" "Y" "1.0" "N" "AUTO" "AUTO" }}
+    <use_http_11>{{ required "globalSocket.useHttpVersion must be set with a valid value" (get $versions .useHttpVersion) }}</use_http_11>
   {{- else }}
     <!--
     <use_http_11>Y</use_http_11>
     -->
-  {{ end }}
+  {{- end }}
+
     <!-- Optional. WebSocket support configuration. The support is enabled
          by default. -->
     <websocket>
@@ -884,7 +891,7 @@
              additional delay to session establishment.
              Default: Y. -->
   {{- with .webSocket }}
-    {{- if hasKey . "enabled" }}
+    {{- if not (quote .enabled | empty) }}
         <enabled>{{ .enabled | ternary "Y" "N" }}</enabled>
     {{- else  }}
         <!--
@@ -899,8 +906,8 @@
              requests will be ignored.
              Note that the above is possible also when 0 is specified.
              Default: 0. -->
-    {{- if .maxPongDelayMillis }}
-        <max_pong_day_millis>{{ .maxPongDelayMillis }}</max_pong_day_millis>
+    {{- if not (quote .maxPongDelayMillis | empty) }}
+        <max_pong_day_millis>{{ int .maxPongDelayMillis }}</max_pong_day_millis>
     {{- else }}
         <!--
         <max_pong_delay_millis>1000</max_pong_delay_millis>
@@ -913,8 +920,8 @@
              in a clean way.
              If not specified, no timeout is set and the global
              <read_timeout_millis> limit applies. -->
-    {{- if .maxClosingWaitMillis }}
-        <max_closing_wait_millis>{{ .maxClosingWaitMillis }}</max_closing_wait_millis>
+    {{- if not (quote .maxClosingWaitMillis | empty) }}
+        <max_closing_wait_millis>{{ int .maxClosingWaitMillis }}</max_closing_wait_millis>
     {{- else }}
         <!--
         <max_closing_wait_millis>1000</max_closing_wait_millis>
@@ -926,8 +933,8 @@
              messages will be split into multiple frames.
              A lower limit for the setting may be enforced by the Server.
              Default: 16384. -->
-    {{- if .maxOutboundFrameSize }}
-        <max_outbound_frame_size>{{ .maxOutboundFrameSize }}</max_outbound_frame_size>
+    {{- if not (quote .maxOutboundFrameSize | empty) }}
+        <max_outbound_frame_size>{{ int .maxOutboundFrameSize }}</max_outbound_frame_size>
     {{- else }}
         <!--
         <max_outbound_frame_size>4096</max_outbound_frame_size>
@@ -974,12 +981,12 @@
               Adapter implementation, but can be enforced by setting
               <forward_cookies> to N.
          Default: Y. -->
-  {{- if hasKey . "useProtectedJs" }}
-    <use_protected_js>{{ .useProtectedJs | ternary "Y" "N" }}</use_protected_js>
-  {{- else }}
+  {{- if (quote .enableProtectedJs | empty) }}
     <!--
     <use_protected_js>N</use_protected_js>
     -->
+  {{- else }}
+    <use_protected_js>{{ .enableProtectedJs | ternary "Y" "N" }}</use_protected_js>    
   {{- end }}
 
     <!-- Optional. Use this setting to enable the forwarding of the cookies to
@@ -992,12 +999,12 @@
          - Y: cookies are forwarded to the Metadata Adapter.
          - N: cookies are hidden from the Metadata Adapter.
          Default: N. -->
-  {{- if hasKey . "forwardCookies" }}
-    <forward_cookies>{{ .forwardCookies | ternary "Y" "N" }}</forward_cookies>
-  {{- else}}
+  {{- if (quote .enableCookiesForwarding | empty) }}
     <!--
     <forward_cookies>Y</forward_cookies>
     -->
+  {{- else}}
+    <forward_cookies>{{ .enableCookiesForwarding | ternary "Y" "N" }}</forward_cookies>    
   {{- end }}
 
     <!-- Optional. List of origins to be allowed by the browsers to consume
@@ -1040,7 +1047,7 @@
          removed from the list and the server is restarted, until its authorization
          expires. -->
   {{- with .crossDomainPolicy }}
-    <cross_domain_policy{{- if .optionsMaxAge}} options_max_age={{ .optionsMaxAge | quote }}{{- end}} accept_extra_headers={{ .acceptExtraHeaders | default "" | quote }} accept_credentials={{ .acceptCredentials | default true | ternary "Y" "N" | quote }}>
+    <cross_domain_policy{{- if .optionsMaxAge}} options_max_age={{ .optionsMaxAge | quote }}{{- end}}{{- if .acceptExtraHeaders }} accept_extra_headers={{ .acceptExtraHeaders | default "" | quote }}{{- end}}{{- if not (quote .acceptCredentials | empty )}} accept_credentials={{ .acceptCredentials | ternary "Y" "N" | quote }}{{- end }}>
 
         <!-- Optional and cumulative. Declaration of an Origin allowed
              to consume responses to cross-origin requests.
@@ -1059,9 +1066,11 @@
              Note that by setting three *'s any origin will be accepted, without
              performing any check. In particular, any scheme will be accepted,
              not just http and https. -->
-    {{- range $key,$value := .allowAccessFrom }}
-        <allow_access_from scheme={{ $value.scheme | quote }} host={{ $value.host | quote }} port={{ $value.port | quote }}/>
-    {{- end }}
+    {{- if .allowAccessFrom }}
+      {{- range $value := .allowAccessFrom }}
+        <allow_access_from scheme={{ required "scheme must be set" $value.scheme | quote }} host={{ required "host must be set" $value.host | quote }} port={{ required "port must be set" $value.port | quote }}/>
+      {{- end }}
+    {{- else }}
         <!--
         <allow_access_from scheme="https" host="www.my-domain.com" port="443" />
         -->
@@ -1077,6 +1086,7 @@
         <!--
         <allow_access_from scheme="*" host="2001:0db8:aaaa::dddd:eeee:0" port="*" />
         -->
+     {{- end }}
 
     </cross_domain_policy>
   {{- end }}
@@ -1102,15 +1112,18 @@
          If the requesting page doesn't specify any subdomain for the response,
          the request will always be allowed; in this case, a same-domain access
          to the Server data page will be performed by the browser. -->
-  {{- range .allowedDomains }}
+  {{- if .allowedDomains }}
+    {{- range .allowedDomains }}
     <allowed_domain>{{ . }}</allowed_domain>
-  {{- end}}
+    {{- end}}
+  {{- else }}
     <!--
     <allowed_domain>my-domain.com</allowed_domain>
     -->
     <!--
     <allowed_domain>my-alt-domain.com</allowed_domain>
     -->
+  {{- end }}  
 
     <!-- Optional. Server identification policy to be used for all server
          responses. Upon any HTTP request, the Server identifies itself
@@ -1125,8 +1138,11 @@
              for Community edition, as:
                  Lightstreamer Server (Lightstreamer Push Server - www.lightstreamer.com) COMMUNITY edition
          Default: FULL. -->
-  {{- if .serverTokens }}
-    <server_tokens>{{ .serverTokens }}</server_tokens>
+  {{- if .serverIdentificationPolicy }}
+    {{- if not (mustHas .serverIdentificationPolicy (list "FULL" "MINIMAL")) }}
+      {{- fail "security.serverIdentificationPolicy must be set with a valid value" }}
+    {{- end }}
+    <server_tokens>{{ .serverIdentificationPolicy }}</server_tokens>
   {{- else }}
     <!--
     <server_tokens>MINIMAL</server_tokens>
@@ -1562,7 +1578,7 @@
              Default: Y. -->
     {{- if .sessionMbeanAvailability }}
       {{- $values := dict "active" "N" "inactive" "Y" "sampled_statistics_only" "sampled_statistics_only" }}
-        <disable_session_mbeans>{{ required "management.jmx.must.sessionMbeanAvailability be set with a proper value" (get $values .sessionMbeanAvailability) }}</disable_session_mbeans>    
+        <disable_session_mbeans>{{ required "management.jmx.must.sessionMbeanAvailability must be set with a valid value" (get $values .sessionMbeanAvailability) }}</disable_session_mbeans>    
     {{- else }}
         <!--
         <disable_session_mbeans>N</disable_session_mbeans>
@@ -1606,12 +1622,12 @@
               in other ways. The provided installation scripts also close
               the Server without resorting to the "stop" script.
          Default: N. -->
-  {{- if hasKey . "ensureStoppingService" }}
-    <ensure_stopping_service>{{ .ensureStoppingService | ternary "Y" "N" }}</ensure_stopping_service>
-  {{- else }}
+  {{- if (quote .enableStoppingServiceCheck | empty) }}
     <!--
     <ensure_stopping_service>Y</ensure_stopping_service>
     -->
+  {{- else }}
+    <ensure_stopping_service>{{ .enableStoppingServiceCheck | ternary "Y" "N" }}</ensure_stopping_service>
   {{- end }}
 
     <!-- Optional. Configuration of the Monitoring Dashboard.
@@ -1640,7 +1656,7 @@
          Data Adapter instance embedded in a custom Adapter Set is only managed
          by the custom Metadata Adapter included. -->
     <dashboard>
-  {{ with .dashboard }}
+  {{- with .dashboard }}
         <!-- Optional. Enabling of the requests for the JMX Tree page, which is
              part of the Monitoring Dashboard.
              This page, whose implementation is based on the "jminix" library,
@@ -1653,12 +1669,13 @@
                   the credentials supplied and the server socket in use; the
                   dashboard tab will just show a "disabled page" notification.
              Default: N. -->
-    {{- if hasKey . "enableJmxTree"}}
-        <jmxtree_enabled>{{ .enableJmxTree | ternary "Y" "N" }}</jmxtree_enabled>
-    {{ else }}
+
+    {{- if (quote .enableJmxTree | empty) }}
         <!--
         <jmxtree_enabled>N</jmxtree_enabled>
         -->
+    {{ else }}
+        <jmxtree_enabled>{{ .enableJmxTree | ternary "Y" "N" }}</jmxtree_enabled>    
     {{ end }}
         <!-- Optional. Enabling of the access to the Monitoring Dashboard
              pages without credentials.
@@ -1671,12 +1688,12 @@
                   If no "user" elements are defined, the Monitoring Dashboard
                   will not be accessible in any way.
              Default: N. -->
-    {{- if hasKey . "public" }}
-        <public>{{ .public | ternary "Y" "N" }}</public>
-    {{- else }}
+    {{- if (quote .enablePublicAccess | empty) }}             
         <!--
-        <public>N</public>
-        -->
+        <public>Y</public>
+         -->
+    {{- else }}
+        <public>{{ .enablePublicAccess | ternary "Y" "N" }}</public>
     {{- end }}
 
         <!-- Optional and cumulative (but ineffective if "public" is set to "Y").
@@ -1706,12 +1723,12 @@
              Adapter Set to also become unavailable from that socket. This does not
              affect in any way the special "MONITOR" Data Adapter.
              Default: N. -->
-    {{- if hasKey . "availableOnAllServers" }}
-        <available_on_all_servers>{{ .availableOnAllServers | ternary "Y" "N" }}</available_on_all_servers>
-    {{ else }}
+    {{- if (quote .enableAvailabilityOnAllServers | empty) }}
         <!--
         <available_on_all_servers>N</available_on_all_servers>
         -->
+    {{ else }}
+        <available_on_all_servers>{{ .enableAvailabilityOnAllServers | ternary "Y" "N" }}</available_on_all_servers>    
     {{ end }}        
         <!-- Optional and cumulative (but ineffective if "available_on_all_servers"
              is set to "Y").
@@ -1757,15 +1774,14 @@
              - N: no reverse lookup is performed and the Client hostname is not
                   included on Client activity monitoring.
              Default: N. -->
-    {{- if hasKey . "enableHostnameLookup"}}
-        <enable_hostname_lookup>{{ .enableHostnameLookup | ternary "Y" "N" }}</enable_hostname_lookup>
-    {{ else }}
+    {{- if (quote .enableHostnameLookup | empty) }}
         <!--
         <enable_hostname_lookup>Y</enable_hostname_lookup>
         -->
-    {{ end }}
-
-  {{- end }}
+    {{- else }}
+        <enable_hostname_lookup>{{ .enableHostnameLookup | ternary "Y" "N" }}</enable_hostname_lookup>    
+    {{- end }}
+  {{ end }}
     </dashboard>
 
     <!-- Optional. Configuration of the "/lightstreamer/healthcheck" request
@@ -1787,13 +1803,14 @@
                   sockets specified in the "available_on_server" elements,
                   if any.
              Default: N. -->
-    {{- if hasKey . "availableOnAllServers" }}
-        <available_on_all_servers>{{ .availableOnAllServers | ternary "Y" "N" }}</available_on_all_servers>
-    {{ else }}
+    {{- if (quote .enableAvailabilityOnAllServers | empty) }}
         <!--
-        <available_on_all_servers>N</available_on_all_servers>
+        <available_on_all_servers>Y</available_on_all_servers>
         -->
-    {{ end }}
+    {{- else }}
+        <available_on_all_servers>{{ .enableAvailabilityOnAllServers | ternary "Y" "N" }}</available_on_all_servers>
+    {{- end }}
+
         <!-- Optional and cumulative (but ineffective if "available_on_all_servers"
              is set to "Y").
              Specific server sockets for which healthcheck requests can be issued,
