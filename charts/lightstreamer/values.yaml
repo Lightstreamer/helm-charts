@@ -55,7 +55,7 @@ service:
   type: LoadBalancer
   # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
   port: 8088
-  targetPort: httpServer
+  targetPort: pippo
 
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
@@ -230,7 +230,7 @@ logging:
       pattern: '%d{"dd.MMM.yy HH:mm:ss,SSS"} <%5.5(%p%marker)> %m%n'
 
   loggers:
-    # These two loggers are used by the internal monitoring system to log
+    # -- These two loggers are used by the internal monitoring system to log
     # load statistics at INFO level.
     # LightstreamerMonitorText logs statistics with a human-readable syntax;
     # LightstreamerMonitorTAB logs statistics with a CSV syntax.
@@ -503,36 +503,196 @@ logging:
         - console
       level: INFO
 
-# -- HTTP/HTTPS server configuration
+# -- Mandatory. List of HTTP/S server socket configurations.
+# Defining multiple listening socket allows  the coexistence of private and 
+# public ports. In particular, it is possibile to use multipple addresses for
+# accessing the Server via TLS/SSL, becase different HTTPS sockets can use
+# diffretn keystores. In particular this is the case when the Server is behind
+# a load balancer and the `cluster.controlLinkAddress` setting is leveraged to
+# ensure that all Requests issued by the same client are dispatched to the same
+# Server instance.
 servers:
-  httpServer:
-    enabled: true
+  # -- HTTP/S server socket configuration.
+  pippo:
+    # -- Optional. Enable this socket configuration.
+    # @default -- false
+    enabled: false
+    # -- Mandatory. Name of the HTTP/S server. Note that it is notified to the 
+    # client upon connection and it is made available to application code by 
+    # the Unified Client SDKs through the serverSocketName property in the
+    # ConnectionDetails class. It must be an ASCII string with no control 
+    # characters and it must be unique among all server configuations.
     name: "Lightstreamer HTTP Server"
+    # -- Mandatory. Listening TCP port.
     port: 8080
-    protocol: http
-    # backlog: 500
-    # portType: PRIORITY
+    # -- Optional. Enabling of the https protocol.
+    # HTTPS service is an optional feature, available depending on Edition and
+    # License Type. To know what features are enabled by your license, please
+    # see the License tab of the Monitoring Dashboard (by default, available at
+    # /dashboard).
+    # @default -- false
+    enableHttps: 
+    # -- (int) Optional. Size of the system buffer for incoming TCP connections
+    # Overrides the default system setting
+    # @default -- the system setting
+    backlog:
+    # -- (string) Optional. Provides meta-information on how this listening 
+    # socket will be used, according with the deployment configuration.
+    # This can inform the Server of a restricted set of requests expected on 
+    # the port, which may improve the internal backpressure mechanisms.
+    # If set to `CREATE_ONLY`, declares that the port is only devoted to "S" 
+    # connections, according with the provided Clustering.pdf document.
+    #
+    # If set to `CONTROL_ONLY`, declares that the port is only devoted to "CR"
+    # connections,according with the provided Clustering.pdf document. The 
+    # Server will enforce the restriction.
+    #
+    # If set to `PRIORITY`, requests issued to this port will follow a fast 
+    # track. In particular, they will be never enqueued to the SERVER thread
+    # pool, but only the ACCEPT pool; and they will not be subject to any
+    # backpressure-related limitation (like `load.acceptPoolMaxQueue`). This
+    # should ensure that the requests will be fulfilled as soon as possible, 
+    # even when the Server is overloaded. Such priority port is, therefore,
+    # ideal for opening the Monitoring Dashboard to inspect overload issues in
+    # place. It can also be used to open sessions on a custom Adapter Set, but,
+    # in that case, any thread pool specifically defined for the Adapters will 
+    # be entered, with possible enqueueing. Anyway, such port is only meant for
+    # internal use and it is recommended not to leave it publicly accessible.
+    # Furthermore, in case of HTTPS server socket (`enableHttps` set to `true`)
+    # TLS-handshake-related tasks will not be enqueued to the TLS-SSL HANDSHAKE
+    # or TLS-SSL AUTHENTICATION thread pool, but only to a dedicated pool.
+    #
+    # If set to `GENERAL_PURPOSE`, the port can be used for any kind of request.
+    # It can always be set in case of doubts. Note that ports can be 
+    # CREATE_ONLY or CONTROL_ONLY only depending on client behavior. For clients
+    # based on LS SDK libraries, this is related to the use of the 
+    # `cluster.controlLinkAddress` setting. Usage examples are provided in the
+    # Clustering.pdf document.
+    # @default -- "GENERAL_PURPOSE"
+    portType:
+    # -- Optional. Settings that allow some control over the HTTP headers of 
+    # the provided responses. Header lines can only be added to those used by 
+    # the Server, either by specifying their value or by copying them from the
+    # request.
+    # Multiple rules can be defined; their order is ignored.
+    # In any case of replicated header fields, multiple lines will be inserted;
+    # it is assumed that multiple occurrences are allowed for those fields.
+    # No syntax and consistency checks are performed on the resulting HTTP 
+    # headers; only custom or non-critical fields should be used.
+    # The header names involved are always converted to lower case.
     responseHttpHeaders:
-      # echo:
-      #   - "cookie"
+      # -- Optional. Requests to look for any header lines for  the specified 
+      # field name on the HTTP request header and to copy them to the HTTP 
+      # response header.
+      # @default -- []
+      echo:
+        # - "cookie"
+      # -- Optional. Requests to add to the HTTP response header a line with 
+      # the specified `name` (mandatory) and `value` (optional).
+      # The suggested setting for "X-Accel-Buffering" may help to enable 
+      # streaming support when proxies of several types are involved.
       add:
         - name: "X-Accel-Buffering"
           value: "no"
         # - name: "my-header"
         #   value: "MyValue"
-    # listeningInterface: 200.0.0.1
+    # -- (string) Optional. Can be used on a multihomed host to specify the IP 
+    # address to bind the server socket to.
+    # @default -- accept connections on any/all local addresses
+    listeningInterface:
+    # -- Optional. Settings that allow for better recognition of the remote 
+    # address of the connected clients. This can be done in two ways:
+    # - by taking advantage of the X-Forwarded-For HTTP header, that 
+    #   intermediate HTTP proxies and level-7 Load Balancers usually set to 
+    #   supply connection routing information in an incremental way (this is 
+    #   done through the "skip_local_forwards" subelement);
+    # - by receiving the routed address directly from a TCP reverse proxy or 
+    #   level-4 Load Balancer through the Proxy Protocol, when the proxy is
+    #   configured to do so (this is done through the `enableProxyProtocol`
+    #   setting).
+    # The two techniques can also coexist, but, in that case, the address 
+    # through the proxy protocol would always be considered as the real client
+    # address and all addresses in the chain specified in X-Forwarded-For would
+    # be considered as written by client-side proxies.
+    # The address determined in this way will be used in all cases in which the
+    # client address is reported or checked. For logging purposes, the 
+    # connection endpoint will still be written, but the real remote address, 
+    # if available and different, will be added.
+    # The determined address may also be sent to the clients, depending on the
+    # Client SDK in use.
+    # @default -- all settings at their defaults
     clientIdentification:
-      private: false
-      # enableProxyProtocol: true
-      # proxyProtocolTimeoutMillis: 3000
-      # skipLocalForwards: 2
-      # logForwards: false
+      # -- Optional.  If set to `true`, prevents the determined address from 
+      # being sent to the clients. In fact, the address is notified to the 
+      # client upon connection and it is made available to application code by
+      # the most recent Unified Client SDKs through the clientIp property in 
+      # the ConnectionDetails class.
+      # For instance, the flag can and should be set to `true` in case the 
+      # identification of the remote address is not properly tuned and the 
+      # determined address may be a local one. 
+      # @default -- false               
+      private:
+      # -- Optiona. If set to `true`, instructs the Server that the connection 
+      # endpoint is a reverse proxy or load balancer that sends client address
+      # information through the Proxy Protocol. The received address and port
+      # will be used as the real client address and port.
+      # In particular, they will appear in all log lines for this client (but 
+      # for the `lightstreamerLogger.connections` logger).
+      # On the other hand, the reported protocol will always refer to the 
+      # actual connection.
+      # There is no dynamic detection of the proxy protocol; hence, if enabled,
+      # all connections to this port must speak the proxy protocol (for
+      # instance, any healthcheck requests should be configured properly on the
+      # proxy) and, if not, no connection can speak the proxy protocol, 
+      # otherwise the outcome would be unspecified.
+      # On the other hand, if enabled, both proxy protocol version 1 and 2 are
+      # handled; only information for normal TCP connections is considered.
+      # @default -- false
+      enableProxyProtocol: 
+      # -- (int) Optional. Optional. Timeout applied while reading for 
+      # information through the proxy protocol, when enabled. Note that a 
+      # reverse proxy or load balancer speaking the proxy protocol is bound to
+      # send information immediately after connection start; so the timeout can
+      # only apply to cases of wrong configuration, local network issues or 
+      # illegal access to this port.
+      # For this reason, the read is performed directly in the ACCEPT thread 
+      # pool and this setting protects that pool against such unlikely events.
+      # @default -- 1000
+      proxyProtocolTimeoutMillis:
+      # -- (int) Optional, but nonzero values forbidden if `enableProxyProtocol`
+      # is `true`. Number of entries in the X-Forwarded-For header that are 
+      # expected to be supplied on each HTTP request (including Websocket 
+      # handshake) by the intermediate nodes (e.g. reverse proxies, load 
+      # balancers) that stand in the local environment.
+      # If N entries are expected from local nodes, this means that the 
+      # Nth-nearest entry corresponds to the node connected to the farthest 
+      # local intermediate node, hence to the client. So, that entry will be
+      # used as the real client address. In particular, it will appear in all 
+      # log lines that refer to the involved HTTP request or Websocket.
+      # If set to `0` or left at the default, all entries in X-Forwarded-For 
+      # will be considered as written by client-side proxies, hence the 
+      # connection endpoint address will be used (unless, of course, 
+      # `enabeProxyProtocol` is set to `true`, which overrides the behavior).
+      # Note that a similar correction for port and protocol is not applied;
+      # hence, when an address corrected through a nonzero setting is reported,
+      # any port and protocol associated will still refer to the actual 
+      # connection.
+      # @default -- 0
+      skipLocalForwards:
+      # -- Optiona. If set to `true`, causes the list of entries of the 
+      # X-Forwarded-For header, when available, to be added to log lines 
+      # related to the involved HTTP request or Websocket.
+      # If `skipLocalForwards` is nonzero, only the entries farther than the
+      # determined "real" remote address are included.
+      # These entries are expected to be written by client-side proxies.
+      # @default -- false
+      enableForwardsLogging:
 
-  httpsServer:
-    enabled: false
-    name: "Lightstreamer HTTPS Server"
+  pluto:
+    enabled: true
+    name: "Lightstreamer HTTPS Server PLUTO"
     port: 8081
-    protocol: https
+    enableHttps: true
     portType: CONTROL_ONLY
     responseHttpHeaders:
       echo:
@@ -542,37 +702,87 @@ servers:
           value: "no"
         - name: "my-header"
           value: "MyValue"
-    # listeningInterface: 200.0.0.1
+    listeningInterface: 200.0.0.1
     clientIdentification:
       private: true
       enableProxyProtocol: false
       proxyProtocolTimeoutMillis: 3000
       # skipLocalForwards: 2
       logForwards: true
-    # tlsProvider: Conscrypt
-    keyStoreRef: keystore
-    # allowCipherSuites:
-    #   - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
-    removeCipherSuites:
-      - TLS_RSA_
-    enforceServerCipherSuitePreference:
-      enabled: false
-      order: JVM1
-    disableTlsRenegotiation: true
-    allowProtocols: []
-      # - TLSv1.2
-      # - TLSv1.3
-    removeProtocols:
-      - SSL
-      - TLSv1$
-      - TLSv1.1
-    # enableStatelessTlsSessionResumption: false
-    tlsSessionCacheSize: 10000
-    tlsSessionTimeout: 3600
-    enableClientHintsForTlsSessionResumption: false
-    enableClientAuth: false
-    enabeForceClientAuth: false
-    # trustStoreRef: truststore
+    # -- Mandatory if `enableHttps` is `true`. TLS/SSL settings for this 
+    # socket configuration
+    sslConfig:
+      # -- Optional. If defined, overrides the default JVM's Security Provider
+      # configured in the java.security file of the JDK installation. This 
+      # allows the use of different Security Providers dedicated to single 
+      # listening ports.
+      # When configuring a Security Provider, the related libraries should be 
+      # added to the Server classpath. This is not needed for the Conscrypt 
+      # provider, which is already available in the Server distribution (but 
+      # note that the library includes native code that only targets the main
+      # platforms).
+      # @default -- the default JVM's Security Provider configured in the
+      # java.security file of the JDK installation.
+      tlsProvider: 
+        # keyStoreRef: keystore
+      # -- Optional, but forbidden if `removeCipherSuites` is used.
+      # Specifies all the cipher suites allowed for the TLS/SSL interaction,
+      # provided that they are included, with the specified name, in the set of
+      # of "supported" cipher suites of the underlying Security Provider.
+      # The default set of the "supported" cipher suites is logged at startup
+      # by the `lightstreamerLogger.io.ssl` logger at DEBUG level.
+      # If not used, the `removeCipherSuites` setting is considered; hence, if
+      # `removeCipherSuites` is also not used, all cipher suites enabled by the
+      # Security Provider will be available.
+      # The order in which the cipher suites are specified can be enforced as 
+      # the server-side preference order (see 
+      # `enforceServerCipherSuitePreference`).
+      # @default -- []
+      allowCipherSuites: []
+        # - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+      # -- Optional but forbidden if `allowCipherSuites` is used.
+      # Pattern to be matched against the names of the enabled cipher suites in
+      # order to remove the matching ones from the enabled cipher suites set.
+      # Any pattern in java.util.regex.Pattern format can be specified.
+      # This allows for customization of the choice of the cipher suites to be
+      # used for incoming https connections (note that reducing the set of 
+      # available cipher suites may cause some client requests to be refused).
+      # When this setting is used, the server-side preference order of the 
+      # cipher suites is determined by the underlying Security Provider.
+      # Note that the selection is operated on the default set of the cipher
+      # suites "enabled" by the Security Provider, not on the wider set of the
+      # "supported" cipher suites. The default set of the "enabled" cipher 
+      # suites is logged at startup by the `lightstreamerLogger.io.ssl` logger 
+      # at DEBUG level. -->
+      # @default -- []
+      removeCipherSuites: []
+        # - TLS_RSA_
+      enforceServerCipherSuitePreference:
+        # enabled: false
+        order: "config"
+      # -- Optional. If Y, causes any client-initiated TLS renegotiation request
+             to be refused by closing the connection. This policy may be evaluated
+             in a trade-off between encryption strength and performance risks.
+             Note that, with the default SunJSSE Security Provider, a better way
+             to achieve the same at a global JVM level is by setting the dedicated
+             "jdk.tls.rejectClientInitiatedRenegotiation" JVM property to true.
+             Default: N. -->
+      disableTlsRenegotiation: true
+    #   allowProtocols: []
+    #     # - TLSv1.2
+    #     # - TLSv1.3
+    #   removeProtocols:
+    #     - SSL
+    #     - TLSv1$
+    #     - TLSv1.1
+    #   # enableStatelessTlsSessionResumption: false
+    #   tlsSessionCacheSize: 10000
+    #   tlsSessionTimeout: 3600
+    #   enableClientHintsForTlsSessionResumption: false
+    #   enableClientAuth: false
+    #   enabeForceClientAuth: false
+    #   # trustStoreRef: truststore
+
 
 # Keystores definition
 keyStores:
@@ -602,7 +812,7 @@ trustStores:
 
 # -- Mandatory. Global socket configuration
 globalSocket:
-  # -- (int) Mandatory. Longest inactivity time accepted while waiting for a 
+  # -- (int) (Mandatory) Longest inactivity time accepted while waiting for a 
   # slow request to be received. If this value is exceeded, the socket is
   # closed. Reusable HTTP connections are also closed if they are not reused 
   # for longer than this time.
@@ -677,7 +887,7 @@ globalSocket:
     # be split into multiple frames.
     # A lower limit for the setting may be enforced by the Server.
     # @default -- 16384
-    maxOutboundFrameSize:
+    maxOutboundFrameSize: 0
 
 # -- Security configuration
 security:
@@ -765,8 +975,8 @@ security:
     # -- Optional. List of Origin allowed to consume responses to cross-origin 
     # requests.
     allowAccessFrom:
-      # -- Optional. Defines define a rule against which Origin headers will be
-      # checked.rule must define a scheme, a host and a port in the following way:
+      # -- Optional. Defines a rule against which Origin headers will be
+      # checked.
       fromEveryWere:
         # -- Mandatory. A valid scheme name (usually http or https) or `*`; the
         # latter matches both http and https scheme, but it doesn't match other
@@ -974,8 +1184,9 @@ management:
       # On the other hand, the setting is ignored by the "stop" script.
       # @default -- 0
       testTimeoutMillis: 5000
-      # -- Optional. Can be used on a multihomed host to specify the IP address
-      # to bind the HTTP/HTTPS server sockets to, for all the communication.
+      # -- (string) Optional. Can be used on a multihomed host to specify the 
+      # IP address to bind the HTTP/HTTPS server sockets to, for all the 
+      # communication.
       # Note that, when a listening interface is configured and depending on 
       # the local network configuration, specifying a suitable 
       # `rmiConnector.hostname` setting may be needed to make the connector
@@ -983,35 +1194,33 @@ management:
       # @default -- accept connections on any/all local addresses
       listeningInterface:
       # keyStoreRef: jks
-      # -- (list) Optional, but forbidden if `rmiConnector.removeCipherSuites`
-      # is used.
+      # -- (list) Optional, but forbidden if `removeCipherSuites` is used.
       # Specifies all the cipher suites allowed for the interaction, in case 
       # TLS/SSL is enabled for part or all the communication.
-      # See notes for <allow_cipher_suite> under <https_server>. -->
+      # See notes for `servers.*.sslConfig.allowCipherSuite`.
       # @default -- []
       allowCipherSuites: []
         # - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384  
-      # -- (list) Optional, but forbidden if `rmiConnector.allowCipherSuites` 
-      # is used.
+      # -- (list) Optional, but forbidden if `allowCipherSuites` is used.
       # Pattern to be matched against the names of the enabled cipher suites in
       # order to remove the matching ones from the enabled cipher suites set to
       # be used in case TLS/SSL is enabled for part or all the communication.
-      # See notes for <remove_cipher_suites> under <https_server>.
+      # See notes for `servers.*.sslConfig.removeCipherSuites`.
       # @default -- []
       removeCipherSuites: []
         # - TLS_RSA_
       # -- Optional. Determines which side should express the preference when
       # multiple cipher suites are in common between server and client (in case
       # TLS/SSL is enabled for part or all the communication).
-      # See notes for <enforce_server_cipher_suite_preference> under <https_server>.
+      # See notes for servers.*.sslConfig.enforceServerCipherSuitePreference`.
       enforceServerCipherSuitePreference:
         enabled: true
-        order: "JVM1"
+        order: "JVM"
       # -- (list) Optional, but forbidden if `rmiConnector.removeProtocols` is 
       # used.
       # Specifies one or more protocols allowed for the TLS/SSL interaction, in 
       # case TLS/SSL is enabled for part or all the communication.
-      # See notes for <allow_protocol> under <https_server>-
+      # See notes for `servers.*.sslConfig.allowProtocols`.
       allowProtocols: []
         # - TLSv1.2
         # - TLSv1.3
@@ -1021,7 +1230,7 @@ management:
       # protocols in order to remove the matching ones from the enabled 
       # protocols set to be used in case TLS/SSL is enabled for part or all the
       # communication.
-      # See notes for <remove_protocols> under <https_server>.
+      # See notes for `servers.*.sslConfig.removeProtocols.
       removeProtocols:
         - SSL
         - TLSv1$
@@ -1189,7 +1398,7 @@ management:
   healthCheck:
     enableAvailabilityOnAllServers: 
     availableOnServers:
-      # - httpServer
+      - pluto
       # - httpsServer
 
 # -- Mandatory. Push session configuration
