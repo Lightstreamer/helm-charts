@@ -1,9 +1,9 @@
-{{/* Render the keystore setttings for the main configuration file */}}
+{{/* Render the keystore settings for the main configuration file */}}
 {{- define "lightstreamer.configuration.keystore" -}}
 {{- $top := index . 0 -}}
 {{- $key := index . 1 -}}
-{{- $keyStore := get $top.keyStores $key -}}
-<keystore type={{ $keyStore.type | quote }}>
+{{- $keyStore := required (printf "keystores.%s not defined" $key) (get $top $key) -}}
+<keystore{{- if not (quote $keyStore.type | empty) }} type={{ $keyStore.type | quote }}{{- end }}>
 
     <!-- Specifies a path relative to the conf directory.
          The referred file can be replaced at runtime and the new keystore
@@ -13,7 +13,7 @@
          of the box, obviously contains an invalid certificate. In order to
          use it for your experiments, remember to add a security exception
          to your browser. -->
-    <keystore_file>./keystore/{{ $key }}/{{ $keyStore.file.secretKeyRef.key }}</keystore_file>
+    <keystore_file>./keystores/{{ $key }}/{{ required (printf "keystores.%s.keystoreFilesecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</keystore_file>
 
     <!-- Specified the password for the keystore. The factory setting below
          refers to the test keystore "myserver.keystore", provided out of the box.
@@ -30,6 +30,40 @@
     <keystore_password type="text">$env.KEYSTORE_{{ $key | upper }}_PASSWORD</keystore_password>
 
 </keystore>
+{{- end -}}
+
+{{/* Render the trustostore settings for the main configuration file */}}
+{{- define "lightstreamer.configuration.truststore" -}}
+{{- $top := index . 0 -}}
+{{- $key := index . 1 -}}
+{{- $keyStore := get $top $key -}}
+<truststore type={{ $keyStore.type | quote }}>
+
+    <!-- Specifies a path relative to the conf directory.
+         The referred file can be replaced at runtime and the new keystore
+         will be loaded immediately. Only in case of successful load
+         will the previous keystore be replaced.
+         NOTE: The JKS keystore "myserver.keystore", which is provided out
+         of the box, obviously contains an invalid certificate. In order to
+         use it for your experiments, remember to add a security exception
+         to your browser. -->
+    <truststore_file>./keystores/{{ $key }}/{{ $keyStore.keystoreFileSecretRef.key }}</truststore_file>
+
+    <!-- Specified the password for the keystore. The factory setting below
+         refers to the test keystore "myserver.keystore", provided out of the box.
+         The optional "type" attribute, whose default is "text", when set
+         to "file", allows you to supply the path, relative to the conf
+         directory, of a file containing the password in UTF-8 encoding.
+         Note that the password has to be stored in clear, but the file could be
+         protected from external access. Also pay attention that the file does
+         not contain any extra line termination characters.
+         In case the keystore file is replaced, a password of "file" type
+         will be reread as well. This is the only way to supply a new
+         password, if needed. Note that the password file should be modified
+         before the keystore file. -->
+    <truststore_password type="text">$env.KEYSTORE_{{ $key | upper }}_PASSWORD</truststore_password>
+
+</truststore>
 {{- end -}}
 
 {{/* Create the Lightstreamer configuration file */}}
@@ -87,7 +121,8 @@
 -->
 
 {{- range .Values.servers }}
-  {{- if and (eq .protocol "http") .enabled }}
+  {{- $enabled := .enabled | default false }}
+  {{- if $enabled }}
     <!-- Optional and cumulative (but at least one from <http_server> and
          <https_server> should be defined). HTTP server socket configuration.
          Multiple listening sockets can be defined, by specifying multiple
@@ -99,63 +134,68 @@
          in the ConnectionDetails class. It must be an ASCII string with no
          control characters and it must be unique among all <http_server>
          and <https_server> blocks. -->
-    <http_server name={{ required "name must be set" .name | quote }}>
+  {{- $enableHttps := .enableHttps | default false }}
+  {{- $elementType := $enableHttps | ternary "https" "http" }}
+    <{{ $elementType }}_server name={{ required "name must be set" .name | quote }}>
 
         <!-- Mandatory for this block. Listening TCP port. -->
         <port>{{ required "port must be set" .port }}</port>
 
         <!-- Optional. Size of the system buffer for incoming TCP connections
             (backlog). Overrides the default system setting. -->
-    {{- if .backlog }}
-        <backlog>{{ .backlog }}</backlog>
-    {{- else }}
+  {{- if not (quote .backlog | empty) }}
+        <backlog>{{ int .backlog }}</backlog>
+  {{- else }}
         <!--
         <backlog>50</backlog>
         -->
-    {{- end }}
+  {{- end }}
 
         <!-- Optional. Provides meta-information on how this listening socket
-           will be used, according with the deployment configuration.
-           This can inform the Server of a restricted set of requests expected
-           on the port, which may improve the internal backpressure mechanisms.
-           It can be one of the following:
-           - CREATE_ONLY
-             Declares that the port is only devoted to "S" connections,
-             according with the provided Clustering.pdf document.
-           - CONTROL_ONLY
-             Declares that the port is only devoted to "CR" connections,
-             according with the provided Clustering.pdf document.
-             The Server will enforce the restriction.
-           - PRIORITY
-             If set, requests issued to this port will follow a fast track.
-             In particular, they will be never enqueued to the SERVER thread
-             pool, but only the ACCEPT pool; and they will not be subject to any
-             backpressure-related limitation (like <accept_pool_max_queue>).
-             This should ensure that the requests will be fulfilled as soon as
-             possible, even when the Server is overloaded.
-             Such priority port is, therefore, ideal for opening the Monitoring
-             Dashboard to inspect overload issues in place. It can also be used
-             to open sessions on a custom Adapter Set, but, in that case, any
-             thread pool specifically defined for the Adapters will be entered,
-             with possible enqueueing.
-             Anyway, such port is only meant for internal use and it is
-             recommended not to leave it publicly accessible.
-           - GENERAL_PURPOSE
-             To be set when the port can be used for any kind of request.
-             It can always be set in case of doubts.
-             Note that ports can be CREATE_ONLY or CONTROL_ONLY only depending
-             on client behavior. For clients based on LS SDK libraries, this is
-             related to the use of the <control_link_address> setting. Usage
-             examples are provided in the Clustering.pdf document.
-             Default: GENERAL_PURPOSE. -->
-    {{- if .portType }}
-        <port_type>{{ .portType | default "GENERAL_PURPOSE" }}</port_type>
-    {{- else }}
+             will be used, according with the deployment configuration.
+             This can inform the Server of a restricted set of requests expected
+             on the port, which may improve the internal backpressure mechanisms.
+             It can be one of the following:
+             - CREATE_ONLY
+               Declares that the port is only devoted to "S" connections,
+               according with the provided Clustering.pdf document.
+             - CONTROL_ONLY
+               Declares that the port is only devoted to "CR" connections,
+               according with the provided Clustering.pdf document.
+               The Server will enforce the restriction.
+             - PRIORITY
+               If set, requests issued to this port will follow a fast track.
+               In particular, they will be never enqueued to the SERVER thread
+               pool, but only the ACCEPT pool; and they will not be subject to any
+               backpressure-related limitation (like <accept_pool_max_queue>).
+               This should ensure that the requests will be fulfilled as soon as
+               possible, even when the Server is overloaded.
+               Such priority port is, therefore, ideal for opening the Monitoring
+               Dashboard to inspect overload issues in place. It can also be used
+               to open sessions on a custom Adapter Set, but, in that case, any
+               thread pool specifically defined for the Adapters will be entered,
+               with possible enqueueing.
+               Anyway, such port is only meant for internal use and it is
+               recommended not to leave it publicly accessible.
+             - PRIORITY
+               To be set when the port can be used for any kind of request.
+               It can always be set in case of doubts.
+               Note that ports can be CREATE_ONLY or CONTROL_ONLY only depending
+               on client behavior. For clients based on LS SDK libraries, this is
+               related to the use of the <control_link_address> setting. Usage
+               examples are provided in the Clustering.pdf document.
+               Default: GENERAL_PURPOSE. -->
+  {{- if .portType }}
+    {{- if not (mustHas .portType (list "CREATE_ONLY" "CONTROL_ONLY" "PRIORITY" "GENERAL_PURPOSE")) }}
+      {{- fail "portType must be set with a valid value" }}
+    {{- end }}
+        <port_type>{{ .portType }}</port_type>
+  {{- else }}
         <!--
         <port_type>PRIORITY</port_type>
         -->
-    {{- end }}
-      
+  {{- end }}
+
         <!-- Optional. Settings that allow some control over the HTTP headers
              of the provided responses. Header lines can only be added to those
              used by the Server, either by specifying their value or by copying
@@ -168,46 +208,46 @@
              HTTP headers; only custom or non-critical fields should be used.
              The header names involved are always converted to lower case. -->
         <response_http_headers>
-    {{- with .responseHttpHeaders}}
+  {{- with .responseHttpHeaders}}
 
             <!-- Optional and cumulative. Requests to look for any header
                  lines for the specified field name on the HTTP request header
                  and to copy them to the HTTP response header.
                  The "name" attribute is mandatory; a final ":" is optional.
                  The value should be left empty. -->
-      {{- range .echo  }}
+    {{- range .echo  }}
             <echo name={{ . | quote }} />
-      {{- else }}
+    {{- else }}
             <!--
             <echo name="cookie" />
             -->
-      {{- end }}
+    {{- end }}
 
             <!-- Optional and cumulative. Requests to add to the HTTP response
                  header a line with the specified field name and value.
                  The "name" attribute is mandatory; a final ":" is optional.
                  The suggested setting for "X-Accel-Buffering" may help to enable
                  streaming support when proxies of several types are involved. -->
-      {{- range .add }}
-            <add name={{ .name | quote }}>{{ .value }}</add>
-      {{- else }}
+    {{- range .add }}
+            <add name={{ required "responseHttpHeaders.add[].name must be set" .name | quote }}>{{ .value }}</add>
+    {{- else }}
             <!--
             <add name="my-header">MyValue</add>
             -->
-       {{- end }}
-    {{ end }}
+    {{- end }}
+  {{ end }}
         </response_http_headers>
 
         <!-- Optional. Can be used on a multihomed host to specify the IP address
              to bind the server socket to.
              The default is to accept connections on any/all local addresses. -->
-    {{- if .listeningInterface }}
+  {{- if .listeningInterface }}
         <listening_interface>{{ .listeningInterface }}</listening_interface>
-    {{- else }}
+  {{- else }}
         <!--
         <listening_interface>200.0.0.1</listening_interface>
         -->
-    {{- end }}
+  {{- end }}
 
         <!-- Optional. Settings that allow for better recognition of the remote
              address of the connected clients. This can be done in two ways:
@@ -241,8 +281,8 @@
              and the determined address may be a local one.
              If the whole block is omitted, this just means that all settings
              are at their defaults. -->
-    {{- with .clientIdentification }}
-        <client_identification{{- if hasKey . "private" }} private={{ .private | ternary "Y" "N" | quote }}{{- end }}>
+  {{- with .clientIdentification }}
+        <client_identification{{- if not (quote .enablePrivate | empty) }} private={{ .enablePrivate | ternary "Y" "N" | quote }}{{- end }}>
 
             <!-- Optional. If Y, instructs the Server that the connection endpoint
                  is a reverse proxy or load balancer that sends client address
@@ -260,13 +300,13 @@
                  On the other hand, if Y, both proxy protocol version 1 and 2 are
                  handled; only information for normal TCP connections is considered.
                  Default: N. -->
-          {{- if hasKey . "enableProxyProtocol" }}
+    {{- if not (quote .enableProxyProtocol | empty) }}
             <proxy_protocol_enabled>{{ .enableProxyProtocol | ternary "Y" "N"}}</proxy_protocol_enabled>
-          {{- else }}
+    {{- else }}
             <!--
             <proxy_protocol_enabled>Y</proxy_protocol_enabled>
             -->
-          {{- end }}
+    {{- end }}
 
             <!-- Optional. Timeout applied while reading for information through
                  the proxy protocol, when enabled. Note that a reverse proxy or
@@ -278,13 +318,13 @@
                  thread pool and this setting protects that pool against such
                  unlikely events.
                  Default: 1000. -->
-          {{- if .proxyProtocolTimeoutMillis }}
-            <proxy_protocol_timeout_millis>{{ .proxyProtocolTimeoutMillis | default 1000 }}</proxy_protocol_timeout_millis>
-          {{- else }}
+    {{- if not (quote .proxyProtocolTimeoutMillis | empty) }}
+            <proxy_protocol_timeout_millis>{{ int .proxyProtocolTimeoutMillis }}</proxy_protocol_timeout_millis>
+    {{- else }}
             <!--
             <proxy_protocol_timeout_millis>3000</proxy_protocol_timeout_millis>
             -->
-          {{- end }}
+    {{- end }}
 
             <!-- Optional, but nonzero values forbidden if "proxy_protocol_enabled"
                  is Y. Number of entries in the X-Forwarded-For header that are
@@ -306,13 +346,13 @@
                  reported, any port and protocol associated will still refer to the
                  actual connection.
                  Default: 0. -->
-          {{- if .skipLocalForwards}}
-            <skip_local_forwards>{{ .skipLocalForwards }}</skip_local_forwards>
-          {{- else }}
+    {{- if not (quote .skipLocalForwards | empty) }}
+            <skip_local_forwards>{{ int .skipLocalForwards }}</skip_local_forwards>
+    {{- else }}
             <!--
             <skip_local_forwards>2</skip_local_forwards>
             -->
-          {{- end }}
+    {{- end }}
 
             <!-- Optional. If Y, causes the list of entries of the X-Forwarded-For
                  header, when available, to be added to log lines related to the
@@ -321,139 +361,22 @@
                  than the determined "real" remote address are included.
                  These entries are expected to be written by client-side proxies.
                  Default: N. -->
-          {{- if hasKey . "logForwards" }}
-            <log_forwards>{{ .logForwards | ternary "Y" "N" }}</log_forwards>
-          {{ else }}
+    {{- if not (quote .enableForwardsLogging | empty) }}
+            <log_forwards>{{ .enableForwardsLogging | ternary "Y" "N" }}</log_forwards>
+    {{- else }}
             <!--
             <log_forwards>Y</log_forwards>
             -->
-          {{ end }}
+    {{- end }}
         </client_identification>
-        {{ else }}
+  {{- else }}
         <!--
         <client_identification private="N">
         </client_identification>
-        -->        
-        {{ end }}
-    </http_server>
-    {{ end }}
-
-  {{- if and (eq .protocol "https") .enabled }}
-    <!-- Optional and cumulative (but at least one from <http_server> and
-         <https_server> should be defined). HTTPS server socket configuration.
-         Multiple listening sockets can be defined, by specifying multiple
-         <https_server> elements. This allows, for instance, the coexistence
-         of private and public ports.
-         This also allows the use of multiple addresses for accessing the
-         Server via TLS/SSL, because different HTTPS sockets can use
-         different keystores. In particular, this is the case when the Server
-         is behind a load balancer and the <control_link_address> setting
-         is leveraged to ensure that all Requests issued by the same client
-         are dispatched to the same Server instance.
-         The "name" attribute is mandatory. Note that it is notified to the
-         client upon connection and it is made available to application code
-         by the Unified Client SDKs through the serverSocketName property
-         in the ConnectionDetails class. It must be an ASCII string with no
-         control characters and it must be unique among all <http_server>
-         and <https_server> blocks.
-         HTTPS service is an optional feature, available depending on Edition
-         and License Type. To know what features are enabled by your license,
-         please see the License tab of the Monitoring Dashboard (by default,
-         available at /dashboard). -->
-    <https_server name={{ required "name must be set" .name | quote }}>
-
-        <!-- Mandatory for this block. Listening TCP port. -->
-        <port>{{ required "port must be set" .port }}</port>
-
-        <!-- Optional. Size of the system buffer for incoming TCP connections
-             (backlog). Overrides the default system setting. -->
-    {{- if .backlog }}
-        <backlog>{{ .backlog }}</backlog>
-    {{- else }}
-        <!--
-        <backlog>50</backlog>
         -->
-    {{- end }}
+  {{- end }}
 
-        <!-- Optional. Provides meta-information on how this listening socket
-             will be used, according with the deployment configuration.
-             See the same element inside <http_server> for a description.
-             In addition, when set to "PRIORITY" on a HTTPS listening socket,
-             TLS-handshake-related tasks will not be enqueued to the
-             TLS-SSL HANDSHAKE or TLS-SSL AUTHENTICATION thread pool,
-             but only to a dedicated pool.
-             Default: GENERAL_PURPOSE. -->
-    {{- if .portType }}             
-        <port_type>{{ .portType }}</port_type>
-    {{- else }}
-        <!--
-        <port_type>PRIORITY</port_type>
-        -->
-    {{- end }}
-
-        <!-- Optional. Settings that allow some control over the HTTP headers
-             of the provided responses. See the same element inside
-             <http_server> for a description. -->
-        <response_http_headers>
-    {{- with .responseHttpHeaders}}
-      {{ range .echo  }}
-            <echo name={{ . | quote }} />
-      {{ else }}
-            <!--
-            <echo name="cookie" />
-            -->
-      {{ end }}
-
-      {{- range .add }}
-            <add name={{ .name | quote }}>{{ .value }}</add>
-      {{- else }}
-            <!--
-            <add name="my-header">MyValue</add>
-            -->
-      {{- end}}
-    {{ end }}
-        </response_http_headers>
-
-        <!-- Optional. Can be used on a multihomed host to specify the IP address
-             to bind the server socket to.
-             The default is to accept connections on any/all local addresses. -->
-    {{- if .listeningInterface }}
-        <listening_interface>{{ .listeningInterface }}</listening_interface>
-    {{- else }}
-        <!--
-        <listening_interface>200.0.0.1</listening_interface>
-        -->
-    {{- end }}
-
-        <!-- Optional. Settings that allow for better identifying the remote address
-             of the connected clients. See the same element inside
-             <http_server> for a description. -->
-    {{- with .clientIdentification }}
-        <client_identification{{- if hasKey . "private" }} private={{ .private | ternary "Y" "N" | quote }}{{- end }}>
-      {{- if hasKey . "enableProxyProtocol" }}
-            <proxy_protocol_enabled>{{ .enableProxyProtocol | ternary "Y" "N"}}</proxy_protocol_enabled>
-      {{- end }}        
-      {{- if .proxyProtocolTimeoutMillis }}
-            <proxy_protocol_timeout_millis>{{ .proxyProtocolTimeoutMillis | default 1000 }}</proxy_protocol_timeout_millis>
-      {{- end }}          
-      {{- if .skipLocalForwards}}
-            <skip_local_forwards>{{ .skipLocalForwards }}</skip_local_forwards>
-      {{- end }}          
-      {{- if hasKey . "logForwards" }}
-            <log_forwards>{{ .logForwards | ternary "Y" "N" }}</log_forwards>
-      {{- end }}          
-        </client_identification>
-    {{- else }}
-        <!--
-        <client_identification private="N">
-            <proxy_protocol_enabled>Y</proxy_protocol_enabled>
-            <proxy_protocol_timeout_millis>3000</proxy_protocol_timeout_millis>
-            <skip_local_forwards>2</skip_local_forwards>
-            <log_forwards>Y</log_forwards>
-        </client_identification>
-        -->
-    {{- end }}
-
+  {{- with .sslConfig }}
         <!-- Optional. If defined, overrides the default JVM's Security Provider
              configured in the java.security file of the JDK installation. This allows
              the use of different Security Providers dedicated to single listening ports.
@@ -461,13 +384,13 @@
              to the Server classpath. This is not needed for the Conscrypt provider,
              which is already available in the Server distribution (but note that the
              library includes native code that only targets the main platforms). -->
-      {{- if .tlsProvider }}
+    {{- if .tlsProvider }}
         <TLS_provider>{{ .tlsProvider }}</TLS_provider>
-      {{- else }}
+    {{- else }}
         <!--
         <TLS_provider>Conscrypt</TLS_provider>
         -->
-      {{- end }}
+    {{- end }}
 
         <!-- Mandatory for this block. Reference to the keystore used by the HTTPS
              service. The keystore type should be specified in the optional "type"
@@ -492,37 +415,9 @@
                are not fully supported by the Conscrypt provider.
              Instructions on how to setup a JKS keystore are provided in the
              TLS/SSL Certificates document. -->
-      {{- if .keyStoreRef }}
-        {{- include "lightstreamer.configuration.keystore" (list $.Values .keyStoreRef)  | nindent 8 }}
-      {{- else }}
-        <keystore type="JKS">
-
-            <!-- Specifies a path relative to the conf directory.
-                 The referred file can be replaced at runtime and the new keystore
-                 will be loaded immediately. Only in case of successful load
-                 will the previous keystore be replaced.
-                 NOTE: The JKS keystore "myserver.keystore", which is provided out
-                 of the box, obviously contains an invalid certificate. In order to
-                 use it for your experiments, remember to add a security exception
-                 to your browser. -->
-            <keystore_file>./myserver.keystore</keystore_file>
-
-            <!-- Specified the password for the keystore. The factory setting below
-                 refers to the test keystore "myserver.keystore", provided out of the box.
-                 The optional "type" attribute, whose default is "text", when set
-                 to "file", allows you to supply the path, relative to the conf
-                 directory, of a file containing the password in UTF-8 encoding.
-                 Note that the password has to be stored in clear, but the file could be
-                 protected from external access. Also pay attention that the file does
-                 not contain any extra line termination characters.
-                 In case the keystore file is replaced, a password of "file" type
-                 will be reread as well. This is the only way to supply a new
-                 password, if needed. Note that the password file should be modified
-                 before the keystore file. -->
-            <keystore_password type="file">./myserver.keypass</keystore_password>
-
-        </keystore>
-      {{- end }}  
+     {{- with required "sslConfig.keyStoreRef must be set" .keyStoreRef }}
+       {{- include "lightstreamer.configuration.keystore" (list $.Values.keyStores .)  | nindent 8 }}
+     {{- end }}
 
         <!-- Optional and cumulative, but forbidden if <remove_cipher_suites> is used.
              Specifies all the cipher suites allowed for the TLS/SSL interaction,
@@ -535,9 +430,9 @@
              the Security Provider will be available.
              The order in which the cipher suites are specified can be enforced as the
              server-side preference order (see <enforce_server_cipher_suite_preference>). -->
-      {{- range .allowCipherSuites }}
+    {{- range .allowCipherSuites }}
         <allow_cipher_suite>{{ . }}</allow_cipher_suite>
-      {{- else }}
+    {{- else }}
         <!--
         <allow_cipher_suite>TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384</allow_cipher_suite>
         -->
@@ -547,7 +442,7 @@
         <!--
         <allow_cipher_suite>........</allow_cipher_suite>
         -->
-      {{- end }}        
+    {{- end }}
 
         <!-- Optional and cumulative, but forbidden if <allow_cipher_suite> is used.
              Pattern to be matched against the names of the enabled cipher suites
@@ -564,13 +459,13 @@
              the "supported" cipher suites. The default set of the "enabled" cipher
              suites is logged at startup by the LightstreamerLogger.io.ssl
              logger at DEBUG level. -->
-      {{- range .removeCipherSuites }}
+    {{- range .removeCipherSuites }}
         <remove_cipher_suites>{{ . }}</remove_cipher_suites>
-      {{- else }}
+    {{- else }}
         <!--
         <remove_cipher_suites>TLS_RSA_</remove_cipher_suites>
         -->
-      {{- end }}
+    {{- end }}
 
         <!-- Optional. Determines which side should express the preference when
              multiple cipher suites are in common between server and client.
@@ -589,13 +484,18 @@
              Note, however, that the underlying Security Provider may ignore
              this setting. This is the case, for instance, of the Conscrypt provider.
              Default: N. -->
-      {{- with .enforceServerCipherSuitePreference }}             
-        <enforce_server_cipher_suite_preference{{ if hasKey . "order" }} order={{ .order | quote }}{{ end }}>{{ .enabled | default false | ternary "Y" "N" }}</enforce_server_cipher_suite_preference>
+      {{- with .enforceServerCipherSuitePreference }}
+        {{- if .order }}
+          {{- if not (mustHas .order (list "JVM" "config")) }}
+            {{- fail "sslConfig.enforceServerCipherSuitePreference must be set with a valid value" }}
+          {{- end }}
+        {{- end }}
+        <enforce_server_cipher_suite_preference{{ if not (quote .order | empty) }} order={{ .order | quote }}{{ end }}>{{ .enabled | default false | ternary "Y" "N" }}</enforce_server_cipher_suite_preference>
       {{- else }}
         <!--
-        <enforce_server_cipher_suite_preference order="JVM">Y</enforce_server_cipher_suite_preference>      
+        <enforce_server_cipher_suite_preference order="JVM">Y</enforce_server_cipher_suite_preference>
         -->
-      {{- end }}
+      {{- end}}
 
         <!-- Optional. If Y, causes any client-initiated TLS renegotiation request
              to be refused by closing the connection. This policy may be evaluated
@@ -604,8 +504,8 @@
              to achieve the same at a global JVM level is by setting the dedicated
              "jdk.tls.rejectClientInitiatedRenegotiation" JVM property to true.
              Default: N. -->
-      {{- if  hasKey . "disableTlsRenegotiation" }}
-        <disable_TLS_renegotiation>{{ .disableTlsRenegotiation | ternary "Y" "N" }}</disable_TLS_renegotiation>
+      {{- if not (quote .enableTlsRenegotiation | empty) }}
+        <disable_TLS_renegotiation>{{ .enableTlsRenegotiation | ternary "N" "Y" }}</disable_TLS_renegotiation>
       {{- else }}
         <!--
         <disable_TLS_renegotiation>Y</disable_TLS_renegotiation>
@@ -622,7 +522,7 @@
              <remove_protocols> is also not used, all protocols enabled by the
              Security Provider will be available. -->
       {{- range .allowProtocols }}
-        <allow_protocol>{{ . }}</allow_protocol>
+        <allow_protocol>{{ required "sslConfig.allowProtocols[] must be set" . }}</allow_protocol>
       {{- else }}
         <!--
         <allow_protocol>TLSv1.2</allow_protocol>
@@ -646,16 +546,10 @@
              is logged at startup by the LightstreamerLogger.io.ssl
              logger at DEBUG level. -->
       {{- range .removeProtocols }}
-        <remove_protocols>{{ . }}</remove_protocols>
+        <remove_protocols>{{ required "sslConfig.removeProtocols[] must be set" . }}</remove_protocols>
       {{- else }}
         <!--
         <remove_protocols>SSL</remove_protocols>
-        -->
-        <!--
-        <remove_protocols>TLSv1$</remove_protocols>
-        -->
-        <!--
-        <remove_protocols>TLSv1.1</remove_protocols>
         -->
       {{- end }}
 
@@ -673,7 +567,7 @@
              Default: If left empty or not defined, the type of resumption will be
              decided by the underlying Security Provider, based on its own
              configuration. -->
-      {{- if hasKey . "enableStatelessTlsSessionResumption" }}
+      {{- if not (quote .enableStatelessTlsSessionResumption | empty) }}
         <enable_stateless_TLS_session_resumption>{{ .enableStatelessTlsSessionResumption | ternary "Y" "N" }}</enable_stateless_TLS_session_resumption>
       {{- else }}
         <!--
@@ -691,8 +585,8 @@
              underlying Security Provider. For the default SunJSSE, it is 20480
              TLS sessions, unless configured through the
              "javax.net.ssl.sessionCacheSize" JVM property. -->
-      {{- if .tlsSessionCacheSize }}
-        <TLS_session_cache_size>{{ .tlsSessionCacheSize }}</TLS_session_cache_size>
+      {{- if not (quote .tlsSessionCacheSize | empty) }}
+        <TLS_session_cache_size>{{ int .tlsSessionCacheSize }}</TLS_session_cache_size>
       {{- else }}
         <!--
         <TLS_session_cache_size>10000</TLS_session_cache_size>
@@ -710,8 +604,8 @@
              underlying Security Provider. For the default SunJSSE, it is 86400
              seconds, unless configured through the
              "jdk.tls.server.sessionTicketTimeout" JVM property. -->
-      {{- if .tlsSessionTimeout }}
-        <TLS_session_timeout>{{ .tlsSessionTimeout }}</TLS_session_timeout>
+      {{- if not (quote .tlsSessionTimeoutSeconds | empty) }}
+        <TLS_session_timeout>{{ int .tlsSessionTimeoutSeconds }}</TLS_session_timeout>
       {{- else }}
         <!--
         <TLS_session_timeout>3600</TLS_session_timeout>
@@ -723,7 +617,7 @@
              the client IPs and ports. This makes sense only if client IPs can be
              determined (see the <client_identification> block).
              Default: N. -->
-      {{- if hasKey . "enableClientHintsForTlsSessionResumption" }}
+      {{- if not (quote .enableClientHintsForTlsSessionResumption | empty) }}
         <use_client_hints_for_TLS_session_resumption>{{ .enableClientHintsForTlsSessionResumption | ternary "Y" "N" }}</use_client_hints_for_TLS_session_resumption>
       {{- else }}
         <!--
@@ -742,7 +636,7 @@
              Note that a check on the client certificate can also be requested
              through <force_client_auth>.
              Default: N. -->
-      {{- if hasKey . "enableClientAuth" }}
+      {{- if not (quote .enableClientAuth | empty) }}
         <use_client_auth>{{ .enableClientAuth | ternary "Y" "N" }}</use_client_auth>
       {{- else }}
         <!--
@@ -758,8 +652,8 @@
              Note that a certificate can also be requested to the client as a
              consequence of <use_client_auth>.
              Default: N. -->
-      {{- if hasKey . "enabeForceClientAuth" }}
-        <force_client_auth>{{ .enabeForceClientAuth | ternary "Y" "N" }}</force_client_auth>
+      {{- if not (quote .enableMandatoryClientAuth | empty) }}
+        <force_client_auth>{{ .enableMandatoryClientAuth | ternary "Y" "N" }}</force_client_auth>
       {{- else }}
         <!--
         <force_client_auth>Y</force_client_auth>
@@ -778,14 +672,10 @@
              accessing the certificates in a JKS keystore don't hold in this
              case, where the latter is used as a truststore.
              Moreover, the handling of keystore replacement doesn't apply here. -->
-      {{- if .trustStoreRef }}
-        {{- $trustStore := default dict (get $.Values.trustStores .trustStoreRef)}}
-        {{- $fileName := default dict $trustStore.file }}
-        {{- $file := (default dict $fileName.secretKeyRef).key }}
-        <truststore type={{ $trustStore.type | quote }}>
-            <truststore_file>./truststore/{{ .trustStoreRef }}/{{ $file }}</truststore_file>
-            <truststore_password type="text">$env.TRUSTSTORE_{{ .trustStoreRef | upper }}_PASSWORD</truststore_password>        
-        </truststore>
+      {{- if or .enableClientAuth .enableMandatoryClientAuth }}
+          {{- with required "sslConfig.trustStoreRef must be set since either sslConfig.enableClientAuth or sslConfig.enableMandatoryClientAuth are enabled " .trustStoreRef }}
+               {{- include "lightstreamer.configuration.truststore" (list $.Values.keyStores .)  | nindent 8 }}
+          {{- end }}
       {{- else }}
         <!--
         <truststore type="JKS">
@@ -793,10 +683,15 @@
             <truststore_password type="text">mypassword</truststore_password>
         </truststore>
         -->
-      {{- end }}
-
-    </https_server>
+       {{- end }}
+  {{- else }}
+    {{- if $enableHttps }}
+    {{- fail "sslConfig must be set" }}
     {{- end }}
+  {{- end }}
+
+    </{{ $elementType }}_server>
+  {{ end }}
 {{- end }}
 
     <!-- GLOBAL SOCKET SETTINGS -->
@@ -848,10 +743,10 @@
          The time actually considered may be approximated and may be a few
          seconds higher, for internal performance reasons.
          If missing or 0, the check is suppressed. -->
-  {{- if not (quote .writeTimeoutMillis | empty) }}         
+  {{- if not (quote .writeTimeoutMillis | empty) }}
     <write_timeout_millis>{{ int .writeTimeoutMillis }}</write_timeout_millis>
   {{- else }}
-    <!-- 
+    <!--
     <write_timeout_millis>120000</write_timeout_millis>
     -->
   {{- end }}
@@ -986,7 +881,7 @@
     <use_protected_js>N</use_protected_js>
     -->
   {{- else }}
-    <use_protected_js>{{ .enableProtectedJs | ternary "Y" "N" }}</use_protected_js>    
+    <use_protected_js>{{ .enableProtectedJs | ternary "Y" "N" }}</use_protected_js>
   {{- end }}
 
     <!-- Optional. Use this setting to enable the forwarding of the cookies to
@@ -1004,7 +899,7 @@
     <forward_cookies>Y</forward_cookies>
     -->
   {{- else}}
-    <forward_cookies>{{ .enableCookiesForwarding | ternary "Y" "N" }}</forward_cookies>    
+    <forward_cookies>{{ .enableCookiesForwarding | ternary "Y" "N" }}</forward_cookies>
   {{- end }}
 
     <!-- Optional. List of origins to be allowed by the browsers to consume
@@ -1047,7 +942,7 @@
          removed from the list and the server is restarted, until its authorization
          expires. -->
   {{- with .crossDomainPolicy }}
-    <cross_domain_policy{{- if .optionsMaxAge}} options_max_age={{ .optionsMaxAge | quote }}{{- end}}{{- if .acceptExtraHeaders }} accept_extra_headers={{ .acceptExtraHeaders | default "" | quote }}{{- end}}{{- if not (quote .acceptCredentials | empty )}} accept_credentials={{ .acceptCredentials | ternary "Y" "N" | quote }}{{- end }}>
+    <cross_domain_policy{{- if .optionsMaxAgeSeconds }} options_max_age={{ .optionsMaxAgeSeconds | quote }}{{- end}}{{- if .acceptExtraHeaders }} accept_extra_headers={{ .acceptExtraHeaders | default "" | quote }}{{- end}}{{- if not (quote .acceptCredentials | empty )}} accept_credentials={{ .acceptCredentials | ternary "Y" "N" | quote }}{{- end }}>
 
         <!-- Optional and cumulative. Declaration of an Origin allowed
              to consume responses to cross-origin requests.
@@ -1123,7 +1018,7 @@
     <!--
     <allowed_domain>my-alt-domain.com</allowed_domain>
     -->
-  {{- end }}  
+  {{- end }}
 
     <!-- Optional. Server identification policy to be used for all server
          responses. Upon any HTTP request, the Server identifies itself
@@ -1173,7 +1068,7 @@
         <!--
         <ip_value>200.0.0.10</ip_value>
         -->
-  {{- end }} 
+  {{- end }}
     </no_logging_ip>
 
     <!-- Optional. Enabling of the inclusion of the user password in the log
@@ -1190,8 +1085,8 @@
   {{- if (quote .enablePasswordVisibilityOnRequestLog | empty) }}
     <!--
     <show_password_on_request_log>Y</show_password_on_request_log>
-    -->  
-  {{- else }}    
+    -->
+  {{- else }}
     <show_password_on_request_log>{{ .enablePasswordVisibilityOnRequestLog | ternary "Y" "N" }}</show_password_on_request_log>
   {{- end }}
 
@@ -1209,7 +1104,7 @@
     <unexpected_wait_threshold_millis>1000</unexpected_wait_threshold_millis>
     -->
   {{- else }}
-    <unexpected_wait_threshold_millis>{{ int .unexpectedWaitThresholdMillis }}</unexpected_wait_threshold_millis>  
+    <unexpected_wait_threshold_millis>{{ int .unexpectedWaitThresholdMillis }}</unexpected_wait_threshold_millis>
   {{- end }}
 
     <!-- Optional. Threshold time for long asynchronous processing alerts.
@@ -1225,7 +1120,7 @@
          Default: 10000. -->
   {{- if (quote .asyncProcessingThresholdMillis | empty) }}
     <!--
-    <async_processing_threshold_millis>1000</async_processing_threshold_millis> 
+    <async_processing_threshold_millis>1000</async_processing_threshold_millis>
     -->
   {{- else }}
     <async_processing_threshold_millis>{{ int .asyncProcessingThresholdMillis }}</async_processing_threshold_millis>
@@ -1404,8 +1299,8 @@
                  Default: if the block is missing, any settings provided to the
                  "javax.net.ssl.keyStore" and "javax.net.ssl.keyStorePassword"
                  JVM properties will apply. -->
-      {{- if .keyStoreRef }}
-        {{- include "lightstreamer.configuration.keystore" (list $.Values .keyStoreRef)  | nindent 12 }}
+      {{- with .keyStoreRef }}
+        {{- include "lightstreamer.configuration.keystore" (list $.Values.keyStores .) | nindent 12 }}
       {{- else }}
             <!--
             <keystore type="JKS">
@@ -1419,10 +1314,8 @@
                  Specifies all the cipher suites allowed for the interaction, in case
                  TLS/SSL is enabled for part or all the communication.
                  See notes for <allow_cipher_suite> under <https_server>. -->
-      {{- if .allowCipherSuites }}
-        {{- range .allowCipherSuites }}
+      {{- range .allowCipherSuites }}
             <allow_cipher_suite>{{ . }}</allow_cipher_suite>
-        {{- end }}
       {{- else }}
             <!--
             <allow_cipher_suite>TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384</allow_cipher_suite>
@@ -1440,11 +1333,9 @@
                  in order to remove the matching ones from the enabled cipher suites set
                  to be used in case TLS/SSL is enabled for part or all the communication.
                  See notes for <remove_cipher_suites> under <https_server>. -->
-      {{- if .removeCipherSuites }}
-        {{- range .removeCipherSuites }}
+      {{- range .removeCipherSuites }}
             <remove_cipher_suites>{{ . }}</remove_cipher_suites>
-        {{- end }}
-      {{- else }} 
+      {{- else }}
             <!--
             <remove_cipher_suites>TLS_RSA_</remove_cipher_suites>
             -->
@@ -1455,13 +1346,16 @@
                  (in case TLS/SSL is enabled for part or all the communication).
                  See notes for <enforce_server_cipher_suite_preference> under <https_server>.
                  Default: N. -->
-      {{- if .enforceServerCipherSuitePreference }}
-        {{- with .enforceServerCipherSuitePreference }}
-            <enforce_server_cipher_suite_preference{{ if not (quote .order | empty) }} order={{ .order | quote }}{{ end }}>{{ .enabled | default false | ternary "Y" "N" }}</enforce_server_cipher_suite_preference>
+      {{- with .enforceServerCipherSuitePreference }}
+        {{- if .order }}
+          {{- if not (mustHas .order (list "JVM" "config")) }}
+            {{- fail "rmiConnector.enforceServerCipherSuitePreference must be set with a valid value" }}
+          {{- end }}
         {{- end }}
+            <enforce_server_cipher_suite_preference{{ if not (quote .order | empty) }} order={{ .order | quote }}{{ end }}>{{ .enabled | default false | ternary "Y" "N" }}</enforce_server_cipher_suite_preference>
       {{- else }}
             <!--
-            <enforce_server_cipher_suite_preference order="JVM">Y</enforce_server_cipher_suite_preference>      
+            <enforce_server_cipher_suite_preference order="JVM">Y</enforce_server_cipher_suite_preference>
             -->
       {{- end}}
 
@@ -1469,10 +1363,8 @@
                  Specifies one or more protocols allowed for the TLS/SSL interaction,
                  in case TLS/SSL is enabled for part or all the communication.
                  See notes for <allow_protocol> under <https_server>. -->
-      {{- if .allowProtocols }}
-        {{- range .allowProtocols }}
+      {{- range .allowProtocols }}
             <allow_protocol>{{ . }}</allow_protocol>
-        {{- end }}
       {{- else }}
             <!--
             <allow_protocol>TLSv1.2</allow_protocol>
@@ -1488,10 +1380,8 @@
                  protocols set to be used in case TLS/SSL is enabled for part
                  or all the communication.
                  See notes for <remove_protocols> under <https_server>. -->
-      {{- if .removeProtocols }}
-        {{- range .removeProtocols }}
+      {{- range .removeProtocols }}
             <remove_protocols>{{ . }}</remove_protocols>
-        {{- end }}
       {{- else }}
             <!--
             <remove_protocols>SSL</remove_protocols>
@@ -1519,10 +1409,8 @@
                  be supplied in order to allow access through the connector.
                  This is also needed if you wish to use the provided "stop" script;
                  the script will always use the first user supplied. -->
-      {{- if .credentials }}
-        {{- range .credentials}}
+      {{- range .credentials}}
             <user id={{ .user | quote }} password={{ .password | quote }} />
-        {{- end }}
       {{- else}}
             <!--
             <user id="other_user" password="other_password" />
@@ -1578,7 +1466,7 @@
              Default: Y. -->
     {{- if .sessionMbeanAvailability }}
       {{- $values := dict "active" "N" "inactive" "Y" "sampled_statistics_only" "sampled_statistics_only" }}
-        <disable_session_mbeans>{{ required "management.jmx.must.sessionMbeanAvailability must be set with a valid value" (get $values .sessionMbeanAvailability) }}</disable_session_mbeans>    
+        <disable_session_mbeans>{{ required "management.jmx.must.sessionMbeanAvailability must be set with a valid value" (get $values .sessionMbeanAvailability) }}</disable_session_mbeans>
     {{- else }}
         <!--
         <disable_session_mbeans>N</disable_session_mbeans>
@@ -1675,7 +1563,7 @@
         <jmxtree_enabled>N</jmxtree_enabled>
         -->
     {{ else }}
-        <jmxtree_enabled>{{ .enableJmxTree | ternary "Y" "N" }}</jmxtree_enabled>    
+        <jmxtree_enabled>{{ .enableJmxTree | ternary "Y" "N" }}</jmxtree_enabled>
     {{ end }}
         <!-- Optional. Enabling of the access to the Monitoring Dashboard
              pages without credentials.
@@ -1688,7 +1576,7 @@
                   If no "user" elements are defined, the Monitoring Dashboard
                   will not be accessible in any way.
              Default: N. -->
-    {{- if (quote .enablePublicAccess | empty) }}             
+    {{- if (quote .enablePublicAccess | empty) }}
         <!--
         <public>Y</public>
          -->
@@ -1728,8 +1616,8 @@
         <available_on_all_servers>N</available_on_all_servers>
         -->
     {{ else }}
-        <available_on_all_servers>{{ .enableAvailabilityOnAllServers | ternary "Y" "N" }}</available_on_all_servers>    
-    {{ end }}        
+        <available_on_all_servers>{{ .enableAvailabilityOnAllServers | ternary "Y" "N" }}</available_on_all_servers>
+    {{ end }}
         <!-- Optional and cumulative (but ineffective if "available_on_all_servers"
              is set to "Y").
              Specific server sockets for which requests to the Monitoring Dashboard
@@ -1738,16 +1626,18 @@
              The optional "jmxtree_visible" attribute (whose default is "Y")
              allows for restriction of the access to the JMX Tree on a TCP port
              basis; it is only effective if <jmxtree_enabled> is set to "Y". -->
+    {{- if not .enableAvailabilityOnAllServers }}
+      {{- range .availableOnServers }}
+        {{- $serverRef := required "dashboard.availableOnServers[].serverRef must be set" .serverRef }}
+        {{- $serverName := required (printf "servers.%s not defined " $serverRef) ($.Values.servers | dig $serverRef "name" "") }}
+        <available_on_server name={{ $serverName | quote }}{{- if not (quote .enableJmxTreeVisibility | empty) }} jmx_tree_visibile={{ .enableJmxTreeVisibility | ternary "Y" "N" | quote }}{{- end }} />
+      {{- else }}
         <!--
         <available_on_server name="Lightstreamer HTTPS Server" />
         -->
         <!--
         <available_on_server name="Lightstreamer HTTP Server" jmxtree_visible="N" />
-        -->             
-    {{- if not .availableOnAllServers }}
-      {{- range .availableOnServers }}
-        {{- $server := get $.Values.servers .serverRef}}
-        <available_on_server name={{ $server.name | quote }}{{- if hasKey . "jmxTreeVisible"}} jmx_tree_visibile={{ .jmxTreeVisible | ternary "Y" "N" | quote }}{{- end }} />
+        -->
       {{- end }}
     {{- end }}
 
@@ -1779,7 +1669,7 @@
         <enable_hostname_lookup>Y</enable_hostname_lookup>
         -->
     {{- else }}
-        <enable_hostname_lookup>{{ .enableHostnameLookup | ternary "Y" "N" }}</enable_hostname_lookup>    
+        <enable_hostname_lookup>{{ .enableHostnameLookup | ternary "Y" "N" }}</enable_hostname_lookup>
     {{- end }}
   {{ end }}
     </dashboard>
@@ -1815,13 +1705,17 @@
              is set to "Y").
              Specific server sockets for which healthcheck requests can be issued,
              that can be identified through the mandatory "name" attribute. -->
+    {{- if not .enableAvailabilityOnAllServers }}
+      {{- range $serverRef := .availableOnServers }}
+        {{- if not (quote $serverRef | empty) }}
+        <available_on_server name={{ required (printf "servers.%s not defined" $serverRef) ($.Values.servers | dig $serverRef "name" "") | quote }} />
+        {{- else }}
+        {{- fail "healthCheck.availableOnServers[] must be set with non-empty references" }}
+        {{- end }}
+      {{- else }}
         <!--
         <available_on_server name="Lightstreamer HTTP Server" />
-        -->      
-    {{- if not .availableOnAllServers }}
-      {{- range .availableOnServers }}
-        {{- $server := get $.Values.servers .}}
-        <available_on_server name={{ $server.name | quote }} />
+        -->
       {{- end }}
     {{- end }}
   {{ end }}
@@ -1891,7 +1785,7 @@
       {{- range .serviceUrlPrefixes }}
     <service_url_prefix>{{ . }}</service_url_prefix>
       {{- end }}
-    {{- else }}    
+    {{- else }}
     <!--
     <service_url_prefix>/server1</service_url_prefix>
     -->
@@ -1939,7 +1833,7 @@
             {{- if empty .userAgentContains }}
                {{- fail "pushSession.specalCases[].userAgentContains must be set" }}
             {{- else }}
-               {{- range .userAgentContains }}     
+               {{- range .userAgentContains }}
             <user_agent contains={{ . | quote }} />
                {{- end }}
             {{- end }}
@@ -1974,7 +1868,7 @@
          If not specified, no limit is set; the streaming session duration
          will be limited only by the "content_length" setting and, at least,
          by the keep-alive message activity. -->
-    {{- if (quote .maxStreamingMillis | empty) }}         
+    {{- if (quote .maxStreamingMillis | empty) }}
     <!--
     <max_streaming_millis>480000</max_streaming_millis>
     -->
@@ -2024,7 +1918,7 @@
          of the Server performance. Note that bandwidth control and output
          statistics are still based on the non-compressed content.
          Default: AUTO. -->
-    {{- if .useCompression}} 
+    {{- if .useCompression}}
     <use_compression>{{ .useCompression }}</use_compression>
     {{- else }}
     <!--
@@ -2083,8 +1977,8 @@
          Aggregate statistics on lost updates are also provided by the JMX
          interface (if available) and by the Internal Monitor. -->
     {{- if (quote .maxBufferSize | empty) }}
-    <!-- 
-    <max_buffer_size>1000</max_buffer_size> 
+    <!--
+    <max_buffer_size>1000</max_buffer_size>
     -->
     {{- else }}
     <max_buffer_size>{{ int .maxBufferSize }}</max_buffer_size>
@@ -2155,13 +2049,13 @@
          A 0 value also prevents any accumulation of memory. On the other
          hand, a value of -1 relieves any limit.
          Default: -1. -->
-    {{- if (quote .maxRecoveryPollLength | empty) }}         
+    {{- if (quote .maxRecoveryPollLength | empty) }}
     <!--
     <max_recovery_poll_length>0</max_recovery_poll_length>
     -->
     {{- else }}
     <max_recovery_poll_length>{{ int .maxRecoveryPollLength }}</max_recovery_poll_length>
-    {{- end }}    
+    {{- end }}
 
     <!-- Optional. Longest time the subscriptions currently in place on a
          session can be kept active after the session has been closed,
@@ -2175,13 +2069,13 @@
          the accomplished wait is considered as valid also for the
          subscription wait purpose.
          Default: the time configured for "session_timeout_millis". -->
-    {{- if (quote .subscriptionTimeoutMillis | empty) }}      
+    {{- if (quote .subscriptionTimeoutMillis | empty) }}
     <!--
     <subscription_timeout_millis>5000</subscription_timeout_millis>
     -->
     {{- else }}
     <subscription_timeout_millis>{{ int .subscriptionTimeoutMillis }}</subscription_timeout_millis>
-    {{- end }}    
+    {{- end }}
 
     <!-- Optional. Timeout used to ensure the proper ordering of client-sent
          messages, within the specified message sequence, before sending them
@@ -2202,13 +2096,13 @@
          a request has got lost and can be used if message dropping is
          acceptable.
          Default: 30000. -->
-    {{- if (quote .missingMessageTimeoutMillis | empty) }}         
+    {{- if (quote .missingMessageTimeoutMillis | empty) }}
     <!--
     <missing_message_timeout_millis>1000</missing_message_timeout_millis>
     -->
     {{- else }}
     <missing_message_timeout_millis>{{ int .missingMessageTimeoutMillis }}</missing_message_timeout_millis>
-    {{- end }}    
+    {{- end }}
 
     <!-- Optional. Configuration of the policy adopted for the delivery of
          updates to the clients. Can be one of the following:
@@ -2238,13 +2132,13 @@
          Forcing a redundant delivery would simplify the client code in all
          the above cases.
          Default: Y. -->
-    {{- if (quote .enableDeltaDelivery | empty) }}      
+    {{- if (quote .enableDeltaDelivery | empty) }}
     <!--
     <delta_delivery>N</delta_delivery>
     -->
     {{- else }}
     <delta_delivery>{{ .enableDeltaDelivery | ternary "Y" "N" }}</delta_delivery>
-    {{- end }}    
+    {{- end }}
 
     <!-- Optional. List of algorithms to be tried by default to perform the
          "delta delivery" of changed fields in terms of difference between
@@ -2267,7 +2161,7 @@
          way to enforce algorithms is to do that on a field-by-field basis
          through the Data Adapter interface.
          Default: an empty list. -->
-    {{- if .defaultDiffOrders }}         
+    {{- if .defaultDiffOrders }}
     <default_diff_order>{{ join "," .defaultDiffOrders }}</default_diff_order>
     {{- else }}
     <!--
@@ -2293,7 +2187,7 @@
     -->
     {{- else }}
     <jsonpatch_min_length>{{ int .jsonPatchMinLength }}</jsonpatch_min_length>
-    {{- end }}    
+    {{- end }}
 
     <!-- Optional. Configuration of the update management for items subscribed to
          in COMMAND mode with unfiltered dispatching, with regard to updates
@@ -2313,7 +2207,7 @@
          No item-level choice is possible. However, setting this flag as Y
          allows for backward compatibility to versions before 4.0, if needed.
          Default: N. -->
-    {{- if (quote .preserveUnfilteredCommandOrdering | empty) }}        
+    {{- if (quote .preserveUnfilteredCommandOrdering | empty) }}
     <!--
     <preserve_unfiltered_command_ordering>Y</preserve_unfiltered_command_ordering>
     -->
@@ -2337,13 +2231,13 @@
                  setting "delta_delivery" as N may denote the need for
                  reducing permanent per-session memory.
          Default: AUTO. -->
-    {{- if (quote .reusePumpBuffers | empty) }} 
+    {{- if (quote .reusePumpBuffers | empty) }}
     <!--
     <reuse_pump_buffers>Y</reuse_pump_buffers>
     -->
     {{- else }}
     <reuse_pump_buffers>{{ .reusePumpBuffers }}</reuse_pump_buffers>
-    {{- end }}  
+    {{- end }}
 
     <!-- STREAMING MODE -->
 
@@ -2368,13 +2262,13 @@
          Higher values should make sense only if the expected throughput is
          high and responsive updates are desired.
          Default: 1600. -->
-    {{- if (quote .sendbuf | empty) }}         
+    {{- if (quote .sendbuf | empty) }}
     <!--
     <sendbuf>5000</sendbuf>
     -->
     {{- else }}
     <sendbuf>{{ int .sendbuf }}</sendbuf>
-    {{- end }}        
+    {{- end }}
 
     <!-- Optional. Longest delay that the Server is allowed to apply to
          outgoing updates in order to collect more updates in the same
@@ -2389,7 +2283,7 @@
      -->
     {{- else }}
     <max_delay_millis>{{ int .maxDelayMillis }}</max_delay_millis>
-    {{- end }}     
+    {{- end }}
 
     <!-- Mandatory. Longest write inactivity time allowed on the socket.
          If no updates have been sent after this time, then a small
@@ -2410,7 +2304,7 @@
       {{- with .defaultKeepaliveMillis }}
     <default_keepalive_millis{{ if not (quote .randomize | empty) }} randomize={{ .randomize | ternary "Y" "N" | quote }}{{- end}}>{{ int (required "pushSession.defaultKeepaliveMillis.value must be set" .value) }}</default_keepalive_millis>
       {{- end }}
-    {{- end }} 
+    {{- end }}
 
     <!-- Mandatory. Lower bound to the keep-alive time requested by a Client.
          Must be lower than the "default_keepalive_millis" setting. -->
@@ -2446,8 +2340,8 @@
          also the following polls for these sessions occur at the same times. -->
     {{- if empty .maxIdleMillis }}
       {{- fail "pushSession.maxIdleMillis must be set" }}
-    {{- else }}         
-      {{- with .maxIdleMillis }}         
+    {{- else }}
+      {{- with .maxIdleMillis }}
     <max_idle_millis{{ if not (quote .randomize | empty) }} randomize={{ .randomize | ternary "Y" "N" | quote }}{{- end}}>{{ int (required "pushSession.maxIdle.value must be set" .value) }}</max_idle_millis>
       {{- end }}
     {{- end }}
@@ -2471,7 +2365,7 @@
     -->
     {{- else }}
     <min_interpoll_millis>{{ int .minInterPollMillis }}</min_interpoll_millis>
-    {{- end }}        
+    {{- end }}
 {{- end }}
 
 <!--
@@ -2750,7 +2644,7 @@
 {{- with .Values.errorPageRef }}
     <error_page>./error-page/{{ .key }}</error_page>
 {{- end }}
-     
+
 
     <!-- Optional. Internal web server configuration.
          Note that some of the included settings may also apply to the
@@ -2849,7 +2743,7 @@
                  the subelements are met.
                  Multiple occurrences of "special_case" are evaluated in sequence,
                  until one is enabled. -->
-            <special_case value="Y">   
+            <special_case value="Y">
                 <!-- Mandatory for this block and cumulative. Defines a condition
                      on the content_type to be used for the response, which should
                      include the string specified through the "contains" attribute. -->
@@ -2900,7 +2794,7 @@
         -->
         {{- else}}
         <flex_crossdomain_enabled>{{ .enableFlexCrossdomain | ternary "Y" "N" }}</flex_crossdomain_enabled>
-        {{- end }}        
+        {{- end }}
 
         <!-- Mandatory when "flex_crossdomain_enabled" is set as "Y".
              Path of the file to be returned upon requests for the
@@ -2962,7 +2856,7 @@
         {{- end }}
 
     </web_server>
-{{- end }} 
+{{- end }}
 
 <!--
   ========================
@@ -3064,7 +2958,7 @@
          The limit can be set as a simple, heuristic protection from Server
          overload.
          Default: unlimited. -->
-    {{- if (quote .maxSessions | empty) }}         
+    {{- if (quote .maxSessions | empty) }}
     <!--
     <max_sessions>1000</max_sessions>
     -->
@@ -3078,7 +2972,7 @@
          The limit can be set as a simple, heuristic protection from Server
          overload from MPN subscriptions.
          Default: unlimited. -->
-    {{- if (quote .maxMpnDevices | empty) }}         
+    {{- if (quote .maxMpnDevices | empty) }}
     <!--
     <max_mpn_devices>1000</max_mpn_devices>
     -->
@@ -3125,7 +3019,7 @@
          Further selectors may be created because of the <selector_max_load>
          setting.
          Default: The number of available total cores, as detected by the JVM. -->
-    {{- if (quote .selectorPoolSize | empty) }}         
+    {{- if (quote .selectorPoolSize | empty) }}
     <!--
     <selector_pool_size>1</selector_pool_size>
     -->
@@ -3140,7 +3034,7 @@
          The base number of selectors is determined by the <selector_pool_size>
          setting.
          Default: 0. -->
-    {{- if (quote .selectorMaxLoad | empty) }}         
+    {{- if (quote .selectorMaxLoad | empty) }}
     <!--
     <selector_max_load>1000</selector_max_load>
     -->
@@ -3222,7 +3116,7 @@
         a CPU shortage due to a huge streaming activity.
         A negative value disables the check.
         Default: -1. -->
-    {{- if (quote .pumpPoolMaxQueue | empty) }}        
+    {{- if (quote .pumpPoolMaxQueue | empty) }}
     <!--
     <pump_pool_max_queue>1000</pump_pool_max_queue>
     -->
@@ -3281,7 +3175,7 @@
     <server_pool_max_free>0</server_pool_max_free>
     -->
     {{- else }}
-    <server_pool_max_free>{{ int .serverPoolMaxFree }}</server_pool_max_free> 
+    <server_pool_max_free>{{ int .serverPoolMaxFree }}</server_pool_max_free>
     {{- end }}
 
     <!--
@@ -3366,7 +3260,7 @@
         available cores.
         Default: Half the number of available total cores, as detected by the JVM
         (obviously, if there is only one core, the default will be 1). -->
-    {{- if (quote .handshakePoolSize | empty) }}        
+    {{- if (quote .handshakePoolSize | empty) }}
     <!--
     <handshake_pool_size>10</handshake_pool_size>
     -->
@@ -3397,13 +3291,13 @@
         no backpressure action will take place.
         A negative value disables the check.
         Default: 100. -->
-    {{- if (quote .handshakePoolMaxQueue | empty) }}  
+    {{- if (quote .handshakePoolMaxQueue | empty) }}
     <!--
     <handshake_pool_max_queue>-1</handshake_pool_max_queue>
     -->
     {{- else }}
-    <handshake_pool_max_queue>{{ int .handshakePoolMaxQueue }}</handshake_pool_max_queue>    
-    {{- end }}     
+    <handshake_pool_max_queue>{{ int .handshakePoolMaxQueue }}</handshake_pool_max_queue>
+    {{- end }}
 
     <!--
         Optional. Maximum number of threads allowed for the
@@ -3444,11 +3338,11 @@
         (see <use_client_auth> and <force_client_auth>).
         A negative value disables the check.
         Default: 100. -->
-    {{- if (quote .httpsAuthPoolMaxQueue | empty) }}  
+    {{- if (quote .httpsAuthPoolMaxQueue | empty) }}
     <!--
     <https_auth_pool_max_queue>-1</https_auth_pool_max_queue>
     -->
-    {{- else }}    
+    {{- else }}
     <https_auth_pool_max_queue>{{ int .httpsAuthPoolMaxQueue }}</https_auth_pool_max_queue>
     {{- end }}
 
@@ -3506,7 +3400,7 @@
     <force_early_conversions>{{ .forceEarlyConversions | ternary "Y" "N" }}</force_early_conversions>
     {{- end }}
 
-{{- end }}    
+{{- end }}
 
 </lightstreamer_conf>
 {{- end -}}
