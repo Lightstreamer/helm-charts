@@ -13,4 +13,3 @@ data:
     {{- include "lightstreamer.configuration.edition" . | nindent 4 }}  
   mime_types.properties: |-
     {{ .Files.Get "mime_types.properties" | nindent 4}}
-
