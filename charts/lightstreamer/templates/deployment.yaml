@@ -37,14 +37,7 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-          {{- range $key, $value := .Values.httpServers }}
-          {{- if $value.enabled }}
-            - name: {{ $key }}
-              containerPort: {{ $value.port }}
-              protocol: TCP
-          {{- end }}
-          {{- end }}
-          {{- range $key, $value := .Values.httpsServers }}
+          {{- range $key, $value := .Values.servers }}
           {{- if $value.enabled }}
             - name: {{ $key }}
               containerPort: {{ $value.port }}
@@ -52,7 +45,7 @@ spec:
           {{- end }}
           {{- end }}
           {{- with .Values.management.jmx.rmiConnector.port}}
-            - name: jmxPort
+            - name: jmx-port
               containerPort: {{ .value }}
               protocol: TCP
           {{- end}}
@@ -61,10 +54,43 @@ spec:
               containerPort: {{ .value }}
               protocol: TCP
           {{- end}}
+          {{- if ((.Values.probes).liveness).enabled}}
+            {{- with .Values.probes.liveness }}
+          livenessProbe:
+            httpGet:
+              path: /lightstreamer/healthcheck
+              {{- $serverRef := required "probes.liveness.serverRef must be set" .serverRef }}
+              {{- $server := required (printf "servers.%s not defined" $serverRef) (get $.Values.servers $serverRef) }}
+              port: {{ $serverRef }}
+              scheme: {{ $server.enableHttps | default false | ternary "HTTPS" "HTTP" }}
+            initialDelaySeconds: {{ .initialDelaySeconds }}
+            periodSeconds: {{ .periodSeconds }}
+            failureThreshold:  {{ .failureThreshold }}
+            timeoutSeconds: {{ .timeoutSeconds }}
+            terminationGracePeriodSeconds: {{ .terminationGracePeriodSeconds }}
+            {{- end }}
+          {{- else }}
           livenessProbe:
              {{- toYaml .Values.livenessProbe | nindent 12 }}
+          {{- end }}
+          {{- if ((.Values.probes).readiness).enabled}}
+            {{- with .Values.probes.readiness }}  
+          readinessProbe:
+            httpGet:
+              path: /lightstreamer/healthcheck
+              {{- $serverRef := required "probes.readiness.serverRef must be set" .serverRef }}
+              {{- $server := required (printf "servers.%s not defined" $serverRef) (get $.Values.servers $serverRef) }}
+              port: {{ $serverRef }}
+              scheme: {{ $server.enableHttps | default false | ternary "HTTPS" "HTTP" }}
+            initialDelaySeconds: {{ .initialDelaySeconds }}
+            periodSeconds: {{ .periodSeconds }}
+            failureThreshold:  {{ .failureThreshold }}
+            timeoutSeconds: {{ .timeoutSeconds }}
+            {{- end }}
+          {{- else}}
           readinessProbe:
              {{- toYaml .Values.readinessProbe | nindent 12 }}
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           env:
@@ -72,17 +98,8 @@ spec:
             - name: KEYSTORE_{{ $key | upper }}_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ $value.password.secretKeyRef.name }}
-                  key: {{ $value.password.secretKeyRef.key }}
-          {{- end }}
-          {{- range $key, $value := .Values.trustStores }}
-          {{- if and $key $value }}
-            - name: TRUSTSTORE_{{ $key | upper }}_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ $value.password.secretKeyRef.name }}
-                  key: {{ $value.password.secretKeyRef.key }}
-          {{- end }}
+                  name: {{ required (printf "keyStores.%s.keystorePasswordSecretRef.name must be set" $key) ($value.keystorePasswordSecretRef).name }}
+                  key: {{ required (printf "keyStores.%s.keystorePasswordSecretRef.key must be set" $key) ($value.keystorePasswordSecretRef).key }}
           {{- end }}
           {{- with .Values.license.enterprise.onlinePasswordSecretRef }}
             - name: ENTERPRISE_LICENSE_{{ .key | upper | replace "-" "_" }}
@@ -98,18 +115,14 @@ spec:
             - name: error-page
               mountPath: /lightstreamer/conf/error-page
           {{- end }}
-          {{- range $key, $value := .Values.keyStores }}
-            - name: keystore-{{ $key }}
-              mountPath: /lightstreamer/conf/keystore/{{ $key }}
-          {{- end }}
-          {{- range $key, $value := .Values.trustStores }}
-            - name: truststore-{{ $key }}
-              mountPath: /lightstreamer/conf/truststore/{{ $key }}
-          {{- end }}
           {{- with .Values.license.enterprise.filePathSecretRef }}
             - name: enterprise-license
               mountPath: /lightstreamer/conf/enterprise-license/
           {{- end}}
+          {{- range $key, $value := .Values.keyStores }}
+            - name: keystore-{{ $key | lower }}
+              mountPath: /lightstreamer/conf/keystores/{{ $key }}
+      {{- end }}
           {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
@@ -123,16 +136,9 @@ spec:
             name: {{ .name }}
       {{- end }}
       {{- range $key, $value := .Values.keyStores }}
-        - name: keystore-{{ $key }}
+        - name: keystore-{{ $key | lower }}
           secret:
-            secretName: {{ $value.file.secretKeyRef.name }}
-      {{- end }}
-      {{- range $key, $value := .Values.trustStores }}
-      {{- if and $key $value }}
-        - name: truststore-{{ $key }}
-          secret:
-            secretName: {{ $value.file.secretKeyRef.name }}
-      {{- end }}
+            secretName: {{ required (printf "keystores.%s.keystoreFileSecretRef.name must be set" $key) (($value.keystoreFileSecretRef).name) }}
       {{- end }}
       {{- with .Values.license.enterprise.filePathSecretRef }}
         - name: enterprise-license
