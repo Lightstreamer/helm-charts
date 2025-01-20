@@ -2,9 +2,6 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-# This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
-replicaCount: 1
-
 # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
 image:
   repository: lightstreamer
@@ -19,10 +16,11 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
+
 #This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccount:
   # Specifies whether a service account should be created
-  create: true
+  create: false
   # Automatically mount a ServiceAccount's API credentials?
   automount: true
   # Annotations to add to the service account
@@ -31,30 +29,143 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
-# This is for setting Kubernetes Annotations to a Pod.
-# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-podAnnotations: {}
-# This is for setting Kubernetes Labels to a Pod.
-# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
-podLabels: {}
+additionalLabels:
+  mylabel: additional-label
 
-podSecurityContext: {}
-  # fsGroup: 2000
+# Lighstreamer's Deployment configuration
+deployment:
+  # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+  replicas: 1
+  # -- Deployment annnotations
+  annotations:
+    dep: deployment annotations
+  # -- Additional deployment labels
+  labels:
+    dep: dep-label
+  # -- Specifies the strategy used to replace old Pods by new one (see https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy)
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
 
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+  # -- Attaches annotations to a pod (https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/)
+  podAnnotations: 
+    myPodAnnotation: app
+  # -- Attaches additional labels to a pod (ttps://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)
+  podLabels:
+    myPodLabel: app
+  # -- Configures the secyruty contesxt for the pod (https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)
+  podSecurityContext: {}
+    # fsGroup: 2000
+  # -- Configures the security context for the container (https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+  probes:
+    liveness:
+      healthCheck:
+        enabled: true
+        # -- Mandatory if `enabled` is set to `true`
+        serverRef: http-server
+        initialDelaySeconds:
+        periodSeconds:
+        failureThreshold:
+        timeoutSeconds:
+        terminationGracePeriodSeconds:
+      # -- This is to setup the default liveness probe more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+      default:
+        # httpGet:
+        #   path: /url/to/healthcheck
+        #   port: http-server
+        #   scheme: HTTP
+    readiness:  
+      healthCheck: 
+        enabled: true
+        serverRef: http-server
+        initialDelaySeconds:
+        periodSeconds:
+        failureThreshold:
+        timeoutSeconds:
+      # -- This is to setup the default readiness probe more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+      default:
+        httpGet:
+          path: /url/to/healthcheck
+          port: pippo
+          scheme: HTTP
+    startup:  
+      healthCheck: 
+        enabled: true
+        serverRef: http-server
+        initialDelaySeconds: 2
+        periodSeconds: 4
+        failureThreshold: 6
+        timeoutSeconds: 8
+        terminationGracePeriodSeconds: 10
+      # -- This is to setup the default readiness probe more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+      default:
+        httpGet:
+          path: /url/to/healthcheck
+          port: pippo
+          scheme: HTTP
+  
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+  lifecycle:
+    preStop:
+      exec:
+        command: [ "/lightstreamer/bin/unix-like/stop.sh" ]
+  # -- Additional volumes
+  extraVolumes:
+  - name: pages-dir
+    emptyDir:
+      sizeLimit: 500Mi
+  # Additional volume mounts
+  extraVolumeMounts:
+  - name: pages-dir
+    mountPath: "/lightstreamer/mypages"
+    readOnly: true
+  # Init containers
+  initContainers: {}
+  # Addiitional environment variables
+  extraEnvs:
+    - name: MY_ENV_VAR
+      value: my-env-var-value
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+  terminationGracePeriodSeconds:
+
+  topologySpreadConstraints: {}
 
 # This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
 service:
+  annotations:
+    # serviceAnnotation: aapp
+  labels:
+    serviceLabel: app
   # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
-  type: LoadBalancer
+  type: NodePort
   # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
   port: 8088
+  nodePort: 30100
   targetPort: https-server
 
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
@@ -230,7 +341,6 @@ logging:
     console:
       type: Console
       pattern: '%d{"dd.MMM.yy HH:mm:ss,SSS"} <%5.5(%p%marker)> %m%n'
-
   loggers:
     # -- These two loggers are used by the internal monitoring system to log
     # load statistics at INFO level.
@@ -1320,7 +1430,7 @@ management:
     # Edition and License Type. To know what features are enabled by your
     # license, please see the License tab of the Monitoring Dashboard (by
     # default, available at /dashboard).
-    rmiConnector:
+    rmiConnector: 
 
       # -- Mandatory. TCP port on which the RMI connector will be available.
       # This is the port that has to be specified in the client access url.
@@ -2552,48 +2662,6 @@ load:
   # @default -- true
   forceEarlyConversions:
 
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
-
-probes:
-  liveness:
-    enabled: true
-    serverRef: http-server
-    initialDelaySeconds:
-    periodSeconds: 2
-    failureThreshold: 6
-    timeoutSeconds: 8
-    terminationGracePeriodSeconds: 10
-    
-  readiness:
-    enabled: true
-    serverRef: https-server
-    initialDelaySeconds:
-    periodSeconds: 2
-    failureThreshold: 6
-    timeoutSeconds: 8
-
-# This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
-extraProbes:
-  livenessProbe:
-    httpGet:
-      path: /lightstreamer/healthcheck
-      port: http-server
-      scheme: HTTP
-  readinessProbe:
-    httpGet:
-      path: /lightstreamer/healthcheck
-      port: pippo
-      scheme: HTTP
 
 # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
@@ -2603,21 +2671,3 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
-# Additional volumes on the output Deployment definition.
-volumes:
-- name: pages-dir
-  emptyDir:
-    sizeLimit: 500Mi
-
-
-# Additional volumeMounts on the output Deployment definition.
-volumeMounts:
-- name: pages-dir
-  mountPath: "/lightstreamer/mypages"
-  readOnly: true
-
-nodeSelector: {}
-
-tolerations: []
-
-affinity: {}
