@@ -2,14 +2,26 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ include "lightstreamer.fullname" . }}
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   labels:
     {{- include "lightstreamer.labels" . | nindent 4 }}
+    {{- with .Values.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   type: {{ .Values.service.type }}
   ports:
     - port: {{ .Values.service.port }}
+      {{- if not (hasKey .Values.servers .Values.service.targetPort) }}
+      {{- fail (printf "servers.%s not defined " .Values.service.targetPort) }}
+      {{- else }}
       targetPort: {{ .Values.service.targetPort }}
+      {{- end }}
       protocol: TCP
+      nodePort: {{ .Values.service.nodePort }}
       name: http
   selector:
     {{- include "lightstreamer.selectorLabels" . | nindent 4 }}
