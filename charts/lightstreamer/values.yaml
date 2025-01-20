@@ -1,8 +1,23 @@
+# 
+# Copyright (C) 2024 Lightstreamer Srl
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#       http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 # Default values for lightstreamer.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-# This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+# Ligtstreamer Docker Image settings.
 image:
   repository: lightstreamer
   # This sets the pull policy for images.
@@ -32,33 +47,28 @@ serviceAccount:
 additionalLabels:
   mylabel: additional-label
 
-# Lighstreamer's Deployment configuration
+# -- Lighstreamer Deployment configuration
 deployment:
-  # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+  # Number of replicas (https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/)
   replicas: 1
   # -- Deployment annnotations
-  annotations:
-    dep: deployment annotations
+  annotations: []
   # -- Additional deployment labels
-  labels:
-    dep: dep-label
-  # -- Specifies the strategy used to replace old Pods by new one (see https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy)
+  labels: {}
+  # -- The strategy used to replace old Pods by new one (see https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy)
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 1
-
-  # -- Attaches annotations to a pod (https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/)
-  podAnnotations: 
-    myPodAnnotation: app
-  # -- Attaches additional labels to a pod (ttps://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)
-  podLabels:
-    myPodLabel: app
-  # -- Configures the secyruty contesxt for the pod (https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)
+  # -- The Pod annotations (https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/)
+  podAnnotations: {}
+  # -- Additional Pod labels (ttps://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)
+  podLabels: {}
+  # -- The security context for the Pod (https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)
   podSecurityContext: {}
     # fsGroup: 2000
-  # -- Configures the security context for the container (https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)
+  # -- The security context for the container (https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)
   securityContext: {}
     # capabilities:
     #   drop:
@@ -155,26 +165,24 @@ deployment:
 
   topologySpreadConstraints: {}
 
-# This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
+# -- Lightstreamer Service configuration (https://kubernetes.io/docs/concepts/services-networking/service/)
 service:
-  annotations:
-    # serviceAnnotation: aapp
-  labels:
-    serviceLabel: app
-  # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+  annotations: {}
+  labels: {}
+  # -- The service type (https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types)
   type: NodePort
-  # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
+  # -- This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
   port: 8088
   nodePort: 30100
+  # -- Reference to a server socket configuration (see `servers` section below)
   targetPort: https-server
 
-# This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
+# -- Lightstreamer Ingres configuration (https://kubernetes.io/docs/concepts/services-networking/ingress/)
 ingress:
+  # -- Enablement of the Ingress
   enabled: true
   className: ""
   annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
   hosts:
     - host: #chart-example.local
       paths:
@@ -337,10 +345,10 @@ logging:
   appenders:
     dailiyRolling:
       type: DailyRollingFile
-      pattern: '%d{"dd-MMM-yy HH:mm:ss,SSS"}|%-5.5(%p%marker)|%-19.19c{19}|%-27.27t|%m%n'
+      pattern: "%d{\"dd-MMM-yy HH:mm:ss,SSS\"}|%-5.5(%p%marker)|%-19.19c{19}|%-27.27t|%m%n"
     console:
       type: Console
-      pattern: '%d{"dd.MMM.yy HH:mm:ss,SSS"} <%5.5(%p%marker)> %m%n'
+      pattern: "%d{\"dd.MMM.yy HH:mm:ss,SSS\"} <%5.5(%p%marker)> %m%n"
   loggers:
     # -- These two loggers are used by the internal monitoring system to log
     # load statistics at INFO level.
