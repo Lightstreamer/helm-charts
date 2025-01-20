@@ -101,7 +101,7 @@
               Leave blank if <contract_id> set to DEMO or <license_validation>
               set to FILE. -->
          {{- with .onlinePasswordSecretRef}} 
-         <online_password>$env.ENTERPRISE_LICENSE_{{ .key | upper | replace "-" "_" }}</online_password>
+         <online_password>$env.LS_ENTERPRISE_LICENSE_{{ .key | upper | replace "-" "_" }}</online_password>
          {{- end }}
 
          <!-- Used only if <license_validation> above set to FILE.

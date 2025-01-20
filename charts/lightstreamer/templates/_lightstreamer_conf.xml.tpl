@@ -27,7 +27,7 @@
          will be reread as well. This is the only way to supply a new
          password, if needed. Note that the password file should be modified
          before the keystore file. -->
-    <keystore_password type="text">$env.KEYSTORE_{{ $key | upper }}_PASSWORD</keystore_password>
+    <keystore_password type="text">$env.LS_KEYSTORE_PASSWORD_{{ $key | upper }}</keystore_password>
 
 </keystore>
 {{- end -}}
