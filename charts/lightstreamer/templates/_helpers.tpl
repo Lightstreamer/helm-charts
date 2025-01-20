@@ -40,6 +40,9 @@ helm.sh/chart: {{ include "lightstreamer.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- if .Values.additionalLabels }}
+{{ include "lightstreamer.additionalLabels" . }}
+{{- end }}
 {{- end }}
 
 {{/*
@@ -51,6 +54,15 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
+Additional labels
+*/}}
+{{- define "lightstreamer.additionalLabels" -}}
+{{- with .Values.additionalLabels }}
+{{- toYaml . }}
+{{- end }}
+{{- end }}
+
+{{/*
 Create the name of the service account to use
 */}}
 {{- define "lightstreamer.serviceAccountName" -}}
@@ -59,4 +71,5 @@ Create the name of the service account to use
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
+
 {{- end }}
