@@ -2,24 +2,38 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "lightstreamer.fullname" . }}
+  {{- with .Values.deployment.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   labels:
     {{- include "lightstreamer.labels" . | nindent 4 }}
+    {{- with .Values.deployment.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.deployment.replicas }}
   {{- end }}
   selector:
     matchLabels:
       {{- include "lightstreamer.selectorLabels" . | nindent 6 }}
+      {{- with .Values.deployment.additionalSelectors }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+  {{- with .Values.deployment.strategy }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
+      {{- with .Values.deployment.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
         {{- include "lightstreamer.labels" . | nindent 8 }}
-        {{- with .Values.podLabels }}
+        {{- with .Values.deployment.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
@@ -29,13 +43,17 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "lightstreamer.serviceAccountName" . }}
       securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+        {{- toYaml .Values.deployment.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
+            {{- toYaml .Values.deployment.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.lifecycle }}
+          lifecycle:
+            {{- toYaml . | nindent 12 }}
+          {{- end}}
           ports:
           {{- range $key, $value := .Values.servers }}
           {{- if $value.enabled }}
@@ -54,13 +72,14 @@ spec:
               containerPort: {{ .value }}
               protocol: TCP
           {{- end}}
-          {{- if ((.Values.probes).liveness).enabled}}
-            {{- with .Values.probes.liveness }}
+          {{- with .Values.deployment.probes }}
           livenessProbe:
+            {{- if ((.liveness).healthCheck).enabled }}
+              {{- with .liveness.healthCheck }}
             httpGet:
               path: /lightstreamer/healthcheck
-              {{- $serverRef := required "probes.liveness.serverRef must be set" .serverRef }}
-              {{- $server := required (printf "servers.%s not defined" $serverRef) (get $.Values.servers $serverRef) }}
+                {{- $serverRef := required "probes.liveness.healthCheck.serverRef must be set" .serverRef }}
+                {{- $server := required (printf "servers.%s not defined" $serverRef) (get $.Values.servers $serverRef) }}
               port: {{ $serverRef }}
               scheme: {{ $server.enableHttps | default false | ternary "HTTPS" "HTTP" }}
             initialDelaySeconds: {{ .initialDelaySeconds }}
@@ -68,46 +87,65 @@ spec:
             failureThreshold:  {{ .failureThreshold }}
             timeoutSeconds: {{ .timeoutSeconds }}
             terminationGracePeriodSeconds: {{ .terminationGracePeriodSeconds }}
+              {{- end }}  
+            {{- else }}
+                {{- toYaml (default dict (.liveness).default) | nindent 12 }}
             {{- end }}
-          {{- else }}
-          livenessProbe:
-             {{- toYaml .Values.livenessProbe | nindent 12 }}
-          {{- end }}
-          {{- if ((.Values.probes).readiness).enabled}}
-            {{- with .Values.probes.readiness }}  
           readinessProbe:
+            {{- if ((.readiness).healthCheck).enabled }}
+              {{- with .readiness.healthCheck }}
             httpGet:
               path: /lightstreamer/healthcheck
-              {{- $serverRef := required "probes.readiness.serverRef must be set" .serverRef }}
-              {{- $server := required (printf "servers.%s not defined" $serverRef) (get $.Values.servers $serverRef) }}
+                {{- $serverRef := required "probes.readiness.healthCheck.serverRef must be set" .serverRef }}
+                {{- $server := required (printf "servers.%s not defined" $serverRef) (get $.Values.servers $serverRef) }}
               port: {{ $serverRef }}
               scheme: {{ $server.enableHttps | default false | ternary "HTTPS" "HTTP" }}
             initialDelaySeconds: {{ .initialDelaySeconds }}
             periodSeconds: {{ .periodSeconds }}
             failureThreshold:  {{ .failureThreshold }}
             timeoutSeconds: {{ .timeoutSeconds }}
+              {{- end }}  
+            {{- else }}
+                {{- toYaml (default dict (.readiness).default) | nindent 12 }}
             {{- end }}
-          {{- else}}
-          readinessProbe:
-             {{- toYaml .Values.readinessProbe | nindent 12 }}
+          startupProbe:
+            {{- if ((.startup).healthCheck).enabled }}
+              {{- with .startup.healthCheck }}
+            httpGet:
+              path: /lightstreamer/healthcheck
+                {{- $serverRef := required "probes.startup.healthCheck.serverRef must be set" .serverRef }}
+                {{- $server := required (printf "servers.%s not defined" $serverRef) (get $.Values.servers $serverRef) }}
+              port: {{ $serverRef }}
+              scheme: {{ $server.enableHttps | default false | ternary "HTTPS" "HTTP" }}
+            initialDelaySeconds: {{ .initialDelaySeconds }}
+            periodSeconds: {{ .periodSeconds }}
+            failureThreshold:  {{ .failureThreshold }}
+            timeoutSeconds: {{ .timeoutSeconds }}
+              {{- end }}  
+            {{- else }}
+                {{- toYaml (default dict (.startup).default) | nindent 12 }}
+            {{- end }}
           {{- end }}
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{- toYaml .Values.deployment.resources | nindent 12 }}
           env:
           {{- range $key, $value := .Values.keyStores }}
-            - name: KEYSTORE_{{ $key | upper }}_PASSWORD
+            - name: LS_KEYSTORE_PASSWORD_{{ $key | upper }}
               valueFrom:
                 secretKeyRef:
                   name: {{ required (printf "keyStores.%s.keystorePasswordSecretRef.name must be set" $key) ($value.keystorePasswordSecretRef).name }}
                   key: {{ required (printf "keyStores.%s.keystorePasswordSecretRef.key must be set" $key) ($value.keystorePasswordSecretRef).key }}
           {{- end }}
           {{- with .Values.license.enterprise.onlinePasswordSecretRef }}
-            - name: ENTERPRISE_LICENSE_{{ .key | upper | replace "-" "_" }}
+            - name: LS_ENTERPRISE_LICENSE_{{ .key | upper | replace "-" "_" }}
               valueFrom:
                 secretKeyRef:
                   name: {{ .name }}
                   key: {{ .key }}
           {{- end}}
+          {{- with .Values.deployment.extraEnvs }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           volumeMounts:
             - name: config
               mountPath: /lightstreamer/conf
@@ -122,10 +160,14 @@ spec:
           {{- range $key, $value := .Values.keyStores }}
             - name: keystore-{{ $key | lower }}
               mountPath: /lightstreamer/conf/keystores/{{ $key }}
-      {{- end }}
-          {{- with .Values.volumeMounts }}
+          {{- end }}
+          {{- with .Values.deployment.extraVolumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
+      {{- with .Values.deployment.initContainers}} 
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       volumes:
         - name: config
           configMap:
@@ -145,18 +187,25 @@ spec:
           secret:
             secretName: {{ .name }}
       {{- end }}
-      {{- with .Values.volumes }}
+      {{- with .Values.deployment.extraVolumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.nodeSelector }}
+      {{- with .Values.deployment.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.affinity }}
+      {{- with .Values.deployment.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.tolerations }}
+      {{- with .Values.deployment.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.deployment.topologySpreadConstraints}}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.deployment.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ int .Values.deployment.terminationGracePeriodSeconds }}
       {{- end }}
