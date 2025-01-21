@@ -130,7 +130,7 @@ spec:
             {{- toYaml .Values.deployment.resources | nindent 12 }}
           env:
           {{- range $key, $value := .Values.keyStores }}
-            - name: LS_KEYSTORE_PASSWORD_{{ $key | upper }}
+            - name: LS_KEYSTORE_{{ $key | upper | replace "-" "_" }}_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ required (printf "keyStores.%s.keystorePasswordSecretRef.name must be set" $key) ($value.keystorePasswordSecretRef).name }}
@@ -143,6 +143,18 @@ spec:
                   name: {{ .name }}
                   key: {{ .key }}
           {{- end}}
+          {{- range $value := .Values.management.jmx.rmiConnector.credentialsSecretes }}
+            - name: LS_CREDENTIAL_{{ $value | upper | replace "-" "_" }}_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ . }}
+                  key: user
+            - name: LS_CREDENTIAL_{{ $value | upper | replace "-" "_" }}_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ . }}
+                  key: password
+          {{- end }}
           {{- with .Values.deployment.extraEnvs }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
