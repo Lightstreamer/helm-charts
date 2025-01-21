@@ -27,7 +27,7 @@
          will be reread as well. This is the only way to supply a new
          password, if needed. Note that the password file should be modified
          before the keystore file. -->
-    <keystore_password type="text">$env.LS_KEYSTORE_PASSWORD_{{ $key | upper }}</keystore_password>
+    <keystore_password type="text">$env.LS_KEYSTORE_{{ $key | upper |replace "-" "_" }}_PASSWORD</keystore_password>
 
 </keystore>
 {{- end -}}
@@ -1409,8 +1409,8 @@
                  be supplied in order to allow access through the connector.
                  This is also needed if you wish to use the provided "stop" script;
                  the script will always use the first user supplied. -->
-      {{- range .credentials}}
-            <user id={{ .user | quote }} password={{ .password | quote }} />
+      {{- range .credentialsSecretes}}
+            <user id="$env.LS_CREDENTIAL_{{ . | upper | replace "-" "_" }}_USER" password="$env.LS_CREDENTIAL_{{ . | upper | replace "-" "_"}}_PASSWORD" />
       {{- else}}
             <!--
             <user id="other_user" password="other_password" />
@@ -1590,12 +1590,18 @@
              The optional "jmxtree_visible" attribute (whose default is "Y")
              allows for restriction of the access to the JMX Tree on a user basis;
              it is only effective if <jmxtree_enabled> is set to "Y". -->
+        {{- range $credential := .credentials }}
+          {{- if $credential.secretRef}}
+            <user id="$env.LS_CREDENTIAL_{{ $credential.secretRef | upper | replace "-" "_" }}_USER" password="$env.LS_CREDENTIAL_{{ .secretRef | upper | replace "-" "_"}}_PASSWORD"{{- if not (quote .enableJmxTreeVisibility | empty) }} jmx_tree_visibile={{ $credential.enableJmxTreeVisibility | ternary "Y" "N" | quote }}{{- end }} />
+          {{- end }}
+        {{- else}}
         <!--
         <user id="put_your_dashboard_user_here" password="put_your_dashboard_password_here" />
         -->
         <!--
         <user id="other_user" password="other_password" jmxtree_visible="N" />
         -->
+        {{- end }}
 
         <!-- Optional. Enabling of the access to the Monitoring Dashboard pages
              through all server sockets. Can be one of the following:
