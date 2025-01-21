@@ -17,35 +17,43 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-# Ligtstreamer Docker Image settings.
-image:
-  repository: lightstreamer
-  # This sets the pull policy for images.
-  pullPolicy: Always
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
 
-# This is for the secretes for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
-imagePullSecrets: []
-# This is to override the chart name.
+# Common settings
+
+# -- Override the default name of the chart
 nameOverride: ""
+# -- Replace the chart's default resource naming convention 
 fullnameOverride: ""
 
+# -- Additional labels to apply to all resources
+additionalLabels:
 
-#This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
+# -- Lightstreamer Docker Image settings
+image:
+  # -- Remote registry from which to pull the Lightstreamer Docker image
+  repository: lightstreamer
+  # -- The pull policy for the images
+  pullPolicy: Always
+  # -- The tag of the image to pull
+  # @default -- .Chart.Appversion
+  tag: ""
+
+# Reference to Kubernetes secrets containing the credentials to pull the image
+# @default -- []
+imagePullSecrets: []
+
+# -- Service Account settings (https://kubernetes.io/docs/concepts/security/service-accounts/)
 serviceAccount:
-  # Specifies whether a service account should be created
+  # -- Specifies whether a service account should be created
   create: false
-  # Automatically mount a ServiceAccount's API credentials?
+  # -- Specifies whether a service account should automatically mount a ServiceAccount's API credentials
   automount: true
-  # Annotations to add to the service account
+  # -- Annotations to add to the service account
   annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
+  # -- The name of the service account to use.
+  # If not set and `create` is true, a name is generated using the fullname template.
   name: ""
 
-additionalLabels:
-  mylabel: additional-label
 
 # -- Lighstreamer Deployment configuration
 deployment:
@@ -1572,13 +1580,20 @@ management:
       # authentication; the allowed users are set in the "user" elements.
       # @default -- false
       enablePublicAccess: false
-      credentials:
-        changeMe:
-          user: user_changeme
-          password: "password_changeme"
-        # other:
-        #   user: user_other
-        #   password: "password_other"
+
+      # -- Optional, but ineffective if `enablePublicAccess` is set to `true`.
+      # Reference to the list of secrets containng the credentials of the users
+      # enabled to access the RMI connector.
+      # Every secret must contains the keys `user` and `password`.
+      # If `enablePublicAccess` is set to `false`, at least one set of 
+      # credentials should be supplied in order to allow access through the 
+      # connector.
+      # This is also needed if you wish to use the provided "stop" script; the
+      # script will always use the first user supplied.
+      # @defalt -- []
+      credentialSecretes: []
+        # - rmi-secret-user
+        # - rmi-secret-other-user
 
     # -- Optional. JMXMP connector configuration.
     # The connector is supported by the Server only if Sun/Oracle's JMXMP
@@ -1629,18 +1644,18 @@ management:
     # @default -- true
     enableLongListProperties: false
 
-    # -- Optional. Startup check that the conditions for the correct working of
-    # the provided "stop" script are met (see the <jmx> block).
-    # If set to `true`, the startup will wail if the JMX RMI connector is not
-    # configured or the ServerMBean cannot bet started. This also enforces the
-    # check of the JMX port reachability ( see `rmiConnector.enableTestPorts`
-    # and the remarks on the test effectiveness); if the test fails, the
-    # startup will also fail.
-    # If set to `false`, no check is made that the "stop" script should work.
-    # This may not be a problem, because the Server can be stopped in other
-    # ways. The provided installation scripts also close the Server without
-    # resorting to the "stop" script.
-    # @default -- false
+  # -- Optional. Startup check that the conditions for the correct working of
+  # the provided "stop" script are met (see the <jmx> block).
+  # If set to `true`, the startup will wail if the JMX RMI connector is not
+  # configured or the ServerMBean cannot bet started. This also enforces the
+  # check of the JMX port reachability ( see `rmiConnector.enableTestPorts`
+  # and the remarks on the test effectiveness); if the test fails, the
+  # startup will also fail.
+  # If set to `false`, no check is made that the "stop" script should work.
+  # This may not be a problem, because the Server can be stopped in other
+  # ways. The provided installation scripts also close the Server without
+  # resorting to the "stop" script.
+  # @default -- false
   enableStoppingServiceCheck:
 
   # -- Optional. Configuration of the Monitoring Dashboard.
@@ -1692,8 +1707,27 @@ management:
     # browser. If no "users" settings is defined, the Monitoring Dashboard will
     # not be accessible in any way.
     # @default -- false
-
     enablePublicAccess: true
+
+    # -- Optional, but ineffective if `enablePublicAccess` is set to `true`.
+    # Credentials of the users enabled to access the Monitoring Dashboard.
+    # enabled to access the Monitoring Dashboard.
+    # Every secret must contains the keys `user` and `password`.
+    # If `enablePublicAccess` is set to `false`, at least one set of 
+    # credentials should be supplied in order to allow access through the 
+    # connector.
+    # @defalt -- []
+    credentials:
+      - # -- Reference to the secret containing the credentials of the user 
+        # enabled to access the Monitoring Dashboard.
+        # The secret must contain the keys `user` and `password`.
+        secretRef:
+        
+        # - Optional, but effective only if `dashboard.enableJmxTree` is set to
+        # `true`. Allows allows for restriction of the access to the JMX Tree
+        # on a user basis.
+        # @default -- true
+        enableJmxTreeVisibility: 
 
     # -- Optional. Enabling of the access to the Monitoring Dashboard pages
     # through all server sockets.
@@ -1718,7 +1752,7 @@ management:
       - # -- Mandatory. Allowed server socket configuration.
         serverRef: http-server
 
-        # - Optional, but effective only of `dashboard.enableJmxTree` is set to
+        # - Optional, but effective only if `dashboard.enableJmxTree` is set to
         # `true`. Allows allows for restriction of the access to the JMX Tree
         # on a TCP port basis.
         # @default -- true
