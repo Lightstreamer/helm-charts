@@ -5,6 +5,9 @@ metadata:
   name: {{ include "lightstreamer.fullname" . }}
   labels:
     {{- include "lightstreamer.labels" . | nindent 4 }}
+    {{- with .Values.ingress.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
   {{- with .Values.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -23,8 +26,8 @@ spec:
       secretName: {{ .secretName }}
     {{- end }}
   {{- end }}
+  {{- range .Values.ingress.hosts }}
   rules:
-    {{- range .Values.ingress.hosts }}
     - host: {{ .host | quote }}
       http:
         paths:
@@ -39,5 +42,11 @@ spec:
                 port:
                   number: {{ $.Values.service.port }}
           {{- end }}
-    {{- end }}
+  {{- else }}
+  defaultBackend:
+    service:
+      name: {{ include "lightstreamer.fullname" $ }}
+      port:
+        number: {{ $.Values.service.port }}
+   {{- end }}
 {{- end }}
