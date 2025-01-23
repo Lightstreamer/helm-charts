@@ -32,7 +32,7 @@
 </keystore>
 {{- end -}}
 
-{{/* Render the trustostore settings for the main configuration file */}}
+{{/* Render the truststore settings for the main configuration file */}}
 {{- define "lightstreamer.configuration.truststore" -}}
 {{- $top := index . 0 -}}
 {{- $key := index . 1 -}}
@@ -487,7 +487,7 @@
       {{- with .enforceServerCipherSuitePreference }}
         {{- if .order }}
           {{- if not (mustHas .order (list "JVM" "config")) }}
-            {{- fail "sslConfig.enforceServerCipherSuitePreference must be set with a valid value" }}
+            {{- fail "sslConfig.enforceServerCipherSuitePreference must be set one of \"JVM\", \"config\"" }}
           {{- end }}
         {{- end }}
         <enforce_server_cipher_suite_preference{{ if not (quote .order | empty) }} order={{ .order | quote }}{{ end }}>{{ .enabled | default false | ternary "Y" "N" }}</enforce_server_cipher_suite_preference>
@@ -495,7 +495,7 @@
         <!--
         <enforce_server_cipher_suite_preference order="JVM">Y</enforce_server_cipher_suite_preference>
         -->
-      {{- end}}
+      {{- end }}
 
         <!-- Optional. If Y, causes any client-initiated TLS renegotiation request
              to be refused by closing the connection. This policy may be evaluated
@@ -1010,7 +1010,7 @@
   {{- if .allowedDomains }}
     {{- range .allowedDomains }}
     <allowed_domain>{{ . }}</allowed_domain>
-    {{- end}}
+    {{- end }}
   {{- else }}
     <!--
     <allowed_domain>my-domain.com</allowed_domain>
@@ -1357,7 +1357,7 @@
             <!--
             <enforce_server_cipher_suite_preference order="JVM">Y</enforce_server_cipher_suite_preference>
             -->
-      {{- end}}
+      {{- end }}
 
             <!-- Optional and cumulative, but forbidden if <remove_protocols> is used.
                  Specifies one or more protocols allowed for the TLS/SSL interaction,
@@ -1409,7 +1409,7 @@
                  be supplied in order to allow access through the connector.
                  This is also needed if you wish to use the provided "stop" script;
                  the script will always use the first user supplied. -->
-      {{- range .credentialsSecretes}}
+      {{- range .credentialSecrets}}
             <user id="$env.LS_CREDENTIAL_{{ . | upper | replace "-" "_" }}_USER" password="$env.LS_CREDENTIAL_{{ . | upper | replace "-" "_"}}_PASSWORD" />
       {{- else}}
             <!--
@@ -1859,7 +1859,7 @@
         </special_case>
         -->
         {{- end }}
-    {{- end}}
+    {{- end }}
     </content_length>
 
     <!-- Optional. Maximum lifetime allowed for single HTTP streaming responses;
