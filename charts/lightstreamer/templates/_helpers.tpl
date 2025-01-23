@@ -71,5 +71,11 @@ Create the name of the service account to use
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
+{{- end }}
 
+{{/*
+Create the full name of the Lightstreamer Kafka Connector 
+*/}}
+{{- define "lightstreamer.kafka-connector.fullname" -}}
+{{- printf "lightstreamer-kafka-connector-%s" .Values.connectors.kafkaConnector.version }}
 {{- end }}
