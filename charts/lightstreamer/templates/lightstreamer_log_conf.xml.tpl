@@ -4,8 +4,8 @@ Render the logger appenders
 {{- define "lightstreamer.configuration.log.appender_ref" }}
 {{- range .appenders }}
 <appender-ref ref={{ printf "%s%s" "LS" (title .) | quote }}/>
-{{- end}}
-{{- end}}
+{{- end }}
+{{- end }}
 
 {{/*
 Create the Lightstreamer logging configuration file
