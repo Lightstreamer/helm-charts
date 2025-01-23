@@ -1,12 +1,12 @@
-# 
+#
 # Copyright (C) 2024 Lightstreamer Srl
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #       http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,7 +22,7 @@
 
 # -- Override the default name of the chart
 nameOverride: ""
-# -- Replace the chart's default resource naming convention 
+# -- Replace the chart's default resource naming convention
 fullnameOverride: ""
 
 # -- Additional labels to apply to all resources
@@ -36,7 +36,7 @@ image:
   pullPolicy: Always
   # -- The tag of the image to pull
   # @default -- .Chart.Appversion
-  tag: ""
+  tag: "latest"
 
 # Reference to Kubernetes secrets containing the credentials to pull the image
 # @default -- []
@@ -54,14 +54,13 @@ serviceAccount:
   # If not set and `create` is true, a name is generated using the fullname template.
   name: ""
 
-
-# -- Lighstreamer Deployment configuration
+# -- Mandatory. Lighstreamer Deployment configuration.
 deployment:
-  # Number of replicas (https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/)
+  # -- Number of replicas (https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/)
   replicas: 1
-  # -- Deployment annnotations
+  # -- Additionak Deployment annnotations
   annotations: []
-  # -- Additional deployment labels
+  # -- Additional Deployment labels
   labels: {}
   # -- The strategy used to replace old Pods by new one (see https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy)
   strategy:
@@ -69,9 +68,11 @@ deployment:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 1
-  # -- The Pod annotations (https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/)
+  # -- The Pod annotations
+  # (https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/)
   podAnnotations: {}
-  # -- Additional Pod labels (ttps://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)
+  # -- Additional Pod labels
+  # (ttps://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)
   podLabels: {}
   # -- The security context for the Pod (https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)
   podSecurityContext: {}
@@ -84,123 +85,189 @@ deployment:
     # readOnlyRootFilesystem: true
     # runAsNonRoot: true
     # runAsUser: 1000
+
+  # -- The hostname for the Pod
+  # (https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-hostname-and-subdomain-fields)
+  hostname: lightstreamer-1
+
+  # -- Host networking setting for the Pod
+  hostNetwork:
+
+  # -- The DNS policy for the Pod
+  # (https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-dns-policy)
+  dnsPolicy:
+
+  # -- Probes configuration
   probes:
+    # -- Liveness probe configuration
     liveness:
+      # -- Optional. Liveness probe based on the default Lightstreamer
+      # healthcheck.
       healthCheck:
+        # -- Enablement of the liveness probe
         enabled: true
-        # -- Mandatory if `enabled` is set to `true`
+        # -- Mandatory if `enabled` is set to `true`. Reference to a server
+        # socket configuration (see `servers` section below)
         serverRef: http-server
+
+        # Fields to be used to control the liveness probe behaviour.
+        # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
         initialDelaySeconds:
         periodSeconds:
         failureThreshold:
         timeoutSeconds:
         terminationGracePeriodSeconds:
-      # -- This is to setup the default liveness probe more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+
+      # -- Liveness proble configuration to be used if
+      # `probes.liveness.healthCheck.enabled` is set to false.
+      # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
       default:
         # httpGet:
-        #   path: /url/to/healthcheck
-        #   port: http-server
-        #   scheme: HTTP
-    readiness:  
-      healthCheck: 
+        #   path:
+        #   port:
+
+    # -- Readiness probe configuration
+    readiness:
+      # -- Readiness probe configuration based on the default Lightstreamer healthcheck
+      healthCheck:
+        # -- Enablement of the readiness probe
         enabled: true
+        # -- Mandatory if `enabled` is set to `true`. Reference to a server
+        # socket configuration (see `servers` section below)
         serverRef: http-server
+
+        # Fields to be used to control the readiness probe behaviour.
+        # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
         initialDelaySeconds:
         periodSeconds:
         failureThreshold:
         timeoutSeconds:
-      # -- This is to setup the default readiness probe more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+
+      # -- Readiness probe configuration to be used if
+      # `probes.readiness.healthCheck.enabled` is set to false.
+      # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
       default:
-        httpGet:
-          path: /url/to/healthcheck
-          port: pippo
-          scheme: HTTP
-    startup:  
-      healthCheck: 
+        # httpGet:
+        #   path:
+        #   port:
+
+    # -- Startup probe configuration
+    startup:
+      # -- Startup probe configuration based on the default Lightstreamer healthcheck
+      healthCheck:
+        # -- Enablement of the startup probe
         enabled: true
+        # -- Mandatory if `enabled` is set to `true`. Reference to a server
+        # socket configuration (see `servers` section below)
         serverRef: http-server
+
+        # Fields to be used to control the startup probe behaviour.
+        # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
         initialDelaySeconds: 2
         periodSeconds: 4
         failureThreshold: 6
         timeoutSeconds: 8
         terminationGracePeriodSeconds: 10
-      # -- This is to setup the default readiness probe more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+
+      # -- Startup probe configuration to be used if
+      # `probes.startup.healthCheck.enabled` is set to false.
+      # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
       default:
-        httpGet:
-          path: /url/to/healthcheck
-          port: pippo
-          scheme: HTTP
-  
+        # httpGet:
+        #   path:
+        #   port:
+
+  # -- Resource management for Pod and the container
+  # (https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)
   resources: {}
-    # We usually recommend not to specify default resources and to leave this as a conscious
-    # choice for the user. This also increases chances charts run on environments with little
-    # resources, such as Minikube. If you do want to specify resources, uncomment the following
-    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-    # limits:
-    #   cpu: 100m
-    #   memory: 128Mi
-    # requests:
-    #   cpu: 100m
-    #   memory: 128Mi
+
+  # -- Pod lifecyle configuration
+  # (https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/)
   lifecycle:
-    preStop:
-      exec:
-        command: [ "/lightstreamer/bin/unix-like/stop.sh" ]
+    # preStop:
+    #   exec:
+    #     command: [ "/lightstreamer/bin/unix-like/stop.sh" ]
+
   # -- Additional volumes
   extraVolumes:
   - name: pages-dir
     emptyDir:
       sizeLimit: 500Mi
-  # Additional volume mounts
+
+  # -- Additional volume mounts
   extraVolumeMounts:
   - name: pages-dir
     mountPath: "/lightstreamer/mypages"
     readOnly: true
-  # Init containers
-  initContainers: {}
-  # Addiitional environment variables
+
+  # -- Addiitional environment variables
   extraEnvs:
     - name: MY_ENV_VAR
       value: my-env-var-value
 
+  # -- Init containers configuration
+  # (https://kubernetes.io/docs/concepts/workloads/pods/init-containers/)
+  initContainers: {}
+
+  # -- Node selector setting for the Pod
+  # (https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector)
   nodeSelector: {}
 
-  tolerations: []
-
+  # -- Affinity settings for the Pod
+  # (https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity)
   affinity: {}
 
-  terminationGracePeriodSeconds:
+  # -- Tolerations settings for the Pod
+  # (https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/)
+  tolerations: []
 
+  # -- Terminiation grace period configuration for Pod
+  # (https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#hook-handler-execution)
+  terminationGracePeriodSeconds: 5
+
+  # -- Topology spread constraints configuration for the Pod
+  # (https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/)
   topologySpreadConstraints: {}
 
-# -- Lightstreamer Service configuration (https://kubernetes.io/docs/concepts/services-networking/service/)
+# -- Mandatory. Lightstreamer Service configuration (https://kubernetes.io/docs/concepts/services-networking/service/).
 service:
+  # -- Additional Service annotations
   annotations: {}
+  # -- Additional Service labels
   labels: {}
-  # -- The service type (https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types)
-  type: NodePort
+  # -- The service type
+  # (https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types)
+  type: LoadBalancer
   # -- This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
   port: 8088
-  nodePort: 30100
+  # -- The node port when the `type` is set to `NodePort` or 'LoadBalancer'
+  # (https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport)
+  nodePort:
   # -- Reference to a server socket configuration (see `servers` section below)
   targetPort: https-server
+  # -- The load balancer implementation when the `type` is set to `LoadBalancer`
+  # (https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-class)
+  loadBalancerClass:
 
-# -- Lightstreamer Ingres configuration (https://kubernetes.io/docs/concepts/services-networking/ingress/)
+# -- Lightstreamer Ingress configuration (https://kubernetes.io/docs/concepts/services-networking/ingress/)
 ingress:
   # -- Enablement of the Ingress
   enabled: true
-  className: ""
+  # -- Additional Ingress annotations
   annotations: {}
+  # -- Additional Ingress labels
+  labels: {}
+  # -- The name of Ingress class
+  className: "test"
+  # -- List of Ingress rules
   hosts:
-    - host: #chart-example.local
+    - host:
       paths:
         - path: /
           pathType: Prefix
+  # -- TLS configuration for the Infress
+  # (https://kubernetes.io/docs/concepts/services-networking/ingress/#tls)
   tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
-
 
 # -- Configure the edition, the optional features, and the type of license
 # that should be used to run Lightstreamer Server.
@@ -228,11 +295,11 @@ license:
     #  - NON-PRODUCTION-FULL
     #  - PRODUCTION
     #  - HOT-STANDBY
-    # licenseType: EVALUATION
-    licenseType: DEMO
+    licenseType: EVALUATION
+    # licenseType: DEMO
     # -- Identifier of the contract in place.
     # Use "DEMO" to run with the embedded Demo license.
-    # contractId: E340547130
+    # contractId: EXXXXXXXXX
     contractId: DEMO
     # -- Choose between online (cloud-based) and file-based license validation.
     # Can be one of the following:
@@ -246,15 +313,15 @@ license:
     #   For PRODUCTION, HOT-STANDBY, NON-PRODUCTION-FULL, and NON-PRODUCTION-LIMITED:
     #   you can choose between ONLINE and FILE.
     #   For DEMO: the value is ignored, as no validation is done.
-    licenseValidation: ONLINE
+    licenseValidation: FILE
 
     # -- Used only if `licenseValidation` set to "ONLINE".
     # Secret name and key where the password used for validation of online
     # licenses is stored.
-    # Leave blank if `contract_id` set to "DEMO" or `licenseValidation` set to "FILE".
+    # Leave blank if `licenseType` is set to "DEMO" or `licenseValidation` set to "FILE".
     onlinePasswordSecretRef:
-      name: online-license
-      key: password
+      # name: online-license
+      # key: password
 
     # -- Used only if `licenseValidation` set to "FILE".
     # Secret name and key where the license file is stored.
@@ -373,7 +440,6 @@ logging:
     # The resampling behavior can be changed at runtime, by changing the level;
     # however, if the level is set to ERROR on startup, the logger will be
     # disabled throughout the life of the Server, regardless of further changes.
-
     # When resampling is in place, note that, for each displayed sample, values
     # that are supposed to be averaged over a timeframe still refer to the
     # current sample's timeframe (based on <collector_millis>); however, values
@@ -1446,7 +1512,7 @@ management:
     # Edition and License Type. To know what features are enabled by your
     # license, please see the License tab of the Monitoring Dashboard (by
     # default, available at /dashboard).
-    rmiConnector: 
+    rmiConnector:
 
       # -- Mandatory. TCP port on which the RMI connector will be available.
       # This is the port that has to be specified in the client access url.
@@ -1585,13 +1651,13 @@ management:
       # Reference to the list of secrets containng the credentials of the users
       # enabled to access the RMI connector.
       # Every secret must contains the keys `user` and `password`.
-      # If `enablePublicAccess` is set to `false`, at least one set of 
-      # credentials should be supplied in order to allow access through the 
+      # If `enablePublicAccess` is set to `false`, at least one set of
+      # credentials should be supplied in order to allow access through the
       # connector.
       # This is also needed if you wish to use the provided "stop" script; the
       # script will always use the first user supplied.
       # @defalt -- []
-      credentialSecretes: []
+      credentialSecrets: []
         # - rmi-secret-user
         # - rmi-secret-other-user
 
@@ -1713,21 +1779,21 @@ management:
     # Credentials of the users enabled to access the Monitoring Dashboard.
     # enabled to access the Monitoring Dashboard.
     # Every secret must contains the keys `user` and `password`.
-    # If `enablePublicAccess` is set to `false`, at least one set of 
-    # credentials should be supplied in order to allow access through the 
+    # If `enablePublicAccess` is set to `false`, at least one set of
+    # credentials should be supplied in order to allow access through the
     # connector.
     # @defalt -- []
     credentials:
-      - # -- Reference to the secret containing the credentials of the user 
+      - # -- Reference to the secret containing the credentials of the user
         # enabled to access the Monitoring Dashboard.
         # The secret must contain the keys `user` and `password`.
         secretRef:
-        
+
         # - Optional, but effective only if `dashboard.enableJmxTree` is set to
         # `true`. Allows allows for restriction of the access to the JMX Tree
         # on a user basis.
         # @default -- true
-        enableJmxTreeVisibility: 
+        enableJmxTreeVisibility:
 
     # -- Optional. Enabling of the access to the Monitoring Dashboard pages
     # through all server sockets.
@@ -2704,8 +2770,318 @@ load:
   # @default -- true
   forceEarlyConversions:
 
+# -- Optional. Connectors configuration.
+connectors:
 
-# This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
+  # -- Optional. Lightstreamer Kafka Connector configuration.
+  kafkaConnector:
+
+    # -- Optional. Enablement of the Lightstreamer Kafka Connector.
+    # @default -- false
+    enabled: true
+
+    # -- Optional. The Lightstreamer Kafka Connector version to install.
+    version: "1.2.0"
+
+    provisionig:
+      donwnloadUrl: "https://github.com/Lightstreamer/Lightstreamer-kafka-connector/releases/download/v1.2.0/lightstreamer-kafka-connector-1.2.0.zipg"
+      imageEmbedded:
+
+    # -- Mandatory. Define the Kafka Connector Adapter Set and its unique ID.
+    adapterSetId: "KafkaConnector"
+
+
+    # -- Mandatory. Connection configurations.
+    connections:
+
+      # -- At least one must be provided. Connection configuration.
+      # The Kafka Connector allows the configuration of different independent
+      # connections to different Kafka broker/clusters.
+      # Since the Kafka Connector manages the physical connection to Kafka by
+      # wrapping an internal Kafka Consumer, several configuration settings are
+      # identical to those required by the usual Kafka Consumer configuration.
+      quickStart:
+
+        # -- Mandatory. The connection name.
+        # This value will be used by the Clients to request real-time data from
+        # this specific Kafka connection through a Subscription object.
+        # The connection name is also used to group all logging messages
+        # belongingto the same connection.
+        name: "QuickStart"
+
+        # -- Enablement of the connection.
+        # If set to `false`, the Lightstreamer Server will automatically deny
+        # every subscription made to the connection.
+        enabled: true
+
+        # -- Mandatory. The Kafka Cluster bootstrap server endpoint expressed
+        # as the list of host/port pairs used to establish the initial connect.
+        bootstrapServers: broker:9092
+
+        # -- Optional. The name of the consumer group this connection belongs to.
+        # Sets the value for the "group.id" key used to configure the internal
+        # Kafka Consumer.
+        # See https://kafka.apache.org/documentation/#consumerconfigs_group.id
+        # for more details.
+        # @default -- `kafkaConnector.adapterSetId` + `name` + randomly
+        # generated suffix.
+        groupId: quickstart
+
+        # -- Optional. Record evaluation settings.
+        # @default -- all settings at their defaults
+        record:
+
+          # -- (string) Optional. Specifies where to start consuming events
+          # from:
+          # - `LATEST`: start consuming events from the end of the topic partition
+          # - `EARLIEST`: start consuming events from the beginning of the topic partition
+          # Sets the value of the `auto.offset.reset` key to configure the
+          # internal Kafka Consumer.
+          # @default -- `LATEST`
+          consumeFrom: EARLIEST
+
+          # -- (int) Optional. The number of threads to be used for concurrent
+          # processing of the incoming deserialized records. If set to `-1`,
+          # the number of threads will be automatically determined based on the
+          # number of available CPU cores.
+          # @default -- `1`
+          consumeWithThreadNumber:
+
+          # -- (string) Optional, but effective only if
+          # `consumeWithThreadNumber` is set to a value greater than 1 (which
+          # includes the default value). The order strategy to be used for
+          # concurrent processing of the incoming deserialized records.
+          # If set to `ORDER_BY_PARTITION`, maintain the order of records
+          # within each partition.
+          # If set to `ORDER_BY_KEY`, maintain the order among the records
+          # sharing the same key.
+          # If set to `UNORDERED`, provide no ordering guarantees.
+          # @default -- `ORDER_BY_PARTITION`
+          consumeWithOrderStrategy:
+
+          # -- Optional. Key evaluator configuration.
+          # @default -- all settings at their defaults
+          keyEvaluator:
+
+            # -- (string) Optional. The format to be used to deserialize the
+            # key of a Kafka record. Can be one of the following:
+            # - AVRO
+            # - JSON
+            # - STRING
+            # - INTEGER
+            # - BOOLEAN
+            # - BYTE_ARRAY
+            # - BYTE_BUFFER
+            # - BYTES
+            # - DOUBLE
+            # - FLOAT
+            # - LONG
+            # - SHORT
+            # - UUID
+            # @default -- `STRING`
+            type: JSON
+
+            # -- Mandatory if `type` is set to `AVRO` and
+            # `enableSchemaRegistry` is set to `false`. The configmap name and
+            # key where the local schema for message validation of the key is
+            # stored. The setting takes precedence over `enableSchemaRegistry`
+            # if the latter is set to `true`.
+            localSchemaFilePathRef: {}
+              # name:
+              # key:
+
+            # -- Enablement of the Confluent Schema Registry for  validation of
+            # the key.
+            # Must be set to `true` when `keyEvaluator.type` is set to `AVRO`
+            # and no local schema are specified.
+            # @default -- false
+            enableSchemaRegistry:
+
+          # -- Optional. Value evaluator configuration.
+          # @default -- all settings at their defaults
+          valueEvaluator:
+
+            # -- (string) Optional. The format to be used to deserialize the
+            # value of a Kafka record. See `record.keyEvaluator.type` for the
+            # list of supported formats.
+            # @default -- `STRING`
+            type: AVRO
+
+            # -- Mandatory if `type` is set to `AVRO` and
+            # `enableSchemaRegistry` is set to `false`. The configmap name and
+            # key where the local schema for message validation of the value is
+            # stored. The setting takes precedence over `enableSchemaRegistry`
+            # if the latter is set to `true`.
+            localSchemaFilePathRef:
+              name:
+              key: json_schema
+
+            # -- Enablement of the Confluent Schema Registry for validation of
+            # the value.
+            # Must be set to `true` when `valueEvaluator.type` is set to `AVRO`
+            # and no local schema are specified.
+            # @default -- false
+            enableSchemaRegistry: false
+
+          # -- Optional. The error handling strategy to be used if an error
+          # occurs while extracting data from incoming deserialized records.
+          # If set to `IGNORE_AND_CONTINUE`, the error is ignored and the
+          # processing of the record continues.
+          # If set to `FORCE_UNSUBSCRIPTION`, the processing of the record is
+          # stopped and the unsubscription of the items requested by all the
+          # Lightstreamer clients subscribed to this connection is forced.
+          # @default -- `IGNORE_AND_CONTINUE`
+          extractionErrorStrategy:
+
+        # -- Mandatory. Record routings configuration.
+        routing:
+          # -- Optional. Maps of item template expressions.
+          # An expressions is made of:
+          # - ITEM_PREFIX: the prefix of the item name
+          # - BINDABLE_EXPRESSIONS: a sequence of bindable extraction expressions.
+          # See https://lightstreamer.com/api/ls-kafka-connector/latest/ls-kafka-connector/record-extraction.html
+          itemTemplates:
+            stockTemplate: stock-#{index=KEY}
+
+          # -- Mandatory. Kafka topic mappings.
+          topicMappings:
+
+            # -- At least one must be provided. A Kafka topic mappings.
+            # Map a Kafka topic to:
+            # - one or more simple items
+            # - one or more item templates
+            # - any combination of the above
+            #
+            # Examples:
+            #
+            # topicMappingSample1:
+            #   topic: "aTopicName"
+            #   items:
+            #     - "item1"
+            #     - "item2"
+            #     - "itemN"
+            #
+            # topicMappingSample2:
+            #   topic: "anotherTopicName"
+            #   itemTemplateRefs:
+            #     - "itemTemplate1"
+            #     - "itemTemplate2"
+            #     - "itemTemplateN"
+            #
+            # topicMappingSample3
+            #   topic: "yetAnotherTopicName"
+            #   items:
+            #     - "item1"
+            #     - "item2"
+            #     - "itemN"
+            #   itemTemplateRefs:
+            #     - "itemTemplate1"
+            #     - "itemTemplate2"
+            #     - "itemTemplateN"
+            stock:
+
+              # -- Mandatory and unique across all mappings. The Kafka topic name.
+              topic: stock
+
+              # -- Mandatory if `itemTemplateRefs` is empty. List of simple
+              # items to which the topic must be mapped.
+              # @default -- []
+
+              items: []
+                # - item1
+                # - item2
+                # - item3
+
+              # -- Mandatory if `items` is empty. List of item template to
+              # which the topic must be mapped.
+              # @default -- []
+              itemTemplateRefs:
+                - stockTemplate
+
+          # -- Optional. Enble `routing.topicMappings.{}.topic` to be treated
+          # as a regular expression rather than of a literal topic name.
+          # @default -- false
+          enableTopicRegEx:
+
+        # -- Mandatory. Record mappings configuration.
+        fields:
+          # Mandatory. Record data to Lightstreamer field mappings.
+          mappings:
+
+            # -- At least one must be provided. A field mapping.
+            # Map the value extracted through the "#{extraction_expression}" to
+            # the Lightstreamer field name specified by key.
+            # The expression is written in the Data Extraction Language. See
+            # documentation at:
+            # https://github.com/lightstreamer/Lightstreamer-kafka-connector?tab=readme-ov-file#record-mapping-fieldfield_name
+            timestamp: "#{VALUE.timestamp}"
+            time: "#{VALUE.time}"
+            stock_name: "#{VALUE.name}"
+            last_price: "#{VALUE.last_price}"
+            ask: "#{VALUE.ask}"
+            ask_quantity: "#{VALUE.ask_quantity}"
+            bid: "#{VALUE.bid}"
+            bid_quantity: "#{VALUE.bid_quantity}"
+            pct_change: "#{VALUE.pct_change}"
+            min: "#{VALUE.min}"
+            max: "#{VALUE.max}"
+            ref_price: "#{VALUE.ref_price}"
+            open_price: "#{VALUE.open_price}"
+            item_status: "#{VALUE.item_status}"
+            ts: "#{TIMESTAMP}"
+            topic: "#{TOPIC}"
+            offset: "#{OFFSET}"
+            partition: "#{PARTITION}"
+
+          # -- Optional. If set to `true`, if a field mapping fails, that
+          # specific field's value will simply be omitted from the update sent
+          # to the Lightstreamer clients, while other successfully mapped fields
+          # from the same record will still be delivered. Can be one of the
+          # @default -- false
+          enableSkipFailedMapping: false
+
+    # -- Mandatory if `connections.{}.keyEvaluator.type` is set to `AVRO` and
+    # no local schema paths are specified. Schema Registry configuration.
+    # schemaRegistry:
+
+    #   # -- Optional. Enablement of the Schema Registry.
+    #   # @defult -- false
+    #   enabled: false
+
+    #   # -- Mandatory when `schemaRegistry.enabled` is true. The URL of the
+    #   # Confluent Schema Registry. An encrypted connection is enabled by
+    #   # specifying the "https" protocol.
+    #   url:
+
+    #   # -- Optional. Basic HTTP authentication of this connection against the
+    #   # Schema Registry.
+    #   basicAuthentication:
+
+    #     # -- Optional. Enablement of the Basic HTTP authentication.
+    #     # @default -- false
+    #     enable: true
+    #     credentialSecrets:
+
+    #   sslConfig:
+    #     # -- Optional. Enablement of the SSL/TLS secure communication.
+    #     enabled: false
+
+    #     # -- Optional. List of enabled secure communication protocols
+    #     # @default -- `[TLSv1.2, TLSv1.3]` when running on Java 11 or newer,
+    #     # TLSv1.2 otherwise.
+    #     allowedProtocols:
+    #       -
+
+    #     # -- Optional. List of enabled secure cipher suites.
+    #     allowedCipherSuites:
+    #       -
+
+    #     # -- Optional. Enablement of the hostname verication.
+    #     # @default -- false
+    #     enableHostnameVerification: false
+    #     trustStoreRef:
+    #     keyStoreRef:
+
 autoscaling:
   enabled: true
   minReplicas: 1
