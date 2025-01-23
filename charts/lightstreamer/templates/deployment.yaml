@@ -53,7 +53,7 @@ spec:
           {{- with .Values.lifecycle }}
           lifecycle:
             {{- toYaml . | nindent 12 }}
-          {{- end}}
+          {{- end }}
           ports:
           {{- range $key, $value := .Values.servers }}
           {{- if $value.enabled }}
@@ -66,12 +66,12 @@ spec:
             - name: jmx-port
               containerPort: {{ .value }}
               protocol: TCP
-          {{- end}}
+          {{- end }}
           {{- with .Values.management.jmx.rmiConnector.dataPort}}
             - name: jmxDataPort
               containerPort: {{ .value }}
               protocol: TCP
-          {{- end}}
+          {{- end }}
           {{- with .Values.deployment.probes }}
           livenessProbe:
             {{- if ((.liveness).healthCheck).enabled }}
@@ -136,14 +136,16 @@ spec:
                   name: {{ required (printf "keyStores.%s.keystorePasswordSecretRef.name must be set" $key) ($value.keystorePasswordSecretRef).name }}
                   key: {{ required (printf "keyStores.%s.keystorePasswordSecretRef.key must be set" $key) ($value.keystorePasswordSecretRef).key }}
           {{- end }}
-          {{- with .Values.license.enterprise.onlinePasswordSecretRef }}
+          {{- if and (ne .Values.license.enterprise.licenseType "DEMO") (eq .Values.license.enterprise.licenseValidation "ONLINE") }}
+            {{- with .Values.license.enterprise.onlinePasswordSecretRef }}
             - name: LS_ENTERPRISE_LICENSE_{{ .key | upper | replace "-" "_" }}
               valueFrom:
                 secretKeyRef:
                   name: {{ .name }}
                   key: {{ .key }}
-          {{- end}}
-          {{- range $value := .Values.management.jmx.rmiConnector.credentialsSecretes }}
+            {{- end }}
+          {{- end }}
+          {{- range $value := .Values.management.jmx.rmiConnector.credentialSecrets }}
             - name: LS_CREDENTIAL_{{ $value | upper | replace "-" "_" }}_USER
               valueFrom:
                 secretKeyRef:
@@ -159,33 +161,61 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           volumeMounts:
-            - name: config
+            - name: ligthstreamer-configuration
               mountPath: /lightstreamer/conf
+          {{- if and (ne .Values.license.enterprise.licenseType "DEMO") (eq .Values.license.enterprise.licenseValidation "FILE") }}
+            {{- with .Values.license.enterprise.filePathSecretRef }}
+            - name: lightstreamer-enterprise-license
+              mountPath: /lightstreamer/conf/enterprise-license/
+            {{- end }}
+          {{- end }}
           {{- with .Values.errorPageRef }}
-            - name: error-page
+            - name: ligthstreamer-error-page
               mountPath: /lightstreamer/conf/error-page
           {{- end }}
-          {{- with .Values.license.enterprise.filePathSecretRef }}
-            - name: enterprise-license
-              mountPath: /lightstreamer/conf/enterprise-license/
-          {{- end}}
           {{- range $key, $value := .Values.keyStores }}
             - name: keystore-{{ $key | lower }}
               mountPath: /lightstreamer/conf/keystores/{{ $key }}
           {{- end }}
+          {{- if ((.Values.connectors).kafkaConnector).enabled }}
+            - name: kafka-connector-storage
+              mountPath: /lightstreamer/adapters/lightstreamer-kafka-connector/install
+            - name: kafka-connector-configuration
+              mountPath: /lightstreamer/adapters/lightstreamer-kafka-connector/adapters.xml
+              subPath: adapters.xml
+          {{- end }}
           {{- with .Values.deployment.extraVolumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
-      {{- with .Values.deployment.initContainers}} 
-      initContainers:
-        {{- toYaml . | nindent 8 }}
+      {{- with .Values.deployment.hostname }}
+      hostname: {{ . }}
+      {{- end }}          
+      {{- with .Values.deployment.hostNetwork }}
+      hostNetwork: {{ . }}
       {{- end }}
+      {{- with .Values.deployment.dnsPolicy }}
+      dnsPolicy: {{ . }}
+      {{- end }}
+      initContainers:
+        {{- with .Values.deployment.initContainers }} 
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- if ((.Values.connectors).kafkaConnector).enabled }}
+        - name: kafka-connector-downloader
+          image: alpine
+          command: ['sh', '/scripts/kafka-connector-downloader.sh']
+          volumeMounts:
+          - name: kafka-connector-deploy-scripts
+            mountPath: /scripts
+          - name: kafka-connector-storage
+            mountPath: /tmp
+        {{- end }}
       volumes:
-        - name: config
+        - name: ligthstreamer-configuration
           configMap:
-            name: {{ include "lightstreamer.name" . }}-configmap
+            name: {{ include "lightstreamer.fullname" . }}-conf
       {{- with .Values.errorPageRef }}
-        - name: error-page
+        - name: lightstreamer-error-page
           configMap:
             name: {{ .name }}
       {{- end }}
@@ -194,10 +224,22 @@ spec:
           secret:
             secretName: {{ required (printf "keystores.%s.keystoreFileSecretRef.name must be set" $key) (($value.keystoreFileSecretRef).name) }}
       {{- end }}
-      {{- with .Values.license.enterprise.filePathSecretRef }}
-        - name: enterprise-license
+      {{- if and (ne .Values.license.enterprise.licenseType "DEMO") (eq .Values.license.enterprise.licenseValidation "FILE") }}
+        {{- with required "license.enterprirse.filePathSecretRef  must be set " .Values.license.enterprise.filePathSecretRef }}
+        - name: lightstreamer-enterprise-license
           secret:
-            secretName: {{ .name }}
+            secretName: {{ required "license.enterprirse.filePathSecretRef.name must be set" .name }}
+        {{- end }}
+      {{- end }}
+      {{- if ((.Values.connectors).kafkaConnector).enabled }}
+        - name: kafka-connector-storage
+          emptyDir: {}
+        - name: kafka-connector-deploy-scripts
+          configMap:
+            name: {{ include "lightstreamer.kafka-connector.fullname" . }}-init-conf
+        - name: kafka-connector-configuration
+          configMap:
+            name: {{ include "lightstreamer.kafka-connector.fullname" . }}-conf
       {{- end }}
       {{- with .Values.deployment.extraVolumes }}
         {{- toYaml . | nindent 8 }}
