@@ -106,6 +106,7 @@ deployment:
       healthCheck:
         # -- Enablement of the liveness probe
         enabled: true
+
         # -- Mandatory if `enabled` is set to `true`. Reference to a server
         # socket configuration (see `servers` section below)
         serverRef: http-server
@@ -128,10 +129,13 @@ deployment:
 
     # -- Readiness probe configuration
     readiness:
+
       # -- Readiness probe configuration based on the default Lightstreamer healthcheck
       healthCheck:
+
         # -- Enablement of the readiness probe
         enabled: true
+
         # -- Mandatory if `enabled` is set to `true`. Reference to a server
         # socket configuration (see `servers` section below)
         serverRef: http-server
@@ -153,10 +157,13 @@ deployment:
 
     # -- Startup probe configuration
     startup:
+
       # -- Startup probe configuration based on the default Lightstreamer healthcheck
       healthCheck:
+        
         # -- Enablement of the startup probe
         enabled: true
+
         # -- Mandatory if `enabled` is set to `true`. Reference to a server
         # socket configuration (see `servers` section below)
         serverRef: http-server
@@ -233,38 +240,50 @@ deployment:
 service:
   # -- Additional Service annotations
   annotations: {}
+
   # -- Additional Service labels
   labels: {}
+
   # -- The service type
   # (https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types)
   type: LoadBalancer
+
   # -- This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
   port: 8088
+
   # -- The node port when the `type` is set to `NodePort` or 'LoadBalancer'
   # (https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport)
   nodePort:
+
   # -- Reference to a server socket configuration (see `servers` section below)
   targetPort: https-server
+
   # -- The load balancer implementation when the `type` is set to `LoadBalancer`
   # (https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-class)
   loadBalancerClass:
 
 # -- Lightstreamer Ingress configuration (https://kubernetes.io/docs/concepts/services-networking/ingress/)
 ingress:
+
   # -- Enablement of the Ingress
   enabled: true
+
   # -- Additional Ingress annotations
   annotations: {}
+
   # -- Additional Ingress labels
   labels: {}
+
   # -- The name of Ingress class
-  className: "test"
+  className:
+
   # -- List of Ingress rules
   hosts:
     - host:
       paths:
         - path: /
           pathType: Prefix
+
   # -- TLS configuration for the Infress
   # (https://kubernetes.io/docs/concepts/services-networking/ingress/#tls)
   tls: []
@@ -272,6 +291,7 @@ ingress:
 # -- Configure the edition, the optional features, and the type of license
 # that should be used to run Lightstreamer Server.
 license:
+
   # -- Lightstreamer edition to use.
   # To know full details, open the Welcome Page or the Monitoring Dashboard
   # (Edition tab) of your running Lightstreamer Server.
@@ -295,8 +315,8 @@ license:
     #  - NON-PRODUCTION-FULL
     #  - PRODUCTION
     #  - HOT-STANDBY
-    licenseType: EVALUATION
-    # licenseType: DEMO
+    # licenseType: EVALUATION
+    licenseType: DEMO
     # -- Identifier of the contract in place.
     # Use "DEMO" to run with the embedded Demo license.
     # contractId: EXXXXXXXXX
@@ -313,7 +333,7 @@ license:
     #   For PRODUCTION, HOT-STANDBY, NON-PRODUCTION-FULL, and NON-PRODUCTION-LIMITED:
     #   you can choose between ONLINE and FILE.
     #   For DEMO: the value is ignored, as no validation is done.
-    licenseValidation: FILE
+    licenseValidation:
 
     # -- Used only if `licenseValidation` set to "ONLINE".
     # Secret name and key where the password used for validation of online
@@ -326,8 +346,8 @@ license:
     # -- Used only if `licenseValidation` set to "FILE".
     # Secret name and key where the license file is stored.
     filePathSecretRef:
-      name: license-secret
-      key: license
+      name:
+      key:
 
     # -- Restrict the feature set with respect to the license in use.
     # If enabled, use the feature set detailed in the "optional_features" key.
@@ -1778,12 +1798,12 @@ management:
     # -- Optional, but ineffective if `enablePublicAccess` is set to `true`.
     # Credentials of the users enabled to access the Monitoring Dashboard.
     # enabled to access the Monitoring Dashboard.
-    # Every secret must contains the keys `user` and `password`.
     # If `enablePublicAccess` is set to `false`, at least one set of
     # credentials should be supplied in order to allow access through the
     # connector.
     # @defalt -- []
     credentials:
+
       - # -- Reference to the secret containing the credentials of the user
         # enabled to access the Monitoring Dashboard.
         # The secret must contain the keys `user` and `password`.
@@ -2788,8 +2808,13 @@ connectors:
       imageEmbedded:
 
     # -- Mandatory. Define the Kafka Connector Adapter Set and its unique ID.
-    adapterSetId: "KafkaConnector"
+    adapterSetId: "KafkaConnector111"
 
+    # -- (string) Mandatory. Java class name of the Kafka Connector Metadata 
+    # Adapter. It is possible to provide a custom implementation by extending
+    # the factory class.
+    # See https://github.com/Lightstreamer/Lightstreamer-kafka-connector/tree/main?tab=readme-ov-file#customize-the-kafkaconnector-metadata-adapter-class
+    adapterClassName: "com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter"
 
     # -- Mandatory. Connection configurations.
     connections:
@@ -2802,23 +2827,27 @@ connectors:
       # identical to those required by the usual Kafka Consumer configuration.
       quickStart:
 
-        # -- Mandatory. The connection name.
+        # -- (string) Mandatory and unique across all configurations. The 
+        # connection name.
         # This value will be used by the Clients to request real-time data from
         # this specific Kafka connection through a Subscription object.
         # The connection name is also used to group all logging messages
         # belongingto the same connection.
-        name: "QuickStart"
+        name: "K8S-QuickStart"
 
         # -- Enablement of the connection.
         # If set to `false`, the Lightstreamer Server will automatically deny
         # every subscription made to the connection.
+        # @default -- true
         enabled: true
 
-        # -- Mandatory. The Kafka Cluster bootstrap server endpoint expressed
-        # as the list of host/port pairs used to establish the initial connect.
+        # -- (string) Mandatory. The Kafka Cluster bootstrap server endpoint 
+        # expressed  as the list of host/port pairs used to establish the 
+        # initial connect.
         bootstrapServers: broker:9092
 
-        # -- Optional. The name of the consumer group this connection belongs to.
+        # -- (string) Optional. The name of the consumer group this connection 
+        # belongs to.
         # Sets the value for the "group.id" key used to configure the internal
         # Kafka Consumer.
         # See https://kafka.apache.org/documentation/#consumerconfigs_group.id
@@ -2826,6 +2855,96 @@ connectors:
         # @default -- `kafkaConnector.adapterSetId` + `name` + randomly
         # generated suffix.
         groupId: quickstart
+
+        # -- Optional. TLS/SSL settings for the connection.
+        # @default -- all settings at their defaults
+        sslConfig:
+          
+          # -- Optional. Enablement of the encryption.
+          # @default -- false
+          enabled: true
+
+          # -- (string) Optional. The SSL protocol to be used. Can be one of 
+          # the following: `TLSv1.2`,  `TLSv1.3`.
+          # @default -- `TLSv1.3` when running on Java 11 or newer, `TLSv1.2` 
+          # otherwise
+          protocol:
+
+          # -- Optional. List of enabled secure communication protocols
+          # @default -- `[TLSv1.2, TLSv1.3]` when running on Java 11 or newer,
+          # TLSv1.2 otherwise.
+          allowedProtocols: []
+
+          # -- Optional. List of enabled secure cipher suites.
+          # @default -- all the available cipher suites in the running JVM
+          allowedCipherSuites: []
+
+          # -- Optional. Enablement of the hostname verication.
+          # @default -- false
+          enableHostnameVerification:
+
+          # -- Optional. Reference to a truststore used to validate the 
+          # certificates provided by the Kafka brokers.
+          trustStoreRef: myKafkaConnectorKeystore
+
+          # -- Optional. Reference to a keystore used if mutual TLS is enabled
+          # on Kafka brokers.
+          keyStoreRef: myKafkaConnectorKeystore
+
+        # -- Optional. Authentication settings for the connection.
+        authentication:
+
+            # -- Optional. Enablement of the authentication of the connection 
+            # against the Kafka Cluster.
+            enabled: true
+
+            # (string) Mandatory if `enabled` is set to `true`. The SASL 
+            # mechanism type.
+            # The Kafka Connector accepts the following authentication 
+            # mechanisms:
+            #  - PLAIN
+            #  - SCRAM-SHA-256
+            #  - SCRAM-SHA-512
+            #  - GSSAPI
+            # @default -- PLAIN
+            mechanism: GSSAPI
+
+            # -- Mandatory if `mechanism` is set to `PLAIN`, `SCRAM-SHA-256`, 
+            # `SCRAM-SHA-512`. Name of the secret containing the credentials.
+            # The secret must contain the keys `user` and `password`.
+            credentialsSecretRef:
+
+            # -- Mandatory if `mechanism` is set to `GSSAPI`. The GSSAPI 
+            # authentication settings.
+            gssapi:
+
+              # -- Optional. Enablement of the use of a keytab.
+              # @default -- false
+              enableKeytab: true
+
+              # -- Mandatory if `enableKeytab` is set to `true`. The configmap
+              # name and key where the the keytab file is stored
+              keytabFilePathRef:
+                # name:
+                key: my-keytab
+
+              # -- Optional. Enablement of the storage of the principal key.
+              # @default -- false
+              # enableStoreKey: true
+
+              # -- (string) Mandatory. The name of the Kerberos service.
+              kerberosServiceName: kerneros
+
+              # -- (string) Mandatory if enableTicketCache is set to `true`. 
+              # The name of the principal to be used.
+              principal: pippo
+
+              # -- Optional. Enablement of the use of a ticket cache.
+              # @default -- false
+              enableTicketCache: false
+
+
+              # -- Mandatory if mechanism is set to `GSSAPI`.
 
         # -- Optional. Record evaluation settings.
         # @default -- all settings at their defaults
@@ -2879,14 +2998,14 @@ connectors:
             # - SHORT
             # - UUID
             # @default -- `STRING`
-            type: JSON
+            type: STRING
 
             # -- Mandatory if `type` is set to `AVRO` and
             # `enableSchemaRegistry` is set to `false`. The configmap name and
             # key where the local schema for message validation of the key is
             # stored. The setting takes precedence over `enableSchemaRegistry`
             # if the latter is set to `true`.
-            localSchemaFilePathRef: {}
+            localSchemaFilePathRef: recordKey
               # name:
               # key:
 
@@ -2905,7 +3024,7 @@ connectors:
             # value of a Kafka record. See `record.keyEvaluator.type` for the
             # list of supported formats.
             # @default -- `STRING`
-            type: AVRO
+            type: JSON
 
             # -- Mandatory if `type` is set to `AVRO` and
             # `enableSchemaRegistry` is set to `false`. The configmap name and
@@ -2913,8 +3032,6 @@ connectors:
             # stored. The setting takes precedence over `enableSchemaRegistry`
             # if the latter is set to `true`.
             localSchemaFilePathRef:
-              name:
-              key: json_schema
 
             # -- Enablement of the Confluent Schema Registry for validation of
             # the value.
@@ -2931,7 +3048,7 @@ connectors:
           # stopped and the unsubscription of the items requested by all the
           # Lightstreamer clients subscribed to this connection is forced.
           # @default -- `IGNORE_AND_CONTINUE`
-          extractionErrorStrategy:
+          extractionErrorStrategy: FORCE_UNSUBSCRIPTION
 
         # -- Mandatory. Record routings configuration.
         routing:
@@ -2980,7 +3097,8 @@ connectors:
             #     - "itemTemplateN"
             stock:
 
-              # -- Mandatory and unique across all mappings. The Kafka topic name.
+              # -- Mandatory and unique across all topic mappings. The Kafka 
+              # topic name.
               topic: stock
 
               # -- Mandatory if `itemTemplateRefs` is empty. List of simple
@@ -3040,6 +3158,59 @@ connectors:
           # @default -- false
           enableSkipFailedMapping: false
 
+    # -- Optional. Local schema files used for message validation.
+    localSchemaFiles:
+
+      # -- Optional. The configmap name and key where the local schema file
+      # is stored
+      recordKey:
+        name: record-key
+        key: record_key.avsc
+
+      recordValue:
+        name: record-value
+        key: record_value.avsc        
+
+    # -- Keystores definition used by the Kafka Connector.
+    keyStores:
+
+      # -- Keystore definition used by Kafka connector configurations.
+      myKafkaConnectorKeystore:
+
+        # -- (string) Optional. The keystore type.
+        # The currently supported types are:
+        # - JKS, which is the Sun/Oracle's custom keystore type, whose support is
+        #   made available by every Java installation;
+        # - PKCS12, which is supported by all recent Java installations;
+        # @default -- "JKS"
+        type: JKS
+
+        # -- Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key
+        # where the keystore file is stored.
+        keystoreFileSecretRef:
+          name: kafka-connector-keystore-secret
+          key: kafka-connector.keystore.jks
+
+        # -- Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key
+        # where keystore password is stored.
+        keystorePasswordSecretRef:
+          name: kafka-connector-keypass-secret
+          key: kafka-connector.keypass
+        
+        # -- Optional. Secret name and key where the password of the private key
+        # in the keystore is stored.
+        keyPasswordSecretRef:
+          name: kafka-connector-private-key-pass-secret 
+          key: kafka-connector.private.key.pass
+
+      testKeyStore:
+        keystoreFileSecretRef:
+          name: kafka-connector-keystore-secret
+          key: kafka-connector.keystore.jks
+
+        keystorePasswordSecretRef:
+          name: kafka-connector-keypass-secret
+          key: kafka-connector.keypass
     # -- Mandatory if `connections.{}.keyEvaluator.type` is set to `AVRO` and
     # no local schema paths are specified. Schema Registry configuration.
     # schemaRegistry:
@@ -3081,6 +3252,7 @@ connectors:
     #     enableHostnameVerification: false
     #     trustStoreRef:
     #     keyStoreRef:
+      
 
 autoscaling:
   enabled: true

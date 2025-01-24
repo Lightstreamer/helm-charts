@@ -157,6 +157,48 @@ spec:
                   name: {{ . }}
                   key: password
           {{- end }}
+          {{- /* DEFINITION OF ENV VARIABLES FOR THE KAFKA CONNECTOR */ -}}
+          {{- if ((.Values.connectors).kafkaConnector).enabled }} {{/* start of kafkaConnector enabled */}}
+            {{- $kafkaConnector := include "lightstreamer.kafka-connector.fullname" . }}
+            {{- /* KEYSTORES */ -}}
+            {{- range $key, $value := .Values.connectors.kafkaConnector.keyStores }}
+            - name: LS_KAFKA_KEYSTORE_{{ $key | upper | replace "-" "_" }}_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ required (printf "connectors.kafkaConnector.keyStores.%s.keystorePasswordSecretRef.name must be set" $key) ($value.keystorePasswordSecretRef).name }}
+                  key: {{ required (printf "connectorrs.kafkaConnector.keyStores.%s.keystorePasswordSecretRef.key must be set" $key) ($value.keystorePasswordSecretRef).key }}
+              {{- if $value.keyPasswordSecretRef }}
+            - name: LS_KAFKA_KEYSTORE_{{ $key | upper | replace "-" "_" }}_KEY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ required (printf "connectors.kafkaConnector.keyStores.%s.keyPasswordSecretRef.name must be set" $key) ($value.keyPasswordSecretRef).name }}
+                  key: {{ required (printf "connectors.kafkaConnector.keyStores.%s.keyPasswordSecretRef.key must be set" $key) ($value.keyPasswordSecretRef).key }}
+              {{- end }}
+            {{- end }}
+            {{- /* END KEYSTORES */ -}}
+            {{- /* AUTHENTICATION */ -}}
+            {{- $authSecretRefs := list }}
+            {{- range $key, $connection := $.Values.connectors.kafkaConnector.connections }}
+              {{- if and (($connection.authentication).enabled) (ne ($connection.authentication).mechanism "GSSAPI") }}
+                {{- $authSecretRefs = append $authSecretRefs ($connection.authentication.credentialsSecretRef) }}
+              {{- end }}
+            {{- end }}
+            {{- $authSecretRefs := $authSecretRefs | uniq }}
+            {{- range $authSecretRefs }}
+            - name: LS_KAFKA_PLAIN_AUTH_{{ . | upper | replace "-" "_" }}_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ . }}
+                  key: user
+            - name: LS_KAFKA_PLAIN_AUTH_{{ . | upper | replace "-" "_" }}_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ . }}
+                  key: password
+            {{- end }} {{/* end of range $authSecretRefs */}}
+            {{- /* END AUTHENTICATION */ -}}
+          {{- end }}
+          {{- /* END OF DEFINITION OF ENV VARIABLES FOR THE KAFKA CONNECTOR */ -}}
           {{- with .Values.deployment.extraEnvs }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
@@ -178,11 +220,18 @@ spec:
               mountPath: /lightstreamer/conf/keystores/{{ $key }}
           {{- end }}
           {{- if ((.Values.connectors).kafkaConnector).enabled }}
+            {{- $kafkaConnector := include "lightstreamer.kafka-connector.fullname" . }}
             - name: kafka-connector-storage
-              mountPath: /lightstreamer/adapters/lightstreamer-kafka-connector/install
-            - name: kafka-connector-configuration
-              mountPath: /lightstreamer/adapters/lightstreamer-kafka-connector/adapters.xml
-              subPath: adapters.xml
+              mountPath: /lightstreamer/adapters/{{ $kafkaConnector }}
+              subPath: {{ include "lightstreamer.kafka-connector.fullname" . }}
+            {{- range $key, $value := ((.Values.connectors).kafkaConnector).keyStores }}
+            - name: kafka-connector-keystore-{{ $key | lower }}
+              mountPath: /lightstreamer/adapters/{{ $kafkaConnector }}/keystores/{{ $key }}
+            {{- end }}
+            {{- range $key, $value := ((.Values.connectors).kafkaConnector).localSchemaFiles }}
+            - name: kafka-connector-schema-files-{{ $key | lower }}
+              mountPath: /lightstreamer/adapters/{{ $kafkaConnector }}/schemas/{{ $key }}
+            {{- end }}
           {{- end }}
           {{- with .Values.deployment.extraVolumeMounts }}
             {{- toYaml . | nindent 12 }}
@@ -208,7 +257,9 @@ spec:
           - name: kafka-connector-deploy-scripts
             mountPath: /scripts
           - name: kafka-connector-storage
-            mountPath: /tmp
+            mountPath: /archives-kafka-connector
+          - name: kafka-connector-configuration
+            mountPath: /sources-kafka-connector-conf
         {{- end }}
       volumes:
         - name: ligthstreamer-configuration
@@ -240,6 +291,16 @@ spec:
         - name: kafka-connector-configuration
           configMap:
             name: {{ include "lightstreamer.kafka-connector.fullname" . }}-conf
+        {{- range $key, $value := ((.Values.connectors).kafkaConnector).keyStores }}
+        - name: kafka-connector-keystore-{{ $key | lower }}
+          secret:
+            secretName: {{ required (printf "connectors.kafkaConnector.keyStores.%s.keystoreFileSecretRef.name must be set" $key) (($value.keystoreFileSecretRef).name) }}
+        {{- end }}
+        {{- range $key, $value := ((.Values.connectors).kafkaConnector).localSchemaFiles }}
+        - name: kafka-connector-schema-files-{{ $key | lower }}
+          configMap:
+            name: {{ required (printf "connectors.kafkaConnector.localSchemaFiles.%s.name must be set" $key) ($value.name) }}
+        {{- end }}
       {{- end }}
       {{- with .Values.deployment.extraVolumes }}
         {{- toYaml . | nindent 8 }}

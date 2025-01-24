@@ -1,5 +1,5 @@
 {{- if ((.Values.connectors).kafkaConnector).enabled }}
-{{- $kafkaConnectorVersion := required "connectorrs.kafkaConnector.version must be set" .Values.connectors.kafkaConnector.version }}
+{{- $kafkaConnectorVersion := required "connectors.kafkaConnector.version must be set" .Values.connectors.kafkaConnector.version }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -10,8 +10,8 @@ data:
   kafka-connector-downloader.sh: |-
     #!/bin/bash
     set -ex
-    wget -O /tmp/kafka-connector.zip https://github.com/Lightstreamer/Lightstreamer-kafka-connector/releases/download/v{{ $kafkaConnectorVersion }}/{{ include "lightstreamer.kafka-connector.fullname" . }}.zip
-    unzip /tmp/kafka-connector.zip -d /tmp
-    mv /tmp/{{ include "lightstreamer.kafka-connector.fullname" . }} /tmp/kafka-connector
-    rm -f /tmp/kafka-connector.zip
+    wget -O /archives-kafka-connector/kafka-connector.zip https://github.com/Lightstreamer/Lightstreamer-kafka-connector/releases/download/v{{ $kafkaConnectorVersion }}/{{ include "lightstreamer.kafka-connector.fullname" . }}.zip
+    unzip /archives-kafka-connector/kafka-connector.zip -d /archives-kafka-connector
+    rm -f /archives-kafka-connector/kafka-connector.zip
+    cp /sources-kafka-connector-conf/adapters.xml /archives-kafka-connector/{{ include "lightstreamer.kafka-connector.fullname" . }}/adapters.xml
 {{- end }}
