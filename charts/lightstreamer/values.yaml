@@ -26,7 +26,7 @@ nameOverride: ""
 fullnameOverride: ""
 
 # -- Additional labels to apply to all resources
-additionalLabels:
+additionalLabels: {}
 
 # -- Lightstreamer Docker Image settings
 image:
@@ -246,10 +246,11 @@ service:
 
   # -- The service type
   # (https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types)
-  type: LoadBalancer
+  type: 
 
-  # -- This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
-  port: 8088
+  # -- The port exposed by the service 
+  # (https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports)
+  port: 8080
 
   # -- The node port when the `type` is set to `NodePort` or 'LoadBalancer'
   # (https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport)
@@ -258,6 +259,9 @@ service:
   # -- The reference to a server socket configuration (see `servers` section 
   # below)
   targetPort: http-server
+
+  # -- The name of the service port
+  name: lightstreamer-service
 
   # -- The load balancer implementation when the `type` is set to `LoadBalancer`
   # (https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-class)
@@ -278,14 +282,15 @@ ingress:
   # -- The name of Ingress class
   className:
 
-  # -- List of Ingress rules
+  # -- List of Ingress rules.
+  # if not set, the ingress will be backed by the service.
   hosts:
-    - host:
-      paths:
-        - path: /
-          pathType: Prefix
+    # - host:
+    #   paths:
+    #     - path: /
+    #       pathType: Prefix
 
-  # -- TLS configuration for the Infress
+  # -- TLS configuration for the Ingress
   # (https://kubernetes.io/docs/concepts/services-networking/ingress/#tls)
   tls: []
 
