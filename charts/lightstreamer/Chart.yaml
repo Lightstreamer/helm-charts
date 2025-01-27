@@ -15,7 +15,7 @@
 
 apiVersion: v2
 name: lightstreamer
-description: A Helm chart for Kubernetes
+description: Lightstreamer Helm Chart
 type: application
 
 # This is the chart version. This version number should be incremented each time you make changes
