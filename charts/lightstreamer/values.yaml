@@ -2824,10 +2824,6 @@ connectors:
     # -- Optional. The Lightstreamer Kafka Connector version to install.
     version: "1.2.0"
 
-    provisionig:
-      donwnloadUrl: "https://github.com/Lightstreamer/Lightstreamer-kafka-connector/releases/download/v1.2.0/lightstreamer-kafka-connector-1.2.0.zipg"
-      imageEmbedded:
-
     # -- Mandatory. Define the Kafka Connector Adapter Set and its unique ID.
     adapterSetId: "KafkaConnector"
 
