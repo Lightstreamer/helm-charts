@@ -38,7 +38,7 @@ spec:
             {{- end }}
             backend:
               service:
-                name: {{ include "lightstreamer.fullname" $ }}
+                name: {{ $.Values.service.name }}
                 port:
                   number: {{ $.Values.service.port }}
           {{- end }}
