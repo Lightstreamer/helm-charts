@@ -25,6 +25,6 @@ spec:
       {{- end }}
       protocol: TCP
       nodePort: {{ .Values.service.nodePort }}
-      name: http
+      name: {{ .Values.service.name }}
   selector:
     {{- include "lightstreamer.selectorLabels" . | nindent 4 }}
