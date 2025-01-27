@@ -102,7 +102,7 @@
          The connection name is also used to group all logging messages belonging to the same connection.
 
          Its default value is "DEFAULT", but only one "DEFAULT" configuration is permitted. -->
-    {{- range $key, $connection := .connections }}
+    {{- range $key, $connection := required "kafkaConnectors.connections must be set" .connections }}
     <data_provider name={{ required (printf "connectors.kafkaConnector.connections.%s.name must be set" $key) $connection.name | quote }}>
         <!-- ##### GENERAL PARAMETERS ##### -->
 
@@ -568,7 +568,7 @@
         <param name="record.value.evaluator.schema.path">schemas/{{ . }}/{{ required (printf "connectors.kafkaConnector.localSchemaFiles.%s.key must be set" .) $localSchema.key }}</param>
           {{- else }}
             {{- if and (eq .type "AVRO") (not .enableSchemaRegistry) }}
-              {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.record.keyEvaluator.localSchemaFilePathRef.key or enable connectors.kafkaConnector.connections.%s.record.keyEvaluator.enableSchemaRegistry" $key $key) }}
+              {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.record.valueEvaluator.localSchemaFilePathRef.key or enable connectors.kafkaConnector.connections.%s.record.keyEvaluator.enableSchemaRegistry" $key $key) }}
             {{- else }}
         <!--
         <param name="record.value.evaluator.schema.path">schema/record_value.avsc</param>
@@ -800,6 +800,10 @@
         -->
           {{- end }} {{/* of .keyStoreRef */}}
         {{- end }} {{/* of .sslConfig */}}
+      {{- else }}
+        {{- if or (($connection.record.keyEvaluator).enableSchemaRegistry) (($connection.record.valueEvaluator).enableSchemaRegistry) }}
+          {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.record.schemaRegistryRef or disable connectors.kafkaConnector.connections.%s.record.keyEvaluator.enableSchemaRegistry and connectors.kafkaConnector.connections.%s.record.valueEvaluator.enableSchemaRegistry" $key $key $key) }}
+        {{- end }}
       {{- end }} {{/* of .schemaRegistryRef */}}
 
     </data_provider>
