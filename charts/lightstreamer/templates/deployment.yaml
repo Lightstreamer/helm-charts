@@ -135,6 +135,13 @@ spec:
                 secretKeyRef:
                   name: {{ required (printf "keyStores.%s.keystorePasswordSecretRef.name must be set" $key) ($value.keystorePasswordSecretRef).name }}
                   key: {{ required (printf "keyStores.%s.keystorePasswordSecretRef.key must be set" $key) ($value.keystorePasswordSecretRef).key }}
+            {{- if $value.keyPasswordSecretRef }}
+            - name: LS_KEYSTORE_{{ $key | upper | replace "-" "_" }}_KEY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ required (printf "keyStores.%s.keyPasswordSecretRef.name must be set" $key) ($value.keyPasswordSecretRef).name }}
+                  key: {{ required (printf "keyStores.%s.keyPasswordSecretRef.key must be set" $key) ($value.keyPasswordSecretRef).key }}
+            {{- end }}
           {{- end }}
           {{- if and (ne .Values.license.enterprise.licenseType "DEMO") (eq .Values.license.enterprise.licenseValidation "ONLINE") }}
             {{- with .Values.license.enterprise.onlinePasswordSecretRef }}
@@ -160,22 +167,6 @@ spec:
           {{- /* DEFINITION OF ENV VARIABLES FOR THE KAFKA CONNECTOR */ -}}
           {{- if ((.Values.connectors).kafkaConnector).enabled }} {{/* start of kafkaConnector enabled */}}
             {{- $kafkaConnector := include "lightstreamer.kafka-connector.fullname" . }}
-            {{- /* KEYSTORES */ -}}
-            {{- range $key, $value := .Values.connectors.kafkaConnector.keyStores }}
-            - name: LS_KAFKA_KEYSTORE_{{ $key | upper | replace "-" "_" }}_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ required (printf "connectors.kafkaConnector.keyStores.%s.keystorePasswordSecretRef.name must be set" $key) ($value.keystorePasswordSecretRef).name }}
-                  key: {{ required (printf "connectorrs.kafkaConnector.keyStores.%s.keystorePasswordSecretRef.key must be set" $key) ($value.keystorePasswordSecretRef).key }}
-              {{- if $value.keyPasswordSecretRef }}
-            - name: LS_KAFKA_KEYSTORE_{{ $key | upper | replace "-" "_" }}_KEY_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ required (printf "connectors.kafkaConnector.keyStores.%s.keyPasswordSecretRef.name must be set" $key) ($value.keyPasswordSecretRef).name }}
-                  key: {{ required (printf "connectors.kafkaConnector.keyStores.%s.keyPasswordSecretRef.key must be set" $key) ($value.keyPasswordSecretRef).key }}
-              {{- end }}
-            {{- end }}
-            {{- /* END KEYSTORES */ -}}
             {{- /* AUTHENTICATION */ -}}
             {{- $authSecretRefs := list }}
             {{- range $key, $connection := $.Values.connectors.kafkaConnector.connections }}
@@ -195,8 +186,26 @@ spec:
                 secretKeyRef:
                   name: {{ . }}
                   key: password
-            {{- end }} {{/* end of range $authSecretRefs */}}
+            {{- end }} {{- /* end of range $authSecretRefs */ -}}
             {{- /* END AUTHENTICATION */ -}}
+            {{- /* SCHEMA REGISTRY */ -}}
+            {{- range $key, $schemaRegistry := $.Values.connectors.kafkaConnector.schemaRegistry }}
+              {{- if ($schemaRegistry.basicAuthentication).enabled }}
+                {{- with $schemaRegistry.basicAuthentication }}
+            - name: LS_KAFKA_SCHEMA_REGISTRY_{{ $key | upper | replace "-" "_" }}_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .credentialsSecretRef }}
+                  key: user
+            - name: LS_KAFKA_SCHEMA_REGISTRY_{{ $key | upper | replace "-" "_" }}_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .credentialsSecretRef }}
+                  key: password
+                {{- end }}
+              {{- end }} {{- /* end of $schemaRegistry.basicAuthentication.enabled */ -}}
+            {{- end}} {{- /* end of range $schemaRegistry */ -}}
+            {{- /* END SCHEMA REGISTRY */ -}}
           {{- end }}
           {{- /* END OF DEFINITION OF ENV VARIABLES FOR THE KAFKA CONNECTOR */ -}}
           {{- with .Values.deployment.extraEnvs }}
@@ -229,8 +238,10 @@ spec:
               mountPath: /lightstreamer/adapters/{{ $kafkaConnector }}/keystores/{{ $key }}
             {{- end }}
             {{- range $key, $value := ((.Values.connectors).kafkaConnector).localSchemaFiles }}
+            {{- if $value}}
             - name: kafka-connector-schema-files-{{ $key | lower }}
               mountPath: /lightstreamer/adapters/{{ $kafkaConnector }}/schemas/{{ $key }}
+            {{- end }}
             {{- end }}
           {{- end }}
           {{- with .Values.deployment.extraVolumeMounts }}
@@ -291,15 +302,12 @@ spec:
         - name: kafka-connector-configuration
           configMap:
             name: {{ include "lightstreamer.kafka-connector.fullname" . }}-conf
-        {{- range $key, $value := ((.Values.connectors).kafkaConnector).keyStores }}
-        - name: kafka-connector-keystore-{{ $key | lower }}
-          secret:
-            secretName: {{ required (printf "connectors.kafkaConnector.keyStores.%s.keystoreFileSecretRef.name must be set" $key) (($value.keystoreFileSecretRef).name) }}
-        {{- end }}
         {{- range $key, $value := ((.Values.connectors).kafkaConnector).localSchemaFiles }}
+        {{- if $value}}
         - name: kafka-connector-schema-files-{{ $key | lower }}
           configMap:
             name: {{ required (printf "connectors.kafkaConnector.localSchemaFiles.%s.name must be set" $key) ($value.name) }}
+        {{- end }}
         {{- end }}
       {{- end }}
       {{- with .Values.deployment.extraVolumes }}
