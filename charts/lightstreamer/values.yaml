@@ -951,7 +951,7 @@ servers:
       # -- Mandatory. The reference to a keystore configuration.
       # See the `keyStores.myServerKeystore` settings for general details on
       # keystore configuration.
-      keyStoreRef:
+      keyStoreRef: myServerKeystore
 
       # -- Optional, but forbidden if `removeCipherSuites` is used.
       # Specifies all the cipher suites allowed for the TLS/SSL interaction,
