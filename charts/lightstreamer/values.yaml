@@ -257,7 +257,7 @@ service:
 
   # -- The reference to a server socket configuration (see `servers` section 
   # below)
-  targetPort: https-server
+  targetPort: http-server
 
   # -- The load balancer implementation when the `type` is set to `LoadBalancer`
   # (https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-class)
@@ -449,6 +449,7 @@ logging:
     console:
       type: Console
       pattern: "%d{\"dd.MMM.yy HH:mm:ss,SSS\"} <%5.5(%p%marker)> %m%n"
+
   loggers:
     # -- These two loggers are used by the internal monitoring system to log
     # load statistics at INFO level.
@@ -716,11 +717,13 @@ logging:
       appenders:
         - console
       level: "OFF"
-  extraLoggers:
-    "mio logger":
-      appenders:
-        - console
-      level: INFO
+
+  # Put here any additional loggers you want to configure.
+  # extraLoggers:
+  #   antoherLogger:
+  #     appenders:
+  #       - console
+  #     level: INFO
 
 # -- Mandatory. Map of HTTP/S server socket configurations.
 # Every key in the map defines a specific listening socket configuration, which
@@ -734,7 +737,7 @@ logging:
 # Server instance.
 servers:
 
-  # -- An HTTP/S server socket configuration.
+  # -- An HTTP server socket configuration.
   http-server:
 
     # -- Optional. Enable this socket configuration.
@@ -755,7 +758,8 @@ servers:
     # HTTPS service is an optional feature, available depending on Edition and
     # License Type. To know what features are enabled by your license, please
     # see the License tab of the Monitoring Dashboard (by default, available at
-    # /dashboard).
+    # /dashboard). 
+    # See `sslConfig` for general details on TLS/SSL configuration.
     # @default -- false
     enableHttps:
 
@@ -927,28 +931,6 @@ servers:
       # @default -- false
       enableForwardsLogging:
 
-  https-server:
-    enabled: true
-    name: "Lightstreamer HTTPS Server"
-    port: 4443
-    enableHttps: true
-    portType: CONTROL_ONLY
-    responseHttpHeaders:
-      echo:
-        - "cookie"
-      add:
-        - name: "X-Accel-Buffering"
-          value: "no"
-        - name: "my-header"
-          value: "MyValue"
-    listeningInterface:
-    clientIdentification:
-      private: true
-      enableProxyProtocol: false
-      proxyProtocolTimeoutMillis: 3000
-      # skipLocalForwards: 2
-      logForwards: true
-
     # -- Mandatory if `enableHttps` is `true`. TLS/SSL settings for this
     # socket configuration
     sslConfig:
@@ -966,9 +948,10 @@ servers:
       # java.security file of the JDK installation.
       tlsProvider:
 
-      # -- Mandatory. The reference to the keystore configuration.
-      # See `keystores.myServerKeystore` setting.
-      keyStoreRef: myServerKeystore
+      # -- Mandatory. The reference to a keystore configuration.
+      # See the `keyStores.myServerKeystore` settings for general details on
+      # keystore configuration.
+      keyStoreRef:
 
       # -- Optional, but forbidden if `removeCipherSuites` is used.
       # Specifies all the cipher suites allowed for the TLS/SSL interaction,
@@ -985,7 +968,6 @@ servers:
       # @default -- []
       allowCipherSuites: []
         # - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
-
 
       # -- Optional, but forbidden if `allowCipherSuites` is used.
       # Pattern to be matched against the names of the enabled cipher suites in
@@ -1146,13 +1128,13 @@ servers:
       # It can be used to supply client certificates that should be accepted,
       # in addition to those with a valid certificate chain, for instance while
       # testing with self-signed certificates.
-      # See the `keystore` settings for general details on keystore
-      # configuration.
+      # See the `keyStores.myServerKeystore` settings for general details on
+      # keystore configuration.
       # Note that the further constraints reported there with regard to
       # accessing the certificates in a JKS keystore don't hold in this
       # case, where the latter is used as a truststore.
       # Moreover, the handling of keystore replacement doesn't apply here.
-      trustStoreRef: myServerKeystore
+      trustStoreRef:
 
 # -- Keystores definition.
 keyStores:
@@ -1190,7 +1172,7 @@ keyStores:
       key: myserver.keypass
 
   # -- Example of Keystore definition used by Kafka connector configurations.
-  # myKafkaConnectorKeystore:
+  myKafkaConnectorKeystore:
 
     # -- (string) Optional. The keystore type.
     # The currently supported types are:
@@ -1639,20 +1621,20 @@ management:
       # @default -- accept connections on any/all local addresses
       listeningInterface:
 
-      # -- Optional. The reference to the keystore to be used in case TLS/SSL 
-      # isenabled for part or all the communication.
+      # -- Optional. The reference a keystore to be used in case TLS/SSL is
+      # is enabled for part or all the communication.
       # See the `keystores.myServerKeystore` for general details on keystore
       # configuration. These include the runtime replacement of the keystore,
       # with one difference: if the load of the new keystorefails, the RMI
       # Connector may be left unreachable.
       # @default -- any settings provided to the "javax.net.ssl.keyStore" and
       # "javax.net.ssl.keyStorePassword" JVM properties will apply
-      keyStoreRef: myServerKeystore
+      keyStoreRef: 
 
       # -- (list) Optional, but forbidden if `removeCipherSuites` is used.
       # Specifies all the cipher suites allowed for the interaction, in case
       # TLS/SSL is enabled for part or all the communication.
-      # See notes for `servers.https-server.sslConfig.allowCipherSuites`.
+      # See notes for `servers.{}.sslConfig.allowCipherSuites`.
       # @default -- []
       allowCipherSuites: []
         # - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
@@ -1661,7 +1643,7 @@ management:
       # Pattern to be matched against the names of the enabled cipher suites in
       # order to remove the matching ones from the enabled cipher suites set to
       # be used in case TLS/SSL is enabled for part or all the communication.
-      # See notes for `servers.https-server.sslConfig.removeCipherSuites`.
+      # See notes for `servers.{}.sslConfig.removeCipherSuites`.
       # @default -- []
       removeCipherSuites: []
         # - TLS_RSA_
@@ -1670,7 +1652,7 @@ management:
       # multiple cipher suites are in common between server and client (in case
       # TLS/SSL is enabled for part or all the communication).
       # See notes for
-      # servers.https-server.sslConfig.enforceServerCipherSuitePreference`.
+      # servers.{}.sslConfig.enforceServerCipherSuitePreference`.
       enforceServerCipherSuitePreference:
         enabled: true
         order: "JVM"
@@ -1678,7 +1660,7 @@ management:
       # -- (list) Optional, but forbidden if `removeProtocols` is used.
       # Specifies one or more protocols allowed for the TLS/SSL interaction, in
       # case TLS/SSL is enabled for part or all the communication.
-      # See notes for `servers.https-server.sslConfig.allowProtocols`.
+      # See notes for `servers.{}.sslConfig.allowProtocols`.
       allowProtocols: []
         # - TLSv1.2
         # - TLSv1.3
@@ -1688,7 +1670,7 @@ management:
       # protocols in order to remove the matching ones from the enabled
       # protocols set to be used in case TLS/SSL is enabled for part or all the
       # communication.
-      # See notes for `servers.https-server.sslConfig.removeProtocols.
+      # See notes for `servers.{}.sslConfig.removeProtocols.
       removeProtocols:
         - SSL
         - TLSv1$
@@ -2713,7 +2695,7 @@ load:
   #  -- (int) Optional. Maximum number of tasks allowed to be queued to enter
   #  the "ACCEPT" thread pool before undertaking backpressure actions.
   #  The setting only affects the listening sockets with
-  #  `servers.http(s)Server.portType` configured as CREATE_ONLY. As long as the
+  #  `servers.{}.portType` configured as CREATE_ONLY. As long as the
   #  number is exceeded, the accept loops of these sockets will be kept
   #  waiting.
   #  By suspending the accept loop, some SYN packets from the clients may be
@@ -2728,13 +2710,12 @@ load:
 
   # -- (int) Optional. Size of the "TLS-SSL HANDSHAKE" internal pool, which is
   # devoted to the management of operations needed to accomplish TLS/SSL
-  # handshakes on the listening sockets specified through
-  # `servers.httpsServer`.
+  # handshakes on the listening sockets specified through 
+  # the `servers.{}` configuration with `enableHttps` set to `true`.
   # In particular, this pool is only used when the socket is not configured to
-  # request the client certificate (see
-  # `servers.https-servers.sslConfig.enableClientAuth` and
-  # `servers.https-servers.security.enabeMandatoryClientAuth`); in this case,
-  # the tasks are not expected to be blocking. Note that the operation may be
+  # request the client certificate (see servers.{}.sslConfig.enableClientAuth` 
+  # and `servers.{}.security.enabeMandatoryClientAuth`); in this case, the 
+  # tasks are not expected to be blocking. Note that the operation may be
   # CPU-intensive; hence, it is advisable to set a value smaller than the
   # number of available cores.
   # @default -- half the number of available total cores, as detected by the JVM
@@ -2745,11 +2726,12 @@ load:
   # the "TLS-SSL HANDSHAKE" thread pool before undertaking backpressure
   # actions.
   # The setting only regards the listening sockets specified through
-  # `servers.httpsServer` that are not configured to request the client certificate.
+  # the `servers.{}` configurations (with `enableHttps` set to `true`) that are
+  # not configured to request the client certificate.
   # More precisely:
-  # - If there are https sockets with `servers.httpsServer.portType` configured
-  #   as CREATE_ONLY, then, as long as the number is exceeded, the accept
-  #   loops of these sockets will be kept waiting.
+  # - If there are https sockets with `servers.{}.portType` configured as 
+  #   CREATE_ONLY, then, as long as the number is exceeded, the accept loops of
+  #   these sockets will be kept waiting.
   #   By suspending the accept loop, some SYN packets from the clients may be
   #   discarded; the effect may vary depending on the backlog settings.
   # - Otherwise, if there are https sockets configured as CONTROL_ONLY and none
@@ -2850,6 +2832,51 @@ connectors:
     # See https://github.com/Lightstreamer/Lightstreamer-kafka-connector/tree/main?tab=readme-ov-file#customize-the-kafkaconnector-metadata-adapter-class
     adapterClassName: "com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter"
 
+    # -- Mandatory. Kafka Connector global Logging configuration.
+    logging:
+
+      # -- Mandatory. Appenders configuration.
+      # Every logger must refere one or more appenders defined here.
+      appenders:
+        
+        # -- At least one must be provided. An appender configuration.
+        stdout:
+
+          # -- (string) Mandatory. The appender type.
+          # Currently, on the `Console` type is supported.
+          type: Console
+
+          # -- (string) Mandatory. The appender layout.
+          pattern: "[%d] [%-10c{1}] %-5p %m%n"
+
+      # -- Optional. Global loggers configuration.
+      loggers:
+        
+        # -- The logger name
+        org.apache.kafka:
+
+          # -- Mandatory. List of references to the appenders to be used by  
+          # the logger.
+          appenders:
+            - stdout
+
+          # -- (string) Mandatory. The logger level.
+          level: WARN
+        
+        # -- Logger for the Kafka Connector Metadata Adapter.
+        # Replace the name with the one of the custom Metadata Adapter class.
+        com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter:
+          appenders:
+            - stdout
+          level: INFO
+
+        # Put here other loggers as needed.
+        # my.package:
+        #  appenders:
+        #    - stdout
+        #  level: INFO       
+
+
     # -- Mandatory. Connection configurations.
     connections:
 
@@ -2876,7 +2903,7 @@ connectors:
         enabled: true
 
         # -- (string) Mandatory. The Kafka Cluster bootstrap server endpoint 
-        # expressed  as the list of host/port pairs used to establish the 
+        # expressed as the list of host/port pairs used to establish the 
         # initial connect.
         bootstrapServers: broker:9092
 
@@ -2917,13 +2944,17 @@ connectors:
           # @default -- false
           enableHostnameVerification:
 
-          # -- Optional. The reference to a truststore used to validate the 
+          # -- Optional. The reference to a keustore used to validate the 
           # certificates provided by the Kafka brokers.
-          trustStoreRef: myServerKeystore
+          # See the `keyStores.myKafkaConnectorKeystore` settings for general
+          # details on keystore configuration for the Kafka Connector.
+          trustStoreRef: 
 
           # -- Optional. The reference to a keystore used if mutual TLS is enabled
           # on Kafka brokers.
-          keyStoreRef: myServerKeystore
+          # See the `keyStores.myKafkaConnectorKeystore` settings for general
+          # details on keystore configuration for the Kafka Connector.
+          # keyStoreRef: myKafkaConnectorKeystore
 
         # -- Optional. Authentication settings for the connection.
         authentication:
@@ -3029,7 +3060,7 @@ connectors:
             # - SHORT
             # - UUID
             # @default -- `STRING`
-            type: STRING
+            type: INTEGER
 
             # -- Mandatory if `type` is set to `AVRO` and
             # `enableSchemaRegistry` is set to `false`. The configmap name and
@@ -3043,7 +3074,7 @@ connectors:
             # Must be set to `true` when `keyEvaluator.type` is set to `AVRO`
             # and no local schema are specified.
             # @default -- false
-            schemaRegistryRef: mySchemaRegistry
+            enableSchemaRegistry:
 
           # -- Optional. Value evaluator configuration.
           # @default -- all settings at their defaults
@@ -3067,7 +3098,7 @@ connectors:
             # Must be set to `true` when `valueEvaluator.type` is set to `AVRO`
             # and no local schema are specified.
             # @default -- false
-            enableSchemaRegistry: false
+            enableSchemaRegistry: 
 
           # -- Optional. The error handling strategy to be used if an error
           # occurs while extracting data from incoming deserialized records.
@@ -3080,7 +3111,7 @@ connectors:
           extractionErrorStrategy:
 
           # -- Optional. The reference to Schema Registry configuration.
-          schemaRegistryRef: mySchemaRegistry
+          schemaRegistryRef:
 
         # -- Mandatory. Record routings configuration.
         routing:
@@ -3190,7 +3221,18 @@ connectors:
           # to the Lightstreamer clients, while other successfully mapped fields
           # from the same record will still be delivered. Can be one of the
           # @default -- false
-          enableSkipFailedMapping: false
+          enableSkipFailedMapping:
+
+        # -- Optional. Logger configuration for the connection.
+        logger:
+
+          # -- Mandatory. List of references to the appenders defined in 
+          # `kafkaConnector.logging.appenders`.
+          appenders:
+            - stdout
+
+          # -- (string) Mandatory. The logger level.
+          level: INFO
 
     # -- Optional. Local schema files used for message validation.
     localSchemaFiles:
@@ -3249,12 +3291,16 @@ connectors:
           # @default -- false
           enableHostnameVerification:
 
-          # -- Optional. The reference to a truststore used to validate the 
-          # certificates provided by the Schema Registry
+          # -- Optional. The reference to a keystore used to validate the 
+          # certificates provided by the Schema Registry.
+          # See the `keyStores.myKafkaConnectorKeystore` settings for general
+          # details on keystore configuration for the Kafka Connector.
           trustStoreRef:
 
           # -- Optional. The reference to a keystore used if mutual TLS is enabled
           # on the Schema Registry.
+          # See the `keyStores.myKafkaConnectorKeystore` settings for general
+          # details on keystore configuration for the Kafka Connector.
           keyStoreRef:
       
 
