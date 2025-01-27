@@ -8,4 +8,6 @@ metadata:
 data:
   adapters.xml: |-
     {{- include "lightstreamer.kafka-connector.configuration" . | nindent 4 }}
+  log4j.properties: |-
+    {{- include "lightstreamer.kafka-connector.logging-conf" . | nindent 4 }}
 {{- end }}
