@@ -130,17 +130,19 @@ spec:
             {{- toYaml .Values.deployment.resources | nindent 12 }}
           env:
           {{- range $key, $value := .Values.keyStores }}
+            {{- if $value }}
             - name: LS_KEYSTORE_{{ $key | upper | replace "-" "_" }}_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ required (printf "keyStores.%s.keystorePasswordSecretRef.name must be set" $key) ($value.keystorePasswordSecretRef).name }}
                   key: {{ required (printf "keyStores.%s.keystorePasswordSecretRef.key must be set" $key) ($value.keystorePasswordSecretRef).key }}
-            {{- if $value.keyPasswordSecretRef }}
+              {{- if $value.keyPasswordSecretRef }}
             - name: LS_KEYSTORE_{{ $key | upper | replace "-" "_" }}_KEY_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ required (printf "keyStores.%s.keyPasswordSecretRef.name must be set" $key) ($value.keyPasswordSecretRef).name }}
                   key: {{ required (printf "keyStores.%s.keyPasswordSecretRef.key must be set" $key) ($value.keyPasswordSecretRef).key }}
+              {{- end }}
             {{- end }}
           {{- end }}
           {{- if and (ne .Values.license.enterprise.licenseType "DEMO") (eq .Values.license.enterprise.licenseValidation "ONLINE") }}
@@ -225,18 +227,16 @@ spec:
               mountPath: /lightstreamer/conf/error-page
           {{- end }}
           {{- range $key, $value := .Values.keyStores }}
+            {{- if $value }}
             - name: keystore-{{ $key | lower }}
               mountPath: /lightstreamer/conf/keystores/{{ $key }}
+            {{- end }}
           {{- end }}
           {{- if ((.Values.connectors).kafkaConnector).enabled }}
             {{- $kafkaConnector := include "lightstreamer.kafka-connector.fullname" . }}
             - name: kafka-connector-storage
               mountPath: /lightstreamer/adapters/{{ $kafkaConnector }}
               subPath: {{ include "lightstreamer.kafka-connector.fullname" . }}
-            {{- range $key, $value := ((.Values.connectors).kafkaConnector).keyStores }}
-            - name: kafka-connector-keystore-{{ $key | lower }}
-              mountPath: /lightstreamer/adapters/{{ $kafkaConnector }}/keystores/{{ $key }}
-            {{- end }}
             {{- range $key, $value := ((.Values.connectors).kafkaConnector).localSchemaFiles }}
             {{- if $value}}
             - name: kafka-connector-schema-files-{{ $key | lower }}
@@ -282,9 +282,11 @@ spec:
             name: {{ .name }}
       {{- end }}
       {{- range $key, $value := .Values.keyStores }}
+        {{- if $value }}
         - name: keystore-{{ $key | lower }}
           secret:
             secretName: {{ required (printf "keystores.%s.keystoreFileSecretRef.name must be set" $key) (($value.keystoreFileSecretRef).name) }}
+        {{- end }}
       {{- end }}
       {{- if and (ne .Values.license.enterprise.licenseType "DEMO") (eq .Values.license.enterprise.licenseValidation "FILE") }}
         {{- with required "license.enterprirse.filePathSecretRef  must be set " .Values.license.enterprise.filePathSecretRef }}
