@@ -1,31 +1,28 @@
 {{/* Render the truststore settings for the Lightstreamer Kafka Connector configuration file */}}
 {{- define "lightstreamer.kafka-connector.configuration.truststore" -}}
-{{- $top := index . 0 -}}
-{{- $key := index . 1 -}}
+{{- $prefix := index . 0 -}}
+{{- $top := index . 1 -}}
+{{- $key := index . 2 -}}
 {{- $keyStore := required (printf "keystores.%s not defined" $key) (get $top $key) -}}
 
-<!-- Optional. The path of the trust store file, relative to the deployment folder
-      (LS_HOME/adapters/lightstreamer-kafka-connector-<version>). -->
-<param name="encryption.truststore.path">./keystores/{{ $key }}/{{ required (printf "keystores.%s.keystoreFilesecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</param>
+<param name="{{ $prefix }}.path">../../conf/keystores/{{ $key }}/{{ required (printf "keystores.%s.keystoreFileSecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</param>
 
 <!-- Optional. The password of the trust store.
 
       If not set, checking the integrity of the trust store file configured will not
       be possible. -->
-<!--
-<param name="encryption.truststore.password">kafka-connector-truststore-password</param>
--->
-<param name="encryption.truststore.password">$env.LS_KAFKA_KEYSTORE_{{ $key | upper |replace "-" "_" }}_PASSWORD</param>
+<param name="{{ $prefix }}.password">$env.LS_KEYSTORE_{{ $key | upper |replace "-" "_" }}_PASSWORD</param>
 
-{{- if not (quote $keyStore.type | empty) }} 
-<param name="encryption.truststore.type">{{ $keyStore.type }}</param>
+{{- if not (quote $keyStore.type | empty) }}
+<param name="{{ $prefix }}.type">{{ $keyStore.type }}</param>
 {{- end -}}
 {{- end -}}
 
 {{/* Render the keystore settings for the Lightstreamer Kafka Connector configuration file */}}
 {{- define "lightstreamer.kafka-connector.configuration.keystore" -}}
-{{- $top := index . 0 -}}
-{{- $key := index . 1 -}}
+{{- $prefix := index . 0 -}}
+{{- $top := index . 1 -}}
+{{- $key := index . 2 -}}
 {{- $keyStore := required (printf "keystores.%s not defined" $key) (get $top $key) -}}
 <!-- Optional. Enable a key store. Can be one of the following:
       - true
@@ -38,30 +35,30 @@
      - encryption.keystore.password
      - encryption.keystore.key.password
 
-     Defalt value: false. --> 
-<param name="encryption.keystore.enable">true</param>
+     Defalt value: false. -->
+<param name="{{ $prefix }}.enable">true</param>
 
 <!-- Mandatory if key store is enabled. The path of the key store file, relative to
      the deployment folder (LS_HOME/adapters/lightstreamer-kafka-connector-<version>). -->
-<param name="encryption.keystore.path">./keystores/{{ $key }}/{{ required (printf "keystores.%s.keystoreFilesecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</param>
+<param name="{{ $prefix }}.path">../../conf/keystores/{{ $key }}/{{ required (printf "keystores.%s.keystoreFilesecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</param>
 
 <!-- Optional. The password of the key store.
 
      If not set, checking the integrity of the key store file configured
      will not be possible. -->
-<param name="encryption.keystore.password">$env.LS_KAFKA_KEYSTORE_{{ $key | upper |replace "-" "_" }}_PASSWORD</param>
+<param name="{{ $prefix }}.password">$env.LS_KEYSTORE_{{ $key | upper |replace "-" "_" }}_PASSWORD</param>
 
 <!-- Optional. The password of the private key in the key store file. -->
 {{- if $keyStore.keyPasswordSecretRef }}
-<param name="encryption.keystore.key.password">$env.LS_KAFKA_KEYSTORE_{{ $key | upper |replace "-" "_" }}_KEY_PASSWORD</param>
+<param name="{{ $prefix }}.key.password">$env.LS_KEYSTORE_{{ $key | upper |replace "-" "_" }}_KEY_PASSWORD</param>
 {{- else }}
 <!--
-<param name="encryption.keystore.key.password">kafka-connector-private-key-password</param>
+<param name="{{ $prefix }}.key.password">kafka-connector-private-key-password</param>
 -->
 {{- end }}
 
-{{- if not (quote $keyStore.type | empty) }} 
-<param name="encryption.keystore.type">{{ $keyStore.type }}</param>
+{{- if not (quote $keyStore.type | empty) }}
+<param name="{{ $prefix }}.keystore.type">{{ $keyStore.type }}</param>
 {{- end -}}
 {{- end -}}
 
@@ -232,7 +229,7 @@
         <!-- Optional. The path of the trust store file, relative to the deployment folder
              (LS_HOME/adapters/lightstreamer-kafka-connector-<version>). -->
         {{- if .trustStoreRef}}
-          {{- include "lightstreamer.kafka-connector.configuration.truststore" (list $.Values.connectors.kafkaConnector.keyStores .trustStoreRef)  | nindent 8 }}
+          {{- include "lightstreamer.kafka-connector.configuration.truststore" (list "encryption.truststore" $.Values.keyStores .trustStoreRef)  | nindent 8 }}
         {{- else }}
         <!--
         <param name="encryption.truststore.path">secrets/kafka-connector.truststore.jks</param>
@@ -248,7 +245,7 @@
         {{- end }} {{/* of .trustStoreRef */}}
 
         {{- if .keyStoreRef }}
-          {{- include "lightstreamer.kafka-connector.configuration.keystore" (list $.Values.connectors.kafkaConnector.keyStores .keyStoreRef)  | nindent 8 }}
+          {{- include "lightstreamer.kafka-connector.configuration.keystore" (list "encryption.keystore" $.Values.keyStores .keyStoreRef)  | nindent 8 }}
         {{- else }}
         <!-- Optional. Enable a key store. Can be one of the following:
              - true
@@ -261,7 +258,7 @@
             - encryption.keystore.password
             - encryption.keystore.key.password
 
-            Defalt value: false. -->        
+            Defalt value: false. -->
         <!--
         <param name="encryption.keystore.enable">true</param>
         -->
@@ -299,7 +296,7 @@
              - false
 
              Default value: false. -->
-        {{- if .enabled }} 
+        {{- if .enabled }}
         <param name="authentication.enable">true</param>
 
         <!-- Mandatory if authentication is enabled. The SASL mechanism type.
@@ -311,9 +308,10 @@
              - GSSAPI
 
              Default value: PLAIN.-->
-          {{- $mechanism := .mechanism | default "PLAIN" }}
-          {{- if not (mustHas $mechanism (list "PLAIN" "SCRAM-SHA-256" "SCRAM-SHA-512" "GSSAPI")) }}
-            {{- fail (printf "connectors.kafkaConnector.connections.%s.authentication.mechanism must be one of \"PLAIN\", \"SCRAM-SHA-256\", \"SCRAM-SHA-512\", \"GSSAPI\"" $key) }}
+          {{- if not (quote .mechanism | empty )}}
+            {{- if not (mustHas .mechanism (list "PLAIN" "SCRAM-SHA-256" "SCRAM-SHA-512" "GSSAPI")) }}
+              {{- fail (printf "connectors.kafkaConnector.connections.%s.authentication.mechanism must be one of \"PLAIN\", \"SCRAM-SHA-256\", \"SCRAM-SHA-512\", \"GSSAPI\"" $key) }}
+            {{- end }}
         <param name="authentication.mechanism">{{ .mechanism }}</param>
           {{- else }}
         <!--
@@ -322,7 +320,7 @@
           {{- end }} {{/* of .mechanism */}}
 
         <!-- Mandatory if authentication.mechanism is one of PLAIN, SCRAM-SHA-256, SCRAM-SHA-512. The credentials. -->
-          {{- if has $mechanism (list "PLAIN" "SCRAM-SHA-256" "SCRAM-SHA-512") }}
+          {{- if has (.mechanism | default "PLAIN") (list "PLAIN" "SCRAM-SHA-256" "SCRAM-SHA-512") }}
         <param name="authentication.username">$env.LS_KAFKA_PLAIN_AUTH_{{ required (printf "connectors.kafkaConnector.connections.%s.authentication.credentialsSecretRef must be set" $key) .credentialsSecretRef | upper | replace "-" "_" }}_USERNAME</param>
         <param name="authentication.password">$env.LS_KAFKA_PLAIN_AUTH_{{ required (printf "connectors.kafkaConnector.connections.%s.authentication.credentialsSecretRef must be set" $key) .credentialsSecretRef | upper | replace "-" "_" }}_PASSWORD</param>
           {{- else }}
@@ -333,7 +331,7 @@
           {{- end }} {{/* of .mechanism */}}
 
         <!-- ##### GSSAPI AUTHENTICATION SETTINGS ##### -->
-          {{- if eq $mechanism "GSSAPI"}}
+          {{- if eq .mechanism "GSSAPI"}}
             {{- with required "connectors.kafkaConnector.connections.%s.authentication.gssapi must be set" .gssapi }}
 
         <!-- In the case of GSSAPI authentication mechanism, the following parameters will be part of
@@ -372,7 +370,7 @@
             Default value: false- -->
               {{- if .enableStoreKey }}
         <param name="authentication.gssapi.store.key.enable">true</param>
-              {{- else }} 
+              {{- else }}
         <!--
         <param name="authentication.gssapi.store.key.enable">true</param>
         -->
@@ -384,7 +382,7 @@
         <!-- Mandatory. if ticket cache is disabled. The name of the principal to be used. -->
               {{- if .principal }}
         <param name="authentication.gssapi.principal">{{ .principal }}</param>
-              {{- else }} 
+              {{- else }}
                 {{- if .enableTicketCache }}
                   {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.authentication.gssapi.principal or disable connectors.kafkaConnector.connections.%s.authentication.gssapi.enableTicketCache" $key $key) }}
                 {{- end }}
@@ -494,7 +492,7 @@
               {{- fail (printf "connectors.kafkaConnector.connections.%s.record.keyEvaluator.type must be one of \"AVRO\", \"JSON\", \"STRING\", \"INTEGER\", \"BOOLEAN\", \"BYTE_ARRAY\", \"BYTE_BUFFER\", \"BYTES\", \"DOUBLE\", \"FLOAT\", \"LONG\", \"SHORT\", \"UUID\"" $key) }}
             {{- else }}
         <param name="record.key.evaluator.type">{{ .type }}</param>
-            {{- end }} 
+            {{- end }}
           {{- else }}
         <!--
         <param name="record.key.evaluator.type">INTEGER</param>
@@ -505,8 +503,8 @@
              file relative to the deployment folder (LS_HOME/adapters/lightstreamer-kafka-connector-<version>) for
              message validation of the key. -->
           {{- with .localSchemaFilePathRef }}
-            {{ $localSchema := required (printf "local schema %s not defined" . ) (get ($.Values.connectors.kafkaConnector.localSchemaFiles | default dict) .) }}
-        <param name="record.key.evaluator.schema.path">schemas/{{ $localSchema }}/{{ required (printf "connectors.kafkaConnector.connections.%s.record.keyEvaluator.localSchemaFilePathRef.key" $key) $localSchema.key }}</param>
+            {{ $localSchema := required (printf "localSchemaFiles.%s not defined" . ) (get ($.Values.connectors.kafkaConnector.localSchemaFiles | default dict) .) }}
+        <param name="record.key.evaluator.schema.path">schemas/{{ . }}/{{ required (printf "connectors.kafkaConnector.localSchemaFiles.%s.key must be set" .) $localSchema.key }}</param>
           {{- else }}
             {{- if and (eq .type "AVRO") (not .enableSchemaRegistry) }}
               {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.record.keyEvaluator.localSchemaFilePathRef.key or enable connectors.kafkaConnector.connections.%s.record.keyEvaluator.enableSchemaRegistry" $key $key) }}
@@ -566,10 +564,11 @@
              file relative to the deployment folder (LS_HOME/adapters/lightstreamer-kafka-connector-<version>) for
              message validation of the the value. -->
           {{- with .localSchemaFilePathRef }}
-        <param name="record.value.evaluator.schema.path">schemas/{{ required (printf "connectors.kafkaConnector.connections.%s.record.valueEvaluator.localSchemaFilePathRef.key" $key) .key }}</param>
+            {{ $localSchema := required (printf "kafkaConnector.localSchemaFiles.%s not defined" . ) (get ($.Values.connectors.kafkaConnector.localSchemaFiles | default dict) .) }}
+        <param name="record.value.evaluator.schema.path">schemas/{{ . }}/{{ required (printf "connectors.kafkaConnector.localSchemaFiles.%s.key must be set" .) $localSchema.key }}</param>
           {{- else }}
             {{- if and (eq .type "AVRO") (not .enableSchemaRegistry) }}
-              {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.record.valueEvaluator.localSchemaFilePathRef.key or enable connectors.kafkaConnector.connections.%s.record.valueEvaluator.enableSchemaRegistry" $key $key) }}
+              {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.record.keyEvaluator.localSchemaFilePathRef.key or enable connectors.kafkaConnector.connections.%s.record.keyEvaluator.enableSchemaRegistry" $key $key) }}
             {{- else }}
         <!--
         <param name="record.value.evaluator.schema.path">schema/record_value.avsc</param>
@@ -603,13 +602,13 @@
         {{- if .extractionErrorStrategy }}
           {{- if not (mustHas .extractionErrorStrategy (list "IGNORE_AND_CONTINUE" "FORCE_UNSUBSCRIPTION")) }}
             {{- fail (printf "connectors.kafkaConnector.connections.%s.record.extractionErrorStrategy must be one of \"IGNORE_AND_CONTINUE\", \"FORCE_UNSUBSCRIPTION\"" $key) }}
-          {{- end }}             
-        <param name="record.extraction.error.strategy">{{ .extractionErrorStrategy }}</param>          
+          {{- end }}
+        <param name="record.extraction.error.strategy">{{ .extractionErrorStrategy }}</param>
         {{- else }}
         <!--
         <param name="record.extraction.error.strategy">FORCE_UNSUBSCRIPTION</param>
         -->
-        {{- end }} {{/* of .extractionErrorStrategy */}}  
+        {{- end }} {{/* of .extractionErrorStrategy */}}
       {{- end }} {{/* of .record */}}
 
         <!-- ##### RECORD ROUTING SETTINGS ##### -->
@@ -687,7 +686,7 @@
         <!--
         <param name="field.FIELD_NAME">extraction_expression</param>
         -->
-        {{- range $fieldName, $extractionExpression := required (printf "connectors.kafkaConnector.connections.%s.fields.mapping must be set" $key) .mappings }} 
+        {{- range $fieldName, $extractionExpression := required (printf "connectors.kafkaConnector.connections.%s.fields.mapping must be set" $key) .mappings }}
         <param name="field.{{ $fieldName }}">{{ $extractionExpression }}</param>
         {{- end }} {{/* of .mappings */}}
 
@@ -697,7 +696,7 @@
              - false
 
              Default value: false. -->
-        {{- if .enableSkipFailedMapping }}             
+        {{- if .enableSkipFailedMapping }}
         <param name="fields.skip.failed.mapping.enable">{{ .enableSkipFailedMapping }}</param>
         {{- else }}
         <!--
@@ -707,18 +706,28 @@
       {{- end }} {{/* of .mappingsfields */}}
 
         <!-- ##### SCHEMA REGISTRY SETTINGS ##### -->
+      {{- if ($connection.record).schemaRegistryRef }}
+        {{- $schemaRegistryRef := $connection.record.schemaRegistryRef }}
+        {{- $schemaRegistry := required (printf "kafkaConnector.schemaRegistry.%s not defined" $schemaRegistryRef) (get ($.Values.connectors.kafkaConnector.schemaRegistry | default dict) $connection.record.schemaRegistryRef) }}
 
         <!-- Mandatory if the Confluent Schema Registry is enabled. The URL of the Confluent Schema Registry.
              An encrypted connection is enabled by specifying the "https" protocol. -->
-        <!--
-        <param name="schema.registry.url">https://schema-registry:8084</param>
-        -->
+        <param name="schema.registry.url">{{ required (printf "kafkaConnector.schemaRegistry.%s.url must be set" $schemaRegistryRef) $schemaRegistry.url }}</param>
 
         <!-- Optional. Enable Basic HTTP authentication of this connection against the Schema Registry. Can be one of the following:
              - true
              - false
 
              Default value: false. -->
+        {{- if ($schemaRegistry.basicAuthentication).enabled }}
+          {{- with $schemaRegistry.basicAuthentication }}
+        <param name="schema.registry.basic.authentication.enable">true</param>
+            {{- with required (printf "kafkaConnector.schemaRegistry.%s.basicAuthentication.credentialsSecretRef must be set" $schemaRegistryRef) .credentialsSecretRef }}
+        <param name="schema.registry.basic.authentication.username">$env.LS_KAFKA_SCHEMA_REGISTRY_{{ . | upper | replace "-" "_" }}_USERNAME</param>
+        <param name="schema.registry.basic.authentication.password">$env.LS_KAFKA_SCHEMA_REGISTRY_{{ . | upper | replace "-" "_" }}_PASSWORD</param>
+            {{- end }} {{/* of .basicAuthentication */}}
+          {{- end }} {{/* of .basicAuthentication.enabled */}}
+        {{- else }}
         <!--
         <param name="schema.registry.basic.authentication.enable">true</param>
         -->
@@ -728,23 +737,60 @@
         <param name="schema.registry.basic.authentication.username">authorized-schema-registry-user</param>
         <param name="schema.registry.basic.authentication.password">authorized-schema-registry-user-password</param>
         -->
+        {{- end }} {{/* of .basicAuthentication.enabled */}}
 
         <!-- The following parameters have the same meaning as the homologous ones defined in
              the ENCRYPTION SETTINGS section. -->
 
         <!-- Set general encryption settings -->
+        {{- with $schemaRegistry.sslConfig }}
+          {{- if .allowedProtocols }}
+            {{- range $protocol := .allowedProtocols}}
+              {{- if not (mustHas $protocol (list "TLSv1.2" "TLSv1.3")) }}
+                {{- fail (printf "kafkaConnector.schemaRegistry.%s.sslConfig.allowedProtocols must be a list of \"TLSv1.2\", \"TLSv1.3\"" $schemaRegistryRef) }}
+              {{- end }}
+            {{- end }}
+        <param name="schema.registry.encryption.enabled.protocols">{{ join "," .allowedProtocols }}</param>
+          {{- else }}
         <!--
         <param name="schema.registry.encryption.enabled.protocols">TLSv1.3</param>
+        -->
+          {{- end }} {{/* of .allowedProtocols */}}
+
+          {{- if .allowedCipherSuites }}
+            {{- range $cipherSuite := .allowedCipherSuites}}
+              {{- if $cipherSuite | empty }}
+                {{- fail (printf "kafkaConnector.schemaRegistry.%s.sslConfig.allowedCipherSuites must be a list of valid values" $schemaRegistryRef) }}
+              {{- end }}
+            {{- end }}
+        <param name="schema.registry.encryption.cipher.suites">{{ join "," .allowedCipherSuites }}</param>
+          {{- else }}
+        <!--
         <param name="schema.registry.encryption.cipher.suites">TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA</param>
+        -->
+          {{- end }} {{/* of .allowedCipherSuites */}}
+
+          {{- if .enableHostnameVerification }}
+        <param name="schema.registry.encryption.hostname.verification.enable">true</param>
+          {{- else }}
+        <!--
         <param name="schema.registry.encryption.hostname.verification.enable">true</param>
         -->
+          {{- end }} {{/* of .enableHostnameVerification */}}
 
         <!-- If required, configure the trust store to trust the Confluent Schema Registry certificates -->
+          {{- if .trustStoreRef}}
+            {{- include "lightstreamer.kafka-connector.configuration.truststore" (list "schema.registry.truststore" $.Values.keyStores .trustStoreRef)  | nindent 8 }}
+          {{- else }}        
         <!--
         <param name="schema.registry.encryption.truststore.path">secrets/kafka-connector.truststore.jks</param>
         <param name="schema.registry.encryption.truststore.password">kafka-connector-truststore-password</param>
         -->
+          {{- end }} {{/* of .trustStoreRef */}}
 
+          {{- if .keyStoreRef }}
+            {{- include "lightstreamer.kafka-connector.configuration.keystore" (list "schema.registry.keystore" $.Values.keyStores .keyStoreRef)  | nindent 8 }}
+          {{- else }}
         <!-- If mutual TLS is enabled on the Confluent Schema Registry, enable and configure the key store -->
         <!--
         <param name="schema.registry.encryption.keystore.enable">true</param>
@@ -752,6 +798,10 @@
         <param name="schema.registry.encryption.keystore.password">kafka-connector-password</param>
         <param name="schema.registry.encryption.keystore.key.password">kafka-connector-private-key-password</param>
         -->
+          {{- end }} {{/* of .keyStoreRef */}}
+        {{- end }} {{/* of .sslConfig */}}
+      {{- end }} {{/* of .schemaRegistryRef */}}
+
     </data_provider>
     {{- end }} {{/* of .connections */}}
 
