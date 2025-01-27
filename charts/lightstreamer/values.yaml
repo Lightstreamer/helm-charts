@@ -35,10 +35,10 @@ image:
   # -- The pull policy for the images
   pullPolicy: Always
   # -- The tag of the image to pull
-  # @default -- .Chart.Appversion
+  # @default -- .Chart.appVersion
   tag: "latest"
 
-# Reference to Kubernetes secrets containing the credentials to pull the image
+# The reference to Kubernetes secrets containing the credentials to pull the image
 # @default -- []
 imagePullSecrets: []
 
@@ -88,7 +88,7 @@ deployment:
 
   # -- The hostname for the Pod
   # (https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-hostname-and-subdomain-fields)
-  hostname: lightstreamer-1
+  hostname:
 
   # -- Host networking setting for the Pod
   hostNetwork:
@@ -107,7 +107,7 @@ deployment:
         # -- Enablement of the liveness probe
         enabled: true
 
-        # -- Mandatory if `enabled` is set to `true`. Reference to a server
+        # -- Mandatory if `enabled` is set to `true`. The reference to a server
         # socket configuration (see `servers` section below)
         serverRef: http-server
 
@@ -136,7 +136,7 @@ deployment:
         # -- Enablement of the readiness probe
         enabled: true
 
-        # -- Mandatory if `enabled` is set to `true`. Reference to a server
+        # -- Mandatory if `enabled` is set to `true`. The reference to a server
         # socket configuration (see `servers` section below)
         serverRef: http-server
 
@@ -164,7 +164,7 @@ deployment:
         # -- Enablement of the startup probe
         enabled: true
 
-        # -- Mandatory if `enabled` is set to `true`. Reference to a server
+        # -- Mandatory if `enabled` is set to `true`. The reference to a server
         # socket configuration (see `servers` section below)
         serverRef: http-server
 
@@ -199,7 +199,7 @@ deployment:
   extraVolumes:
   - name: pages-dir
     emptyDir:
-      sizeLimit: 500Mi
+      sizeLimit: 10Mi
 
   # -- Additional volume mounts
   extraVolumeMounts:
@@ -207,7 +207,7 @@ deployment:
     mountPath: "/lightstreamer/mypages"
     readOnly: true
 
-  # -- Addiitional environment variables
+  # -- Additional environment variables
   extraEnvs:
     - name: MY_ENV_VAR
       value: my-env-var-value
@@ -255,7 +255,8 @@ service:
   # (https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport)
   nodePort:
 
-  # -- Reference to a server socket configuration (see `servers` section below)
+  # -- The reference to a server socket configuration (see `servers` section 
+  # below)
   targetPort: https-server
 
   # -- The load balancer implementation when the `type` is set to `LoadBalancer`
@@ -299,13 +300,13 @@ license:
   #  - COMMUNITY
   #  - ENTERPRISE
   edition: ENTERPRISE
-  # edition: COMMUNITY
 
   # -- If you chose COMMUNITY edition, you can set the following options:
   enabledCommunityEditionClientApi: javascript_client
 
   # -- Configure the ENTERPRISE edition
   enterprise:
+
     # -- The type of the ENTERPRSE edition.
     #  Can be one of the following:
     #  - DEMO
@@ -317,10 +318,12 @@ license:
     #  - HOT-STANDBY
     # licenseType: EVALUATION
     licenseType: DEMO
+
     # -- Identifier of the contract in place.
     # Use "DEMO" to run with the embedded Demo license.
     # contractId: EXXXXXXXXX
     contractId: DEMO
+
     # -- Choose between online (cloud-based) and file-based license validation.
     # Can be one of the following:
     # - ONLINE
@@ -428,10 +431,12 @@ proxy:
   pacFiles:
     fileUrl:
     filePath:
+
   # -- In case no proxy configuration is provided or the provided
   # configuration does not work, automatic proxy discovery is
   # attempted (via system environment check and WPAD).
   enableProxyAutodiscovery: false
+
   # -- Specifies a NIC to use to access the external services, with or
   # without a proxy.
   networkInterface:
@@ -736,9 +741,9 @@ servers:
     # @default -- false
     enabled: true
 
-    # -- Mandatory. Name of the HTTP/S server. Note that it is notified to the
-    # client upon connection and it is made available to application code by
-    # the Unified Client SDKs through the serverSocketName property in the
+    # -- Mandatory. The name of the HTTP/S server. Note that it is notified to 
+    # the client upon connection and it is made available to application code 
+    # by the Unified Client SDKs through the serverSocketName property in the
     # ConnectionDetails class. It must be an ASCII string with no control
     # characters and it must be unique among all server configuations.
     name: "Lightstreamer HTTP Server"
@@ -961,7 +966,7 @@ servers:
       # java.security file of the JDK installation.
       tlsProvider:
 
-      # -- Mandatory. Reference to the keystore configuration.
+      # -- Mandatory. The reference to the keystore configuration.
       # See `keystores.myServerKeystore` setting.
       keyStoreRef: myServerKeystore
 
@@ -1136,8 +1141,8 @@ servers:
       enableMandatoryClientAuth:
 
       # -- Mandatory when at least one of `enableClientAuth` and
-      # `enableMandatoryClientAuth` is set to `true`. Reference to a keystore
-      # to be used by the HTTPS service to accept client certificates.
+      # `enableMandatoryClientAuth` is set to `true`. The reference to a 
+      # keystore to be used by the HTTPS service to accept client certificates.
       # It can be used to supply client certificates that should be accepted,
       # in addition to those with a valid certificate chain, for instance while
       # testing with self-signed certificates.
@@ -1170,7 +1175,7 @@ keyStores:
     #   this is an experimental extension; contact Lightstreamer Support for
     #   details.
     # @default -- "JKS"
-    type: JKS
+    # type: JKS
 
     # -- Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key
     # where the keystore file is stored.
@@ -1183,6 +1188,35 @@ keyStores:
     keystorePasswordSecretRef:
       name: myserver-keypass-secret
       key: myserver.keypass
+
+  # -- Example of Keystore definition used by Kafka connector configurations.
+  # myKafkaConnectorKeystore:
+
+    # -- (string) Optional. The keystore type.
+    # The currently supported types are:
+    # - JKS, which is the Sun/Oracle's custom keystore type, whose support is
+    #   made available by every Java installation;
+    # - PKCS12, which is supported by all recent Java installations;
+    # @default -- "JKS"
+    # type: JKS
+
+    # -- Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key
+    # where the keystore file is stored.
+    # keystoreFileSecretRef:
+      # name: kafka-connector-keystore-secret
+      # key: kafka-connector.keystore.jks
+
+    # -- Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key
+    # where the keystore password is stored.
+    # keystorePasswordSecretRef:
+      # name: kafka-connector-keypass-secret
+      # key: kafka-connector.keypass
+    
+    # -- Optional. Secret name and key where the password of the private key
+    # in the keystore is stored.
+    # keyPasswordSecretRef:
+      # name: kafka-connector-private-key-pass-secret 
+      # key: kafka-connector.private.key.pass
 
 # -- Mandatory. Global socket configuration
 globalSocket:
@@ -1605,8 +1639,8 @@ management:
       # @default -- accept connections on any/all local addresses
       listeningInterface:
 
-      # -- Optional. Reference to the keystore to be used in case TLS/SSL is
-      # enabled for part or all the communication.
+      # -- Optional. The reference to the keystore to be used in case TLS/SSL 
+      # isenabled for part or all the communication.
       # See the `keystores.myServerKeystore` for general details on keystore
       # configuration. These include the runtime replacement of the keystore,
       # with one difference: if the load of the new keystorefails, the RMI
@@ -1668,8 +1702,8 @@ management:
       enablePublicAccess: false
 
       # -- Optional, but ineffective if `enablePublicAccess` is set to `true`.
-      # Reference to the list of secrets containng the credentials of the users
-      # enabled to access the RMI connector.
+      # The reference to the list of secrets containng the credentials of the 
+      # users enabled to access the RMI connector.
       # Every secret must contains the keys `user` and `password`.
       # If `enablePublicAccess` is set to `false`, at least one set of
       # credentials should be supplied in order to allow access through the
@@ -1804,7 +1838,7 @@ management:
     # @defalt -- []
     credentials:
 
-      - # -- Reference to the secret containing the credentials of the user
+      - # -- The reference to the secret containing the credentials of the user
         # enabled to access the Monitoring Dashboard.
         # The secret must contain the keys `user` and `password`.
         secretRef:
@@ -2808,7 +2842,7 @@ connectors:
       imageEmbedded:
 
     # -- Mandatory. Define the Kafka Connector Adapter Set and its unique ID.
-    adapterSetId: "KafkaConnector111"
+    adapterSetId: "KafkaConnector"
 
     # -- (string) Mandatory. Java class name of the Kafka Connector Metadata 
     # Adapter. It is possible to provide a custom implementation by extending
@@ -2883,20 +2917,20 @@ connectors:
           # @default -- false
           enableHostnameVerification:
 
-          # -- Optional. Reference to a truststore used to validate the 
+          # -- Optional. The reference to a truststore used to validate the 
           # certificates provided by the Kafka brokers.
-          trustStoreRef: myKafkaConnectorKeystore
+          trustStoreRef: myServerKeystore
 
-          # -- Optional. Reference to a keystore used if mutual TLS is enabled
+          # -- Optional. The reference to a keystore used if mutual TLS is enabled
           # on Kafka brokers.
-          keyStoreRef: myKafkaConnectorKeystore
+          keyStoreRef: myServerKeystore
 
         # -- Optional. Authentication settings for the connection.
         authentication:
 
             # -- Optional. Enablement of the authentication of the connection 
             # against the Kafka Cluster.
-            enabled: true
+            enabled: false
 
             # (string) Mandatory if `enabled` is set to `true`. The SASL 
             # mechanism type.
@@ -2907,11 +2941,11 @@ connectors:
             #  - SCRAM-SHA-512
             #  - GSSAPI
             # @default -- PLAIN
-            mechanism: GSSAPI
+            mechanism:
 
             # -- Mandatory if `mechanism` is set to `PLAIN`, `SCRAM-SHA-256`, 
-            # `SCRAM-SHA-512`. Name of the secret containing the credentials.
-            # The secret must contain the keys `user` and `password`.
+            # `SCRAM-SHA-512`. The name of the secret containing the 
+            # credentials.The secret must contain the keys `user` and `password`.
             credentialsSecretRef:
 
             # -- Mandatory if `mechanism` is set to `GSSAPI`. The GSSAPI 
@@ -2920,31 +2954,28 @@ connectors:
 
               # -- Optional. Enablement of the use of a keytab.
               # @default -- false
-              enableKeytab: true
+              enableKeytab:
 
               # -- Mandatory if `enableKeytab` is set to `true`. The configmap
               # name and key where the the keytab file is stored
               keytabFilePathRef:
                 # name:
-                key: my-keytab
+                # key: my-keytab
 
               # -- Optional. Enablement of the storage of the principal key.
               # @default -- false
-              # enableStoreKey: true
+              enableStoreKey:
 
               # -- (string) Mandatory. The name of the Kerberos service.
-              kerberosServiceName: kerneros
+              kerberosServiceName:
 
               # -- (string) Mandatory if enableTicketCache is set to `true`. 
               # The name of the principal to be used.
-              principal: pippo
+              principal:
 
               # -- Optional. Enablement of the use of a ticket cache.
               # @default -- false
               enableTicketCache: false
-
-
-              # -- Mandatory if mechanism is set to `GSSAPI`.
 
         # -- Optional. Record evaluation settings.
         # @default -- all settings at their defaults
@@ -3005,16 +3036,14 @@ connectors:
             # key where the local schema for message validation of the key is
             # stored. The setting takes precedence over `enableSchemaRegistry`
             # if the latter is set to `true`.
-            localSchemaFilePathRef: recordKey
-              # name:
-              # key:
+            localSchemaFilePathRef:
 
             # -- Enablement of the Confluent Schema Registry for  validation of
             # the key.
             # Must be set to `true` when `keyEvaluator.type` is set to `AVRO`
             # and no local schema are specified.
             # @default -- false
-            enableSchemaRegistry:
+            schemaRegistryRef: mySchemaRegistry
 
           # -- Optional. Value evaluator configuration.
           # @default -- all settings at their defaults
@@ -3048,10 +3077,14 @@ connectors:
           # stopped and the unsubscription of the items requested by all the
           # Lightstreamer clients subscribed to this connection is forced.
           # @default -- `IGNORE_AND_CONTINUE`
-          extractionErrorStrategy: FORCE_UNSUBSCRIPTION
+          extractionErrorStrategy:
+
+          # -- Optional. The reference to Schema Registry configuration.
+          schemaRegistryRef: mySchemaRegistry
 
         # -- Mandatory. Record routings configuration.
         routing:
+
           # -- Optional. Maps of item template expressions.
           # An expressions is made of:
           # - ITEM_PREFIX: the prefix of the item name
@@ -3123,6 +3156,7 @@ connectors:
 
         # -- Mandatory. Record mappings configuration.
         fields:
+
           # Mandatory. Record data to Lightstreamer field mappings.
           mappings:
 
@@ -3163,95 +3197,65 @@ connectors:
 
       # -- Optional. The configmap name and key where the local schema file
       # is stored
-      recordKey:
-        name: record-key
-        key: record_key.avsc
+      myKeySchema:
+        # name: record-key
+        # key: record_key.avsc
 
-      recordValue:
-        name: record-value
-        key: record_value.avsc        
+      myValueSchema:
+        # name: record-value
+        # key: record_value.avsc        
 
-    # -- Keystores definition used by the Kafka Connector.
-    keyStores:
-
-      # -- Keystore definition used by Kafka connector configurations.
-      myKafkaConnectorKeystore:
-
-        # -- (string) Optional. The keystore type.
-        # The currently supported types are:
-        # - JKS, which is the Sun/Oracle's custom keystore type, whose support is
-        #   made available by every Java installation;
-        # - PKCS12, which is supported by all recent Java installations;
-        # @default -- "JKS"
-        type: JKS
-
-        # -- Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key
-        # where the keystore file is stored.
-        keystoreFileSecretRef:
-          name: kafka-connector-keystore-secret
-          key: kafka-connector.keystore.jks
-
-        # -- Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key
-        # where keystore password is stored.
-        keystorePasswordSecretRef:
-          name: kafka-connector-keypass-secret
-          key: kafka-connector.keypass
-        
-        # -- Optional. Secret name and key where the password of the private key
-        # in the keystore is stored.
-        keyPasswordSecretRef:
-          name: kafka-connector-private-key-pass-secret 
-          key: kafka-connector.private.key.pass
-
-      testKeyStore:
-        keystoreFileSecretRef:
-          name: kafka-connector-keystore-secret
-          key: kafka-connector.keystore.jks
-
-        keystorePasswordSecretRef:
-          name: kafka-connector-keypass-secret
-          key: kafka-connector.keypass
     # -- Mandatory if `connections.{}.keyEvaluator.type` is set to `AVRO` and
     # no local schema paths are specified. Schema Registry configuration.
-    # schemaRegistry:
+    schemaRegistry:
 
-    #   # -- Optional. Enablement of the Schema Registry.
-    #   # @defult -- false
-    #   enabled: false
+      mySchemaRegistry:    
 
-    #   # -- Mandatory when `schemaRegistry.enabled` is true. The URL of the
-    #   # Confluent Schema Registry. An encrypted connection is enabled by
-    #   # specifying the "https" protocol.
-    #   url:
+        # -- Mandatory. The URL of the Confluent Schema Registry. An encrypted 
+        # connection is enabled by specifying the "https" protocol.
+        url: https://schema-registry:8084
 
-    #   # -- Optional. Basic HTTP authentication of this connection against the
-    #   # Schema Registry.
-    #   basicAuthentication:
+        # -- Optional. Basic HTTP authentication of a connection against the
+        # Schema Registry.
+        basicAuthentication:
 
-    #     # -- Optional. Enablement of the Basic HTTP authentication.
-    #     # @default -- false
-    #     enable: true
-    #     credentialSecrets:
+          # -- Optional. Enablement of the Basic HTTP authentication.
+          # @default -- false
+          enabled:
 
-    #   sslConfig:
-    #     # -- Optional. Enablement of the SSL/TLS secure communication.
-    #     enabled: false
+          # -- Mandatory if `enable` is set to `true`. The name of the secret
+          # containing the credentials.
+          # The secret must contain the keys `user` and `password`.
+          # @default -- ""
+          credentialsSecretRef:
 
-    #     # -- Optional. List of enabled secure communication protocols
-    #     # @default -- `[TLSv1.2, TLSv1.3]` when running on Java 11 or newer,
-    #     # TLSv1.2 otherwise.
-    #     allowedProtocols:
-    #       -
+        # -- Mandatory if the https protocol is specified in `url`. TLS/SSL 
+        # settings.
+        sslConfig:
 
-    #     # -- Optional. List of enabled secure cipher suites.
-    #     allowedCipherSuites:
-    #       -
+          # -- Optional. List of enabled secure communication protocols
+          # @default -- `[TLSv1.2, TLSv1.3]` when running on Java 11 or newer,
+          # TLSv1.2 otherwise.
+          allowProtocols: []
+            # - TLSv1.2
+            # - TLSv1.3
 
-    #     # -- Optional. Enablement of the hostname verication.
-    #     # @default -- false
-    #     enableHostnameVerification: false
-    #     trustStoreRef:
-    #     keyStoreRef:
+          # -- Optional. List of enabled secure cipher suites.
+          # @default -- all the available cipher suites in the running JVM
+          allowCipherSuites: []
+            # - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
+
+          # -- Optional. Enablement of the hostname verication.
+          # @default -- false
+          enableHostnameVerification:
+
+          # -- Optional. The reference to a truststore used to validate the 
+          # certificates provided by the Schema Registry
+          trustStoreRef:
+
+          # -- Optional. The reference to a keystore used if mutual TLS is enabled
+          # on the Schema Registry.
+          keyStoreRef:
       
 
 autoscaling:
