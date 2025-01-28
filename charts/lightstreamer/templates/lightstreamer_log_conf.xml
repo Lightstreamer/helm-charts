@@ -432,7 +432,7 @@ Create the Lightstreamer logging configuration file
   {{- end }}
     
   {{- with  (get . "org.jboss.logging") }}
-  <logger name="org.jboss.logging" llevel={{ .level | quote }}>
+  <logger name="org.jboss.logging" level={{ .level | quote }}>
     {{- include "lightstreamer.configuration.log.appender_ref" . | indent 4 }}
   </logger>
   {{- end }}
