@@ -145,7 +145,7 @@ spec:
               {{- end }}
             {{- end }}
           {{- end }}
-          {{- if and (ne .Values.license.enterprise.licenseType "DEMO") (eq .Values.license.enterprise.licenseValidation "ONLINE") }}
+          {{- if and (ne ((.Values.license).enterprise).licenseType "DEMO") (eq ((.Values.license).enterprise).licenseValidation "ONLINE") }}
             {{- with .Values.license.enterprise.onlinePasswordSecretRef }}
             - name: LS_ENTERPRISE_LICENSE_{{ .key | upper | replace "-" "_" }}
               valueFrom:
@@ -210,7 +210,7 @@ spec:
             {{- /* END SCHEMA REGISTRY */ -}}
           {{- end }}
           {{- /* END OF DEFINITION OF ENV VARIABLES FOR THE KAFKA CONNECTOR */ -}}
-          {{- with .Values.deployment.extraEnvs }}
+          {{- with .Values.deployment.extraEnv }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
           volumeMounts:
@@ -219,7 +219,7 @@ spec:
               subPath: LS.sh
             - name: lightstreamer-configuration
               mountPath: /lightstreamer/conf
-          {{- if and (ne .Values.license.enterprise.licenseType "DEMO") (eq .Values.license.enterprise.licenseValidation "FILE") }}
+          {{- if and (ne ((.Values.license).enterprise).licenseType "DEMO") (eq ((.Values.license).enterprise).licenseValidation "FILE") }}
             {{- with .Values.license.enterprise.filePathSecretRef }}
             - name: lightstreamer-enterprise-license
               mountPath: /lightstreamer/conf/enterprise-license/
@@ -250,6 +250,10 @@ spec:
           {{- with .Values.deployment.extraVolumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
+        {{- with .Values.deployment.extraContainers }}
+          {{- toYaml . | nindent 8 }}
+        {{- end}}
+  
       {{- with .Values.deployment.hostname }}
       hostname: {{ . }}
       {{- end }}          
@@ -258,6 +262,9 @@ spec:
       {{- end }}
       {{- with .Values.deployment.dnsPolicy }}
       dnsPolicy: {{ . }}
+      {{- end }}
+      {{- with .Values.deployment.priorityClassName }}
+      priorityClassName: {{ . }}
       {{- end }}
       initContainers:
         - name: change-ownership
@@ -269,7 +276,7 @@ spec:
               mountPath: /tmp
             - name: lightstreamer-start-script
               mountPath: /lightstreamer/bin/unix-like
-        {{- with .Values.deployment.initContainers }} 
+        {{- with .Values.deployment.extraInitContainers }} 
         {{- toYaml . | nindent 8 }}
         {{- end }}
         {{- if ((.Values.connectors).kafkaConnector).enabled }}
@@ -305,7 +312,7 @@ spec:
             secretName: {{ required (printf "keystores.%s.keystoreFileSecretRef.name must be set" $key) (($value.keystoreFileSecretRef).name) }}
         {{- end }}
       {{- end }}
-      {{- if and (ne .Values.license.enterprise.licenseType "DEMO") (eq .Values.license.enterprise.licenseValidation "FILE") }}
+      {{- if and (ne ((.Values.license).enterprise).licenseType "DEMO") (eq (.Values.license).enterprise.licenseValidation "FILE") }}
         {{- with required "license.enterprise.filePathSecretRef must be set" .Values.license.enterprise.filePathSecretRef }}
         - name: lightstreamer-enterprise-license
           secret:
