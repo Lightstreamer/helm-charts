@@ -33,7 +33,7 @@ image:
   # -- Remote registry from which to pull the Lightstreamer Docker image
   repository: lightstreamer
   # -- The pull policy for the images
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
   # -- The tag of the image to pull
   # @default -- .Chart.appVersion
   tag: "latest"
@@ -57,26 +57,33 @@ serviceAccount:
 # -- Mandatory. Lightstreamer Deployment configuration.
 deployment:
   # -- Number of replicas (https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/)
-  replicas: 1
+  replicas:
+
   # -- Additional Deployment annotations
   annotations: []
+
   # -- Additional Deployment labels
   labels: {}
+
   # -- The strategy used to replace old Pods by new one (see https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy)
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 1
+
   # -- The Pod annotations
   # (https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/)
   podAnnotations: {}
+
   # -- Additional Pod labels
   # (https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)
   podLabels: {}
+
   # -- The security context for the Pod (https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)
   podSecurityContext: {}
     # fsGroup: 2000
+
   # -- The security context for the container (https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)
   securityContext: {}
     # capabilities:
@@ -195,22 +202,25 @@ deployment:
     #   exec:
     #     command: [ "/lightstreamer/bin/unix-like/stop.sh" ]
 
+  # -- Additional selectors
+  additionalSelectors: {}
+
   # -- Additional volumes
-  extraVolumes:
-  - name: pages-dir
-    emptyDir:
-      sizeLimit: 10Mi
+  extraVolumes: {}
+  # - name: pages-dir
+  #   emptyDir:
+  #     sizeLimit: 10Mi
 
   # -- Additional volume mounts
-  extraVolumeMounts:
-  - name: pages-dir
-    mountPath: "/lightstreamer/mypages"
-    readOnly: true
+  extraVolumeMounts: {}
+  # - name: pages-dir
+  #   mountPath: "/lightstreamer/mypages"
+  #   readOnly: true
 
   # -- Additional environment variables
-  extraEnvs:
-    - name: MY_ENV_VAR
-      value: my-env-var-value
+  extraEnvs: 
+    - name: JAVA_OPTS
+      value: "-server -Xms1g -Xmx4g"
 
   # -- Init containers configuration
   # (https://kubernetes.io/docs/concepts/workloads/pods/init-containers/)
@@ -243,6 +253,10 @@ service:
 
   # -- Additional Service labels
   labels: {}
+
+  # -- Additional selectors
+  additionalSelectors:
+    mode: "active"
 
   # -- The service type
   # (https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types)
@@ -375,28 +389,28 @@ license:
     # license terms.
     enableAutomaticAuditLogUpload: false
 
-  optionalFeatures:
-    enableMpn: false
-    maxDownstreamRate: 1
-    enableBandwidthControl: false
-    enableTlsSsl: false
-    enableJmx: false
-    enableJavascriptClient: false
-    enableNodeJsClient: false
-    enableAndroidClient: false
-    enableIOSClient: false
-    enableFlexClient: false
-    enableSilverlightClient: false
-    enableJavaSEClient: false
-    enablePythonClient: false
-    enableDotNETStandardClient: false
-    enableMacOSClient: false
-    enableTvOSClient: false
-    enableWatchOSClient: false
-    enableBlackBerryClient: false
-    enableJavaMEClient: false
-    enableFlashClient: false
-    enableGenericClient: false
+    optionalFeatures:
+      enableMpn: false
+      maxDownstreamRate: 2
+      enableBandwidthControl: false
+      enableTlsSsl: true
+      enableJmx: false
+      enableJavascriptClient: false
+      enableNodeJsClient: false
+      enableAndroidClient: false
+      enableIOSClient: false
+      enableFlexClient: false
+      enableSilverlightClient: false
+      enableJavaSEClient: false
+      enablePythonClient: false
+      enableDotNETStandardClient: false
+      enableMacOSClient: false
+      enableTvOSClient: false
+      enableWatchOSClient: false
+      enableBlackBerryClient: false
+      enableJavaMEClient: false
+      enableFlashClient: false
+      enableGenericClient: false
 
   enableAutomaticUpdateCheck: true
 
@@ -2819,7 +2833,7 @@ connectors:
 
     # -- Optional. Enablement of the Lightstreamer Kafka Connector.
     # @default -- false
-    enabled: true
+    enabled: false
 
     # -- Optional. The Lightstreamer Kafka Connector version to install.
     version: "1.2.0"
