@@ -54,11 +54,11 @@ serviceAccount:
   # If not set and `create` is true, a name is generated using the fullname template.
   name: ""
 
-# -- Mandatory. Lighstreamer Deployment configuration.
+# -- Mandatory. Lightstreamer Deployment configuration.
 deployment:
   # -- Number of replicas (https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/)
   replicas: 1
-  # -- Additionak Deployment annnotations
+  # -- Additional Deployment annotations
   annotations: []
   # -- Additional Deployment labels
   labels: {}
@@ -72,7 +72,7 @@ deployment:
   # (https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/)
   podAnnotations: {}
   # -- Additional Pod labels
-  # (ttps://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)
+  # (https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)
   podLabels: {}
   # -- The security context for the Pod (https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)
   podSecurityContext: {}
@@ -111,7 +111,7 @@ deployment:
         # socket configuration (see `servers` section below)
         serverRef: http-server
 
-        # Fields to be used to control the liveness probe behaviour.
+        # Fields to be used to control the liveness probe behavior.
         # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
         initialDelaySeconds:
         periodSeconds:
@@ -119,7 +119,7 @@ deployment:
         timeoutSeconds:
         terminationGracePeriodSeconds:
 
-      # -- Liveness proble configuration to be used if
+      # -- Liveness probe configuration to be used if
       # `probes.liveness.healthCheck.enabled` is set to false.
       # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
       default:
@@ -140,7 +140,7 @@ deployment:
         # socket configuration (see `servers` section below)
         serverRef: http-server
 
-        # Fields to be used to control the readiness probe behaviour.
+        # Fields to be used to control the readiness probe behavior.
         # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
         initialDelaySeconds:
         periodSeconds:
@@ -168,7 +168,7 @@ deployment:
         # socket configuration (see `servers` section below)
         serverRef: http-server
 
-        # Fields to be used to control the startup probe behaviour.
+        # Fields to be used to control the startup probe behavior.
         # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
         initialDelaySeconds: 2
         periodSeconds: 4
@@ -228,7 +228,7 @@ deployment:
   # (https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/)
   tolerations: []
 
-  # -- Terminiation grace period configuration for Pod
+  # -- Termination grace period configuration for Pod
   # (https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#hook-handler-execution)
   terminationGracePeriodSeconds: 5
 
@@ -312,7 +312,7 @@ license:
   # -- Configure the ENTERPRISE edition
   enterprise:
 
-    # -- The type of the ENTERPRSE edition.
+    # -- The type of the ENTERPRISE edition.
     #  Can be one of the following:
     #  - DEMO
     #  - EVALUATION
@@ -448,7 +448,7 @@ proxy:
 
 logging:
   appenders:
-    dailiyRolling:
+    dailyRolling:
       type: DailyRollingFile
       pattern: "%d{\"dd-MMM-yy HH:mm:ss,SSS\"}|%-5.5(%p%marker)|%-19.19c{19}|%-27.27t|%m%n"
     console:
@@ -550,7 +550,7 @@ logging:
         # Logging of issues related to information received via the proxy protocol,when enabled.
         # At DEBUG level, details of all information received are reported.
         lightstreamerLogger.connections.proxy: INFO
-        # Logging of internal web server activity; it also logs requests ofstatic resources
+        # Logging of internal web server activity; it also logs requests of static resources
         # related to push request.
         # At DEBUG level, error details are reported.
         # All log from this logger and its subloggers reports the IP and port of the involved connection.
@@ -725,17 +725,17 @@ logging:
 
   # Put here any additional loggers you want to configure.
   # extraLoggers:
-  #   antoherLogger:
+  #   anotherLogger:
   #     appenders:
   #       - console
   #     level: INFO
 
 # -- Mandatory. Map of HTTP/S server socket configurations.
 # Every key in the map defines a specific listening socket configuration, which
-# can then be referenced thorought the whole configuration.
+# can then be referenced through the whole configuration.
 # Defining multiple listening socket allows the coexistence of private and
 # public ports. This allows the use of multiple address for accessing the
-# Server via TLS/SSL.  because different HTTPS sockets can use different
+# Server via TLS/SSL, because different HTTPS sockets can use different
 # keystores. In particular this is the case when the Server is behind load
 # load balancer and the `cluster.controlLinkAddress` setting is leveraged to
 # ensure that all Requests issued by the same client are dispatched to the same
@@ -753,7 +753,7 @@ servers:
     # the client upon connection and it is made available to application code 
     # by the Unified Client SDKs through the serverSocketName property in the
     # ConnectionDetails class. It must be an ASCII string with no control
-    # characters and it must be unique among all server configuations.
+    # characters and it must be unique among all server configurations.
     name: "Lightstreamer HTTP Server"
 
     # -- Mandatory. Listening TCP port.
@@ -877,7 +877,7 @@ servers:
       # @default -- false
       enablePrivate:
 
-      # -- Optiona. If set to `true`, instructs the Server that the connection
+      # -- Optional. If set to `true`, instructs the Server that the connection
       # endpoint is a reverse proxy or load balancer that sends client address
       # information through the Proxy Protocol. The received address and port
       # will be used as the real client address and port.
@@ -919,7 +919,7 @@ servers:
       # If set to `0` or left at the default, all entries in X-Forwarded-For
       # will be considered as written by client-side proxies, hence the
       # connection endpoint address will be used (unless, of course,
-      # `enabeProxyProtocol` is set to `true`, which overrides the behavior).
+      # `enableProxyProtocol` is set to `true`, which overrides the behavior).
       # Note that a similar correction for port and protocol is not applied;
       # hence, when an address corrected through a nonzero setting is reported,
       # any port and protocol associated will still refer to the actual
@@ -927,7 +927,7 @@ servers:
       # @default -- 0
       skipLocalForwards:
 
-      # -- Optiona. If set to `true`, causes the list of entries of the
+      # -- Optional. If set to `true`, causes the list of entries of the
       # X-Forwarded-For header, when available, to be added to log lines
       # related to the involved HTTP request or Websocket.
       # If `skipLocalForwards` is nonzero, only the entries farther than the
@@ -1016,8 +1016,8 @@ servers:
         order: "JVM"
 
       # -- Optional. If set to `false`, causes any client-initiated TLS
-      #  renegotiation requestto be refused by closing the connection. This
-      # policy may be evaluatedin a trade-off between encryption strength and
+      #  renegotiation request to be refused by closing the connection. This
+      # policy may be evaluated in a trade-off between encryption strength and
       # performance risks.
       # Note that, with the default SunJSSE Security Provider, a better way to
       # achieve the same at a global JVM level is by setting the dedicated
@@ -1112,7 +1112,7 @@ servers:
       # If set to `false`, no certificate information is supplied to notifyUser
       # and no check is done on the client certificate.
       # Note that a check on the client certificate can also be requested
-      # through `enabeMandatoryClientAuth`.
+      # through `enableMandatoryClientAuth`.
       # @default -- false
       enableClientAuth:
 
@@ -1368,7 +1368,7 @@ security:
     optionsMaxAgeSeconds: 3600
 
     # -- Optional. In case the client wishes to send custom headers to the
-    # server, it requiresan approval from the server itself. This setting
+    # server, it requires approval from the server itself. This setting
     # permits to specify a comma separated list of extra headers to be allowed
     # in the client requests. Note that a space is expected after each comma
     # (e.g.: `acceptExtraHeaders: "custom-header1, custom-header2"`).
@@ -1568,7 +1568,7 @@ management:
       # own communication stuff. The port has not to be specified in the client
       # access url, but it may have to be considered for firewall settings.
       # The optional `enableSsl` setting, when set to `false`, enables TLS/SSL
-      # communication by the connector; TLS/SSL at this level issupported by
+      # communication by the connector; TLS/SSL at this level is supported by
       # some JMX clients, like jconsole, that don't supportTLS/SSL on the main
       # port.
       # @default -- the same as configured in `rmiConnector.port`
@@ -1630,7 +1630,7 @@ management:
       # is enabled for part or all the communication.
       # See the `keystores.myServerKeystore` for general details on keystore
       # configuration. These include the runtime replacement of the keystore,
-      # with one difference: if the load of the new keystorefails, the RMI
+      # with one difference: if the load of the new keystore fails, the RMI
       # Connector may be left unreachable.
       # @default -- any settings provided to the "javax.net.ssl.keyStore" and
       # "javax.net.ssl.keyStorePassword" JVM properties will apply
@@ -1689,7 +1689,7 @@ management:
       enablePublicAccess: false
 
       # -- Optional, but ineffective if `enablePublicAccess` is set to `true`.
-      # The reference to the list of secrets containng the credentials of the 
+      # The reference to the list of secrets containing the credentials of the 
       # users enabled to access the RMI connector.
       # Every secret must contains the keys `user` and `password`.
       # If `enablePublicAccess` is set to `false`, at least one set of
@@ -1697,7 +1697,7 @@ management:
       # connector.
       # This is also needed if you wish to use the provided "stop" script; the
       # script will always use the first user supplied.
-      # @defalt -- []
+      # @default -- []
       credentialSecrets: []
         # - rmi-secret-user
         # - rmi-secret-other-user
@@ -1738,7 +1738,7 @@ management:
     # -- Optional. Enabling of all properties provided by the various MBeans.
     # This flag could potentially cause MBeans to return extremely long lists.
     # In act, various JMX agents extract the property values from the MBeans
-    # alltogether; but extremely long values may clutter the agent and prevent
+    # altogether; but extremely long values may clutter the agent and prevent
     # also the acquisition of other properties. This issue may also affect the
     # JMX Tree.
     # For all these properties, corresponding operations are also provided.
@@ -1785,7 +1785,7 @@ management:
   # monitoring Data Adapter can be embedded in any custom Adapter Set, by
   # specifying "MONITOR" in place of the Data Adapter class name.
   # For a listing of the supplied items, see the General Concepts document.
-  # The `dashobard.enableHostnameLookup` setting below also affects the
+  # The `dashboard.enableHostnameLookup` setting below also affects the
   # monitoring Data Adapter. On the other hand, access restrictions to a
   # monitoring Data Adapter instance embedded in a custom Adapter Set is only
   # managed by the custom Metadata Adapter included.
@@ -1822,7 +1822,7 @@ management:
     # If `enablePublicAccess` is set to `false`, at least one set of
     # credentials should be supplied in order to allow access through the
     # connector.
-    # @defalt -- []
+    # @default -- []
     credentials:
 
       - # -- The reference to the secret containing the credentials of the user
@@ -1953,9 +1953,9 @@ pushSession:
 
     # -- Optional. List of special cases for defining the HTTP content-length
     # to be used for stream/poll response (through `specialCases[].value`)
-    # when the user-agent supplied with the reqest contains all the specified
+    # when the user-agent supplied with the request contains all the specified
     # string (through the`specialCases[].userAgentContains`).
-    # Special cases are evaulated in sequence, until one is enabled.
+    # Special cases are evaluated in sequence, until one is enabled.
     specialCases:
       # - value: 100000
       #   userAgentContains:
@@ -2091,7 +2091,7 @@ pushSession:
   # Note that recovery is available only for some client versions; if any other
   # version were involved, no data would be kept.
   # A 0 value also prevents any accumulation of memory.
-  # @default -- the value configured for `pushSessiob.sendbuf`
+  # @default -- the value configured for `pushSession.sendbuf`
 
   maxRecoveryLength:
   # -- (int) Optional. Maximum size supported for keeping a polling response,
@@ -2160,7 +2160,7 @@ pushSession:
   # This also holds for clients based on some old versions of the provided SDK
   # libraries, which just forward the special unchanged notifications through
   # the API interface. Old versions of the .NET, Java SE (but for the ls_proxy
-  # interface layer), Native Flex and Java ME libraries share this behaviour.
+  # interface layer), Native Flex and Java ME libraries share this behavior.
   # Forcing a redundant delivery would simplify the client code in all the
   # above cases.
   # @default -- true
@@ -2226,7 +2226,7 @@ pushSession:
   # allocated and deallocated on demand; this minimizes the requirements in
   # terms of permanent per-session memory and may be needed in order to handle
   # a very high number of concurrent sessions, provided that the per-session
-  # update activity is low from memory whenthe session is closed.
+  # update activity is low from memory when the session is closed.
   # If set to `AUTO`, the current setting of `pushSession.enableDeltaDelivery`
   # is used; in fact, setting `pushSession.enableDeltaDeliver` as `false` may
   # denote  the need for reducing permanent per-session memory.
@@ -2309,7 +2309,7 @@ pushSession:
 
     # -- Mandatory. Longest inactivity time allowed on the socket while waiting
     # for updates to be sent to the client through the response to
-    # anasynchronous poll request.
+    # asynchronous poll request.
     # If this time elapses, the request is answered with no data, but the
     # client can still rebind to the session with a new poll request.
     # A shorter inactivity time limit can be requested by the client.
@@ -2367,10 +2367,10 @@ webServer:
   # -- Optional. Path of the file system directory to be used by the internal
   # web server as the root for URL path mapping.
   # The path is relative to the conf directory. Note that the /lightstreamer
-  # URL path (as any alternativepaths defined through
+  # URL path (as any alternative paths defined through
   # `pushSession.serviceUrlPrefix`) is reserved, as well as the base URL path
   # of the Monitoring Dashboard(see `management.dashboard.urlPath`); hence,
-  # subdirectories of the pages directory with conflictingnames would be
+  # subdirectories of the pages directory with conflicting names would be
   # ignored.
   # @default -- ../pages
   pagesDir:
@@ -2417,7 +2417,7 @@ webServer:
   # Note that if the internal web server is enabled, then the processing of the
   # "/crossdomain.xml" URL is performed as for any other URL (i.e. a file named
   # "crossdomain.xml" is looked for in the directory configured as the root for
-  # URL pathmapping).
+  # URL path mapping).
   # Note that "/crossdomain.xml" is also used by the Silverlight runtime when
   # "/clientaccesspolicy.xml" is not provided.
   # @default -- false
@@ -2523,7 +2523,7 @@ cluster:
   # opportunity to migrate the new session to a different instance.
   # See the Clustering document for details on this mechanism and on how
   # rebalancing can be pursued.
-  # @default -- unlimted
+  # @default -- unlimited
   maxSessionDurationMinutes:
 
 # -- Optional. Load configuration
@@ -2588,7 +2588,7 @@ load:
   # -- (int) Optional. Number of threads used to parallelize the implementation
   # of the internal timers.
   # This task does not include blocking operations, but its computation may be
-  # heavy under high update activity; hence, on multiprocessormachines,
+  # heavy under high update activity; hence, on multiprocessor machines,
   # allocating multiple threads for this task may be beneficial.
   # @default -- 1
   timerPoolSize:
@@ -2664,7 +2664,7 @@ load:
   # zero value means no idle threads allowed in the pool, though this is not
   # recommended for performance reasons.
   # @default -- 10, if `load.serverPoolMaxSize` is not defined; otherwise, the
-  # same as `load.serverPoolMaxSize`, unless the latteris set to 0, i.e.
+  # same as `load.serverPoolMaxSize`, unless the latter is set to 0, i.e.
   # unlimited, in which case this setting is mandatory
   serverPoolMaxFree:
 
@@ -2719,7 +2719,7 @@ load:
   # the `servers.{}` configuration with `enableHttps` set to `true`.
   # In particular, this pool is only used when the socket is not configured to
   # request the client certificate (see servers.{}.sslConfig.enableClientAuth` 
-  # and `servers.{}.security.enabeMandatoryClientAuth`); in this case, the 
+  # and `servers.{}.security.enableMandatoryClientAuth`); in this case, the 
   # tasks are not expected to be blocking. Note that the operation may be
   # CPU-intensive; hence, it is advisable to set a value smaller than the
   # number of available cores.
@@ -2837,7 +2837,7 @@ connectors:
     logging:
 
       # -- Mandatory. Appenders configuration.
-      # Every logger must refere one or more appenders defined here.
+      # Every logger must refer to one or more appenders defined here.
       appenders:
         
         # -- At least one must be provided. An appender configuration.
@@ -2894,7 +2894,7 @@ connectors:
         # This value will be used by the Clients to request real-time data from
         # this specific Kafka connection through a Subscription object.
         # The connection name is also used to group all logging messages
-        # belongingto the same connection.
+        # belonging to the same connection.
         name: "K8S-QuickStart"
 
         # -- Enablement of the connection.
@@ -2941,11 +2941,11 @@ connectors:
           # @default -- all the available cipher suites in the running JVM
           allowedCipherSuites: []
 
-          # -- Optional. Enablement of the hostname verication.
+          # -- Optional. Enablement of the hostname verification.
           # @default -- false
           enableHostnameVerification:
 
-          # -- Optional. The reference to a keustore used to validate the 
+          # -- Optional. The reference to a keystore used to validate the 
           # certificates provided by the Kafka brokers.
           # See the `keyStores.myKafkaConnectorKeystore` settings for general
           # details on keystore configuration for the Kafka Connector.
@@ -3181,7 +3181,7 @@ connectors:
               itemTemplateRefs:
                 - stockTemplate
 
-          # -- Optional. Enble `routing.topicMappings.{}.topic` to be treated
+          # -- Optional. Enable `routing.topicMappings.{}.topic` to be treated
           # as a regular expression rather than of a literal topic name.
           # @default -- false
           enableTopicRegEx:
@@ -3288,7 +3288,7 @@ connectors:
           allowCipherSuites: []
             # - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
 
-          # -- Optional. Enablement of the hostname verication.
+          # -- Optional. Enablement of the hostname verification.
           # @default -- false
           enableHostnameVerification:
 
