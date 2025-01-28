@@ -28,3 +28,6 @@ spec:
       name: {{ .Values.service.name }}
   selector:
     {{- include "lightstreamer.selectorLabels" . | nindent 4 }}
+    {{- with .Values.service.additionalSelectors }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
