@@ -214,6 +214,9 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           volumeMounts:
+            - name: lightstreamer-start-script
+              mountPath: /lightstreamer/bin/unix-like/LS.sh
+              subPath: LS.sh
             - name: lightstreamer-configuration
               mountPath: /lightstreamer/conf
           {{- if and (ne .Values.license.enterprise.licenseType "DEMO") (eq .Values.license.enterprise.licenseValidation "FILE") }}
@@ -257,6 +260,15 @@ spec:
       dnsPolicy: {{ . }}
       {{- end }}
       initContainers:
+        - name: change-ownership
+          image: busybox
+          command: ["/bin/sh"]
+          args: ["-c", "cp /tmp/LS.sh /lightstreamer/bin/unix-like/LS.sh && chown -R 10000:10000 /lightstreamer/bin/unix-like/LS.sh && chmod 0777 /lightstreamer/bin/unix-like/LS.sh"] 
+          volumeMounts:
+            - name: lightstreamer-start-script-source
+              mountPath: /tmp
+            - name: lightstreamer-start-script
+              mountPath: /lightstreamer/bin/unix-like
         {{- with .Values.deployment.initContainers }} 
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -273,6 +285,11 @@ spec:
             mountPath: /sources-kafka-connector-conf
         {{- end }}
       volumes:
+        - name: lightstreamer-start-script-source
+          configMap:
+            name: {{ include "lightstreamer.fullname" . }}-start-script
+        - name: lightstreamer-start-script
+          emptyDir: {}
         - name: lightstreamer-configuration
           configMap:
             name: {{ include "lightstreamer.fullname" . }}-conf
@@ -334,3 +351,4 @@ spec:
       {{- if .Values.deployment.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ int .Values.deployment.terminationGracePeriodSeconds }}
       {{- end }}
+
