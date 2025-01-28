@@ -167,7 +167,7 @@
            To know more, open the Welcome Page or the Monitoring Dashboard
            (Edition tab) of your running Lightstreamer Server. -->
       <optional_features>
-      {{- with .optionalFeatures }}
+      {{- with .enterprise.optionalFeatures }}
 
          <!-- Mobile Push Notifications.
               Can be one of the following:
@@ -224,7 +224,7 @@
               - N: disable feature -->
          <feature id="ios_client">{{ .enableIOSClient | default false | ternary "Y" "N" }}</feature>
 
-         <!-- Flex and AIR Cient API.
+         <!-- Flex and AIR Client API.
               Can be one of the following:
               - Y: enable feature
               - N: disable feature -->
@@ -262,13 +262,13 @@
               - N: disable feature -->
          <feature id="macos_client">{{ .enableMacOSClient | default false | ternary "Y" "N" }}</feature>
 
-         <!-- tvOS Cllient API.
+         <!-- tvOS Client API.
               Can be one of the following:
               - Y: enable feature
               - N: disable feature -->
          <feature id="tvos_client">{{ .enableTvOSClient | default false | ternary "Y" "N" }}</feature>
 
-         <!-- watchOS Cllient API.
+         <!-- watchOS Client API.
               Can be one of the following:
               - Y: enable feature
               - N: disable feature -->
