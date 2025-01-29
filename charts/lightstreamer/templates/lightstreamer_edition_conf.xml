@@ -1,7 +1,7 @@
 {{/* Create the Lightstreamer edition configuration file */}}
 {{- define "lightstreamer.configuration.edition" -}}
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Do not remove this line. File tag: edition_conf-APV-7.3.0. -->
+<!-- Do not remove this line. File tag: edition_conf-APV-7.4.2. -->
 
 <lightstreamer_edition_conf>
 
@@ -22,7 +22,7 @@
    <!-- Configure the edition, the optional features, and the type of license
         that should be used to run Lightstreamer Server. -->
    <license>
-   {{- with $.Values.license }}
+{{- with required "license must be set" $.Values.license }}
 
       <!-- #########################################
            CONFIGURE YOUR LIGHTSTREAMER EDITION HERE
@@ -33,7 +33,11 @@
            Can be one of the following:
            - COMMUNITY
            - ENTERPRISE -->
-      <edition>{{ .edition }}</edition>
+  {{- if not (mustHas .edition (list "COMMUNITY" "ENTERPRISE") )}}
+    {{- fail "license.edition must be one of \"COMMUNITY\", \"ENTERPRISE\"" -}}
+  {{- else }}
+      <edition>{{ required "license.edition must be one of \"COMMUNITY\", \"ENTERPRISE\"" .edition }}</edition>
+  {{- end }}
 
       <!-- ###############################
            IF YOU CHOSE COMMUNITY EDITION
@@ -53,19 +57,26 @@
               - macos_client: for macOS clients
               - tvos_client: for tvOS clients
               - watchos_client: for watchOS clients
+              - visionos_client: for visionOS clients
               - blackberry_client: for BlackBerry clients
               - javame_client: for Java ME clients
               - flash_client: for Flash clients
               - generic_client: for custom clients based on the Lightstreamer protocol
          -->
-         <enabled_client_api>{{ .enabledCommunityEditionClientApi | default "javascript_client" }}</enabled_client_api>
+  {{- $allowedClientApis := list "javascript_client" "nodejs_client" "android_client" "ios_client" "flex_client" "silverlight_client" "javase_client" "python_client" "dotnet_standard_client" "macos_client" "tvos_client" "watchos_client" "blackberry_client" "javame_client" "flash_client" "generic_client" }}
+  {{- if not (mustHas .enabledCommunityEditionClientApi $allowedClientApis)}}    
+    {{- fail (printf "license.enabledCommunityEditionClientApi must be one of %s" $allowedClientApis) -}}
+  {{- else }}
+         <enabled_client_api>{{ .enabledCommunityEditionClientApi }}</enabled_client_api>
+  {{- end }}
       </community_edition_details>
 
       <!-- ###############################
            IF YOU CHOSE ENTERPRISE EDITION
            ############################### -->
       <enterprise_edition_details>
-      {{- with .enterprise }}
+  {{- if eq .edition "ENTERPRISE" }}
+    {{- with required "license.enterprise must be set" .enterprise }}
 
          <!-- Choose the type of ENTERPRISE license.
               Can be one of the following:
@@ -76,11 +87,15 @@
               - NON-PRODUCTION-FULL
               - PRODUCTION
               - HOT-STANDBY -->
+      {{- if not (mustHas .licenseType (list "DEMO" "EVALUATION" "STARTUP" "NON-PRODUCTION-LIMITED" "NON-PRODUCTION-FULL" "PRODUCTION" "HOT-STANDBY")) }}
+        {{- fail "license.enterprise.licenseType must be one of \"DEMO\", \"EVALUATION\", \"STARTUP\", \"NON-PRODUCTION-LIMITED\", \"NON-PRODUCTION-FULL\", \"PRODUCTION\", \"HOT-STANDBY\"" -}}
+      {{- else }}
          <license_type>{{ .licenseType }}</license_type>
+      {{- end }}
 
          <!-- Identifier of the contract in place.
               Use "DEMO" to run with the embedded Demo license. -->
-         <contract_id>{{ .contractId }}</contract_id>
+         <contract_id>{{ required "license.enterprise.contractId must be set" .contractId }}</contract_id>
 
          <!-- Choose between online (cloud-based) and file-based license validation.
               Can be one of the following:
@@ -94,25 +109,39 @@
               For PRODUCTION, HOT-STANDBY, NON-PRODUCTION-FULL, and NON-PRODUCTION-LIMITED:
               you can choose between ONLINE and FILE.
               For DEMO: the value is ignored, as no validation is done. -->
+       {{- if eq .licenseType "DEMO"}}  
+         <!-- 
+         <license_validation>ONLINE</license_validation>
+         -->
+       {{- else }}
+         {{- if not (mustHas .licenseValidation (list "ONLINE" "FILE")) }}
+           {{- fail "license.enterprise.licenseValidation must be one of \"ONLINE\", \"FILE\"" -}}
+         {{- end }}
+         {{- if and (has .licenseType (list "EVALUATION" "STARTUP")) (ne .licenseValidation "ONLINE") }}
+           {{- fail "license.enterprise.licenseValidation must be \"ONLINE\" for EVALUATION and STARTUP license types" -}}
+         {{- else }} 
          <license_validation>{{ .licenseValidation }}</license_validation>
+         {{- end }}
+       {{- end }}
 
          <!-- Used only if <license_validation> above set to ONLINE.
               Password used for validation of online licenses.
               Leave blank if <contract_id> set to DEMO or <license_validation>
               set to FILE. -->
-         {{- with .onlinePasswordSecretRef}} 
-         <online_password>$env.LS_ENTERPRISE_LICENSE_{{ .key | upper | replace "-" "_" }}</online_password>
-         {{- end }}
+       {{- if and (.licenseValidation | eq "ONLINE") (ne .licenseType "DEMO") }}
+         <online_password>$env.LS_ENTERPRISE_LICENSE_ONLINE_PASSWORD</online_password>
+       {{- end }}
 
          <!-- Used only if <license_validation> above set to FILE.
               Cumulative. Path and name of the license file, relative to the conf
               directory. If multiple occurrences of this element are supplied,
               the files are all evaluated and the first acceptable one is considered.
               Example: mylicensefile.lic -->
-         {{- with .filePathSecretRef }}
-         <file_path>enterprise-license/{{ .key }}</file_path>
+       {{- if .licenseValidation | eq "FILE" }}
+         {{- with required "license.enterprise.filePathSecretRef.key must be set" (.filePathSecretRef).key }}
+          <file_path>enterprise-license/{{ . }}</file_path>
          {{- end }}
-
+       {{- end }}
          <!-- Restrict the feature set with respect to the license in use.
               Can be one of the following:
               - Y: use the feature set detailed in the <optional_features> element below.
@@ -120,8 +149,8 @@
                 server will not start
               - N: use the feature set specified by the license in use -->
          <restricted_feature_set>{{ .enableRestrictedFeaturesSet | default false | ternary "Y" "N" }}</restricted_feature_set>
-
-      {{- end }}
+    {{- end }} {{/* with .enterprise */}}
+  {{- end }} {{/* if eq .edition "ENTERPRISE" */}}
       </enterprise_edition_details>
 
       <!-- Audit logs are produced for Per-User Licenses only.
@@ -150,8 +179,15 @@
                    - https://service.lightstreamer.com/
               - N: Do not perform automatic audit log upload; if audit logs are
                    required by license terms, they must be delivered manually. -->
-         <automatic_upload>{{ .enableAutomaticAuditLogUpload | default false | ternary "Y" "N" }}</automatic_upload>
-
+  {{- if .enterprise.licenseValidation | eq "FILE" }}
+  {{- if not ((.enterprise).enableAutomaticAuditLogUpload | quote | empty) }}
+         <automatic_upload>{{ .enterprise.enableAutomaticAuditLogUpload | ternary "Y" "N" }}</automatic_upload>
+  {{- else }}
+         <!--
+         <automatic_upload>Y</automatic_upload>
+         -->
+  {{- end }}
+  {{- end }}
       </audit_logs>
 
       <!-- CONFIGURATION OF OPTIONAL FEATURES
@@ -167,86 +203,139 @@
            To know more, open the Welcome Page or the Monitoring Dashboard
            (Edition tab) of your running Lightstreamer Server. -->
       <optional_features>
-      {{- with .enterprise.optionalFeatures }}
+  {{- if (.enterprise.optionalFeatures).enableRestrictedFeaturesSet }}       
+    {{- with required "license.enterprise.optionalFeatures.features must be set" ((.enterprise).optionalFeatures).features }}
 
          <!-- Mobile Push Notifications.
               Can be one of the following:
               - Y: enable feature
               - N: disable feature -->
-         <feature id="mpn">{{ .enableMpn | default false | ternary "Y" "N" }}</feature>
+         {{- if not (.enableMpn | quote | empty) }}
+         <feature id="mpn">{{ .enableMpn | ternary "Y" "N" }}</feature>
+         {{- else}}
+           {{- fail  "license.enterprise.optionalFeatures.enableMpn must be explicitly set" }}
+         {{- end }}
 
          <!-- Max message rate (downstream).
               Can be one of the following:
               - 1: max 1 update/sec for each item
               - 3: max 3 updates/sec for each item
               - unlimited: unlimited updates/sec for each item -->
-         <feature id="max_downstream_rate">{{ .maxDownstreamRate | default "1" }}</feature>
+         {{- if not (mustHas .maxDownstreamRate (list "1" "3" "unlimited") ) }} 
+           {{- fail "license.enterprise.optionalFeatures.maxDownstreamRate must be one of \"1\", \"3\", \"unlimited\"" }}
+         {{- else }}
+         <feature id="max_downstream_rate">{{ .maxDownstreamRate  }}</feature>
+         {{- end }}    
 
          <!-- Bandwidth Control.
               Can be one of the following:
               - Y: enable feature
               - N: disable feature -->
-         <feature id="bandwidth_control">{{ .enableBandwidthControl | default false | ternary "Y" "N" }}</feature>
+         {{- if not (.enableBandwidthControl | quote | empty) }}
+         <feature id="bandwidth_control">{{ .enableBandwidthControl | ternary "Y" "N" }}</feature>
+         {{- else}}
+           {{- fail  "license.enterprise.optionalFeatures.enableBandwidthControl must be explicitly set" }}
+         {{- end }}
 
          <!-- TLS/SSL Support.
               Can be one of the following:
               - Y: enable feature
               - N: disable feature -->
-         <feature id="tls_ssl">{{ .enableTlsSsl | default false | ternary "Y" "N" }}</feature>
+         {{- if not (.enableTlsSsl | quote | empty) }}
+         <feature id="tls_ssl">{{ .enableTlsSsl | ternary "Y" "N" }}</feature>
+         {{- else}}
+           {{- fail  "license.enterprise.optionalFeatures.enableTlsSsl must be explicitly set" }}
+         {{- end }}
 
          <!-- JMX Management API.
               Can be one of the following:
               - Y: enable feature
               - N: disable feature -->
-         <feature id="jmx">{{ .enableJmx | default false | ternary "Y" "N" }}</feature>
+         {{- if not (.enableJmx | quote | empty) }}
+         <feature id="jmx">{{ .enableJmx | ternary "Y" "N" }}</feature>
+         {{- else}}
+           {{- fail  "license.enterprise.optionalFeatures.enableJmx must be explicitly set" }}
+         {{- end }}          
 
          <!-- JavaScript Client API.
               Can be one of the following:
               - Y: enable feature
               - N: disable feature -->
-         <feature id="javascript_client">{{ .enableJavascriptClient | default false | ternary "Y" "N" }}</feature>
+         {{- if not (.enableJavascriptClient | quote | empty) }}
+         <feature id="javascript_client">{{ .enableJavascriptClient | ternary "Y" "N" }}</feature>
+         {{- else}}
+           {{- fail  "license.enterprise.optionalFeatures.enableJavascriptClient must be explicitly set" }}
+         {{- end }}
 
          <!-- Node.js Client API.
               Can be one of the following:
               - Y: enable feature
               - N: disable feature -->
-         <feature id="nodejs_client">{{ .enableNodeJsClient | default false | ternary "Y" "N" }}</feature>
+         {{- if not (.enableNodeJsClient | quote | empty) }}
+         <feature id="nodejs_client">{{ .enableNodeJsClient | ternary "Y" "N" }}</feature>
+         {{- else}}
+           {{- fail  "license.enterprise.optionalFeatures.enableNodeJsClient must be explicitly set" }}
+         {{- end }}
 
          <!-- Android Client API.
               Can be one of the following:
               - Y: enable feature
               - N: disable feature -->
-         <feature id="android_client">{{ .enableAndroidClient | default false | ternary "Y" "N" }}</feature>
+         {{- if not (.enableAndroidClient | quote | empty) }}
+         <feature id="android_client">{{ .enableAndroidClient | ternary "Y" "N" }}</feature>
+         {{- else}}
+           {{- fail  "license.enterprise.optionalFeatures.enableAndroidClient must be explicitly set" }}
+         {{- end }}              
 
          <!-- iOS Client API.
               Can be one of the following:
               - Y: enable feature
               - N: disable feature -->
-         <feature id="ios_client">{{ .enableIOSClient | default false | ternary "Y" "N" }}</feature>
+         {{- if not (.enableIOSClient | quote | empty) }}
+         <feature id="ios_client">{{ .enableIOSClient | ternary "Y" "N" }}</feature>
+         {{- else}}
+           {{- fail  "license.enterprise.optionalFeatures.enableIOSClient must be explicitly set" }}
+         {{- end }}                                
 
          <!-- Flex and AIR Client API.
               Can be one of the following:
               - Y: enable feature
               - N: disable feature -->
-         <feature id="flex_client">{{ .enableFlexClient | default false | ternary "Y" "N" }}</feature>
+         {{- if not (.enableFlexClient | quote | empty) }}
+         <feature id="flex_client">{{ .enableFlexClient | ternary "Y" "N" }}</feature>
+         {{- else}}
+           {{- fail  "license.enterprise.optionalFeatures.enableFlexClient must be explicitly set" }}
+         {{- end }}              
 
          <!-- Silverlight Client API.
               Can be one of the following:
               - Y: enable feature
               - N: disable feature -->
-         <feature id="silverlight_client">{{ .enableSilverlightClient | default false | ternary "Y" "N" }}</feature>
+         {{- if not (.enableSilverlightClient | quote | empty) }}
+         <feature id="silverlight_client">{{ .enableSilverlightClient | ternary "Y" "N" }}</feature>
+         {{- else}}
+           {{- fail  "license.enterprise.optionalFeatures.enableSilverlightClient must be explicitly set" }}
+         {{- end }}              
 
          <!-- Java SE Client API.
               Can be one of the following:
               - Y: enable feature
               - N: disable feature -->
-         <feature id="javase_client">{{ .enableJavaSEClient | default false | ternary "Y" "N" }}</feature>
+         {{- if not (.enableJavaSEClient | quote | empty) }}
+         <feature id="javase_client">{{ .enableJavaSEClient | ternary "Y" "N" }}</feature>
+         {{- else}}
+           {{- fail  "license.enterprise.optionalFeatures.enableJavaSEClient must be explicitly set" }}
+         {{- end }}
 
          <!-- Python Client API.
               Can be one of the following:
               - Y: enable feature
               - N: disable feature -->
-         <feature id="python_client">{{ .enablePythonClient | default false | ternary "Y" "N" }}</feature>
+         {{- if not (.enablePythonClient | quote | empty) }}
+         <feature id="python_client">{{ .enablePythonClient | ternary "Y" "N" }}</feature>
+         {{- else}}
+           {{- fail  "license.enterprise.optionalFeatures.enablePythonClient must be explicitly set" }}
+         {{- end }}              
 
          <!-- .NET Standard Client API.
               Includes also the old Windows .NET libraries:
@@ -254,51 +343,93 @@
               Can be one of the following:
                - Y: enable feature
                - N: disable feature -->
-         <feature id="dotnet_standard_client">{{ .enableDotNETStandardClient | default false | ternary "Y" "N" }}</feature>
+         {{- if not (.enableDotNETStandardClient | quote | empty) }}
+         <feature id="dotnet_standard_client">{{ .enableDotNETStandardClient | ternary "Y" "N" }}</feature>
+         {{- else}}
+           {{- fail  "license.enterprise.optionalFeatures.enableDotNETStandardClient must be explicitly set" }}
+         {{- end }}
 
          <!-- macOS Client API.
               Can be one of the following:
               - Y: enable feature
               - N: disable feature -->
-         <feature id="macos_client">{{ .enableMacOSClient | default false | ternary "Y" "N" }}</feature>
+         {{- if not (.enableMacOSClient | quote | empty) }}
+         <feature id="macos_client">{{ .enableMacOSClient | ternary "Y" "N" }}</feature>
+         {{- else}}
+           {{- fail  "license.enterprise.optionalFeatures.enableMacOSClient must be explicitly set" }}
+         {{- end }}              
 
          <!-- tvOS Client API.
               Can be one of the following:
               - Y: enable feature
               - N: disable feature -->
-         <feature id="tvos_client">{{ .enableTvOSClient | default false | ternary "Y" "N" }}</feature>
+         {{- if not (.enableTvOSClient | quote | empty) }}
+         <feature id="tvos_client">{{ .enableTvOSClient | ternary "Y" "N" }}</feature>
+         {{- else}}
+           {{- fail  "license.enterprise.optionalFeatures.enableTvOSClient must be explicitly set" }}
+         {{- end }}              
 
          <!-- watchOS Client API.
               Can be one of the following:
               - Y: enable feature
               - N: disable feature -->
-         <feature id="watchos_client">{{ .enableWatchOSClient | default false | ternary "Y" "N" }}</feature>
-
+         {{- if not (.enableWatchOSClient | quote | empty) }}
+         <feature id="watchos_client">{{ .enableWatchOSClient | ternary "Y" "N" }}</feature>
+         {{- else}}
+           {{- fail  "license.enterprise.optionalFeatures.enableWatchOSClient must be explicitly set" }}
+         {{- end }}              
+         
+         <!-- visionOS Client API.
+              Can be one of the following:
+              - Y: enable feature
+              - N: disable feature -->
+         {{- if not (.enableVisionOSClient | quote | empty) }}
+         <feature id="visionos_client">{{ .enableVisionOSClient | ternary "Y" "N" }}</feature>
+         {{- else}}
+           {{- fail  "license.enterprise.optionalFeatures.enableVisionOSClient must be explicitly set" }}
+         {{- end }}              
+         
          <!-- BlackBerry Client API.
               Can be one of the following:
               - Y: enable feature
               - N: disable feature -->
-         <feature id="blackberry_client">{{ .enableBlackBerryClient | default false | ternary "Y" "N" }}</feature>
+         {{- if not (.enableBlackBerryClient | quote | empty) }}
+         <feature id="blackberry_client">{{ .enableBlackBerryClient | ternary "Y" "N" }}</feature>
+         {{- else}}
+           {{- fail  "license.enterprise.optionalFeatures.enableBlackBerryClient must be explicitly set" }}
+         {{- end }}              
 
          <!-- Java ME Client API.
               Can be one of the following:
               - Y: enable feature
               - N: disable feature -->
-         <feature id="javame_client">{{ .enableJavaMEClient | default false | ternary "Y" "N" }}</feature>
+         {{- if not (.enableJavaMEClient | quote | empty) }}
+         <feature id="javame_client">{{ .enableJavaMEClient | ternary "Y" "N" }}</feature>
+         {{- else}}
+           {{- fail  "license.enterprise.optionalFeatures.enableJavaMEClient must be explicitly set" }}
+         {{- end }}              
 
          <!-- Flash Client API.
               Can be one of the following:
               - Y: enable feature
               - N: disable feature -->
-         <feature id="flash_client">{{ .enableFlashClient | default false | ternary "Y" "N" }}</feature>
+         {{- if not (.enableFlashClient | quote | empty) }}
+         <feature id="flash_client">{{ .enableFlashClient | ternary "Y" "N" }}</feature>
+         {{- else}}
+           {{- fail  "license.enterprise.optionalFeatures.enableFlashClient must be explicitly set" }}
+         {{- end }}
 
          <!-- Generic Client API.
               Can be one of the following:
               - Y: enable feature
               - N: disable feature -->
-         <feature id="generic_client">{{ .enableGenericClient | default false | ternary "Y" "N" }}</feature>
-
-      {{- end }}
+         {{- if not (.enableGenericClient | quote | empty) }}
+         <feature id="generic_client">{{ .enableGenericClient | ternary "Y" "N" }}</feature>
+         {{- else}}
+           {{- fail  "license.enterprise.optionalFeatures.enableGenericClient must be explicitly set" }}
+         {{- end }}
+    {{- end }} {{/* with .enterprise.features */}}
+  {{- end }} {{/* with .enterprise.optionalFeatures */}}
       </optional_features>
 
       <!-- Periodically check whether any Lightstreamer Server update is
@@ -308,13 +439,14 @@
                 The following host name must be reachable on port 443
                 - https://service.lightstreamer.com/
            - N: Do not perform automatic update check. -->
-      {{- if hasKey . "enableAutomaticUpdateCheck" }}
+  {{- if not (.enableAutomaticUpdateCheck | quote | empty) }}
       <automatic_update_check>{{ .enableAutomaticUpdateCheck | ternary "Y" "N" }}</automatic_update_check>
-      {{- else }}
+  {{- else }}
+      <!--
       <automatic_update_check>Y</automatic_update_check>
-      {{- end }}
+      -->
+  {{- end }}
 
-   {{- end }}
    </license>
    
 
@@ -335,16 +467,17 @@
         Several methods are provided for the proxy configuration, including
         PAC files, auto-discovery, and direct HTTP and SOCKS configuration. -->
    <proxy>
-   {{- with $.Values.proxy }}
+  {{- with .proxy }}
 
       <!-- Cumulative. HTTP Proxy Server configuration.
            If multiple occurrences of <http_proxy> are supplied, the proxies
            are all checked and the first acceptable one is used.
            If any <socks_proxy> element is configured too, it is checked
            in parallel with the <http_proxy> elements. -->
-      {{- range .httpProxy }}
+    {{- range .httpProxies }}
       <http_proxy>
 
+      {{- if .host }}
          <!-- Hostname or IP address of the proxy server.
               Example: proxy.mycompany.com
               Example: 192.168.0.5 -->
@@ -358,22 +491,26 @@
          <proxy_scheme>{{ .scheme }}</proxy_scheme>
 
          <!-- User name if proxy authentication is required. -->
-         <proxy_user></proxy_user>
+        {{- if .credentialsSecretRef }}
+         <proxy_user>$env.LS_PROXY_{{ .credentialsSecretRef | upper | replace "-" "_" }}_USER</proxy_user>
 
          <!-- User password if proxy authentication is required. -->
-         <proxy_password></proxy_password>
+         <proxy_password>$env.LS_PROXY_{{ .credentialsSecretRef | upper | replace "-" "_" }}_PASSWORD</proxy_password>
+        {{- end }}
+      {{- end }}
 
       </http_proxy>
-      {{- end }}
+    {{- end }} {{/* range .httpProxies */}}
 
       <!-- Cumulative. SOCKS Proxy Server configuration.
            If multiple occurrences of <socks_proxy> are supplied, the servers
            are all checked and the first acceptable one is used.
            If any <http_proxy> element is configured too, it is checked
            in parallel with the <socks_proxy> elements. -->
-      {{- range .socksProxy }}
+    {{- range .socksProxies }}
       <socks_proxy>
 
+      {{- if .host }}
          <!-- Host name or IP address of the SOCKS server.
               Example: socks.mycompany.com
               Example: 192.168.0.9 -->
@@ -391,28 +528,35 @@
          <proxy_version>{{ .version }}</proxy_version>
 
          <!-- User name if proxy authentication is required. -->
-         <proxy_user></proxy_user>
+        {{- if .credentialsSecretRef }}
+         <proxy_user>$env.LS_PROXY_{{ .credentialsSecretRef | upper | replace "-" "_" }}_USER</proxy_user>
 
          <!-- User password if proxy authentication is required. -->
-         <proxy_password></proxy_password>
-      
-      </socks_proxy>
+         <proxy_password>$env.LS_PROXY_{{ .credentialsSecretRef | upper | replace "-" "_" }}_PASSWORD</proxy_password>
+        {{- end }}
       {{- end }}
+
+      </socks_proxy>
+    {{- end }} {{/* range .socksProxies */}}
 
       <!-- Configure one or multiple proxy auto-config (PAC) files, for simpler
            proxy configuration. -->
       <pac_files>
-      {{- with .pacFiles }}
+    {{- with .pacFiles }}
 
          <!-- Cumulative. URL of the PAC file.
               Example: http://intra.mycompany.com/company.pac -->
+      {{- range .fileUrls }}
+         <file_url>{{ . }}</file_url>
+      {{- else }}
          <file_url></file_url>
+      {{- end }}
 
          <!-- Cumulative. Path of the PAC file, in case it is stored on the file system.
               Example: C:\mypath\myfile.pac -->
          <file_path></file_path>
 
-      {{- end }}
+    {{- end }} {{/* with .pacFiles */}}
       </pac_files>
 
       <!-- In case no proxy configuration is provided or the provided
@@ -421,14 +565,20 @@
            Can be one of the following:
            - Y: perform auto-discovery;
            - N: do not perform auto-discovery. -->
-      <proxy_autodiscovery>{{ .enableProxyAutodiscovery | default false | ternary "Y" "N" }}</proxy_autodiscovery>
+      {{- if not (.enableProxyAutodiscovery | quote | empty) }}
+      <proxy_autodiscovery>{{ .enableProxyAutodiscovery |  ternary "Y" "N" }}</proxy_autodiscovery>
+      {{- else }}
+      <!--
+      <proxy_autodiscovery>Y</proxy_autodiscovery>
+      -->
+      {{- end }}
 
       <!-- Specifies a NIC to use to access the external services, with or
            without a proxy.
            Example: 200.0.0.1 -->
       <network_interface>{{ .networkInterface }}</network_interface>
 
-   {{- end }}
+  {{- end }} {{/* with .proxy */}}
    </proxy>
 
     <!-- Optional. If set and not empty, modifies the behavior of the
@@ -460,3 +610,4 @@
      Note that, on Windows, if a drive name is not specified, a double initial
      slash or backslash is needed to make a path absolute. -->
 {{- end }}
+{{- end }} {{/* with .license */}}
