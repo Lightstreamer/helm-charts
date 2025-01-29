@@ -1409,8 +1409,8 @@
                  be supplied in order to allow access through the connector.
                  This is also needed if you wish to use the provided "stop" script;
                  the script will always use the first user supplied. -->
-      {{- range .credentialSecrets}}
-            <user id="$env.LS_CREDENTIAL_{{ . | upper | replace "-" "_" }}_USER" password="$env.LS_CREDENTIAL_{{ . | upper | replace "-" "_"}}_PASSWORD" />
+      {{- range .credentialsSecrets}}
+            <user id="$env.LS_RMI_CREDENTIAL{{ . | upper | replace "-" "_" }}_USER" password="$env.LS_RMI_CREDENTIAL{{ . | upper | replace "-" "_"}}_PASSWORD" />
       {{- else}}
             <!--
             <user id="other_user" password="other_password" />
@@ -1592,7 +1592,7 @@
              it is only effective if <jmxtree_enabled> is set to "Y". -->
         {{- range $credential := .credentials }}
           {{- if $credential.secretRef}}
-            <user id="$env.LS_CREDENTIAL_{{ $credential.secretRef | upper | replace "-" "_" }}_USER" password="$env.LS_CREDENTIAL_{{ .secretRef | upper | replace "-" "_"}}_PASSWORD"{{- if not (quote .enableJmxTreeVisibility | empty) }} jmx_tree_visibile={{ $credential.enableJmxTreeVisibility | ternary "Y" "N" | quote }}{{- end }} />
+            <user id="$env.LS_RMI_CREDENTIAL{{ $credential.secretRef | upper | replace "-" "_" }}_USER" password="$env.LS_RMI_CREDENTIAL{{ .secretRef | upper | replace "-" "_"}}_PASSWORD"{{- if not (quote .enableJmxTreeVisibility | empty) }} jmx_tree_visibile={{ $credential.enableJmxTreeVisibility | ternary "Y" "N" | quote }}{{- end }} />
           {{- end }}
         {{- else}}
         <!--
