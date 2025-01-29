@@ -24,7 +24,6 @@
 nameOverride: ""
 # -- Replace the chart's default resource naming convention
 fullnameOverride: ""
-
 # -- Additional labels to apply to all resources
 additionalLabels: {}
 
@@ -57,33 +56,27 @@ serviceAccount:
 # -- Mandatory. Lightstreamer Deployment configuration.
 deployment:
   # -- Number of replicas (https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/)
+  # @default -- 1
   replicas:
-
   # -- Additional Deployment annotations
   annotations: []
-
   # -- Additional Deployment labels
   labels: {}
-
   # -- The strategy used to replace old Pods by new one (see https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy)
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 1
-
   # -- The Pod annotations
   # (https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/)
   podAnnotations: {}
-
   # -- Additional Pod labels
   # (https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)
   podLabels: {}
-
-  # -- The security context for the Pod (https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)
+  # -- The security context for the Pods (https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)
   podSecurityContext: {}
     # fsGroup: 2000
-
   # -- The security context for the container (https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)
   securityContext: {}
     # capabilities:
@@ -92,18 +85,16 @@ deployment:
     # readOnlyRootFilesystem: true
     # runAsNonRoot: true
     # runAsUser: 1000
-
-  # -- The hostname for the Pod
+  # -- The hostname for the Pods
   # (https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-hostname-and-subdomain-fields)
   hostname:
-
-  # -- Host networking setting for the Pod
+  # -- Host networking setting for the Pods
   hostNetwork:
-
-  # -- The DNS policy for the Pod
+  # -- The DNS policy for the Pods
   # (https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-dns-policy)
   dnsPolicy:
-
+  # -- The name of the PriorityClass for the Pods
+  priorityClassName:
   # -- Probes configuration
   probes:
     # -- Liveness probe configuration
@@ -113,11 +104,9 @@ deployment:
       healthCheck:
         # -- Enablement of the liveness probe
         enabled: true
-
         # -- Mandatory if `enabled` is set to `true`. The reference to a server
         # socket configuration (see `servers` section below)
         serverRef: http-server
-
         # Fields to be used to control the liveness probe behavior.
         # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
         initialDelaySeconds:
@@ -125,7 +114,6 @@ deployment:
         failureThreshold:
         timeoutSeconds:
         terminationGracePeriodSeconds:
-
       # -- Liveness probe configuration to be used if
       # `probes.liveness.healthCheck.enabled` is set to false.
       # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
@@ -133,27 +121,21 @@ deployment:
         # httpGet:
         #   path:
         #   port:
-
     # -- Readiness probe configuration
     readiness:
-
       # -- Readiness probe configuration based on the default Lightstreamer healthcheck
       healthCheck:
-
         # -- Enablement of the readiness probe
         enabled: true
-
         # -- Mandatory if `enabled` is set to `true`. The reference to a server
         # socket configuration (see `servers` section below)
         serverRef: http-server
-
         # Fields to be used to control the readiness probe behavior.
         # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
         initialDelaySeconds:
         periodSeconds:
         failureThreshold:
         timeoutSeconds:
-
       # -- Readiness probe configuration to be used if
       # `probes.readiness.healthCheck.enabled` is set to false.
       # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
@@ -161,20 +143,15 @@ deployment:
         # httpGet:
         #   path:
         #   port:
-
     # -- Startup probe configuration
     startup:
-
       # -- Startup probe configuration based on the default Lightstreamer healthcheck
       healthCheck:
-        
         # -- Enablement of the startup probe
         enabled: true
-
         # -- Mandatory if `enabled` is set to `true`. The reference to a server
         # socket configuration (see `servers` section below)
         serverRef: http-server
-
         # Fields to be used to control the startup probe behavior.
         # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
         initialDelaySeconds: 2
@@ -182,7 +159,6 @@ deployment:
         failureThreshold: 6
         timeoutSeconds: 8
         terminationGracePeriodSeconds: 10
-
       # -- Startup probe configuration to be used if
       # `probes.startup.healthCheck.enabled` is set to false.
       # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
@@ -190,58 +166,49 @@ deployment:
         # httpGet:
         #   path:
         #   port:
-
   # -- Resource management for Pod and the container
   # (https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)
   resources: {}
-
   # -- Pod lifecyle configuration
   # (https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/)
   lifecycle:
     # preStop:
     #   exec:
     #     command: [ "/lightstreamer/bin/unix-like/stop.sh" ]
-
   # -- Additional selectors
   additionalSelectors: {}
-
   # -- Additional volumes
-  extraVolumes: {}
-  # - name: pages-dir
-  #   emptyDir:
-  #     sizeLimit: 10Mi
-
+  extraVolumes: []
+    # - name: pages-dir
+    #   emptyDir:
+    #     sizeLimit: 10Mi
   # -- Additional volume mounts
-  extraVolumeMounts: {}
-  # - name: pages-dir
-  #   mountPath: "/lightstreamer/mypages"
-  #   readOnly: true
-
+  extraVolumeMounts: []
+    # - name: pages-dir
+    #   mountPath: "/lightstreamer/mypages"
+    #   readOnly: true
   # -- Additional environment variables
-  extraEnvs: 
-    - name: JAVA_OPTS
-      value: "-server -Xms1g -Xmx4g"
-
-  # -- Init containers configuration
+  extraEnv: []
+    # - name: JAVA_OPTS
+    #   value: "-server -Xms1g -Xmx4g"
+  # -- Extra containers configuration
   # (https://kubernetes.io/docs/concepts/workloads/pods/init-containers/)
-  initContainers: {}
-
+  extraContainers: []
+  # -- Extra init containers configuration
+  # (https://kubernetes.io/docs/concepts/workloads/pods/init-containers/)
+  extraInitContainers: []
   # -- Node selector setting for the Pod
   # (https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector)
   nodeSelector: {}
-
   # -- Affinity settings for the Pod
   # (https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity)
   affinity: {}
-
   # -- Tolerations settings for the Pod
   # (https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/)
   tolerations: []
-
   # -- Termination grace period configuration for Pod
   # (https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#hook-handler-execution)
   terminationGracePeriodSeconds: 5
-
   # -- Topology spread constraints configuration for the Pod
   # (https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/)
   topologySpreadConstraints: {}
@@ -250,52 +217,39 @@ deployment:
 service:
   # -- Additional Service annotations
   annotations: {}
-
   # -- Additional Service labels
   labels: {}
-
   # -- Additional selectors
   additionalSelectors:
     mode: "active"
-
   # -- The service type
   # (https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types)
   type: 
-
   # -- The port exposed by the service 
   # (https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports)
   port: 8080
-
   # -- The node port when the `type` is set to `NodePort` or 'LoadBalancer'
   # (https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport)
   nodePort:
-
   # -- The reference to a server socket configuration (see `servers` section 
   # below)
   targetPort: http-server
-
   # -- The name of the service port
   name: lightstreamer-service
-
   # -- The load balancer implementation when the `type` is set to `LoadBalancer`
   # (https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-class)
   loadBalancerClass:
 
 # -- Lightstreamer Ingress configuration (https://kubernetes.io/docs/concepts/services-networking/ingress/)
 ingress:
-
   # -- Enablement of the Ingress
   enabled: true
-
   # -- Additional Ingress annotations
   annotations: {}
-
   # -- Additional Ingress labels
   labels: {}
-
   # -- The name of Ingress class
   className:
-
   # -- List of Ingress rules.
   # if not set, the ingress will be backed by the service.
   hosts:
@@ -303,80 +257,67 @@ ingress:
     #   paths:
     #     - path: /
     #       pathType: Prefix
-
   # -- TLS configuration for the Ingress
   # (https://kubernetes.io/docs/concepts/services-networking/ingress/#tls)
   tls: []
 
-# -- Configure the edition, the optional features, and the type of license
-# that should be used to run Lightstreamer Server.
+# -- Mandatory. Configure the edition, the optional features, and the type of
+# license that should be used to run Lightstreamer Server.
 license:
-
-  # -- Lightstreamer edition to use.
+  # -- (string) Mandatory. Lightstreamer edition to use.
   # To know full details, open the Welcome Page or the Monitoring Dashboard
   # (Edition tab) of your running Lightstreamer Server.
-  # Can be one of the following:
-  #  - COMMUNITY
-  #  - ENTERPRISE
+  # Possible values: `COMMUNITY`, `ENTERPRISE`
   edition: ENTERPRISE
-
-  # -- If you chose COMMUNITY edition, you can set the following options:
+  # -- Mandatory if edition is set to `COMMUNITY`. The Client API to use with
+  # your Lightstreamer free license.
+  # Possible values: `javascript_client` (for web browser clients), 
+  # `nodejs_client` (for Node.js clients), `android_client` (for Android 
+  # clients), `ios_client` (for iOS clients), `flex_client` (for Flex and AIR
+  # clients), `silverlight_client` (for Silverlight clients), `javase_client`
+  # (for Java SE clients), `python_client` (for Python clients), 
+  # `dotnet_standard_client` (for .NET Standard clients), `macos_client` (for
+  # macOS clients), `tvos_client` (for tvOS clients), `watchos_client` (for 
+  # watchOS clients), `visionos_client` (for visionOS clients), 
+  # `blackberry_client` (for BlackBerry clients), `javame_client` (for Java ME
+  # clients), `flash_client` (for Flash clients), `generic_client` (for custom
+  # clients based on the Lightstreamer protocol).
+  # @default -- "javascript_client"
   enabledCommunityEditionClientApi: javascript_client
-
-  # -- Configure the ENTERPRISE edition
+  # -- Mandatory if `edition` is set to ENTERPRISE. Configure the ENTERPRISE 
+  # edition.
   enterprise:
-
-    # -- The type of the ENTERPRISE edition.
-    #  Can be one of the following:
-    #  - DEMO
-    #  - EVALUATION
-    #  - STARTUP
-    #  - NON-PRODUCTION-LIMITED
-    #  - NON-PRODUCTION-FULL
-    #  - PRODUCTION
-    #  - HOT-STANDBY
-    # licenseType: EVALUATION
+    # -- (string) Mandatory. The type of the ENTERPRISE edition.
+    # Possible values: `DEMO`, `EVALUATION`, `STARTUP`, `NON-PRODUCTION-LIMITED`,
+    # `NON-PRODUCTION-FULL`, `PRODUCTION`, `HOT-STANDBY`.
     licenseType: DEMO
-
-    # -- Identifier of the contract in place.
-    # Use "DEMO" to run with the embedded Demo license.
+    # -- (string) Mandatory, Identifier of the contract in place. Use "DEMO" to
+    # run with the embedded Demo license.
     # contractId: EXXXXXXXXX
     contractId: DEMO
-
-    # -- Choose between online (cloud-based) and file-based license validation.
-    # Can be one of the following:
-    # - ONLINE
-    #   The host names below must be reachable on port 443:
-    #   - https://clm1.lightstreamer.com/
-    #   - https://clm2.lightstreamer.com/
-    # - FILE
-    #   Based on `licenseType`, one or both the values are possible.
-    #   For EVALUATION and STARTUP: ONLINE is mandatory.
-    #   For PRODUCTION, HOT-STANDBY, NON-PRODUCTION-FULL, and NON-PRODUCTION-LIMITED:
-    #   you can choose between ONLINE and FILE.
-    #   For DEMO: the value is ignored, as no validation is done.
-    licenseValidation:
-
+    # -- (string) Optional. Choose between online (cloud-based) and file-based 
+    # license validation.
+    # If set to `ONLINE`, the following host names below must be reachable on 
+    # port 443: `https://clm1.lightstreamer.com/`, 
+    # `https://clm2.lightstreamer.com/`.
+    # If set to `FILE`, based on `licenseType`, one or both the values are possible.
+    # For EVALUATION and STARTUP: ONLINE is mandatory.
+    # For PRODUCTION, HOT-STANDBY, NON-PRODUCTION-FULL, and NON-PRODUCTION-LIMITED:
+    # you can choose between ONLINE and FILE.
+    # For DEMO: the value is ignored, as no validation is done.
+    licenseValidation: ONLINE
     # -- Used only if `licenseValidation` set to "ONLINE".
     # Secret name and key where the password used for validation of online
     # licenses is stored.
     # Leave blank if `licenseType` is set to "DEMO" or `licenseValidation` set to "FILE".
     onlinePasswordSecretRef:
-      # name: online-license
-      # key: password
-
+      name:
+      key:
     # -- Used only if `licenseValidation` set to "FILE".
     # Secret name and key where the license file is stored.
     filePathSecretRef:
       name:
       key:
-
-    # -- Restrict the feature set with respect to the license in use.
-    # If enabled, use the feature set detailed in the "optional_features" key.
-    # If a required feature is not allowed by the license in use, the server will not start.
-    # If not enabled, use the feature set specified by the license in use.
-    enableRestrictedFeaturesSet: false
-
     # -- In case of file-based license validation, this element allows to
     # activate periodic automatic upload. This makes it much easier for
     # the systems admins to deliver the logs, as contractually agreed.
@@ -385,80 +326,144 @@ license:
     # of this element.
     # If enabled, the th following host name must be reachable on port 443:
     #      - https://service.lightstreamer.com/
-    # If not enabled, audit logs myst be delivered manually if required by
+    # If not enabled, audit logs must be delivered manually if required by
     # license terms.
-    enableAutomaticAuditLogUpload: false
-
+    # @default -- true
+    enableAutomaticAuditLogUpload: true
+    # -- Optional. Configure the optional features.
     optionalFeatures:
-      enableMpn: false
-      maxDownstreamRate: 2
-      enableBandwidthControl: false
-      enableTlsSsl: true
-      enableJmx: false
-      enableJavascriptClient: false
-      enableNodeJsClient: false
-      enableAndroidClient: false
-      enableIOSClient: false
-      enableFlexClient: false
-      enableSilverlightClient: false
-      enableJavaSEClient: false
-      enablePythonClient: false
-      enableDotNETStandardClient: false
-      enableMacOSClient: false
-      enableTvOSClient: false
-      enableWatchOSClient: false
-      enableBlackBerryClient: false
-      enableJavaMEClient: false
-      enableFlashClient: false
-      enableGenericClient: false
+      # -- Optional. Restrict the feature set with respect to the license in 
+      # use.
+      # If set to `true`, use the feature set detailed in `features`. If a 
+      # required feature is not allowed by the license in use, the server will
+      # not start.
+      # If set to `false`, use the feature set specified by the license in use.
+      # @default -- false
+      enableRestrictedFeaturesSet: true
+      # -- Mandatory if `enableRestrictedFeaturesSet` is set to `true`. Set of
+      # features to enable. If a required feature is not allowed by the license
+      # in use, the server will not start.
+      # @default -- {}
+      features:
+        # -- Mandatory. Mobile Push Notifications.
+        enableMpn: true
+        # -- (string) Mandatory. Max message rate (downstream).
+        # Possible values: `1`, `3`, `unlimited`.
+        maxDownstreamRate: "1"
+        # -- Mandatory. Bandwidth control.
+        enableBandwidthControl: false
+        # -- Mandatory. TLS/SSL Support.
+        enableTlsSsl: false
+        # -- Mandatory. JMX Management API.
+        enableJmx: false
+        # -- Mandatory. JavaScript Client API.
+        enableJavascriptClient: false
+        # -- Mandatory. Node.js Client API.
+        enableNodeJsClient: false
+        # -- Mandatory. Android Client API.
+        enableAndroidClient: false
+        # -- Mandatory. iOS Client API.
+        enableIOSClient: false
+        # -- Mandatory. Flex and AIR Client API.
+        enableFlexClient: false
+        # -- Mandatory. Silverlight Client API.
+        enableSilverlightClient: false
+        # -- Mandatory. Java SE Client API.
+        enableJavaSEClient: false
+        # -- Mandatory. Python Client API.
+        enablePythonClient: false
+        # -- Mandatory. .NET Standard Client API.
+        # Includes also the old Windows .NET libraries: .NET PCL Client API, 
+        # Unity Client API, .NET Client API, WinRT Client API, and Windows 
+        # Phone Client API.
+        enableDotNETStandardClient: false
+        # -- Mandatory. macOS Client API.
+        enableMacOSClient: false
+        # -- Mandatory. tvOS Client API.
+        enableTvOSClient: false
+        # -- Mandatory. watchOS Client API.
+        enableWatchOSClient: false
+        # -- Mandatory. visionOS Client API.
+        enableVisionOSClient: false
+        # -- Mandatory. BlackBerry Client API.
+        enableBlackBerryClient: false
+        # -- Mandatory. Java ME Client API.
+        enableJavaMEClient: false
+        # -- Mandatory. Flash Client API.
+        enableFlashClient: false
+        # -- Mandatory. Generic Client API.
+        enableGenericClient: false
+  # -- Optional. Periodically check whether any Lightstreamer Server update is
+  # available. In such case, a notification is written to the log file.
+  # If set to true, perform automatic update check. The following host name 
+  # must be reachable on port 443: https://service.lightstreamer.com/
+  # If set to false, do not perform automatic update check.
+  # @default -- true
+  enableAutomaticUpdateCheck:
+  # -- Optional. Configure a proxy server for outbound Internet access, if
+  # necessary.
+  # Internet access is needed, depending on the above configuration, to reach
+  # the Online License Manager, to upload audit logs, and to check for software
+  # updates.
+  # The host names below must be reachable from the proxy on port 443:
+  # - https://clm1.lightstreamer.com/    (depending on the configuration)
+  # - https://clm2.lightstreamer.com/    (depending on the configuration)
+  # - https://service.lightstreamer.com/ (regardless of the configuration)
+  # Several methods are provided for the proxy configuration, including
+  # PAC files, auto-discovery, and direct HTTP and SOCKS configuration.
+  proxy:
+    # -- Optional. List of HTTP Proxy Server configurations.
+    # The proxies all checked and the first acceptable one is used.
+    # If any SOCKS proxy in `socksProxies` is configured too, it is checked in
+    # parallel with the defined HTTP proxies.
+    httpProxies:
+      - # -- (string) Optional, but empty value are skipped. Host name or IP
+        # address of the proxy server.
+        # Examples: "proxy.mycompany.com", "192.168.0.5".
+        host:
+        # -- (int) Optional. Port number of the proxy server.
+        port:
+        # -- (string) Optional. Scheme of the proxy server.
+        # Possible values: `http`, `https`.
+        scheme:
+        # -- Mandatory if proxy authentication is required. The name of the 
+        # secret containing the credentials. The secret must contain the keys 
+        # `user` and `password`.
+        credentialsSecretRef:
+    # -- Optional. List of SOCKS Proxy Server configurations.
+    # The proxies are all checked and the first acceptable one is used.
+    # If any HTTP proxy is configured in `httpProxies` too, it is checked in
+    # parallel with the defined SOCKS proxies.
+    socksProxies:
+      - # -- (string) Optional. Host name or IP address of the proxy server.
+        # Examples: "socks.mycompany.com", "192.168.0.9"
+        host:
+        # -- (int) Mandatory. Port number of the SOCKS server.
+        port:
+        # -- (string) Protocol version to use.
+        # Possible values: `SOCKS4`, `SOCKS4a`, `SOCKS5`.
+        version:
+        # -- Mandatory if proxy authentication is required. The name of the 
+        # secret containing the credentials. The secret must contain the keys 
+        # `user` and `password`.
+        credentialsSecretRef:
+    pacFiles:
+      # -- Optional. List of URLs of the PAC file.
+      # @default -- []
+      fileUrls: []
+        # - "http://intra.mycompany.com/company_pacfile1.pac"
+        # - "http://intra.mycompany.com/company_pacfile2.pac"
+      filePath:
 
-  enableAutomaticUpdateCheck: true
+    # -- Optional. In case no proxy configuration is provided or the provided
+    # configuration does not work, automatic proxy discovery is attempted (via 
+    # system environment check and WPAD).
+    # @default -- false
+    enableProxyAutodiscovery:
 
-# -- Configure a proxy server for outbound Internet access, if necessary.
-# Internet access is needed, depending on the above configuration,
-# to reach the Online License Manager, to upload audit logs,
-# and to check for software updates.
-# The host names below must be reachable from the proxy on port 443:
-# - https://clm1.lightstreamer.com/    (depending on the configuration)
-# - https://clm2.lightstreamer.com/    (depending on the configuration)
-# - https://service.lightstreamer.com/ (regardless of the configuration)
-# Several methods are provided for the proxy configuration, including
-# PAC files, auto-discovery, and direct HTTP and SOCKS configuration.
-proxy:
-  httpProxy:
-  #   - host:
-  #     port: 8080
-  #     scheme:
-  #     user:
-  #     password:
-  #   - host:
-  #     port: 4443
-  #     scheme:
-  #     user:
-  #     password:
-  # socksProxy:
-  #   - host:
-  #     port:
-  #     version: SOCKS5
-  #     user:
-  #     password:
-  #   - host:
-  #     port:
-  #     version: SOCKS5
-  #     user:
-  #     password:
-  pacFiles:
-    fileUrl:
-    filePath:
-
-  # -- In case no proxy configuration is provided or the provided
-  # configuration does not work, automatic proxy discovery is
-  # attempted (via system environment check and WPAD).
-  enableProxyAutodiscovery: false
-
-  # -- Specifies a NIC to use to access the external services, with or
-  # without a proxy.
-  networkInterface:
+    # -- Optional. Specifies a NIC to use to access the external services, with
+    # or without a proxy.
+    networkInterface:
 
 logging:
   appenders:
@@ -468,7 +473,6 @@ logging:
     console:
       type: Console
       pattern: "%d{\"dd.MMM.yy HH:mm:ss,SSS\"} <%5.5(%p%marker)> %m%n"
-
   loggers:
     # -- These two loggers are used by the internal monitoring system to log
     # load statistics at INFO level.
@@ -500,7 +504,6 @@ logging:
       appenders:
         - console
       level: ERROR
-
     # The following is the base logger of all logging messages printed by
     # Lightstreamer Kernel (with a few exceptions).
     # Messages logged at INFO level notify major server activities,
@@ -820,8 +823,8 @@ servers:
     # `cluster.controlLinkAddress` setting. Usage examples are provided in the
     # Clustering.pdf document.
     # @default -- "GENERAL_PURPOSE"
-
     portType:
+
     # -- Optional. Settings that allow some control over the HTTP headers of
     # the provided responses. Header lines can only be added to those used by
     # the Server, either by specifying their value or by copying them from the
@@ -832,7 +835,6 @@ servers:
     # No syntax and consistency checks are performed on the resulting HTTP
     # headers; only custom or non-critical fields should be used.
     # The header names involved are always converted to lower case.
-
     responseHttpHeaders:
 
       # -- Optional. Requests to look for any header lines for  the specified
@@ -1703,8 +1705,8 @@ management:
       enablePublicAccess: false
 
       # -- Optional, but ineffective if `enablePublicAccess` is set to `true`.
-      # The reference to the list of secrets containing the credentials of the 
-      # users enabled to access the RMI connector.
+      # The reference to the secrets containing the credentials of the users 
+      # enabled to access the RMI connector.
       # Every secret must contains the keys `user` and `password`.
       # If `enablePublicAccess` is set to `false`, at least one set of
       # credentials should be supplied in order to allow access through the
@@ -1712,8 +1714,8 @@ management:
       # This is also needed if you wish to use the provided "stop" script; the
       # script will always use the first user supplied.
       # @default -- []
-      credentialSecrets: []
-        # - rmi-secret-user
+      credentialsSecrets: 
+        - rmi-secret-user
         # - rmi-secret-other-user
 
     # -- Optional. JMXMP connector configuration.
@@ -2942,12 +2944,12 @@ connectors:
 
           # -- (string) Optional. The SSL protocol to be used. Can be one of 
           # the following: `TLSv1.2`,  `TLSv1.3`.
-          # @default -- `TLSv1.3` when running on Java 11 or newer, `TLSv1.2` 
+          # @default -- "TLSv1.3" when running on Java 11 or newer, "TLSv1.2"
           # otherwise
           protocol:
 
           # -- Optional. List of enabled secure communication protocols
-          # @default -- `[TLSv1.2, TLSv1.3]` when running on Java 11 or newer,
+          # @default -- ["TLSv1.2", "TLSv1.3"] when running on Java 11 or newer,
           # TLSv1.2 otherwise.
           allowedProtocols: []
 
@@ -2976,7 +2978,7 @@ connectors:
 
             # -- Optional. Enablement of the authentication of the connection 
             # against the Kafka Cluster.
-            enabled: false
+            enabled: true
 
             # (string) Mandatory if `enabled` is set to `true`. The SASL 
             # mechanism type.
@@ -2991,8 +2993,8 @@ connectors:
 
             # -- Mandatory if `mechanism` is set to `PLAIN`, `SCRAM-SHA-256`, 
             # `SCRAM-SHA-512`. The name of the secret containing the 
-            # credentials.The secret must contain the keys `user` and `password`.
-            credentialsSecretRef:
+            # credentials. The secret must contain the keys `user` and `password`.
+            credentialsSecretRef: test
 
             # -- Mandatory if `mechanism` is set to `GSSAPI`. The GSSAPI 
             # authentication settings.
@@ -3033,14 +3035,14 @@ connectors:
           # - `EARLIEST`: start consuming events from the beginning of the topic partition
           # Sets the value of the `auto.offset.reset` key to configure the
           # internal Kafka Consumer.
-          # @default -- `LATEST`
+          # @default -- "LATEST"
           consumeFrom: EARLIEST
 
           # -- (int) Optional. The number of threads to be used for concurrent
           # processing of the incoming deserialized records. If set to `-1`,
           # the number of threads will be automatically determined based on the
           # number of available CPU cores.
-          # @default -- `1`
+          # @default -- 1
           consumeWithThreadNumber:
 
           # -- (string) Optional, but effective only if
@@ -3052,7 +3054,7 @@ connectors:
           # If set to `ORDER_BY_KEY`, maintain the order among the records
           # sharing the same key.
           # If set to `UNORDERED`, provide no ordering guarantees.
-          # @default -- `ORDER_BY_PARTITION`
+          # @default -- "ORDER_BY_PARTITION"
           consumeWithOrderStrategy:
 
           # -- Optional. Key evaluator configuration.
@@ -3074,7 +3076,7 @@ connectors:
             # - LONG
             # - SHORT
             # - UUID
-            # @default -- `STRING`
+            # @default -- "STRING"
             type: INTEGER
 
             # -- Mandatory if `type` is set to `AVRO` and
@@ -3098,7 +3100,7 @@ connectors:
             # -- (string) Optional. The format to be used to deserialize the
             # value of a Kafka record. See `record.keyEvaluator.type` for the
             # list of supported formats.
-            # @default -- `STRING`
+            # @default -- "STRING"
             type: JSON
 
             # -- Mandatory if `type` is set to `AVRO` and
@@ -3122,7 +3124,7 @@ connectors:
           # If set to `FORCE_UNSUBSCRIPTION`, the processing of the record is
           # stopped and the unsubscription of the items requested by all the
           # Lightstreamer clients subscribed to this connection is forced.
-          # @default -- `IGNORE_AND_CONTINUE`
+          # @default -- "IGNORE_AND_CONTINUE"
           extractionErrorStrategy:
 
           # -- Optional. The reference to Schema Registry configuration.
@@ -3291,7 +3293,7 @@ connectors:
         sslConfig:
 
           # -- Optional. List of enabled secure communication protocols
-          # @default -- `[TLSv1.2, TLSv1.3]` when running on Java 11 or newer,
+          # @default -- ["TLSv1.2", "TLSv1.3"] when running on Java 11 or newer,
           # TLSv1.2 otherwise.
           allowProtocols: []
             # - TLSv1.2
