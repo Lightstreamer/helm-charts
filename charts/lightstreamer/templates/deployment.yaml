@@ -146,21 +146,40 @@ spec:
             {{- end }}
           {{- end }}
           {{- if and (ne ((.Values.license).enterprise).licenseType "DEMO") (eq ((.Values.license).enterprise).licenseValidation "ONLINE") }}
-            {{- with .Values.license.enterprise.onlinePasswordSecretRef }}
-            - name: LS_ENTERPRISE_LICENSE_{{ .key | upper | replace "-" "_" }}
+            {{- with required "license.enterprise.onlinePasswordSecretRef must be set" .Values.license.enterprise.onlinePasswordSecretRef }}
+            - name: LS_ENTERPRISE_LICENSE_ONLINE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .name }}
-                  key: {{ .key }}
+                  name: {{ required "license.enterprise.onlinePasswordSecretRef.name must be set" .name }}
+                  key: {{ required "license.enterprise.onlinePasswordSecretRef.key must be set" .key }}
             {{- end }}
           {{- end }}
-          {{- range $value := .Values.management.jmx.rmiConnector.credentialSecrets }}
-            - name: LS_CREDENTIAL_{{ $value | upper | replace "-" "_" }}_USER
+          {{- $allSecrets := list }}
+          {{- range $key, $httpProxy := concat (.Values.license).proxy.socksProxies (.Values.license).proxy.httpProxies }}
+            {{- if $httpProxy.host }}
+              {{- $allSecrets = append $allSecrets ($httpProxy.credentialsSecretRef) }}
+            {{- end }}
+          {{- end }}
+          {{- $allSecrets = $allSecrets | uniq }}
+          {{- range $allSecrets }}
+            - name: LS_PROXY_{{ . | upper | replace "-" "_" }}_USER
               valueFrom:
                 secretKeyRef:
                   name: {{ . }}
                   key: user
-            - name: LS_CREDENTIAL_{{ $value | upper | replace "-" "_" }}_PASSWORD
+            - name: LS_PROXY_{{ . | upper | replace "-" "_" }}_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ . }}
+                  key: password
+          {{- end}}
+          {{- range $value := .Values.management.jmx.rmiConnector.credentialsSecrets }}
+            - name: LS_RMI_CREDENTIAL{{ $value | upper | replace "-" "_" }}_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ . }}
+                  key: user
+            - name: LS_RMI_CREDENTIAL{{ $value | upper | replace "-" "_" }}_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ . }}
@@ -312,7 +331,7 @@ spec:
             secretName: {{ required (printf "keystores.%s.keystoreFileSecretRef.name must be set" $key) (($value.keystoreFileSecretRef).name) }}
         {{- end }}
       {{- end }}
-      {{- if and (ne ((.Values.license).enterprise).licenseType "DEMO") (eq (.Values.license).enterprise.licenseValidation "FILE") }}
+      {{- if and (ne ((.Values.license).enterprise).licenseType "DEMO") (eq ((.Values.license).enterprise).licenseValidation "FILE") }}
         {{- with required "license.enterprise.filePathSecretRef must be set" .Values.license.enterprise.filePathSecretRef }}
         - name: lightstreamer-enterprise-license
           secret:
