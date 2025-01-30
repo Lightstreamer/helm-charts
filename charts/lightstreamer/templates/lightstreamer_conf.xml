@@ -142,7 +142,7 @@
         <port>{{ required "port must be set" .port }}</port>
 
         <!-- Optional. Size of the system buffer for incoming TCP connections
-            (backlog). Overrides the default system setting. -->
+             (backlog). Overrides the default system setting. -->
   {{- if not (quote .backlog | empty) }}
         <backlog>{{ int .backlog }}</backlog>
   {{- else }}
@@ -177,14 +177,14 @@
                with possible enqueueing.
                Anyway, such port is only meant for internal use and it is
                recommended not to leave it publicly accessible.
-             - PRIORITY
+             - GENERAL_PURPOSE
                To be set when the port can be used for any kind of request.
                It can always be set in case of doubts.
-               Note that ports can be CREATE_ONLY or CONTROL_ONLY only depending
-               on client behavior. For clients based on LS SDK libraries, this is
-               related to the use of the <control_link_address> setting. Usage
-               examples are provided in the Clustering.pdf document.
-               Default: GENERAL_PURPOSE. -->
+             Note that ports can be CREATE_ONLY or CONTROL_ONLY only depending
+             on client behavior. For clients based on LS SDK libraries, this is
+             related to the use of the <control_link_address> setting. Usage
+             examples are provided in the Clustering.pdf document.
+             Default: GENERAL_PURPOSE. -->
   {{- if .portType }}
     {{- if not (mustHas .portType (list "CREATE_ONLY" "CONTROL_ONLY" "PRIORITY" "GENERAL_PURPOSE")) }}
       {{- fail "portType must be set with a valid value" }}
@@ -376,7 +376,8 @@
         -->
   {{- end }}
 
-  {{- with .sslConfig }}
+  {{- if $enableHttps }}
+    {{- with .sslConfig }}
         <!-- Optional. If defined, overrides the default JVM's Security Provider
              configured in the java.security file of the JDK installation. This allows
              the use of different Security Providers dedicated to single listening ports.
@@ -384,13 +385,13 @@
              to the Server classpath. This is not needed for the Conscrypt provider,
              which is already available in the Server distribution (but note that the
              library includes native code that only targets the main platforms). -->
-    {{- if .tlsProvider }}
+      {{- if .tlsProvider }}
         <TLS_provider>{{ .tlsProvider }}</TLS_provider>
-    {{- else }}
+      {{- else }}
         <!--
         <TLS_provider>Conscrypt</TLS_provider>
         -->
-    {{- end }}
+      {{- end }}
 
         <!-- Mandatory for this block. Reference to the keystore used by the HTTPS
              service. The keystore type should be specified in the optional "type"
@@ -415,9 +416,9 @@
                are not fully supported by the Conscrypt provider.
              Instructions on how to setup a JKS keystore are provided in the
              TLS/SSL Certificates document. -->
-     {{- with required "sslConfig.keyStoreRef must be set" .keyStoreRef }}
-       {{- include "lightstreamer.configuration.keystore" (list $.Values.keyStores .)  | nindent 8 }}
-     {{- end }}
+      {{- with required "sslConfig.keyStoreRef must be set" .keyStoreRef }}
+        {{- include "lightstreamer.configuration.keystore" (list $.Values.keyStores .)  | nindent 8 }}
+      {{- end }}
 
         <!-- Optional and cumulative, but forbidden if <remove_cipher_suites> is used.
              Specifies all the cipher suites allowed for the TLS/SSL interaction,
@@ -430,9 +431,9 @@
              the Security Provider will be available.
              The order in which the cipher suites are specified can be enforced as the
              server-side preference order (see <enforce_server_cipher_suite_preference>). -->
-    {{- range .allowCipherSuites }}
+      {{- range .allowCipherSuites }}
         <allow_cipher_suite>{{ . }}</allow_cipher_suite>
-    {{- else }}
+      {{- else }}
         <!--
         <allow_cipher_suite>TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384</allow_cipher_suite>
         -->
@@ -442,7 +443,7 @@
         <!--
         <allow_cipher_suite>........</allow_cipher_suite>
         -->
-    {{- end }}
+      {{- end }}
 
         <!-- Optional and cumulative, but forbidden if <allow_cipher_suite> is used.
              Pattern to be matched against the names of the enabled cipher suites
@@ -459,13 +460,13 @@
              the "supported" cipher suites. The default set of the "enabled" cipher
              suites is logged at startup by the LightstreamerLogger.io.ssl
              logger at DEBUG level. -->
-    {{- range .removeCipherSuites }}
+      {{- range .removeCipherSuites }}
         <remove_cipher_suites>{{ . }}</remove_cipher_suites>
-    {{- else }}
+      {{- else }}
         <!--
         <remove_cipher_suites>TLS_RSA_</remove_cipher_suites>
         -->
-    {{- end }}
+      {{- end }}
 
         <!-- Optional. Determines which side should express the preference when
              multiple cipher suites are in common between server and client.
@@ -683,10 +684,9 @@
             <truststore_password type="text">mypassword</truststore_password>
         </truststore>
         -->
-       {{- end }}
-  {{- else }}
-    {{- if $enableHttps }}
-    {{- fail "sslConfig must be set" }}
+      {{- end }}
+    {{- else }}
+      {{- fail "sslConfig must be set" }}
     {{- end }}
   {{- end }}
 
@@ -963,7 +963,7 @@
              not just http and https. -->
     {{- if .allowAccessFrom }}
       {{- range $value := .allowAccessFrom }}
-        <allow_access_from scheme={{ required "scheme must be set" $value.scheme | quote }} host={{ required "host must be set" $value.host | quote }} port={{ required "port must be set" $value.port | quote }}/>
+        <allow_access_from scheme={{ required "scheme must be set" $value.scheme | quote }} host={{ required "host must be set" $value.host | quote }} port={{ required "port must be set" $value.port | quote }} />
       {{- end }}
     {{- else }}
         <!--
@@ -1592,7 +1592,7 @@
              it is only effective if <jmxtree_enabled> is set to "Y". -->
         {{- range $credential := .credentials }}
           {{- if $credential.secretRef}}
-            <user id="$env.LS_RMI_CREDENTIAL{{ $credential.secretRef | upper | replace "-" "_" }}_USER" password="$env.LS_RMI_CREDENTIAL{{ .secretRef | upper | replace "-" "_"}}_PASSWORD"{{- if not (quote .enableJmxTreeVisibility | empty) }} jmx_tree_visibile={{ $credential.enableJmxTreeVisibility | ternary "Y" "N" | quote }}{{- end }} />
+            <user id="$env.LS_RMI_CREDENTIAL{{ $credential.secretRef | upper | replace "-" "_" }}_USER" password="$env.LS_RMI_CREDENTIAL{{ .secretRef | upper | replace "-" "_"}}_PASSWORD"{{- if not (quote .enableJmxTreeVisibility | empty) }} jmxtree_visible={{ $credential.enableJmxTreeVisibility | ternary "Y" "N" | quote }}{{- end }} />
           {{- end }}
         {{- else}}
         <!--
@@ -1636,7 +1636,7 @@
       {{- range .availableOnServers }}
         {{- $serverRef := required "dashboard.availableOnServers[].serverRef must be set" .serverRef }}
         {{- $serverName := required (printf "servers.%s not defined " $serverRef) ($.Values.servers | dig $serverRef "name" "") }}
-        <available_on_server name={{ $serverName | quote }}{{- if not (quote .enableJmxTreeVisibility | empty) }} jmx_tree_visibile={{ .enableJmxTreeVisibility | ternary "Y" "N" | quote }}{{- end }} />
+        <available_on_server name={{ $serverName | quote }}{{- if not (quote .enableJmxTreeVisibility | empty) }} jmxtree_visible={{ .enableJmxTreeVisibility | ternary "Y" "N" | quote }}{{- end }} />
       {{- else }}
         <!--
         <available_on_server name="Lightstreamer HTTPS Server" />
@@ -1837,7 +1837,7 @@
                  supplied with the request, which should include the string
                  specified through the "contains" attribute. -->
             {{- if empty .userAgentContains }}
-               {{- fail "pushSession.specalCases[].userAgentContains must be set" }}
+               {{- fail "pushSession.specialCases[].userAgentContains must be set" }}
             {{- else }}
                {{- range .userAgentContains }}
             <user_agent contains={{ . | quote }} />
@@ -2134,7 +2134,7 @@
          SDK libraries, which just forward the special unchanged notifications
          through the API interface. Old versions of the .NET, Java SE (but for
          the ls_proxy interface layer), Native Flex and Java ME libraries share
-         this behaviour.
+         this behavior.
          Forcing a redundant delivery would simplify the client code in all
          the above cases.
          Default: Y. -->
@@ -2639,6 +2639,7 @@
   ========================
 -->
 
+{{- with .Values.webServer }}
     <!-- Optional. Path of an HTML page to be returned upon unexpected request
          URLs. This applies to URLs in reserved ranges that have no meaning.
          If the Internal web server is not enabled, this also applies to all
@@ -2647,9 +2648,13 @@
          The file content should be encoded with the iso-8859-1 charset.
          The file path is relative to the conf directory.
          Default: the proper page is provided by the Server. -->
-{{- with .Values.errorPageRef }}
-    <error_page>./error-page/{{ .key }}</error_page>
-{{- end }}
+  {{- with .errorPageRef }}
+    <error_page>./error-page/{{ required "webServer.errorPageRef.key must be set" .key }}</error_page>
+  {{- else }}
+    <!--
+    <error_page>./error-page/ErrorPage.html</error_page>
+    -->
+  {{- end }}
 
 
     <!-- Optional. Internal web server configuration.
@@ -2659,7 +2664,6 @@
          <compression_threshold> settings. Anyway, this does not hold for
          the <enabled> setting, as the Monitoring Dashboard accessibility
          is only configured through the <dashboard> block. -->
-{{- with .Values.webServer }}
     <web_server>
 
         <!-- Optional. Enabling of the internal web server.
