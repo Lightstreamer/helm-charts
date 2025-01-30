@@ -185,7 +185,7 @@ spec:
                   name: {{ . }}
                   key: password
           {{- end }}
-          {{- /* DEFINITION OF ENV VARIABLES FOR THE KAFKA CONNECTOR */ -}}
+          {{- /* ENV VARIABLES FOR THE KAFKA CONNECTOR */ -}}
           {{- if ((.Values.connectors).kafkaConnector).enabled }} {{/* start of kafkaConnector enabled */}}
             {{- $kafkaConnector := include "lightstreamer.kafka-connector.fullname" . }}
             {{- /* AUTHENTICATION */ -}}
@@ -228,7 +228,7 @@ spec:
             {{- end}} {{- /* end of range $schemaRegistry */ -}}
             {{- /* END SCHEMA REGISTRY */ -}}
           {{- end }}
-          {{- /* END OF DEFINITION OF ENV VARIABLES FOR THE KAFKA CONNECTOR */ -}}
+          {{- /* END ENV VARIABLES FOR THE KAFKA CONNECTOR */ -}}
           {{- with .Values.deployment.extraEnv }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
@@ -244,6 +244,17 @@ spec:
               mountPath: /lightstreamer/conf/enterprise-license/
             {{- end }}
           {{- end }}
+          {{- /* VOLUME MOUNTS FOR PAC FILES */ -}}
+          {{- $configMaps := list }}      
+          {{- range $index, $filePath := (((.Values.license).proxy).pacFiles).filePaths }}
+            {{- $configMaps = append $configMaps (required (printf "license.proxy.pacFiles.filePaths[%d].name must be set" $index) $filePath.name) }}
+          {{- end }}
+          {{- $configMaps := $configMaps | uniq }}
+          {{- range $configMaps }}
+            - name: lightstreamer-enterprise-proxy-pac-{{ . | lower }}
+              mountPath: /lightstreamer/conf/proxy-pac-files/{{ . }}
+          {{- end }}
+          {{- /* END VOLUME MOUNTS FOR PAC FILES */ -}}
           {{- with .Values.errorPageRef }}
             - name: lightstreamer-error-page
               mountPath: /lightstreamer/conf/error-page
@@ -272,7 +283,6 @@ spec:
         {{- with .Values.deployment.extraContainers }}
           {{- toYaml . | nindent 8 }}
         {{- end}}
-  
       {{- with .Values.deployment.hostname }}
       hostname: {{ . }}
       {{- end }}          
@@ -319,10 +329,10 @@ spec:
         - name: lightstreamer-configuration
           configMap:
             name: {{ include "lightstreamer.fullname" . }}-conf
-      {{- with .Values.errorPageRef }}
+      {{- with .Values.webServer.errorPageRef }}
         - name: lightstreamer-error-page
           configMap:
-            name: {{ .name }}
+            name: {{ required "webServer.errorPageRef.name must be set" .name }}
       {{- end }}
       {{- range $key, $value := .Values.keyStores }}
         {{- if $value }}
@@ -338,6 +348,18 @@ spec:
             secretName: {{ required "license.enterprise.filePathSecretRef.name must be set" .name }}
         {{- end }}
       {{- end }}
+      {{- /* VOLUMES FOR PAC FILES */ -}}
+      {{- $configMaps := list }}      
+      {{- range $index, $filePath := (((.Values.license).proxy).pacFiles).filePaths }}
+        {{- $configMaps = append $configMaps $filePath.name }}
+      {{- end }}
+      {{- $configMaps := $configMaps | uniq }}
+      {{- range $configMaps }}
+        - name: lightstreamer-enterprise-proxy-pac-{{ . | lower }}
+          configMap:
+            name: {{ . }}
+      {{- end }}
+      {{- /* END VOLUMES FOR PAC FILES */ -}}
       {{- if ((.Values.connectors).kafkaConnector).enabled }}
         - name: kafka-connector-storage
           emptyDir: {}
