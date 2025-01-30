@@ -550,11 +550,17 @@
          <file_url>{{ . }}</file_url>
       {{- else }}
          <file_url></file_url>
-      {{- end }}
+      {{- end }} {{/* range .fileUrls */}}
 
          <!-- Cumulative. Path of the PAC file, in case it is stored on the file system.
               Example: C:\mypath\myfile.pac -->
+      {{- range $index, $value := .filePaths }}
+        {{- $name := required (printf "license.proxy.pacFiles.filePaths[%d].name must be set" $index) $value.name }}
+        {{- $file := required (printf "license.proxy.pacFiles.filePaths[%d].key must be set" $index) $value.key }}
+         <file_path>proxy-pac-files/{{ $name }}/{{ $file }} }}</file_path>
+      {{- else }}
          <file_path></file_path>
+      {{- end }} {{/* range .filePaths */}}
 
     {{- end }} {{/* with .pacFiles */}}
       </pac_files>
