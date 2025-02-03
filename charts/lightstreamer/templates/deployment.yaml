@@ -282,6 +282,18 @@ spec:
             {{- end }}
           {{- end }}
           {{- /* END VOLUME MOUNTS FOR KEYSTORES */ -}}
+          {{- /* VOLUME MOUNTS FOR MPN */ -}}
+          {{- if .Values.mpn.enabled }}
+            {{- with .Values.mpn.appleNotifierConfRef }}
+            - name: lightstreamer-mpn-apple-conf
+              mountPath: /lightstreamer/conf/mpn/apple
+            {{- end}}
+            {{- with .Values.mpn.googleNotifierConfRef }}
+            - name: lightstreamer-mpn-google-conf
+              mountPath: /lightstreamer/conf/mpn/google
+            {{- end}}
+          {{- end }}
+          {{- /* END VOLUME MOUNTS FOR MPN */ -}}
           {{- /* VOLUME MOUNTS FOR KAFKA CONNECTOR */ -}}
           {{- if ((.Values.connectors).kafkaConnector).enabled }}
             {{- $kafkaConnector := include "lightstreamer.kafka-connector.fullname" . }}
@@ -379,6 +391,21 @@ spec:
             name: {{ . }}
       {{- end }}
       {{- /* END VOLUMES FOR PAC FILES */ -}}
+      {{- /* VOLUME FOR MPN */ -}}
+      {{- if .Values.mpn.enabled }}
+        {{- with .Values.mpn.appleNotifierConfRef }}
+        - name: lightstreamer-mpn-apple-conf
+          configMap: 
+            name: {{ required "mpn.appleNotifierConfRef.name must be set " .name }}
+        {{- end}}
+        {{- with .Values.mpn.googleNotifierConfRef }}
+        - name: lightstreamer-mpn-google-conf
+          configMap:
+            name: {{ required "mpn.googleNotifierConfRef.name must be set " .name }}
+        {{- end}}
+      {{- end }}
+      {{- /* END VOLUME FOR MPN */ -}}
+      {{- /* VOLUME FOR KAFKA CONNECTOR */ -}}
       {{- if ((.Values.connectors).kafkaConnector).enabled }}
         - name: kafka-connector-storage
           emptyDir: {}
