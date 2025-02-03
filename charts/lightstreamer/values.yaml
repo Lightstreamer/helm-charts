@@ -178,10 +178,16 @@ deployment:
   # -- Additional selectors
   additionalSelectors: {}
   # -- Additional volumes
-  extraVolumes: []
+  extraVolumes:
     # - name: pages-dir
     #   emptyDir:
     #     sizeLimit: 10Mi
+    - name: custom-logs
+      emptyDir:
+        sizeLimit: 500Mi
+    - name: custom-logs2
+      emptyDir:
+        sizeLimit: 500Mi        
   # -- Additional volume mounts
   extraVolumeMounts: []
     # - name: pages-dir
@@ -282,8 +288,8 @@ license:
   # `blackberry_client` (for BlackBerry clients), `javame_client` (for Java ME
   # clients), `flash_client` (for Flash clients), `generic_client` (for custom
   # clients based on the Lightstreamer protocol).
-  # @default -- "javascript_client"
-  enabledCommunityEditionClientApi: javascript_client
+  # @default -- `javascript_client`
+  enabledCommunityEditionClientApi: "javascript_client"
   # -- Mandatory if `edition` is set to ENTERPRISE. Configure the ENTERPRISE 
   # edition.
   enterprise:
@@ -459,6 +465,8 @@ license:
       # -- Optional. List of configmap names and keys where the PAC files are
       # stored.
       # @default -- `[]`
+      # -- Optional. List of configmap names and keys where the PAC files are
+      # stored.
       filePaths: []
         # - name: pack-configmap
         #   key: pac-file1.pac
@@ -466,200 +474,334 @@ license:
         #   key: pac-file2.pac
         # - name: pack-configmap2
         #   key: pac-file2.pac
-
     # -- Optional. In case no proxy configuration is provided or the provided
     # configuration does not work, automatic proxy discovery is attempted (via 
     # system environment check and WPAD).
     # @default -- `false`
     enableProxyAutodiscovery:
-
     # -- Optional. Specifies a NIC to use to access the external services, with
     # or without a proxy.
     networkInterface:
 
+# -- Mandatory. Logging configuration for Lightstreamer Server.
 logging:
+  # -- Mandatory. Appenders configuration.
+  # Every logger must refer to one or more appenders defined here.
   appenders:
+    # -- At least one must be provided. An appender configuration.
+    # Choose whatever key you like, as long as it is unique.
     dailyRolling:
+      # -- (string) Mandatory. The type of appender.
+      # Possible values: `DailyRollingFile`, `Console`.
       type: DailyRollingFile
+      # -- (string) Mandatory. The conversion pattern. 
+      # See https://logback.qos.ch/index.html for details.
       pattern: "%d{\"dd-MMM-yy HH:mm:ss,SSS\"}|%-5.5(%p%marker)|%-19.19c{19}|%-27.27t|%m%n"
+      # -- Mandatory if `type` is set to `DailyRollingFile`. The name of the log
+      # file. 
+      fileName: "lightstreamer.log"
+      # -- Mandatory if `type` is set to `DailyRollingFile`. The pattern to use
+      # for the log file.
+      fileNamePattern: "lightstreamer-%d{yyyy-MM-dd}.log"
+      # -- (string) Optional. The Reference to a volume to use for the log file.
+      volumeRef:
+    # anotherDailyRolling:
+    #   type: DailyRollingFile
+    #   pattern: "%d{\"dd-MMM-yy HH:mm:ss,SSS\"}|%-5.5(%p%marker)|%-19.19c{19}|%-27.27t|%m%n"
+    #   fileName: "anotherlogfile.log"
+    #   fileNamePattern: "anotherlogfile-%d{yyyy-MM-dd}.log"
+    #   volumeRef: custom-logs
     console:
       type: Console
       pattern: "%d{\"dd.MMM.yy HH:mm:ss,SSS\"} <%5.5(%p%marker)> %m%n"
+  # -- Optional. Loggers configuration.
   loggers:
-    # -- These two loggers are used by the internal monitoring system to log
-    # load statistics at INFO level.
-    # LightstreamerMonitorText logs statistics with a human-readable syntax;
-    # LightstreamerMonitorTAB logs statistics with a CSV syntax.
+    # -- Optional. Logger used by the internal monitoring system to log load
+    # statistics at `INFO` level  with a human-readable syntax.
     # The frequency of the samples produced by the internal monitoring system
-    # is governed by the <collector_millis> configuration element.
+    # is governed by the `management.collectorMillis` setting.
     # However, a resampling to lower frequencies can be performed, based on the
     # level specified for each logger; in particular:
-    #   at TRACE level, all samples are logged;
-    #   at DEBUG level, one sample out of 10 is logged;
-    #   at INFO level, one sample out of 60 is logged;
+    #   at `TRACE` level, all samples are logged;
+    #   at `DEBUG` level, one sample out of 10 is logged;
+    #   at `INFO` level, one sample out of 60 is logged;
     #   at a higher level, no log is produced.
     # The resampling behavior can be changed at runtime, by changing the level;
-    # however, if the level is set to ERROR on startup, the logger will be
+    # however, if the level is set to `ERROR` on startup, the logger will be
     # disabled throughout the life of the Server, regardless of further changes.
     # When resampling is in place, note that, for each displayed sample, values
     # that are supposed to be averaged over a timeframe still refer to the
-    # current sample's timeframe (based on <collector_millis>); however, values
-    # that are supposed to be the maximum over all timeframes refer also to the
-    # samples that were not displayed.
+    # current sample's timeframe (based on  `management.collectorMillis`); 
+    # however, values that are supposed to be the maximum over all timeframes 
+    # refer also to the samples that were not displayed.
     # On the other hand, delta statistics, like "new connections", are always
     # collected starting from the previous logged sample.
     lightstreamerMonitorText:
+      # -- Optional. List of references to the appenders defined in 
+      # `.logging.appenders`.
       appenders:
         - console
+      # -- Optional. The level of the logger.
+      # @default -- `DEBUG`
       level: INFO
+    # -- Optional. Logger used by the internal monitoring system to log load
+    # statistics at `INFO` level with a CSV syntax.
+    # See `lightstreamerMonitorText` for details.
     lightstreamerMonitorTAB:
+      # -- Optional. List of references to the appenders defined in 
+      # `.logging.appenders`.
       appenders:
         - console
+      # -- Optional. The level of the logger.
+      # @default -- `DEBUG`
       level: ERROR
-    # The following is the base logger of all logging messages printed by
-    # Lightstreamer Kernel (with a few exceptions).
-    # Messages logged at INFO level notify major server activities,
-    # like session starting and ending. If these messages are enabled,
-    # they are also supplied to the internal MONITOR data adapter,
-    # together with WARN and ERROR messages.
-    # Messages logged at DEBUG level notify minor operations
-    # and all data flow inside the Server. They should not be enabled
-    # with production load levels.
-    # No useful messages are logged at TRACE level. The level is reserved
-    # for debug versions of the Server.
-    # Severe ERROR messages are logged with a "FATAL" marker; in fact, a FATAL
-    # level is not natively supported by logback.
+    # -- Optional. The following is the base logger of all logging messages 
+    # printed by Lightstreamer Kernel (with a few exceptions). 
+    # Messages logged at `INFO` level notify major server activities, like 
+    # session starting and ending. If these messages are enabled, they are also
+    # supplied to the internal MONITOR data adapter, together with `WARN` and 
+    # `ERROR` messages.
+    # Messages logged at `DEBUG` level notify minor operations and all data flow
+    # inside the Server. They should not be enabled with production load 
+    # levels.
+    # No useful messages are logged at `TRACE` level. The level is reserved for
+    # `DEBUG` versions of the Server.
+    # Severe `ERROR` messages are logged with a `FATAL` marker; in fact, a 
+    # `FATAL` level is not natively supported by logback.
     # Thanks to the marker, these messages can be filtered through logback's
     # MarkerFilter.
-    # By the factory pattern configuration, FATAL is logged instead of ERROR
+    # By the factory pattern configuration, `FATAL` is logged instead of `ERROR`
     # for these messages (note the tricky "%-5.5(%p%marker)" pattern).
     lightstreamerLogger:
+      # -- Optional. List of references to the appenders defined in 
+      # `.logging.appenders`.
       appenders:
         - console
-      level: TRACE
-
-      # The following subloggers are used to separate logging messages in families
+      # -- Optional. The level of the logger.
+      # @default -- `DEBUG`
+      level: INFO
+      # -- Optional. The levels of subloggers used to separate logging messages 
+      # in families. The appenders are inherited from `lightstreamerLogger`.
       subLoggers:
-        # Logging of system components initialization.
-        # At DEBUG level, initialization details, error details and all configuration
-        # settings are reported.
-        lightstreamerLogger.init: INFO
-        # Logging of license check phase.
-        # At DEBUG level, check details and error details can be found in case
+        # -- Optional. Logging of system components initialization.
+        # At `DEBUG` level, initialization details, error details and all 
+        # configuration settings are reported.
+        # @default -- inherited from `lightstreamerLogger`
+        lightstreamerLogger.init: INFO  
+        # -- Optional. Logging of license check phase.
+        # At `DEBUG` level, check details and error details can be found in case
         # of license check failure.
-        lightstreamerLogger.license: TRACE
-        # Logging of background activities and related configuration and issues
+        # @default -- inherited from `lightstreamerLogger`
+        lightstreamerLogger.license: INFO
+        # -- Optional. Logging of background activities and related 
+        # configuration and issues.
+        # @default -- inherited from `lightstreamerLogger`
         lightstreamerLogger.kernel: INFO
-        # Logging of external services activity.
-        # At DEBUG level, details on external services activities and configuration,
-        # as well as details on connectivity issues, are reported
+        # -- Optional. Logging of external services activity.
+        # At `DEBUG` level, details on external services activities and 
+        # configuration, as well as details on connectivity issues, are 
+        # reported.
+        # @default -- inherited from `lightstreamerLogger`
         lightstreamerLogger.external: INFO
-        # Logging of activity and issues in connection management
+        # -- Optional. Logging of activity and issues in connection management.
+        # @default -- inherited from `lightstreamerLogger`
         lightstreamerLogger.io: WARN
-        # Logging of activity and issues in TLS configuration.
-        # at DEBUG level, details on the protocol and cipher suite configuration are reported
+        # -- Optional. Logging of activity and issues in TLS configuration.
+        # At `DEBUG` level, details on the protocol and cipher suite configuration are reported
+        # @default -- inherited from `lightstreamerLogger.io`
         lightstreamerLogger.io.ssl: WARN
-        # Logging of client request dispatching.
-        # At DEBUG level, request processing details are reported.
+        # -- Optional. Logging of client request dispatching.
+        # At `DEBUG` level, request processing details are reported.
         # All log from this logger and its subloggers reports the IP and port of the involved connection
+        # @default -- inherited from `lightstreamerLogger`
         lightstreamerLogger.connections: WARN
-        # Logging of issues related to TLS/SSL configuration and handshake management.
-        # At DEBUG level, details on the cipher suites are report.
+        # -- Optional. Logging of issues related to TLS/SSL configuration and 
+        # handshake management.
+        # At `DEBUG` level, details on the cipher suites are report.
+        # @default -- inherited from `lightstreamerLogger.connections`
         lightstreamerLogger.connections.ssl: WARN
-        # Logging of client request interpretation issues.
-        # At WARN level, each time a request contains an unexpected HTTP header,
+        # -- Optional. Logging of client request interpretation issues.
+        # At `WARN` level, each time a request contains an unexpected HTTP header,
         # which the Server refuses or ignores, a notification is reported
         # that an interpretation error is possible.
-        # At INFO level, details upon request refusals are reported.
-        # At DEBUG level, details for all requests and responses are reported.
+        # At `INFO` level, details upon request refusals are reported.
+        # At `DEBUG` level, details for all requests and responses are reported.
+        # @default -- inherited from `lightstreamerLogger.connections`
         lightstreamerLogger.connections.http: ERROR
-        # Logging of details for issues related to requests over WebSockets.
-        # At DEBUG level, details for all requests and responses are reported.
+        # -- Optional. Logging of details for issues related to requests over 
+        # WebSockets.
+        # At `DEBUG` level, details for all requests and responses are reported.
+        # @default -- inherited from `lightstreamerLogger.connections`
         lightstreamerLogger.connections.WS: WARN
-        # Logging of issues related to information received via the proxy protocol,when enabled.
-        # At DEBUG level, details of all information received are reported.
+        # -- Optional. Logging of issues related to information received via 
+        # the proxy protocol, when enabled.
+        # At `DEBUG` level, details of all information received are reported.
+        # @default -- inherited from `lightstreamerLogger.connections`
         lightstreamerLogger.connections.proxy: INFO
-        # Logging of internal web server activity; it also logs requests of static resources
-        # related to push request.
-        # At DEBUG level, error details are reported.
-        # All log from this logger and its subloggers reports the IP and port of the involved connection.
+        # -- Optional. Logging of internal web server activity; it also logs 
+        # requests of static resources related to push request.
+        # At `DEBUG` level, error details are reported.
+        # All log from this logger and its subloggers reports the IP and port 
+        # of the involved connection.
+        # @default -- inherited from `lightstreamerLogger`
         lightstreamerLogger.webServer: WARN
-        # Logging of request management related to the JMX Tree feature.
-        # At DEBUG level, error details are reported.
+        # -- Optional. Logging of request management related to the JMX Tree 
+        # feature.
+        # At `DEBUG` level, error details are reported.
+        # @default -- inherited from `lightstreamerLogger.webServer`
         lightstreamerLogger.webServer.jmxTree: WARN
-        # Logging of handling of special requests from apple clients related to MPN.
-        # At DEBUG level, error details are reported.
+        # -- Optional. Logging of handling of special requests from apple 
+        # clients related to MPN.
+        # At `DEBUG` level, error details are reported.
+        # @default -- inherited from `lightstreamerLogger.webServer`
         lightstreamerLogger.webServer.appleWebService: WARN
-        # Logging of parsing and elaboration of client requests
-        # At DEBUG level, client request details are reported.
-        # All log from this logger and its subloggers reports the IP and port of the involved connection.
+        # -- Optional. Logging of parsing and elaboration of client requests
+        # At `DEBUG` level, client request details are reported.
+        # All log from this logger and its subloggers reports the IP and port 
+        # of the involved connection.
+        # @default -- inherited from `lightstreamerLogger`
         lightstreamerLogger.requests: INFO
-        # Logging of elaboration of client polling request
+        # -- Optional. Logging of elaboration of client polling requests.
+        # @default -- inherited from `lightstreamerLogger.requests`
         lightstreamerLogger.requests.polling: WARN
-        # Logging of elaboration of client message request
+        # -- Optional. Logging of elaboration of client message requests.
+        # At `DEBUG` level, details on the message forwarding are reported.
+        # @default -- inherited from `lightstreamerLogger.requests`
         lightstreamerLogger.requests.messages: INFO
-        # Logging of Data Adapters interactions
-        # At DEBUG level, details on subscription operations are reported.
+        # -- Optional. Logging of Data Adapters interactions.
+        # At `DEBUG` level, details on subscription operations are reported.
+        # @default -- inherited from `lightstreamerLogger`
         lightstreamerLogger.subscriptions: DEBUG
-        # Logging of events coming from the Data Adapters.
-        # At DEBUG level, all update events are dumped.
+        # -- Optional. Logging of events coming from the Data Adapters.
+        # At `DEBUG` level, all update events are dumped.
+        # @default -- inherited from `lightstreamerLogger.subscriptions`
         lightstreamerLogger.subscriptions.upd: DEBUG
-        # Logging of events preprocessing stage
-        # At DEBUG level, events dispatched to ItemEventBuffers are dumped.
+        # -- Optional. Logging of events preprocessing stage.
+        # At `DEBUG` level, events dispatched to ItemEventBuffers are dumped.
+        # @default -- inherited from `lightstreamerLogger`
         lightstreamerLogger.preprocessor: INFO
-        # Logging of internal thread management and events dispatching
+        # -- Optional. Logging of internal thread management and events 
+        # dispatching.
+        # @default -- inherited from `lightstreamerLogger`
         lightstreamerLogger.scheduler: INFO
-        # Logging of InfoPump and ItemEventBuffers internal activity.
-        # At DEBUG level, updates to be sent to the clients are dumped.
+        # -- Optional. Logging of InfoPump and ItemEventBuffers internal 
+        # activity.
+        # At `DEBUG` level, updates to be sent to the clients are dumped.
+        # @default -- inherited from `lightstreamerLogger`
         lightstreamerLogger.pump: INFO
-        # Logging of management of messages received from the clients.
-        # At DEBUG level, details of message processing are logged.
+        # -- Optional. Logging of management of messages received from the 
+        # clients.
+        # At `DEBUG` level, details of message processing are logged.
         # All log from this logger reports the IP and port of the involved connection.
+        # @default -- inherited from `lightstreamerLogger.pump`
         lightstreamerLogger.pump.messages: INFO
-        # Logging of socket write activity.
-        # At DEBUG level, all socket writes are dumped.
+        # -- Optional. Logging of socket write activity.
+        # At `DEBUG` level, all socket writes are dumped.
         # All log from this logger reports the IP and port of the involved connection.
+        # @default -- inherited from `lightstreamerLogger`
         lightstreamerLogger.push: INFO
-        # Logging of mobile push notifications activity, done through the various subloggers
+        # -- Optional. Logging of mobile push notifications activity, done 
+        # through the various subloggers.
+        # @default -- inherited from `lightstreamerLogger`
         lightstreamerLogger.mpn: INFO
-        # Logging of MPN Module recurrent activity.
-        # At INFO level, main operation exit points and outcomes are dumped.
-        # At DEBUG level, the various operation entry entry and exit points are logged.
+        # -- Optional. Logging of MPN Module recurrent activity.
+        # At `INFO` level, main operation exit points and outcomes are dumped.
+        # At `DEBUG` level, the various operation entry entry and exit points are logged.
+        # @default -- inherited from `lightstreamerLogger.mpn`
         lightstreamerLogger.mpn.lifecycle: INFO
+        # -- Optional,. Logging of mobile push notifications activity.
+        # At `INFO` level, main operation exit points and outcomes are dumped.
+        # At `DEBUG` level, the various operation entry entry and exit points are
+        # logged.
+        # @default -- inherited from `lightstreamerLogger.mpn`
         lightstreamerLogger.mpn.operations: INFO
+        # -- Optional. Logging of mobile push notifications request processing;
+        # requests include those from clients (through the "client" sublogger)
+        # and those related with internal operations.
+        # At `INFO` level, all request processing exit points and outcomes are 
+        # dumped.
+        # At `DEBUG` level, all request processing entry points are logged.
+        # All log related with client requests reports the IP and port of the 
+        # involved connection.
+        # @default -- inherited from `lightstreamerLogger.mpn`
         lightstreamerLogger.mpn.requests: WARN
+        # -- Optional. Logging of mobile push notifications activity related to
+        # notification gathering.
+        # At `INFO` level, all push notifications ready to be sent are dumped.
+        # @default -- inherited from `lightstreamerLogger.mpn`
         lightstreamerLogger.mpn.pump: WARN
+        # -- Optional. Logging of mobile push notifications activity related to
+        # database.
+        # At `DEBUG` level, all database operation entry and exit points are 
+        # logged.
+        # @default -- inherited from `lightstreamerLogger.mpn`
         lightstreamerLogger.mpn.database: WARN
+        # -- Optional. Logging of mobile push notifications activity related to
+        # database transactions.
+        # At `INFO` level, statistics on the database transactions are logged.
+        # At `DEBUG` level, all database transaction entry and exit points are
+        # logged.
+        # @default -- inherited from `lightstreamerLogger.mpn.database`
         lightstreamerLogger.mpn.database.transactions: WARN
+        # -- Optional. Logging of mobile push notifications activity related to
+        #  Apple platforms; for activity related with notification submission, 
+        # specific subloggers are present for each application, e.g.:
+        # `lightstreamerLogger.mpn.apple.com.mydomain.myapp`.
+        # At `INFO` level, all push notification payloads are dumped.
+        # @default -- inherited from `lightstreamerLogger.mpn`
         lightstreamerLogger.mpn.apple: WARN
+        # -- Optional. Logging of mobile push notifications activity related to
+        # Google platforms; for activity related with notification submission,
+        # specific subloggers are present for each application, e.g.:
+        # `lightstreamerLogger.mpn.google.com.mydomain.myapp`.
+        # At `INFO` level, all push notification payloads are dumped.
+        # @default -- inherited from `lightstreamerLogger.mpn`
         lightstreamerLogger.mpn.google: WARN
+        # -- Optional. Logging of issues related with the special adapters 
+        # handled by the MPN Module. 
+        # @default -- inherited from `lightstreamerLogger.mpn`
         lightstreamerLogger.mpn.status_adapters: WARN
+        # -- Optional. Logging of JavaScript client messages.
+        # A at `DEBUG` level, log messages sent by the Web and Node.js (Unified 
+        # API) Client Libraries are logged. Remote logging must be enabled on 
+        # the client side.
+        # All log from this logger reports the IP and port of the involved 
+        # connection.
+        # @default -- inherited from `lightstreamerLogger`
         lightstreamerLogger.webclient: DEBUG
-        # logging of JMX setup issues; note that full JMX features could be restricted
-        # depending on Edition and License Type.
-        # At DEBUG level, JMX connectors initialization details are logged.
+        # -- Optional. Logging of JMX setup issues; note that full JMX features
+        # could be restricted depending on Edition and License Type.
+        # At `DEBUG` level, JMX connectors initialization details are logged.
+        # @default -- inherited from `lightstreamerLogger`
         lightstreamerLogger.monitoring: INFO
-
-    # The following logger logs healthcheck request processing at INFO level.
-    # The logger does not inherit from "LightstreamerLogger" in order
-    # to simplify sending the log to a dedicated appender.
-    # All log from this logger reports the IP and port of the involved connection.
+    # -- Optional. Logging healthcheck request processing at INFO level.
+    # The logger does not inherit from `lightstreamerLogger` in order to 
+    # simplify sending the log to a dedicated appender.
+    # All log from this logger reports the IP and port of the involved 
+    # connection.
     lightstreamerHealthCheck:
+      # -- Optional. List of references to the appenders defined in 
+      # `.logging.appenders`.
       appenders:
         - console
+      # -- Optional. The level of the logger.
+      # @default -- `DEBUG`
       level: INFO
-
-    # This logger is only used by the provided Proxy Data and Metadata Adapters,
-    # when used.
-    # It logs Adapter activity at INFO, WARN, ERROR and FATAL level
-    # (the latter through the "FATAL" marker).
-    # At DEBUG level, outcoming request and incoming response messages are also dumped.
-    # At TRACE level, incoming real-time update messages are also dumped.
+    # -- Optional. Logger only used by the provided Proxy Data and Metadata 
+    # Adapters, when used.
+    # It logs Adapter activity at `INFO`, `WARN`, `ERROR` and `FATAL` level 
+    # (the latter through the `FATAL` marker).
+    # At `DEBUG` level, outcoming request and incoming response messages are 
+    # also dumped.
+    # At `TRACE` level, incoming real-time update messages are also dumped.
     lightstreamerProxyAdapters:
+      # -- Optional. List of references to the appenders defined in 
+      # `.logging.appenders`.
       appenders:
         - console
-      level: DEBUG
-
+      # -- Optional. The level of the logger.
+      # @default -- `DEBUG`
+      level: INFO
     # These loggers are related to Hibernate, a component used by the MPN Module
     # for its persistence with the database. In case of need, please refer to
     # Hibernate documentation for more information on its logging categories and
@@ -680,7 +822,6 @@ logging:
       appenders:
         - console
       level: INFO
-
     # These loggers are related to other third-party libraries used internally
     # by the Server.
     org.apache.http:
@@ -731,7 +872,6 @@ logging:
       appenders:
         - console
       level: ERROR
-
     # These loggers are related to JDK services.
     javax.management.remote:
       appenders:
@@ -745,19 +885,18 @@ logging:
       appenders:
         - console
       level: ERROR
-
-    # This also requires that the JVM property javax.net.debug is set as an empty string (supported since java 9)
+    # This also requires that the JVM property javax.net.debug is set as an 
+    # empty string (supported since java 9).
     javax.net.ssl:
       appenders:
         - console
       level: "OFF"
-
   # Put here any additional loggers you want to configure.
-  # extraLoggers:
-  #   anotherLogger:
-  #     appenders:
-  #       - console
-  #     level: INFO
+  extraLoggers:
+    # anotherLogger:
+    #   appenders:
+    #     - console
+    #   level: INFO
 
 # -- Mandatory. Map of HTTP/S server socket configurations.
 # Every key in the map defines a specific listening socket configuration, which
@@ -780,6 +919,7 @@ servers:
     # by the Unified Client SDKs through the serverSocketName property in the
     # ConnectionDetails class. It must be an ASCII string with no control
     # characters and it must be unique among all server configurations.
+    # The name must be unique among all server configurations.
     name: "Lightstreamer HTTP Server"
     # -- Mandatory. Listening TCP port.
     port: 8080
@@ -790,7 +930,7 @@ servers:
     # /dashboard). 
     # See `sslConfig` for general details on TLS/SSL configuration.
     # @default -- `false`
-    enableHttps: true
+    enableHttps: false
     # -- (int) Optional. Size of the system buffer for incoming TCP connections
     # Overrides the default system setting
     # @default -- the system setting
@@ -970,7 +1110,7 @@ servers:
       # provided that they are included, with the specified name, in the set of
       # of "supported" cipher suites of the underlying Security Provider.
       # The default set of the "supported" cipher suites is logged at startup
-      # by the `lightstreamerLogger.io.ssl` logger at DEBUG level.
+      # by the `lightstreamerLogger.io.ssl` logger at `DEBUG` level.
       # If not used, the `removeCipherSuites` setting is considered; hence, if
       # `removeCipherSuites` is also not used, all cipher suites enabled by the
       # Security Provider will be available.
@@ -993,7 +1133,7 @@ servers:
       # suites "enabled" by the Security Provider, not on the wider set of the
       # "supported" cipher suites. The default set of the "enabled" cipher
       # suites is logged at startup by the `lightstreamerLogger.io.ssl` logger
-      # at DEBUG level. -->
+      # at `DEBUG` level.
       # @default -- `[]`
       removeCipherSuites: []
         # - TLS_RSA_
@@ -1016,6 +1156,196 @@ servers:
         # used), the order in which the `allowCipherSuites` elements are
         # specified determines the preference order.
         # -- @default `JVM`
+        order: "JVM"
+      # -- Optional. If set to `false`, causes any client-initiated TLS
+      #  renegotiation request to be refused by closing the connection. This
+      # policy may be evaluated in a trade-off between encryption strength and
+      # performance risks.
+      # Note that, with the default SunJSSE Security Provider, a better way to
+      # achieve the same at a global JVM level is by setting the dedicated
+      # "jdk.tls.rejectClientInitiatedRenegotiation" JVM property to `true`.
+      # @default -- `true`
+      enableTlsRenegotiation:
+      # -- Optional, but forbidden if `removeProtocols` is used.
+      # Specifies one or more protocols allowed for the TLS/SSL interaction,
+      # among the ones supported by the underlying Security Provider.
+      # For Oracle JVMs, the available names are the "SSLContext Algorithms"
+      # listed here:
+      # https://docs.oracle.com/en/java/javase/17/docs/specs/security/standard-names.html#sslcontext-algorithms
+      # @default -- the `removeProtocols` setting is considered; hence, if
+      # `removeProtocols` is also not used, all protocols enabled by the
+      # Security Provider will be available.
+      allowProtocols: []
+        # - TLSv1.2
+        # - TLSv1.3
+      # -- Optional, but forbidden if `allowProtocols` is used.
+      # Pattern to be matched against the names of the enabled TLS/SSL
+      # protocols in order to remove the matching ones from the enabled
+      # protocols set.
+      # Any pattern in java.util.regex.Pattern format can be specified.
+      # This allows for customization of the choice of the TLS/SSL protocols to
+      # be used for an incoming https connection (note that reducing the set of
+      # available protocols may cause some client requests to be refused).
+      # Note that the selection is operated on the default set of the protocols
+      # "enabled" by the Security Provider, not on the wider set of the
+      # "supported" protocols. The default set of the "enabled" protocols is
+      # logged at startup by the `lightstreamerLogger.io.ssl` logger at DEBUG
+      # level.
+      # @default -- `[]`
+      removeProtocols:
+        - SSL
+        - TLSv1$
+        - TLSv1.1
+      # -- Optional. Instructs the underlying Security Provider on whether to
+      # use stateless (when `true`) or stateful (when `false`) session
+      # resumption on this port, if supported (possibly depending on the
+      # protocol version in use).
+      # Note that stateful resumption implies the management of a TLS session
+      # cache, whereas stateless resumption is slightly more demanding in terms
+      # of CPU and bandwidth.
+      # Note, however, that this setting is currently supported only if the
+      # Conscrypt Security Provider is used. For instance, with the default
+      # SunJSSE Security Provider, the use of stateful or stateless resumption
+      # can only be configured at global JVM level, through the
+      # "jdk.tls.server.enableSessionTicketExtension" JVM property.
+      # @default -- the type of resumption will be  decided by the underlying
+      # Security Provider, based on its own configuration.
+      enableStatelessTlsSessionResumption:
+      # -- Optional. Size of the cache used by the TLS implementation to handle
+      # TLS session resumptions when stateful resumption is configured (see
+      # `enableStatelessTlsSessionResumption`).
+      # A value of 0 poses no size limit.
+      # Note, however, that the underlying Security Provider may ignore this
+      # setting (possibly depending on the protocol version in use).
+      # @default -- the cache size is decided by the underlying Security
+      # Provider. For the default SunJSSE, it is 20480 TLS sessions, unless
+      # configured through the "javax.net.ssl.sessionCacheSize" JVM property.
+      tlsSessionCacheSize:
+      # -- Optional. Maximum time in which a TLS session is kept available to
+      # the client for resumption. This holds for both stateless and stateful
+      # TLS resumption (see `enableStatelessTlsSessionResumption`).
+      # In the latter case, the session also has to be kept in a cache.
+      # A value of 0 poses no time limit.
+      # Note, however, that the underlying Security Provider may ignore this
+      # setting (possibly depending of the protocol version in use).
+      # @default -- the maximum time is decided by the underlying Security
+      # Provider. For the default SunJSSE, it is 86400 seconds, unless
+      # configured through the "jdk.tls.server.sessionTicketTimeout" JVM
+      # property.
+      tlsSessionTimeoutSeconds:
+      # -- Optional. If set to `true`, tries to improve the TLS session
+      # resumption feature by providing the underlying Security Provider with
+      # information on the client IPs and ports. This makes sense only if
+      # client IPs can be determined (see the <client_identification> block).
+      # @default -- `false`
+      enableClientHintsForTlsSessionResumption:
+      # -- Optional. Request to provide the Metadata Adapter with the
+      # "principal" included in the client TLS/SSL certificate, when available.
+      # If set to `true`, upon each client connection, the availability of a
+      # client TLS/SSL certificate is checked. If available, the included
+      # identification data will be supplied upon calls to notifyUser.
+      # If set to `false`, no certificate information is supplied to notifyUser
+      # and no check is done on the client certificate.
+      # Note that a check on the client certificate can also be requested
+      # through `enableMandatoryClientAuth`.
+      # @default -- `false`
+      enableClientAuth:
+      # -- Optional. Request to only allow clients provided with a valid
+      # TLS/SSL certificate.
+      # If set to `true`, upon each client connection, a valid TLS/SSL
+      # certificate is requested to the client in order to accept the
+      # connection.
+      # If set to `false`, no check is done on the client certificate.
+      # Note that a certificate can also be requested to the client as a
+      # consequence of `enableClientAuth`.
+      # @default -- `false`
+      enableMandatoryClientAuth:
+      # -- Mandatory when at least one of `enableClientAuth` and
+      # `enableMandatoryClientAuth` is set to `true`. The reference to a 
+      # keystore to be used by the HTTPS service to accept client certificates.
+      # It can be used to supply client certificates that should be accepted,
+      # in addition to those with a valid certificate chain, for instance while
+      # testing with self-signed certificates.
+      # See the `keyStores.myServerKeystore` settings for general details on
+      # keystore configuration.
+      # Note that the further constraints reported there with regard to
+      # accessing the certificates in a JKS keystore don't hold in this
+      # case, where the latter is used as a truststore.
+      # Moreover, the handling of keystore replacement doesn't apply here.
+      trustStoreRef:
+  https-server:
+    port: 8081
+    name: "Lightstreamer HTTPS Server"
+    enabled: true
+    enableHttps: true
+    sslConfig:
+      # -- Optional. If defined, overrides the default JVM's Security Provider
+      # configured in the java.security file of the JDK installation. This
+      # allows the use of different Security Providers dedicated to single
+      # listening ports.
+      # When configuring a Security Provider, the related libraries should be
+      # added to the Server classpath. This is not needed for the Conscrypt
+      # provider, which is already available in the Server distribution (but
+      # note that the library includes native code that only targets the main
+      # platforms).
+      # @default -- the default JVM's Security Provider configured in the
+      # java.security file of the JDK installation.
+      tlsProvider:
+      # -- Mandatory. The reference to a keystore configuration.
+      # See the `keyStores.myServerKeystore` settings for general details on
+      # keystore configuration.
+      keyStoreRef: myServerKeystore
+      # -- Optional, but forbidden if `removeCipherSuites` is used.
+      # Specifies all the cipher suites allowed for the TLS/SSL interaction,
+      # provided that they are included, with the specified name, in the set of
+      # of "supported" cipher suites of the underlying Security Provider.
+      # The default set of the "supported" cipher suites is logged at startup
+      # by the `lightstreamerLogger.io.ssl` logger at `DEBUG` level.
+      # If not used, the `removeCipherSuites` setting is considered; hence, if
+      # `removeCipherSuites` is also not used, all cipher suites enabled by the
+      # Security Provider will be available.
+      # The order in which the cipher suites are specified can be enforced as
+      # the server-side preference order (see
+      # `enforceServerCipherSuitePreference`).
+      # @default -- `[]`
+      allowCipherSuites: []
+        # - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+      # -- Optional, but forbidden if `allowCipherSuites` is used.
+      # Pattern to be matched against the names of the enabled cipher suites in
+      # order to remove the matching ones from the enabled cipher suites set.
+      # Any pattern in java.util.regex.Pattern format can be specified.
+      # This allows for customization of the choice of the cipher suites to be
+      # used for incoming https connections (note that reducing the set of
+      # available cipher suites may cause some client requests to be refused).
+      # When this setting is used, the server-side preference order of the
+      # cipher suites is determined by the underlying Security Provider.
+      # Note that the selection is operated on the default set of the cipher
+      # suites "enabled" by the Security Provider, not on the wider set of the
+      # "supported" cipher suites. The default set of the "enabled" cipher
+      # suites is logged at startup by the `lightstreamerLogger.io.ssl` logger
+      # at `DEBUG` level.
+      # @default -- `[]`
+      removeCipherSuites: []
+        # - TLS_RSA_
+      # -- Optional. Determines which side should express the preference when
+      # multiple cipher suites are in common between server and client.
+      # Note, however, that the underlying Security Provider may ignore this
+      # setting. This is the case, for instance, of the Conscrypt provider.
+      enforceServerCipherSuitePreference:
+        # -- Optional. If set to `true`, the Server will choose the cipher
+        # suite based on its preference order, specified through `order`.
+        # If set to `false`, the Server will get a cipher suite based on the
+        # preference order specified by the client. For instance, the client
+        # might privilege faster, but weaker, suites.
+        # @default -- `false`
+        enabled: true
+        # -- (string) Optional. Preference order for choosing the cipher suite.
+        # If set to `JVM`  ordering is demanded to the underlying Security
+        # Provider, which, usually, privileges the strongest suites.
+        # If set to 'config' (which is allowed only if `allowCipherSuites` is
+        # used), the order in which the `allowCipherSuites` elements are
+        # specified determines the preference order.
+        # @default `JVM`
         order: "JVM"
       # -- Optional. If set to `false`, causes any client-initiated TLS
       #  renegotiation request to be refused by closing the connection. This
@@ -1438,12 +1768,12 @@ management:
     # - "20.0.0.10"
   # -- Optional. Enabling of the inclusion of the user password in the log of
   # the client requests for new sessions, performed by the
-  # `lightstreamerLogger.requests` logger at INFO level.
+  # `lightstreamerLogger.requests` logger at `INFO` level.
   # If set to `true`, the whole request is logged.
   # If set to `false`, the request is logged, but for the value of the
   # `LS_password` request parameter.
   # Note that the whole request may still be logged by some loggers, but only
-  # at DEBUG level, which is never enabled in the default configuration.
+  # at `DEBUG` level, which is never enabled in the default configuration.
   # @default -- `false`
   enablePasswordVisibilityOnRequestLog:
   # -- (int) Optional. Threshold time for long Adapter call alerts.
@@ -1774,9 +2104,9 @@ management:
     # Adapter Set to also become unavailable from that socket. This does not
     # affect in any way the special "MONITOR" Data Adapter.
     # @default -- `false`
-    enableAvailabilityOnAllServers: true
+    enableAvailabilityOnAllServers: false
     # -- Optional, but ineffective if `enableAvailabilityOnAllServers` is set
-    # to `false`. List of server socket configurations (defined in `servers.{}`
+    # to `true`. List of server socket configurations (defined in `servers.{}`
     # for which requests to the Monitoring Dashboard will be allowed.
     availableOnServers:
       - # -- Mandatory. Allowed server socket configuration.
@@ -1816,7 +2146,7 @@ management:
     # If set to `false`, the healthcheck request can be issued only through the
     # server sockets specified in the "availableOnServers" setting, if any.
     # @default -- `false`
-    enableAvailabilityOnAllServers: false
+    enableAvailabilityOnAllServers: true
     # -- Optional, but ineffective if `enableAvailabilityOnAllServers` is set
     # to `false`. List of server socket configurations (defined in `servers.{}`
     # for which healthcheck requests can be issued.
@@ -1949,8 +2279,8 @@ pushSession:
   # that can be kept in the buffer, hence the consequent memory usage also
   # depends on the size of the values carried by the enqueued updates.
   # As lost updates for unfiltered subscriptions are logged on the
-  # `lightstreamerLogger.pump` logger at INFO level, if a low buffer size limit
-  # is set, it is advisable also setting this logger at WARN level.
+  # `lightstreamerLogger.pump` logger at `INFO` level, if a low buffer size limit
+  # is set, it is advisable also setting this logger at `WARN` level.
   # Aggregate statistics on lost updates are also provided by the JMX interface
   # (if available) and by the Internal Monitor.
   # @default -- unlimited size
@@ -2684,7 +3014,7 @@ connectors:
         # -- At least one must be provided. An appender configuration.
         stdout:
           # -- (string) Mandatory. The appender type.
-          # Currently, on the `Console` type is supported.
+          # Currently, only the `Console` type is supported.
           type: Console
           # -- (string) Mandatory. The appender layout.
           pattern: "[%d] [%-10c{1}] %-5p %m%n"
@@ -2739,7 +3069,7 @@ connectors:
         # Sets the value for the "group.id" key used to configure the internal
         # Kafka Consumer.
         # See https://kafka.apache.org/documentation/#consumerconfigs_group.id
-        # for more details.
+        # for details.
         # @default -- `kafkaConnector.adapterSetId` + `name` + randomly
         # generated suffix.
         groupId: quickstart
