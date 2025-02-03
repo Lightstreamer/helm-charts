@@ -120,7 +120,12 @@
   ===============================
 -->
 
+{{- $usedNames := list }}
 {{- range .Values.servers }}
+  {{- if has .name $usedNames }}
+    {{- fail (printf "server name \"%s\" is already used" .name) }}
+  {{- end }}
+  {{- $usedNames = append $usedNames .name }}
   {{- $enabled := .enabled | default false }}
   {{- if $enabled }}
     <!-- Optional and cumulative (but at least one from <http_server> and
