@@ -2136,7 +2136,7 @@ management:
   # external requests. The Server should always answer to the request with
   # the `OK\r\n` content string (unless overridden through e JMX interface).
   # The Server may log further information to the dedicated
-  # `lightstreamerHealthCheck` logger.
+  # `lightstreamerHealthCheck` logger.♠
   # Support for clustering is an optional feature, available depending on
   # Edition and License Type.
   healthCheck:
@@ -2548,6 +2548,203 @@ pushSession:
   # frequency.
   # @default -- `0`
   minInterPollMillis:
+
+# -- Optional. Mobile Push Notification (MPN) module configuration.
+# This module is able to receive updates from an item subscription on behalf of
+# a user, and forward them to a mobile push notification service, such as
+# Apple's APNs or Google's FCM.
+# If not defined, the MPN module will not start in any case, and all requests
+# related to mobile push notifications will be rejected.
+# Mobile Push Notification support is an optional feature, available depending
+# on Edition and License Type. To know what features are enabled by your
+# license, please see the License tab of the Monitoring Dashboard (by default,
+# available at /dashboard).
+mpn:
+  # -- Optional. MPN module master switch. If N, the MPN module will
+  # not start in any case, and all requests related to mobile push
+  # Note that, by enabling the module, the handling of the special
+  #  URL configured by <apple_web_service_path> is also enabled.
+  # @default -- `false`
+  enabled: true
+  # -- (string) Optional. Specifies the root path of the web service URL to be 
+  # invoked by the client application on a Safari browser to enable Web Push 
+  # Notifications. Currently, the latter is achieved by invoking the 
+  # `window.safari.pushNotification.requestPermission` method.
+  # Only when the MPN module is enabled, the specified path is reserved and the
+  # Server identifies these special requests and processes them as required. 
+  # Enabling the internal web server (`webServer.enabled` set to `true`) is not
+  # needed for this; note that if the internal web server is enabled, the 
+  # processing of this path is different from the processing of the other URLs.
+  # @default -- `/apple_web_service`
+  appleWebServicePath:
+  # -- (string) Optional. Specifies the name of the built-in data adapter that 
+  # client SDKs may subscribe to to obtain the current status of MPN devices 
+  # and subscriptions. This data adapter is automatically added to all 
+  # configured Adapter Sets in an MPN-enabled Server.
+  # @default -- `MPN_INTERNAL_DATA_ADAPTER`
+  internalDataAdapter:
+
+  hibernateConfig:
+
+  # -- (int) Optional. Timeout for MPN request processing. As each MPN request 
+  # interacts with the database, a timeout is applied so that a disconnected
+  # database will not result in a hang client. If a timeout occurs during a
+  # request processing, the client receives a specific error.
+  # @default -- `15000`
+  requestTimeoutMillis:
+  # - (int) Optional. Interval between health checks on the database.
+  # During this health check, a number of tasks are carried out: takeover of 
+  # dead module instances, stop and restart of subscriptions updated by other
+  # module instances, and deletion of abandoned subscriptions.
+  # @default -- `5000`
+  moduleCheckPeriodMillis:
+
+  # -- (int) Optional. Timeout for a health check of other modules. If a 
+  # module fails to do its health check for this period of time, other module 
+  # instances may consider it dead and takeover its devices and subscriptions. 
+  # Hence, it must be longer than `moduleCheckPeriodMillis` and it should be 
+  # long enough to avoid false positives.
+  # In case a cluster is in place, the timeout should be longer than all values
+  # of `moduleCheckPeriodMillis` configured for the various instances in the
+  # cluster.
+  # @default -- `30000`
+  moduleTimeoutMillis:
+  # -- Optional. Enabling of the startup of the module upon Server startup.
+  # If module startup is prevented, or not yet completed, or completed 
+  # unsuccessfully, the module is inactive. This means that no subscription
+  # processing is performed and any client MPN requests are refused.
+  # @default -- all settings at their defaults
+  activationOnStartUp:
+    # -- Optional. If set to `true`, a module startup will be initiated 
+    # immediately at Server startup through the mechanism set by 
+    # `maxDelay`.
+    # If set to `false`, the Server will start with an inactive module.
+    # Note: the initialization of a new module (as well as the deactivation of 
+    # the current module), can be requested at any time through the JMX 
+    # interface (full JMX features is an optional feature, available depending 
+    # on Edition and License Type).
+    # @default -- `true`
+    enabled:
+    # -- (int) Optional, but effective only if `mpn.enableActivationOnStartUp` 
+    # is set to `true`. If not specified, or set to `-1`, the Server startup 
+    # will be blocked until module startup completion; if the module startup 
+    # fails, the Server startup will fail in turn.
+    # Otherwise, the Server startup will be blocked only up to the specified 
+    # delay. If the delay expires, the Server may start with the module 
+    # temporarily inactive; moreover, if the module startup eventually fails,
+    # the Server will keep running with an inactive module.
+    # @default -- the Server startup will be blocked until module startup 
+    # completion
+    maxDelay: -2
+  # -- Optional. Enabling of the automatic initialization of a new module upon
+  # upon health check failure.
+  # If set to `true`, upon health check failure, the failed module will become
+  # inactive and the initialization of a new module will be started; if
+  # unsuccessful, the Server will keep running with an inactive module.
+  # If set to `false`, upon health check failure, the failed module will become
+  # inactive and the Server will keep running with an inactive module.
+  # See `mpn.activationOnStartUp` for notes on inactive modules.
+  # @default -- `true`
+  enableModuleRecovery:
+  # -- (int) Optional. Timeout after which an inactive device is considered 
+  # abandoned and is permanently deleted. A device is considered inactive if it
+  # is suspended (i.e. its device token has been rejected by the MPN service) 
+  # or it has no active subscriptions. A suspended device may be resumed with a
+  # token change (typically, client libraries handle this situation 
+  # automatically).
+  # @default -- `10080` (7 days)
+  deviceInactivityTimeoutMinutes:
+  
+  # -- (int) Optional. Periodicity of the device garbage collector. Once every 
+  # this number of minutes, devices that have been inactive for more than  
+  # `deviceInactivityTimeoutMinutes` are permanently deleted.
+  # @default -- `60` (1 hour)
+  collectorPeriodMinutes:
+  # -- Optional. Sizes of request processor's ("MPN EXECUTOR") thread pool.
+  # The request processor is devoted to process incoming MPN requests, such as
+  # subscription activations and deactivations. These requests access the 
+  # database and may be subject to blocking in case of database disconnection.
+  # @default -- all settings at their defaults
+  executorPool:
+    # -- (int) Optional. Specifies the maximum number of threads the pool may 
+    # use.
+    # @default -- `10`
+    maxSize: 
+    # # -- (int) Optional. Specifies the the maximum number of idle threads the 
+    # # pool may have.
+    # # @default -- `0`, meaning the pool will not consume resources when idle
+    maxFree:
+  # -- Optional. Requests the creation of a specific thread pool, 
+  # `MPN DEVICE HANDLER`, specifically dedicated to the handling of the 
+  # internal sessions that are used to receive subscription updates to be sent 
+  # to the devices. In particular, during the startup phase, all the
+  # subscriptions needed to handle all the active push notifications are
+  # performed in a burst. If defined, the pool should be sized wide enough to
+  # support this burst of activity. If the pool is not defined, each 
+  # "subscribe" call will be managed by the thread pool associated with the
+  # involved Data Adapter, similarly to ordinary sessions.
+  deviceHandlerPool:
+    # -- (int) Optional. Specifies the maximum number of threads the pool may 
+    # use.
+    # @default -- `100`
+    maxSize:
+    # # -- (int) Optional. Specifies the the maximum number of idle threads the 
+    # # pool may have.
+    # # @default -- `0`, meaning the pool will not consume resources when idle
+    maxFree:
+  # -- (int) Optional. Size of the notifiers' `MPN XXX NOTIFIER` internal 
+  # thread pool, which is devoted to composing the notifications payload, 
+  # sending them to the notification service and processing the response. This
+  # task does not include blocking operations; however, on multiprocessor
+  # machines, allocating multiple threads for this task may be beneficial.
+  # @default -- the number of available total cores, as detected by the JVM
+  notifierPoolSize:
+  # -- (int) Optional. Size of the `MPN PUMP` internal thread pool, which is
+  # devoted to integrating the update events pertaining to each MPN device and
+  # to creating the update commands that become push notifications, whenever 
+  # needed. This task does not include blocking operations; however, on
+  # multiprocessor machines, allocating multiple threads for this task may be
+  # beneficial.
+  # @default -- the number of available total cores, as detected by the JVM
+  mpnPumpPoolSize:
+  # -- (int) Optional. Number of threads used to parallelize the implementation
+  # of the internal MPN timers.
+  # This task does not include blocking operations, but its computation may be 
+  # heavy under high update activity; hence, on multiprocessor machines,
+  # allocating multiple threads for this task may be beneficial.
+  # @default -- `1`
+  mpnTimerPoolSize:
+
+  # -- (string) Mandatory. Specifies what to do in case of database failure.
+  # A number of internal operations are bound to the success of a database
+  # update. In those (hopefully) rare situations when the database is not
+  # available, the MPN module must know what to do: if it is better to abort 
+  # the operation entirely (thus risking to lose the event) or better to 
+  # continue anyway (thus risking to duplicate the event). A typical situation
+  # is the triggering of a subscription, e.g.: when the price of a stock raises
+  # above a threshold, the MPN module must both send the mobile push 
+  # notification and mark the subscription as triggered on the database. If the
+  # database is not available, the MPN module may react by aborting the
+  # operation, i.e. no mobile push notification is sent, another one will be
+  # sent only when (and if) the price drops and then raises above the threshold
+  # again. Alternatively, it may react by continuing with the operation, i.e.
+  # the mobile push notification is sent anyway, but (since the database has not
+  # been updated) if the price drops and then raises again it may get sent
+  # twice.
+  # Set to `abort_operation` to abort the ongoing operation.
+  # Set to `continue_operation` to continue the ongoing operation.
+  # @default -- `abort_operation`
+  reactionOnDatabaseFailure: continue_operation
+  # -- Optional. The configmap name and the key where the configuration file 
+  # for Apple platforms notifier is stored
+  appleNotifierConfRef:
+    name: apple-map
+    key: apple_notifier_conf.xml1
+  # -- Optional. The configmap name and the key where the configuration file 
+  # for Google  platforms notifier is stored
+  googleNotifierConfRef:
+    name: google-map
+    key: google_notifier_conf.xml1
 
 # -- Optional. Internal web server configuration.
 # Note that some of the included settings may also apply to the Monitoring
