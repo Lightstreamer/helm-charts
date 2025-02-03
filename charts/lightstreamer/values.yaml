@@ -2584,7 +2584,13 @@ mpn:
   # @default -- `MPN_INTERNAL_DATA_ADAPTER`
   internalDataAdapter:
 
+  # -- Optional. Hibernate configuration.
+  # The MPN module uses an Hibernate-mapped database to make the list of 
+  # devices and subscriptions persistent and let different module instances 
+  # communicate-
+  # @default -- all settings at their defaults
   hibernateConfig:
+    
 
   # -- (int) Optional. Timeout for MPN request processing. As each MPN request 
   # interacts with the database, a timeout is applied so that a disconnected
@@ -2737,6 +2743,7 @@ mpn:
   reactionOnDatabaseFailure: continue_operation
   # -- Optional. The configmap name and the key where the configuration file 
   # for Apple platforms notifier is stored
+
   appleNotifierConfRef:
     name: apple-map
     key: apple_notifier_conf.xml1
