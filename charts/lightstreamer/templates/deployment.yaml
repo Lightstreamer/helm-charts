@@ -238,12 +238,27 @@ spec:
               subPath: LS.sh
             - name: lightstreamer-configuration
               mountPath: /lightstreamer/conf
+          {{- /* VOLUME MOUNTS FOR DAILY ROLLING FILE APPENDER */ -}}
+          {{- $volumeRefs := list }}
+          {{- range $key, $appender := (.Values.logging).appenders }}
+            {{- if and ($appender.type | eq "DailyRollingFile") ($appender.volumeRef) }}
+              {{- $volumeRefs = append $volumeRefs $appender.volumeRef }}
+            {{- end }}
+          {{- end }}
+          {{- $volumeRefs = $volumeRefs | uniq }}
+          {{- range $volumeRefs }}
+            - name: {{ . }}
+              mountPath: /lightstreamer/logs/{{ . }}
+          {{- end }}
+          {{- /* END VOLUME MOUNTS FOR DAILY ROLLING FILE APPENDER */ -}}
+          {{- /* VOLUME MOUNTS FOR LICENSE FILE */ -}}
           {{- if and (ne ((.Values.license).enterprise).licenseType "DEMO") (eq ((.Values.license).enterprise).licenseValidation "FILE") }}
             {{- with .Values.license.enterprise.filePathSecretRef }}
             - name: lightstreamer-enterprise-license
               mountPath: /lightstreamer/conf/enterprise-license/
             {{- end }}
           {{- end }}
+          {{- /* END VOLUME MOUNTS FOR LICENSE FILE */ -}}
           {{- /* VOLUME MOUNTS FOR PAC FILES */ -}}
           {{- $configMaps := list }}      
           {{- range $index, $filePath := (((.Values.license).proxy).pacFiles).filePaths }}
@@ -259,12 +274,15 @@ spec:
             - name: lightstreamer-error-page
               mountPath: /lightstreamer/conf/error-page
           {{- end }}
+          {{- /* VOLUME MOUNTS FOR KEYSTORES */ -}}
           {{- range $key, $value := .Values.keyStores }}
             {{- if $value }}
             - name: keystore-{{ $key | lower }}
               mountPath: /lightstreamer/conf/keystores/{{ $key }}
             {{- end }}
           {{- end }}
+          {{- /* END VOLUME MOUNTS FOR KEYSTORES */ -}}
+          {{- /* VOLUME MOUNTS FOR KAFKA CONNECTOR */ -}}
           {{- if ((.Values.connectors).kafkaConnector).enabled }}
             {{- $kafkaConnector := include "lightstreamer.kafka-connector.fullname" . }}
             - name: kafka-connector-storage
@@ -277,6 +295,7 @@ spec:
             {{- end }}
             {{- end }}
           {{- end }}
+          {{- /* END VOLUME MOUNTS FOR KAFKA CONNECTOR */ -}}
           {{- with .Values.deployment.extraVolumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
