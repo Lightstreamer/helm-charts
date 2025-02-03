@@ -2396,6 +2396,8 @@
          by your license, please see the License tab of the Monitoring Dashboard
          (by default, available at /dashboard). -->
     <mpn>
+{{- if and .Values.mpn (.Values.mpn).enabled }}
+{{- with .Values.mpn }}
 
         <!-- Optional. MPN module master switch. If N, the MPN module will
              not start in any case, and all requests related to mobile push
@@ -2406,7 +2408,7 @@
              Note that, by enabling the module, the handling of the special
              URL configured by <apple_web_service_path> is also enabled.
              Default: N. -->
-        <enabled>N</enabled>
+        <enabled>{{ .enabled | default false | ternary "Y" "N"}}</enabled>
 
         <!-- Optional. Specifies the root path of the web service URL to be
              invoked by the client application on a Safari browser to enable
@@ -2419,18 +2421,26 @@
              note that if the internal web server is enabled, the processing
              of this path is different from the processing of the other URLs.
              Default: /apple_web_service. -->
+  {{- if .appleWebServicePath }}
+        <apple_web_service_path>{{ .appleWebServicePath }}</apple_web_service_path>
+  {{- else }} 
         <!--
         <apple_web_service_path>/applewebservice</apple_web_service_path>
         -->
+  {{- end }}
 
         <!-- Optional. Specifies the name of the built-in data adapter that client
              SDKs may subscribe to to obtain the current status of MPN devices
              and subscriptions. This data adapter is automatically added
              to all configured Adapter Sets in an MPN-enabled Server.
              Default: MPN_INTERNAL_DATA_ADAPTER. -->
+  {{- if .internalDataAdapter }} 
+        <internal_data_adapter>MPN_ADAPTER</internal_data_adapter>
+  {{- else}}        
         <!--
         <internal_data_adapter>MPN_ADAPTER</internal_data_adapter>
         -->
+  {{- end }}
 
         <!-- Mandatory if <enabled> is Y. Hibernate configuration file path.
              The MPN module uses an Hibernate-mapped database to make the
@@ -2445,9 +2455,13 @@
              timeout occurs during a request processing, the client receives
              a specific error.
              Default: 15000. -->
+  {{- if not (quote .requestTimeoutMillis | empty) }}
+        <request_timeout_millis>{{ int .requestTimeoutMillis }}</request_timeout_millis>
+  {{- else }}
         <!--
         <request_timeout_millis>15000</request_timeout_millis>
         -->
+  {{- end }}
 
         <!-- Optional. Interval between health checks on the database.
              During this health check, a number of tasks are carried out:
@@ -2455,9 +2469,14 @@
              subscriptions updated by other module instances, and
              deletion of abandoned subscriptions.
              Default: 5000. -->
+
+  {{- if not (quote .moduleCheckPeriodMillis | empty) }}
+        <module_check_period_millis>{{ int .moduleCheckPeriodMillis }}</module_check_period_millis>
+  {{- else }}
         <!--
         <module_check_period_millis>5000</module_check_period_millis>
         -->
+  {{- end }} 
 
         <!-- Optional. Timeout for a health check of other modules. If a module
              fails to do its health check for this period of time, other module
@@ -2468,9 +2487,14 @@
              values of <module_check_period_millis> configured for the various
              instances in the cluster.
              Default: 30000. -->
+  {{- if not (quote .moduleTimeoutMillis | empty) }}             
+        <module_timeout_millis>{{ int .moduleTimeoutMillis }}</module_timeout_millis>  
+  {{- else }}
         <!--
         <module_timeout_millis>30000</module_timeout_millis>
         -->
+  {{- end }}   
+
 
         <!-- Optional. Enabling of the startup of the module upon Server startup.
              If module startup is prevented, or not yet completed, or completed
@@ -2494,7 +2518,17 @@
              JMX interface (full JMX features is an optional feature, available
              depending on Edition and License Type).
              Default: Y. -->
+  {{- with .activationOnStartUp }}
+    {{- if (not (quote .enabled | empty)) }} {{- /* Explicitly set */ -}}
+       <activate_on_startup{{ if not (quote .maxDelay | empty) }} max_delay={{ .maxDelay | quote }}{{ end }}>{{ .enabled | ternary "Y" "N" }}</activate_on_startup>
+    {{- else }} {{- /* Left blank, defaults to true */ -}}
+       <activate_on_startup{{ if not (quote .maxDelay | empty) }} max_delay={{ .maxDelay | quote }}{{ end }}>Y</activate_on_startup>
+    {{- end }}
+  {{- else }}
+        <!--
         <activate_on_startup max_delay="-1">Y</activate_on_startup>
+        -->
+  {{- end }}
 
         <!-- Optional. Enabling of the automatic initialization of a new module
              upon health check failure.
@@ -2506,9 +2540,13 @@
                   and the Server will keep running with an inactive module.
              See <activate_on_startup> for notes on inactive modules.
              Default: Y. -->
+  {{- if not (quote .enableModuleRecovery | empty) }}             
+        <module_recovery_enabled>{{ .enableModuleRecovery | ternary "Y" "N" }}</module_recovery_enabled>
+  {{- else }}
         <!--
         <module_recovery_enabled>N</module_recovery_enabled>
         -->
+  {{- end }}
 
         <!-- Optional. Timeout after which an inactive device is
              considered abandoned and is permanently deleted. A device is
@@ -2517,17 +2555,25 @@
              A suspended device may be resumed with a token change (typically,
              client libraries handle this situation automatically).
              Default: 10080 (7 days). -->
+  {{- if not (quote .deviceInactivityTimeoutMinutes | empty) }}
+        <device_inactivity_timeout_minutes>{{ int .deviceInactivityTimeoutMinutes }}</device_inactivity_timeout_minutes>
+  {{- else }}
         <!--
         <device_inactivity_timeout_minutes>10080</device_inactivity_timeout_minutes>
         -->
+  {{- end }}
 
         <!-- Optional. Periodicity of the device garbage collector. Once every
              this number of minutes, devices that have been inactive for more than
              <device_inactivity_timeout_minutes> are permanently deleted.
              Default: 60 (1 hour). -->
+  {{- if not (quote .collectorPeriodMinutes | empty) }}
+        <device_collector_period_minutes>{{ int .collectorPeriodMinutes }}</device_collector_period_minutes>
+  {{- else }}
         <!--
         <collector_period_minutes>60</collector_period_minutes>
         -->
+  {{- end }}
 
         <!-- Optional. Sizes of request processor's ("MPN EXECUTOR") thread pool.
              The <max_size> parameter specifies the maximum number of threads
@@ -2540,12 +2586,27 @@
              Default for <max_size>: 10 threads.
              Default for <max_free>: 0, meaning the pool will not consume
              resources when idle. -->
+  {{- with .executorPool }}
+        <executor_pool>
+    {{- if not (quote .maxSize | empty) }}
+            <max_size>{{ int .maxSize }}</max_size>
+    {{- else }}
+            <!-- <max_size>10</max_size> -->
+    {{- end }}
+    {{- if not (quote .maxFree | empty) }}
+            <max_free>{{ int .maxFree }}</max_free>
+    {{- else }}
+            <!-- <max_free>0</max_free> --> 
+    {{- end }} 
+        </executor_pool>  
+  {{- else }}
         <!--
         <executor_pool>
             <max_size>10</max_size>
             <max_free>0</max_free>
         </executor_pool>
         -->
+  {{- end}}
 
         <!-- Optional. Requests the creation of a specific thread pool,
              "MPN DEVICE HANDLER", specifically dedicated to the handling
@@ -2562,12 +2623,27 @@
              If the pool is not defined, each "subscribe" call will be managed
              by the thread pool associated with the involved Data Adapter,
              similarly to ordinary sessions. -->
+  {{- with .deviceHandlerPool }}
+        <device_handler_pool>
+    {{- if not (quote .maxSize | empty) }}
+            <max_size>{{ int .maxSize }}</max_size>
+    {{- else }}
+            <!-- <max_size>10</max_size> -->
+    {{- end }}
+    {{- if not (quote .maxFree | empty) }}
+            <max_free>{{ int .maxFree }}</max_free>
+    {{- else }}
+            <!-- <max_free>0</max_free> --> 
+    {{- end }} 
+        </device_handler_pool>  
+  {{- else }}
         <!--
         <device_handler_pool>
             <max_size>100</max_size>
             <max_free>0</max_free>
         </device_handler_pool>
         -->
+  {{- end}}             
 
         <!-- Optional. Size of the notifiers' "MPN XXX NOTIFIER" internal
              thread pool, which is devoted to composing the notifications
@@ -2577,9 +2653,13 @@
              for this task may be beneficial.
              Default: The number of available total cores, as detected by the
              JVM. -->
+  {{- if not (quote .notifierPoolSize | empty) }}             
+        <notifier_pool_size>{{ int .notifierPoolSize }}</notifier_pool_size>
+  {{- else }}
         <!--
         <notifier_pool_size>10</notifier_pool_size>
         -->
+  {{- end }}
 
         <!-- Optional. Size of the "MPN PUMP" internal thread pool, which is
              devoted to integrating the update events pertaining to each MPN
@@ -2589,9 +2669,13 @@
              allocating multiple threads for this task may be beneficial.
              Default: The number of available total cores, as detected by the
              JVM. -->
+  {{- if not (quote .mpnPumpPoolSize | empty) }}
+        <pump_pool_size>{{ int .mpnPumpPoolSize }}</pump_pool_size>
+  {{- else }}
         <!--
         <mpn_pump_pool_size>10</mpn_pump_pool_size>
         -->
+  {{- end }}        
 
         <!-- Optional. Number of threads used to parallelize the implementation
              of the internal MPN timers.
@@ -2600,9 +2684,13 @@
              multiprocessor machines, allocating multiple threads for this task
              may be beneficial.
              Default: 1. -->
+  {{- if not (quote .mpnTimerPoolSize | empty) }}
+        <mpn_timer_pool_size>{{ int .mpnTimerPoolSize }}</mpn_timer_pool_size>
+  {{- else }}
         <!--
         <mpn_timer_pool_size>2</mpn_timer_pool_size>
         -->
+  {{- end}}
 
         <!-- Mandatory if <enabled> is Y. Specifies what to do in case of
              database failure.
@@ -2626,16 +2714,34 @@
              Specify:
              - "abort_operation" to abort the ongoing operation or
              - "continue_operation" to continue the ongoing operation. -->
-        <reaction_on_database_failure>continue_operation</reaction_on_database_failure>
+  {{- if not (has .reactionOnDatabaseFailure (list "abort_operation" "continue_operation")) }}
+    {{- fail "mpn.reactionOnDatabaseFailure must be set to one of: \"abort_operation\", \"continue_operation\"" }}
+  {{- else }}
+        <reaction_on_database_failure>{{ .reactionOnDatabaseFailure }}</reaction_on_database_failure>     
+  {{- end }}
 
         <!-- Optional. Path of the configuration file for Apple platforms notifier.
              The file path is relative to the conf directory. -->
+  {{- if .appleNotifierConfRef }}
+        <apple_notifier_conf>./mpn/apple/{{ required "mpn.appleNotifierConfRef.key must be set" .appleNotifierConfRef.key }}</apple_notifier_conf>
+  {{- else }}
+        <!--
         <apple_notifier_conf>./mpn/apple/apple_notifier_conf.xml</apple_notifier_conf>
+        -->
+  {{- end }}
 
         <!-- Optional. Path of the configuration file for Google platforms notifier.
              The file path is relative to the conf directory. -->
+  {{- if .googleNotifierConfRef }}
+        <google_notifier_conf>./mpn/google/{{ required "mpn.googleNotifierConfRef.key must be set" .googleNotifierConfRef.key }}</google_notifier_conf>
+  {{- else }}
+        <!--
         <google_notifier_conf>./mpn/google/google_notifier_conf.xml</google_notifier_conf>
+        -->
+  {{- end }}
 
+{{- end }}
+{{- end }}
     </mpn>
 
 <!--
