@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+ "-//Hibernate/Hibernate Mapping DTD//EN"
+ "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="com.lightstreamer.mpndb.beans">
+
+   <class name="Device" table="DEVICES">
+
+      <meta attribute="class-description">
+         This class defines a device of a Mobile Push Notification module instance.
+      </meta>
+
+      <id name="deviceId" column="DEVICE_ID" type="string" length="36">
+         <generator class="org.hibernate.id.UUIDGenerator" />
+      </id>
+
+      <property name="status" column="STATUS">
+        <type name="com.lightstreamer.mpndb.types.GenericEnumUserType">
+          <param name="enumClass">com.lightstreamer.mpndb.enums.DeviceStatus</param>
+          <param name="identifierMethod">getId</param>
+          <param name="valueOfMethod">fromId</param>
+        </type>
+      </property>
+
+      <property name="statusChangeDate" column="STATUS_CHANGE_DATE" type="timestamp" index="INDEX_DEVICE_STATUS" />
+      <property name="latestAccessDate" column="LATEST_ACCESS_DATE" type="timestamp" index="INDEX_DEVICE_ACCESS" />
+
+      <many-to-one name="module" class="Module">
+      	<column name="MODULE_ID" />
+      </many-to-one>
+
+      <property name="platformType" column="PLATFORM_TYPE" index="INDEX_DEVICE_KEY" insert="false" update="false">
+        <type name="com.lightstreamer.mpndb.types.GenericEnumUserType">
+          <param name="enumClass">com.lightstreamer.mpndb.enums.PlatformType</param>
+          <param name="identifierMethod">getId</param>
+          <param name="valueOfMethod">fromId</param>
+        </type>
+      </property>
+
+      <property name="applicationId" column="APPLICATION_ID" type="string" length="128" index="INDEX_DEVICE_KEY" insert="false" update="false" />
+      <property name="deviceToken" column="DEVICE_TOKEN" type="string" length="256" index="INDEX_DEVICE_KEY" insert="false" update="false" />
+
+      <properties name="UniqueDeviceIndex" unique="true">
+        <!--
+            Warning: Since Hibernate 5.2, to create the unique index,
+            it seems that we have to list the properties again.
+            Consider this if you need to modify the configuration of these properties.
+        -->
+
+        <property name="platformType" column="PLATFORM_TYPE" index="INDEX_DEVICE_KEY">
+          <type name="com.lightstreamer.mpndb.types.GenericEnumUserType">
+            <param name="enumClass">com.lightstreamer.mpndb.enums.PlatformType</param>
+            <param name="identifierMethod">getId</param>
+            <param name="valueOfMethod">fromId</param>
+          </type>
+        </property>
+
+        <property name="applicationId" column="APPLICATION_ID" type="string" length="128" index="INDEX_DEVICE_KEY" />
+        <property name="deviceToken" column="DEVICE_TOKEN" type="string" length="256" index="INDEX_DEVICE_KEY" />
+
+      </properties>
+
+      <set name="subscriptions" table="SUBSCRIPTIONS" inverse="true" lazy="true" cascade="all">
+      	<key column="DEVICE_ID" />
+      	<one-to-many class="Subscription" />
+      </set>
+
+      <property name="lastSentBadge" column="LAST_SENT_BADGE" type="int" />
+
+   </class>
+
+</hibernate-mapping>

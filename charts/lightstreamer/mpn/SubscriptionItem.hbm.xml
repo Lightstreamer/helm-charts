@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+ "-//Hibernate/Hibernate Mapping DTD//EN"
+ "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="com.lightstreamer.mpndb.beans">
+
+   <class name="SubscriptionItem" table="SUBSCRIPTION_ITEMS">
+
+      <meta attribute="class-description">
+         This class defines an item of a Mobile Push Notification module subscription.
+      </meta>
+
+      <id name="itemId" column="ITEM_ID" type="string" length="36">
+         <generator class="org.hibernate.id.UUIDGenerator" />
+      </id>
+
+      <property name="itemIndex" column="ITEM_IDX" type="int" />
+
+      <property name="itemName" column="ITEM_NAME" type="string" length="32" index="INDEX_ITEM_KEY" />
+      <property name="bufferSize" column="BUFFER_SIZE" type="int" />
+      <property name="minDeltaTime" column="MIN_DELTA_TIME" type="long" />
+
+      <many-to-one name="subscription" class="Subscription">
+      	<column name="SUBSCRIPTION_ID" not-null="true" />
+      </many-to-one>
+
+   </class>
+
+</hibernate-mapping>
