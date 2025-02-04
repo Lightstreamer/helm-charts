@@ -557,7 +557,7 @@
       {{- range $index, $value := .filePaths }}
         {{- $name := required (printf "license.proxy.pacFiles.filePaths[%d].name must be set" $index) $value.name }}
         {{- $file := required (printf "license.proxy.pacFiles.filePaths[%d].key must be set" $index) $value.key }}
-         <file_path>proxy-pac-files/{{ $name }}/{{ $file }} }}</file_path>
+         <file_path>proxy-pac-files/{{ $name }}/{{ $file }}</file_path>
       {{- else }}
          <file_path></file_path>
       {{- end }} {{/* range .filePaths */}}
