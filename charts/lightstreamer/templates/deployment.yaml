@@ -185,6 +185,18 @@ spec:
                   name: {{ . }}
                   key: password
           {{- end }}
+          {{- if (.Values.mpn).enabled }}
+            - name: LS_HIBERNATE_CONNECTION_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mpn.hibernateConfig.connection.credentialsSecretRef }}
+                  key: user
+            - name: LS_HIBERNATE_CONNECTION_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mpn.hibernateConfig.connection.credentialsSecretRef }}
+                  key: password                  
+          {{- end }}
           {{- /* ENV VARIABLES FOR THE KAFKA CONNECTOR */ -}}
           {{- if ((.Values.connectors).kafkaConnector).enabled }} {{/* start of kafkaConnector enabled */}}
             {{- $kafkaConnector := include "lightstreamer.kafka-connector.fullname" . }}
@@ -238,6 +250,25 @@ spec:
               subPath: LS.sh
             - name: lightstreamer-configuration
               mountPath: /lightstreamer/conf
+          {{- /* VOLUME MOUNTS FOR MPN */ -}}
+          {{- if (.Values.mpn).enabled }}
+            - name: lightstreamer-mpn-conf
+              mountPath: /lightstreamer/conf/mpn
+            - name: lightstreamer-mpn-apple-conf
+              mountPath: /lightstreamer/conf/mpn/apple
+            {{- $configMaps := list }}
+            {{- range ((.Values.mpn).appleNotifierConfig).apps }}
+              {{- if .enabled }}
+                {{- $configMaps = append $configMaps .pushPackageFileRef.name }}
+              {{- end }}
+            {{- end }}
+            {{- $configMaps = $configMaps | uniq }}
+            {{- range $configMaps }}
+            - name: lightstreamer-mpn-push-package-{{ .  }}
+              mountPath: /lightstreamer/conf/mpn/apple/push-packages/{{ . }}
+            {{- end }}
+          {{- end }}
+          {{- /* END VOLUME MOUNTS FOR MPN */ -}}
           {{- /* VOLUME MOUNTS FOR DAILY ROLLING FILE APPENDER */ -}}
           {{- $volumeRefs := list }}
           {{- range $key, $appender := (.Values.logging).appenders }}
@@ -266,7 +297,7 @@ spec:
           {{- end }}
           {{- $configMaps := $configMaps | uniq }}
           {{- range $configMaps }}
-            - name: lightstreamer-enterprise-proxy-pac-{{ . | lower }}
+            - name: lightstreamer-enterprise-proxy-pac-{{ . }}
               mountPath: /lightstreamer/conf/proxy-pac-files/{{ . }}
           {{- end }}
           {{- /* END VOLUME MOUNTS FOR PAC FILES */ -}}
@@ -282,18 +313,6 @@ spec:
             {{- end }}
           {{- end }}
           {{- /* END VOLUME MOUNTS FOR KEYSTORES */ -}}
-          {{- /* VOLUME MOUNTS FOR MPN */ -}}
-          {{- if .Values.mpn.enabled }}
-            {{- with .Values.mpn.appleNotifierConfRef }}
-            - name: lightstreamer-mpn-apple-conf
-              mountPath: /lightstreamer/conf/mpn/apple
-            {{- end}}
-            {{- with .Values.mpn.googleNotifierConfRef }}
-            - name: lightstreamer-mpn-google-conf
-              mountPath: /lightstreamer/conf/mpn/google
-            {{- end}}
-          {{- end }}
-          {{- /* END VOLUME MOUNTS FOR MPN */ -}}
           {{- /* VOLUME MOUNTS FOR KAFKA CONNECTOR */ -}}
           {{- if ((.Values.connectors).kafkaConnector).enabled }}
             {{- $kafkaConnector := include "lightstreamer.kafka-connector.fullname" . }}
@@ -386,23 +405,30 @@ spec:
       {{- end }}
       {{- $configMaps := $configMaps | uniq }}
       {{- range $configMaps }}
-        - name: lightstreamer-enterprise-proxy-pac-{{ . | lower }}
+        - name: lightstreamer-enterprise-proxy-pac-{{ . }}
           configMap:
             name: {{ . }}
-      {{- end }}
-      {{- /* END VOLUMES FOR PAC FILES */ -}}
-      {{- /* VOLUME FOR MPN */ -}}
-      {{- if .Values.mpn.enabled }}
-        {{- with .Values.mpn.appleNotifierConfRef }}
-        - name: lightstreamer-mpn-apple-conf
-          configMap: 
-            name: {{ required "mpn.appleNotifierConfRef.name must be set " .name }}
-        {{- end}}
-        {{- with .Values.mpn.googleNotifierConfRef }}
-        - name: lightstreamer-mpn-google-conf
+      {{- end -}}
+      {{/* VOLUME FOR MPN */}}
+      {{- if (.Values.mpn).enabled }}
+        - name: lightstreamer-mpn-conf
           configMap:
-            name: {{ required "mpn.googleNotifierConfRef.name must be set " .name }}
-        {{- end}}
+             name: {{ include "lightstreamer.fullname" . }}-mpn-conf
+        - name: lightstreamer-mpn-apple-conf
+          configMap:
+            name: {{ include "lightstreamer.fullname" . }}-mpn-apple-conf
+        {{- $configMaps := list }}
+        {{- range ((.Values.mpn).appleNotifierConfig).apps }}
+          {{- if .enabled }}
+            {{- $configMaps = append $configMaps .pushPackageFileRef.name }}
+          {{- end }}
+        {{- end }}
+        {{- $configMaps = $configMaps | uniq }}
+        {{- range $configMaps }}
+        - name: lightstreamer-mpn-push-package-{{ .  }}
+          configMap: 
+            name: {{ . }}
+        {{- end }}
       {{- end }}
       {{- /* END VOLUME FOR MPN */ -}}
       {{- /* VOLUME FOR KAFKA CONNECTOR */ -}}
