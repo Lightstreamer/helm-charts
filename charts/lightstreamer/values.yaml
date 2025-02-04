@@ -2583,15 +2583,52 @@ mpn:
   # configured Adapter Sets in an MPN-enabled Server.
   # @default -- `MPN_INTERNAL_DATA_ADAPTER`
   internalDataAdapter:
-
-  # -- Optional. Hibernate configuration.
+  # -- Mandatory. Hibernate configuration.
   # The MPN module uses an Hibernate-mapped database to make the list of 
   # devices and subscriptions persistent and let different module instances 
-  # communicate-
-  # @default -- all settings at their defaults
+  # communicate.
   hibernateConfig:
-    
+    # -- Mandatory. The Hibernate JDBC properties.
+    # The provided values are used to show an example of connections settings 
+    # for HSQL (suitable for testing).
+    # The HSQL jar must be included in the lib/mp/hibernate folder of the Docker 
+    # image.
+    connection:
+      # -- Mandatory. JDBC driver class.
+      jdbcDriverClass: org.hsqldb.jdbcDriver
+      # -- Mandatory. JDBC URL.
+      jdbcUrl: jdbc:hsqldb:hsql://localhost
+      # -- Mandatory. The name of the secret containing the credentials. The 
+      # secret must contain the keys `user` and `password`.
+      # The `hsql-hibernate-secret` secret is provided out of the box and 
+      # contains the default "SA" user with empty password.
+      credentialsSecretRef: hsql-factory-secret
+      # -- Optional. Full class name of the dialect to use.
+      "dialect": "org.hibernate.dialect.HSQLDialect"
+    # Sample database connection settings for MySQL
+    # connection:
+    #   jdbcDriverClass: com.mysql.jdbc.Driver
+    #   jdbcUrl: jdbc:mysql://192.168.1.100:3306
+    #   "dialect": "org.hibernate.dialect.MySQL5Dialect"
+    # Sample database connection settings for Oracle
+    # connection:
+    #   jdbcDriverClass: oracle.jdbc.driver.OracleDriver
+    #   jdbcUrl: "jdbc:oracle:thin:@(DESCRIPTION = (ADDRESS_LIST = (ADDRESS = (PROTOCOL = TCP)(HOST = 192.168.1.100)(PORT = 1521))) (CONNECT_DATA = (SERVICE_NAME = ORCL) (SRVR = DEDICATED)))"
+    #   "dialect": "org.hibernate.dialect.Oracle10gDialect"      
 
+    # -- Optional. The Hibernate optional configuration properties.
+    # See https://docs.jboss.org/hibernate/orm/3.3/reference/en/html/session-configuration.html#configuration-optional
+    optionalConfiguration:
+      # -- HikariCP database connection pool configuration
+      "hikari.connectionTimeout": "5000"
+      # -- Enable Hibernate's automatic session context management
+      "current_session_context_class": "thread"
+      # -- Disable the second-level cache
+      "cache.provider_class": "org.hibernate.cache.internal.NoCacheProvider"
+      # -- Automatically create/update the database schema on startup.
+      "hbm2ddl.auto": "update"        
+      # # -- Debugging: echo all executed SQL to console
+      "show_sql": "false"
   # -- (int) Optional. Timeout for MPN request processing. As each MPN request 
   # interacts with the database, a timeout is applied so that a disconnected
   # database will not result in a hang client. If a timeout occurs during a
@@ -2604,7 +2641,6 @@ mpn:
   # module instances, and deletion of abandoned subscriptions.
   # @default -- `5000`
   moduleCheckPeriodMillis:
-
   # -- (int) Optional. Timeout for a health check of other modules. If a 
   # module fails to do its health check for this period of time, other module 
   # instances may consider it dead and takeover its devices and subscriptions. 
@@ -2630,7 +2666,7 @@ mpn:
     # interface (full JMX features is an optional feature, available depending 
     # on Edition and License Type).
     # @default -- `true`
-    enabled:
+    enabled: false
     # -- (int) Optional, but effective only if `mpn.enableActivationOnStartUp` 
     # is set to `true`. If not specified, or set to `-1`, the Server startup 
     # will be blocked until module startup completion; if the module startup 
@@ -2641,7 +2677,7 @@ mpn:
     # the Server will keep running with an inactive module.
     # @default -- the Server startup will be blocked until module startup 
     # completion
-    maxDelay: -2
+    maxDelayMillis:
   # -- Optional. Enabling of the automatic initialization of a new module upon
   # upon health check failure.
   # If set to `true`, upon health check failure, the failed module will become
@@ -2660,7 +2696,6 @@ mpn:
   # automatically).
   # @default -- `10080` (7 days)
   deviceInactivityTimeoutMinutes:
-  
   # -- (int) Optional. Periodicity of the device garbage collector. Once every 
   # this number of minutes, devices that have been inactive for more than  
   # `deviceInactivityTimeoutMinutes` are permanently deleted.
@@ -2720,7 +2755,6 @@ mpn:
   # allocating multiple threads for this task may be beneficial.
   # @default -- `1`
   mpnTimerPoolSize:
-
   # -- (string) Mandatory. Specifies what to do in case of database failure.
   # A number of internal operations are bound to the success of a database
   # update. In those (hopefully) rare situations when the database is not
@@ -2741,14 +2775,100 @@ mpn:
   # Set to `continue_operation` to continue the ongoing operation.
   # @default -- `abort_operation`
   reactionOnDatabaseFailure: continue_operation
+  # -- Optional. Apple platforms notifier configuration.
+  appleNotifierConfig:
+    # -- Optional. Minimum delay between successive mobile push notifications
+    # for the same app/device pair. Each app/device pair is subject to
+    # constraints on the pace mobile push notifications may be sent to it. For
+    # this reason, a minimum delay is set and may be altered with this parameter.
+    # Lowering it too much, and subsequently sending notifications with a high
+    # frequency, may cause Apple's Push Notification Service ("APNs") to close
+    # the connection and ban (temporarily or permanently) any successive
+    # notification.
+    # Mobile push notifications fired by a trigger are not subject to this limit
+    # and may be sent at higher pace.
+    # @default -- `1000` (1 sec)
+    minSendDelayMillis:
+    # -- Optional. Maximum number of concurrent connections to APNS services.
+    # The connection pool starts with 1 connection and grows automatically as 
+    # the load increases. In case the expected load is very high, increasing
+    # the pool maximum size my be beneficial.
+    # For apps with development service level, this parameter is ignored.
+    # @default -- `1`
+    maxConcurrentConnections:
+    # -- Optional. Timeout for connecting to APNS services. In case of slow
+    # outgoing connectivity, increasing the timeout may be beneficial.
+    # @default -- `30000` (30 sec)
+    connectionTimeout:
+    # -- Optional. List of apps that should receive mobile push
+    # notification.
+    apps:
+      # -- An application configuration.
+      myApp:
+        # -- Optional. Enablement of the application configuration.
+        # @default -- `false`
+        enabled: true
+        # -- Mandatory if `enabled` is set to `true`. The app ID, which 
+        # corresponds to the bundle ID of the app's binary. Note that for web
+        # apps (i.e. targeting Safari push notification) the ID must begin with
+        # `web`", e.g.: `web.com.mydomain.myapp`.
+        id: "com.mycompany.myapp"
+        # -- Mandatory if `enabled` is set to `true`. Specifies the intended 
+        # service level for the current app ID, must be one of: `test`, 
+        # `development`, `production`. If set to `test`, notification will be
+        # logged only and no connection will be established with Apple's 
+        # servers. The corresponding logger is `lightstreamerLogger.mpn.apple`,
+        # notifications are logged at `INFO` level 
+        # (see  logging.loggers.lightstreamerLogger.subLoggers.lightstreamerLogger.mpn.apple).
+        # If set to `development` or `production`, notifications will be sent 
+        # to, respectively, Apple's development or production servers.
+        # Note that for web apps (i.e. targeting Safari push notification) the
+        # `development` service level should not be used, as there is no
+        # corresponding `development` client environment that can receive
+        # notifications. Use either `production` or `test`.
+        serviceLevel: "test"
+        # -- Optional. The configmap name and the key where the push package 
+        # zip file is stored. This file contains a descriptor of the web app 
+        # (i.e. targeting Safari push notification), and is mandatory only for
+        # web apps (ignore in other cases). See the General Concepts document
+        # for more information on how to produce this file. -->
+        pushPackageFileRef: 
+          name: packages-map
+          key: push_package1.zip
+        # -- Optional. List of trigger expressions that will be accepted. Each 
+        # each item is a Java-compatible regular expression 
+        # (see java.util.regex.Pattern): triggers requested via client APIs 
+        # will be compared with each regular expression, and accepted only if
+        # there is at least one match.
+        # Remember that the MPN Module supports, as trigger, any Java boolean
+        # expression, including use of JDK classes and methods, with the addition
+        # of field references syntax (see the iOS Client SDK for more information).
+        # Hence, this check is a safety measure required to avoid that clients
+        # can request triggers potentially dangerous for the Server, as each
+        # trigger may contain arbitrary Java code.
+        # If left commented out or empty, no triggers will be accepted.
+        # Please note that using an "accept all" regular expression like `.*`
+        # is possible, but still leaves the Server exposed to the danger of
+        # maliciously crafted triggers. Anyway, the Metadata Adapter has a second
+        # chance to check for trigger allowance.
+        # The example shown below is for a typical notification on threshold,
+        # where a field is compared against a numeric constant.
+        # Note: submitted trigger expressions are compared with this list of
+        # regular expressions after their named-arguments have been converted
+        # to indexed-arguments. Always specify fields with the `$[digits]` format,
+        # not the `${name}` format.
+        # @default -- `[]`
+        triggerExpressions: []
+          # - Double\.parseDouble\(\$\[\d+\]\) [<>] [+-]?(\d*\.)?\d+
+      otherApp:
+        enabled: false
+        id: "test"
+        serviceLevel: "test"
+        pushPackageFileRef: 
+          name: packages-map2
+          key: push_package.zip
   # -- Optional. The configmap name and the key where the configuration file 
-  # for Apple platforms notifier is stored
-
-  appleNotifierConfRef:
-    name: apple-map
-    key: apple_notifier_conf.xml1
-  # -- Optional. The configmap name and the key where the configuration file 
-  # for Google  platforms notifier is stored
+  # for Google platforms notifier is stored
   googleNotifierConfRef:
     name: google-map
     key: google_notifier_conf.xml1
@@ -3327,7 +3447,7 @@ connectors:
             # -- Mandatory if `mechanism` is set to `PLAIN`, `SCRAM-SHA-256`, 
             # `SCRAM-SHA-512`. The name of the secret containing the 
             # credentials. The secret must contain the keys `user` and `password`.
-            credentialsSecretRef: test
+            credentialsSecretRef:
             # -- Mandatory if `mechanism` is set to `GSSAPI`. The GSSAPI 
             # authentication settings.
             gssapi:
