@@ -1,4 +1,4 @@
-{{- define "lightstreamer.configuration.hibernate" -}}
+{{- define "lightstreamer.configuration.mpn.hibernate" -}}
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Do not remove this line. File tag: hibernate_conf-APV-7.2.2. -->
 

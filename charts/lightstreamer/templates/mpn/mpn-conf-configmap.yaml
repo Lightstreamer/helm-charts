@@ -7,6 +7,6 @@ metadata:
     {{- include "lightstreamer.labels" . | nindent 4 }}
 data:
   hibernate.cfg.xml: |-
-    {{- include "lightstreamer.configuration.hibernate" . | nindent 4 }}
+    {{- include "lightstreamer.configuration.mpn.hibernate" . | nindent 4 }}
 {{ (.Files.Glob "mpn/*.xml").AsConfig | nindent 2 }}
 {{- end }}
