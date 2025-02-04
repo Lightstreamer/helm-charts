@@ -2722,13 +2722,7 @@
 
         <!-- Optional. Path of the configuration file for Apple platforms notifier.
              The file path is relative to the conf directory. -->
-  {{- if .appleNotifierConfRef }}
-        <apple_notifier_conf>./mpn/apple/{{ required "mpn.appleNotifierConfRef.key must be set" .appleNotifierConfRef.key }}</apple_notifier_conf>
-  {{- else }}
-        <!--
         <apple_notifier_conf>./mpn/apple/apple_notifier_conf.xml</apple_notifier_conf>
-        -->
-  {{- end }}
 
         <!-- Optional. Path of the configuration file for Google platforms notifier.
              The file path is relative to the conf directory. -->
