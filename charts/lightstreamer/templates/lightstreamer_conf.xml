@@ -2519,10 +2519,10 @@
              depending on Edition and License Type).
              Default: Y. -->
   {{- with .activationOnStartUp }}
-    {{- if (not (quote .enabled | empty)) }} {{- /* Explicitly set */ -}}
-       <activate_on_startup{{ if not (quote .maxDelay | empty) }} max_delay={{ .maxDelay | quote }}{{ end }}>{{ .enabled | ternary "Y" "N" }}</activate_on_startup>
-    {{- else }} {{- /* Left blank, defaults to true */ -}}
-       <activate_on_startup{{ if not (quote .maxDelay | empty) }} max_delay={{ .maxDelay | quote }}{{ end }}>Y</activate_on_startup>
+    {{- if (not (quote .enabled | empty)) }}
+       <activate_on_startup{{ if not (quote .maxDelayMillis | empty) }} max_delay={{ .maxDelayMillis | quote }}{{ end }}>{{ .enabled | ternary "Y" "N" }}</activate_on_startup>
+    {{- else }}
+       <activate_on_startup{{ if not (quote .maxDelayMillis | empty) }} max_delay={{ .maxDelayMillis | quote }}{{ end }}>Y</activate_on_startup>
     {{- end }}
   {{- else }}
         <!--
