@@ -36,10 +36,17 @@ data:
       #    to be enforced, based on your latency and throughput requirements, but consider anyway that GC pauses
       #    cause the connection to stay idle and pauses longer than 4 or 5 seconds may cause the clients
       #    to timeout and reconnect.
+
+      
       if [ -n "${JAVA_OPTS}" ]; then
          JAVA_OPTS="${JAVA_OPTS}"
       else
          JAVA_OPTS="-server -XX:MaxGCPauseMillis=1000"
+      fi
+
+      # Inject the system properties needed by Hibernate for authentication
+      if [ -n "${LS_HIBERNATE_SYSTEM_PROPERTIES}" ]; then
+         JAVA_OPTS="${JAVA_OPTS} ${LS_HIBERNATE_SYSTEM_PROPERTIES}"
       fi
 
       # -----------------------------------------------------------------------
