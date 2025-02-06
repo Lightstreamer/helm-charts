@@ -1,3 +1,32 @@
+{{/*
+Create a probe
+*/}}
+{{- define "lightstreamer.deployment.probe" -}}
+{{- $probe := index . 0}}
+{{- $probeName := index . 1}}
+{{- $servers := index . 2}}
+{{- if ($probe).enabled }}
+{{ printf "%sProbe:" $probeName }}
+  {{- with $probe.healthCheck }}
+  httpGet:
+    path: /lightstreamer/healthcheck
+      {{- $serverRef := required (printf "deployment.probes.%s.healthCheck.serverRef must be set" $probeName) .serverRef }}
+      {{- $server := required (printf "servers.%s not defined" $serverRef) (get $servers $serverRef) }}
+      {{- if not $server.enabled }}
+        {{- fail (printf "deployment.probes.%s.healthCheck.serverRef must be set to an enabled server" $probeName) }}
+      {{- end }}
+    port: {{ $serverRef }}
+    scheme: {{ $server.enableHttps | default false | ternary "HTTPS" "HTTP" }}
+  initialDelaySeconds: {{ .initialDelaySeconds }}
+  periodSeconds: {{ .periodSeconds }}
+  failureThreshold:  {{ .failureThreshold }}
+  timeoutSeconds: {{ .timeoutSeconds }}
+  {{- else }}
+    {{- toYaml (required (printf "either specify %s.healthCheck or %s.default" $probeName $probeName) $probe.default) | nindent 2 }}
+  {{- end }}
+{{- end }}
+{{- end -}}
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -73,62 +102,14 @@ spec:
               protocol: TCP
           {{- end }}
           {{- with .Values.deployment.probes }}
-          livenessProbe:
-            {{- if ((.liveness).healthCheck).enabled }}
-              {{- with .liveness.healthCheck }}
-            httpGet:
-              path: /lightstreamer/healthcheck
-                {{- $serverRef := required "probes.liveness.healthCheck.serverRef must be set" .serverRef }}
-                {{- $server := required (printf "servers.%s not defined" $serverRef) (get $.Values.servers $serverRef) }}
-              port: {{ $serverRef }}
-              scheme: {{ $server.enableHttps | default false | ternary "HTTPS" "HTTP" }}
-            initialDelaySeconds: {{ .initialDelaySeconds }}
-            periodSeconds: {{ .periodSeconds }}
-            failureThreshold:  {{ .failureThreshold }}
-            timeoutSeconds: {{ .timeoutSeconds }}
-            terminationGracePeriodSeconds: {{ .terminationGracePeriodSeconds }}
-              {{- end }}  
-            {{- else }}
-                {{- toYaml (default dict (.liveness).default) | nindent 12 }}
-            {{- end }}
-          readinessProbe:
-            {{- if ((.readiness).healthCheck).enabled }}
-              {{- with .readiness.healthCheck }}
-            httpGet:
-              path: /lightstreamer/healthcheck
-                {{- $serverRef := required "probes.readiness.healthCheck.serverRef must be set" .serverRef }}
-                {{- $server := required (printf "servers.%s not defined" $serverRef) (get $.Values.servers $serverRef) }}
-              port: {{ $serverRef }}
-              scheme: {{ $server.enableHttps | default false | ternary "HTTPS" "HTTP" }}
-            initialDelaySeconds: {{ .initialDelaySeconds }}
-            periodSeconds: {{ .periodSeconds }}
-            failureThreshold:  {{ .failureThreshold }}
-            timeoutSeconds: {{ .timeoutSeconds }}
-              {{- end }}  
-            {{- else }}
-                {{- toYaml (default dict (.readiness).default) | nindent 12 }}
-            {{- end }}
-          startupProbe:
-            {{- if ((.startup).healthCheck).enabled }}
-              {{- with .startup.healthCheck }}
-            httpGet:
-              path: /lightstreamer/healthcheck
-                {{- $serverRef := required "probes.startup.healthCheck.serverRef must be set" .serverRef }}
-                {{- $server := required (printf "servers.%s not defined" $serverRef) (get $.Values.servers $serverRef) }}
-              port: {{ $serverRef }}
-              scheme: {{ $server.enableHttps | default false | ternary "HTTPS" "HTTP" }}
-            initialDelaySeconds: {{ .initialDelaySeconds }}
-            periodSeconds: {{ .periodSeconds }}
-            failureThreshold:  {{ .failureThreshold }}
-            timeoutSeconds: {{ .timeoutSeconds }}
-              {{- end }}  
-            {{- else }}
-                {{- toYaml (default dict (.startup).default) | nindent 12 }}
-            {{- end }}
+            {{- include "lightstreamer.deployment.probe" (list .liveness "liveness" $.Values.servers) | indent 10 -}}                        
+            {{- include "lightstreamer.deployment.probe" (list .readiness "readiness" $.Values.servers) | indent 10 -}}            
+            {{- include "lightstreamer.deployment.probe" (list .startup "startup" $.Values.servers) | indent 10 -}}
           {{- end }}
           resources:
             {{- toYaml .Values.deployment.resources | nindent 12 }}
           env:
+          {{- /* START ENV VARIABLES FOR LIGHTSTREAMER KEYSTORES */ -}}
           {{- range $key, $value := .Values.keyStores }}
             {{- if $value }}
             - name: LS_KEYSTORE_{{ $key | upper | replace "-" "_" }}_PASSWORD
@@ -145,6 +126,8 @@ spec:
               {{- end }}
             {{- end }}
           {{- end }}
+          {{- /* END ENV VARIABLES FOR LIGHTSTREAMER KEYSTORES */ -}}
+          {{- /* START ENV VARIABLES FOR LIGHTSTREAMER LICENSE */ -}}
           {{- if and (ne ((.Values.license).enterprise).licenseType "DEMO") (eq ((.Values.license).enterprise).licenseValidation "ONLINE") }}
             {{- with required "license.enterprise.onlinePasswordSecretRef must be set" .Values.license.enterprise.onlinePasswordSecretRef }}
             - name: LS_ENTERPRISE_LICENSE_ONLINE_PASSWORD
@@ -173,6 +156,8 @@ spec:
                   name: {{ . }}
                   key: password
           {{- end}}
+          {{- /* END VARIABLES FOR LIGHTSTREAMER LICENSE */ -}}
+          {{- /* START ENV VARIABLES FOR LIGHTSTREAMER MANAGEMENT */ -}}
           {{- range $value := .Values.management.jmx.rmiConnector.credentialsSecrets }}
             - name: LS_RMI_CREDENTIAL{{ $value | upper | replace "-" "_" }}_USER
               valueFrom:
@@ -185,7 +170,10 @@ spec:
                   name: {{ . }}
                   key: password
           {{- end }}
+          {{- /* END ENV VARIABLES FOR LIGHTSTREAMER MANAGEMENT */ -}}
+          {{- /* START ENV VARIABLES FOR MPN */ -}}
           {{- if (.Values.mpn).enabled }}
+            {{/* START ENV VARIABLES FOR HIBERNATE CONNECTION */}}
             - name: LS_HIBERNATE_CONNECTION_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -195,9 +183,24 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.mpn.hibernateConfig.connection.credentialsSecretRef }}
-                  key: password                  
+                  key: password
+            - name: LS_HIBERNATE_SYSTEM_PROPERTIES
+              value: "-Dls_hibernate_connection_username=$(LS_HIBERNATE_CONNECTION_USERNAME) -Dls_hibernate_connection_password=$(LS_HIBERNATE_CONNECTION_PASSWORD)" 
+            {{/* END ENV VARIABLES FOR HIBERNATE CONNECTION */}}
+            {{- /* START ENV VARIABLES FOR APPLE KEYSTORES */ -}}
+            {{- range $keyStoreName, $keyStore := (.Values.mpn.appleNotifierConfig).keyStores }}
+              {{- if $keyStore }}
+            - name: LS_MPN_APPLE_KEYSTORE_{{ $keyStoreName | upper | replace "-" "_" }}_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ required (printf "mpn.appleNotifierConfig.keyStores.%s.keystorePasswordSecretRef.name must be set" $keyStoreName) ($keyStore.keystorePasswordSecretRef).name }}
+                  key: {{ required (printf "mpn.appleNotifierConfig.keyStores.%s.keystorePasswordSecretRef.key must be set" $keyStoreName) ($keyStore.keystorePasswordSecretRef).key }}
+              {{- end }}
+            {{- end }}
+            {{- /* END ENV VARIABLES FOR APPLE KEYSTORES */ -}}
           {{- end }}
-          {{- /* ENV VARIABLES FOR THE KAFKA CONNECTOR */ -}}
+          {{- /* END ENV VARIABLES FOR MPN */ -}}
+          {{- /* START ENV VARIABLES FOR THE KAFKA CONNECTOR */ -}}
           {{- if ((.Values.connectors).kafkaConnector).enabled }} {{/* start of kafkaConnector enabled */}}
             {{- $kafkaConnector := include "lightstreamer.kafka-connector.fullname" . }}
             {{- /* AUTHENTICATION */ -}}
@@ -250,26 +253,41 @@ spec:
               subPath: LS.sh
             - name: lightstreamer-configuration
               mountPath: /lightstreamer/conf
-          {{- /* VOLUME MOUNTS FOR MPN */ -}}
+          {{- /* START VOLUME MOUNTS FOR MPN */ -}}
           {{- if (.Values.mpn).enabled }}
             - name: lightstreamer-mpn-conf
               mountPath: /lightstreamer/conf/mpn
             - name: lightstreamer-mpn-apple-conf
               mountPath: /lightstreamer/conf/mpn/apple
-            {{- $configMaps := list }}
-            {{- range ((.Values.mpn).appleNotifierConfig).apps }}
-              {{- if .enabled }}
-                {{- $configMaps = append $configMaps .pushPackageFileRef.name }}
+            - name: lightstreamer-mpn-google-conf
+              mountPath: /lightstreamer/conf/mpn/google
+            {{- /* START VOLUME MOUNTS FOR APPLE KEYSTORES */ -}}
+            {{- range $keyStoreName, $keyStore := (.Values.mpn.appleNotifierConfig).keyStores }}
+              {{- if $keyStore }}
+            - name: lightstreamer-mpn-keystore-{{ $keyStoreName | lower | replace "_" "-" }}
+              mountPath: /lightstreamer/conf/mpn/apple/keystores/{{ $keyStoreName }}
               {{- end }}
             {{- end }}
-            {{- $configMaps = $configMaps | uniq }}
-            {{- range $configMaps }}
-            - name: lightstreamer-mpn-push-package-{{ .  }}
-              mountPath: /lightstreamer/conf/mpn/apple/push-packages/{{ . }}
+            {{- /* END VOLUME MOUNTS FOR APPLE KEYSTORES */ -}}              
+            {{- /* START VOLUME MOUNTS FOR APPLE PUSH PACKAGES */ -}}
+            {{- range $appName, $app := ((.Values.mpn).appleNotifierConfig).apps }}
+              {{- if and $app.enabled (hasPrefix "web." $app.id )}}
+            - name: lightstreamer-mpn-push-package-{{ $appName | lower | replace "_" "-" }}
+              mountPath: /lightstreamer/conf/mpn/apple/{{ $appName }}
+              {{- end }}
             {{- end }}
+            {{- /* END VOLUME MOUNTS FOR APPLE PUSH PACKAGES */ -}}
+            {{- /* START VOLUME MOUNTS FOR GOOGLE SERVICE JSON FILES */ -}}
+            {{- range $appName, $app := ((.Values.mpn).googleNotifierConfig).apps }}
+              {{- if $app.enabled }}
+            - name: lightstreamer-mpn-service-json-{{ $appName | lower | replace "_" "-" }}
+              mountPath: /lightstreamer/conf/mpn/google/{{ $appName }}
+              {{- end }}
+            {{- end }}
+            {{- /* END VOLUME MOUNTS FOR GOOGLE SERVICE JSON FILES */ -}}
           {{- end }}
           {{- /* END VOLUME MOUNTS FOR MPN */ -}}
-          {{- /* VOLUME MOUNTS FOR DAILY ROLLING FILE APPENDER */ -}}
+          {{- /* START VOLUME MOUNTS FOR DAILY ROLLING FILE APPENDER */ -}}
           {{- $volumeRefs := list }}
           {{- range $key, $appender := (.Values.logging).appenders }}
             {{- if and ($appender.type | eq "DailyRollingFile") ($appender.volumeRef) }}
@@ -282,7 +300,7 @@ spec:
               mountPath: /lightstreamer/logs/{{ . }}
           {{- end }}
           {{- /* END VOLUME MOUNTS FOR DAILY ROLLING FILE APPENDER */ -}}
-          {{- /* VOLUME MOUNTS FOR LICENSE FILE */ -}}
+          {{- /* START VOLUME MOUNTS FOR LICENSE FILE */ -}}
           {{- if and (ne ((.Values.license).enterprise).licenseType "DEMO") (eq ((.Values.license).enterprise).licenseValidation "FILE") }}
             {{- with .Values.license.enterprise.filePathSecretRef }}
             - name: lightstreamer-enterprise-license
@@ -290,7 +308,7 @@ spec:
             {{- end }}
           {{- end }}
           {{- /* END VOLUME MOUNTS FOR LICENSE FILE */ -}}
-          {{- /* VOLUME MOUNTS FOR PAC FILES */ -}}
+          {{- /* START VOLUME MOUNTS FOR PAC FILES */ -}}
           {{- $configMaps := list }}      
           {{- range $index, $filePath := (((.Values.license).proxy).pacFiles).filePaths }}
             {{- $configMaps = append $configMaps (required (printf "license.proxy.pacFiles.filePaths[%d].name must be set" $index) $filePath.name) }}
@@ -305,7 +323,7 @@ spec:
             - name: lightstreamer-error-page
               mountPath: /lightstreamer/conf/error-page
           {{- end }}
-          {{- /* VOLUME MOUNTS FOR KEYSTORES */ -}}
+          {{- /* START VOLUME MOUNTS FOR KEYSTORES */ -}}
           {{- range $key, $value := .Values.keyStores }}
             {{- if $value }}
             - name: keystore-{{ $key | lower }}
@@ -313,7 +331,7 @@ spec:
             {{- end }}
           {{- end }}
           {{- /* END VOLUME MOUNTS FOR KEYSTORES */ -}}
-          {{- /* VOLUME MOUNTS FOR KAFKA CONNECTOR */ -}}
+          {{- /* START VOLUME MOUNTS FOR KAFKA CONNECTOR */ -}}
           {{- if ((.Values.connectors).kafkaConnector).enabled }}
             {{- $kafkaConnector := include "lightstreamer.kafka-connector.fullname" . }}
             - name: kafka-connector-storage
@@ -398,7 +416,7 @@ spec:
             secretName: {{ required "license.enterprise.filePathSecretRef.name must be set" .name }}
         {{- end }}
       {{- end }}
-      {{- /* VOLUMES FOR PAC FILES */ -}}
+      {{- /* START VOLUMES FOR PAC FILES */ -}}
       {{- $configMaps := list }}      
       {{- range $index, $filePath := (((.Values.license).proxy).pacFiles).filePaths }}
         {{- $configMaps = append $configMaps $filePath.name }}
@@ -409,7 +427,8 @@ spec:
           configMap:
             name: {{ . }}
       {{- end -}}
-      {{/* VOLUME FOR MPN */}}
+      {{- /* END VOLUMES FOR PAC FILES */ -}}
+      {{/* START VOLUMES FOR MPN */}}
       {{- if (.Values.mpn).enabled }}
         - name: lightstreamer-mpn-conf
           configMap:
@@ -417,20 +436,38 @@ spec:
         - name: lightstreamer-mpn-apple-conf
           configMap:
             name: {{ include "lightstreamer.fullname" . }}-mpn-apple-conf
-        {{- $configMaps := list }}
-        {{- range ((.Values.mpn).appleNotifierConfig).apps }}
-          {{- if .enabled }}
-            {{- $configMaps = append $configMaps .pushPackageFileRef.name }}
+        - name: lightstreamer-mpn-google-conf
+          configMap:
+            name: {{ include "lightstreamer.fullname" . }}-mpn-google-conf
+        {{- /* START VOLUMES FOR APPLE KEYSTORES */ -}}
+        {{- range $keyStoreName, $keyStore := (.Values.mpn.appleNotifierConfig).keyStores }}
+          {{- if $keyStore }}
+        - name: lightstreamer-mpn-keystore-{{ $keyStoreName | lower | replace "_" "-" }}
+          secret:
+            secretName: {{ required (printf "mpn.appleNotifierConfig.keyStores.%s.keystoreFileSecretRef.name must be set" $keyStoreName) $keyStore.keystoreFileSecretRef.name }}
           {{- end }}
         {{- end }}
-        {{- $configMaps = $configMaps | uniq }}
-        {{- range $configMaps }}
-        - name: lightstreamer-mpn-push-package-{{ .  }}
+        {{- /* END VOLUMES FOR APPLE KEYSTORES */ -}}            
+          {{- /* START VOLUMES FOR APPLE PUSH PACKAGES */ -}}            
+        {{- range $appName, $app := ((.Values.mpn).appleNotifierConfig).apps }}
+          {{- if and $app.enabled (hasPrefix "web." $app.id )}}
+        - name: lightstreamer-mpn-push-package-{{ $appName | lower | replace "_" "-" }}
           configMap: 
-            name: {{ . }}
+            name: {{ ($app.pushPackageFileRef).name }}
+          {{- end }}
+        {{- end }}          
+        {{- /* END VOLUMES FOR APPLE PUSH PACKAGES */ -}}        
+        {{- /* START VOLUMES FOR GOOGLE SERVICE JSON FILES */ -}}
+        {{- range $appName, $app := ((.Values.mpn).googleNotifierConfig).apps }}
+          {{- if .enabled }}
+        - name: lightstreamer-mpn-service-json-{{ $appName | lower | replace "_" "-" }}
+          configMap:
+            name: {{ $app.serviceJsonFileRef.name }}
+          {{- end }}
         {{- end }}
+        {{- /* END VOLUMES FOR GOOGLE SERVICE JSON FILES */ -}}        
       {{- end }}
-      {{- /* END VOLUME FOR MPN */ -}}
+      {{- /* END VOLUMES FOR MPN */ -}}
       {{- /* VOLUME FOR KAFKA CONNECTOR */ -}}
       {{- if ((.Values.connectors).kafkaConnector).enabled }}
         - name: kafka-connector-storage
