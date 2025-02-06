@@ -1,0 +1,13 @@
+{{- if ((.Values.connectors).kafkaConnector).enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "lightstreamer.kafka-connector.fullname" . }}-conf
+  labels:
+    {{- include "lightstreamer.labels" . | nindent 4 }}
+data:
+  adapters.xml: |-
+    {{- include "lightstreamer.kafka-connector.configuration" . | nindent 4 }}
+  log4j.properties: |-
+    {{- include "lightstreamer.kafka-connector.logging-conf" . | nindent 4 }}
+{{- end }}
