@@ -1,0 +1,54 @@
+{{ define "chart.valuesTableHtml" }}
+
+{{- $sections := list "license" "servers" "globalSocket" "security" "management" "pushSession" "keyStores" "webServer" "cluster" "load" "connectors" }}
+{{- range $section := $sections }}
+## {{ printf "%s configuration " ($section | title) }}
+{{ range $.Values }}
+
+{{- if hasPrefix $section .Key }}
+### [{{ .Key }}](./values.yaml#L{{ .LineNumber }})
+
+{{ if .Description }}{{ .Description }}{{ else }}{{ .AutoDescription }}{{ end }}
+{{ $defaultValue := (default .Default .AutoDefault) }}
+{{ if gt (len $defaultValue) 30 -}}
+**Default:**
+
+```
+    {{ $defaultValue | replace "`" "" | toPrettyJson }}
+```
+  {{- else -}}
+**Default:** {{ $defaultValue }}
+
+  {{- end }}
+
+{{- end }}
+{{- end }}
+{{- end }}
+{{ end }}
+
+{{ template "chart.deprecationWarning" . }}
+
+{{ template "chart.badgesSection" . }}
+
+{{ template "chart.description" . }}
+
+{{ template "chart.homepageLine" . }}
+
+{{ template "chart.maintainersSection" . }}
+
+{{ template "chart.sourcesSection" . }}
+
+## Installing the Chart
+
+To install the chart with the release name `lightstreamer-app`:
+
+```console
+$ helm repo add lightstreamer https://lightstreamer.github.io/helm-charts
+$ helm install lightstreamer-app lightstreamer/lightstreamer -n lightstreamer --create-namespace
+```
+
+{{ template "chart.requirementsSection" . }}
+
+{{ template "chart.valuesSectionHtml" . }}
+
+{{ template "helm-docs.versionFooter" . }}
