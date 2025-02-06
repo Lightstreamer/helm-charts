@@ -1,0 +1,11 @@
+{{- if (.Values.mpn).enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "lightstreamer.fullname" . }}-mpn-apple-conf
+  labels:
+    {{- include "lightstreamer.labels" . | nindent 4 }}
+data:
+  apple_notifier_conf.xml: |-
+    {{- include "lightstreamer.configuration.mpn.apple_notifier" . | nindent 4 }}
+{{- end }}

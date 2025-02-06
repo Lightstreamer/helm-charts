@@ -1,0 +1,11 @@
+{{- if (.Values.mpn).enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "lightstreamer.fullname" . }}-mpn-google-conf
+  labels:
+    {{- include "lightstreamer.labels" . | nindent 4 }}
+data:
+  google_notifier_conf.xml: |-
+    {{- include "lightstreamer.configuration.mpn.google_notifier" . | nindent 4 }}
+{{- end }}
