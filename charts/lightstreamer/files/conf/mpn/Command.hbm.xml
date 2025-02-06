@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+ "-//Hibernate/Hibernate Mapping DTD//EN"
+ "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="com.lightstreamer.mpndb.beans">
+
+   <class name="Command" table="COMMANDS">
+
+      <meta attribute="class-description">
+         This class defines a pending command of a Mobile Push Notification module instance.
+      </meta>
+
+      <id name="commandId" column="COMMAND_ID" type="string" length="36">
+         <generator class="org.hibernate.id.UUIDGenerator" />
+      </id>
+
+      <property name="commandIndex" column="COMMAND_IDX" type="int" />
+
+      <property name="timestamp" column="TIME_STAMP" type="timestamp" index="INDEX_COMMAND_TIMESTAMP" />
+
+      <many-to-one name="module" class="Module">
+      	<column name="MODULE_ID" not-null="true" />
+      </many-to-one>
+
+      <property name="commandType" column="COMMAND_TYPE">
+        <type name="com.lightstreamer.mpndb.types.GenericEnumUserType">
+          <param name="enumClass">com.lightstreamer.mpndb.enums.CommandType</param>
+          <param name="identifierMethod">getId</param>
+          <param name="valueOfMethod">fromId</param>
+        </type>
+      </property>
+
+      <property name="relatedDeviceId" column="REL_DEVICE_ID" type="string" length="36" />
+      <property name="relatedSubscriptionId" column="REL_SUBSCRIPTION_ID" type="string" length="36" />
+
+   </class>
+
+</hibernate-mapping>
