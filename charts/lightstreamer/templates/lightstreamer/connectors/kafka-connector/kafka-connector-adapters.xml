@@ -1,68 +1,22 @@
-{{/* Render the truststore settings for the Lightstreamer Kafka Connector configuration file */}}
-{{- define "lightstreamer.kafka-connector.configuration.truststore" -}}
-{{- $prefix := index . 0 -}}
-{{- $top := index . 1 -}}
-{{- $key := index . 2 -}}
-{{- $keyStore := required (printf "keystores.%s not defined" $key) (get $top $key) -}}
+{{/*
+Copyright (C) 2024 Lightstreamer Srl
 
-<param name="{{ $prefix }}.path">../../conf/keystores/{{ $key }}/{{ required (printf "keystores.%s.keystoreFileSecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</param>
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-<!-- Optional. The password of the trust store.
+      http://www.apache.org/licenses/LICENSE-2.0
 
-      If not set, checking the integrity of the trust store file configured will not
-      be possible. -->
-<param name="{{ $prefix }}.password">$env.LS_KEYSTORE_{{ $key | upper |replace "-" "_" }}_PASSWORD</param>
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/}}
 
-{{- if not (quote $keyStore.type | empty) }}
-<param name="{{ $prefix }}.type">{{ $keyStore.type }}</param>
-{{- end -}}
-{{- end -}}
-
-{{/* Render the keystore settings for the Lightstreamer Kafka Connector configuration file */}}
-{{- define "lightstreamer.kafka-connector.configuration.keystore" -}}
-{{- $prefix := index . 0 -}}
-{{- $top := index . 1 -}}
-{{- $key := index . 2 -}}
-{{- $keyStore := required (printf "keystores.%s not defined" $key) (get $top $key) -}}
-<!-- Optional. Enable a key store. Can be one of the following:
-      - true
-      - false
-
-     A key store is required if the mutual TLS is enabled on Kafka.
-
-     If enabled, the following parameters configure the key store settings:
-     - encryption.keystore.path
-     - encryption.keystore.password
-     - encryption.keystore.key.password
-
-     Default value: false. -->
-<param name="{{ $prefix }}.enable">true</param>
-
-<!-- Mandatory if key store is enabled. The path of the key store file, relative to
-     the deployment folder (LS_HOME/adapters/lightstreamer-kafka-connector-<version>). -->
-<param name="{{ $prefix }}.path">../../conf/keystores/{{ $key }}/{{ required (printf "keystores.%s.keystoreFilesecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</param>
-
-<!-- Optional. The password of the key store.
-
-     If not set, checking the integrity of the key store file configured
-     will not be possible. -->
-<param name="{{ $prefix }}.password">$env.LS_KEYSTORE_{{ $key | upper |replace "-" "_" }}_PASSWORD</param>
-
-<!-- Optional. The password of the private key in the key store file. -->
-{{- if $keyStore.keyPasswordSecretRef }}
-<param name="{{ $prefix }}.key.password">$env.LS_KEYSTORE_{{ $key | upper |replace "-" "_" }}_KEY_PASSWORD</param>
-{{- else }}
-<!--
-<param name="{{ $prefix }}.key.password">kafka-connector-private-key-password</param>
--->
-{{- end }}
-
-{{- if not (quote $keyStore.type | empty) }}
-<param name="{{ $prefix }}.keystore.type">{{ $keyStore.type }}</param>
-{{- end -}}
-{{- end -}}
-
-{{/* Create the Lightstreamer Kafka Connector configuration file */}}
+{{/*
+Render the Lightstreamer Kafka Connector configuration file 
+*/}}
 {{- define "lightstreamer.kafka-connector.configuration" -}}
 <?xml version="1.0"?>
 
