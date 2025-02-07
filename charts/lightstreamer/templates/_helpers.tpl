@@ -1,4 +1,20 @@
 {{/*
+Copyright (C) 2024 Lightstreamer Srl
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/}}
+
+{{/*
 Expand the name of the chart.
 */}}
 {{- define "lightstreamer.name" -}}
@@ -31,7 +47,7 @@ Create chart name and version as used by the chart label.
 {{- end }}
 
 {{/*
-Common labels
+General labels
 */}}
 {{- define "lightstreamer.labels" -}}
 helm.sh/chart: {{ include "lightstreamer.chart" . }}
@@ -41,7 +57,7 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- if .Values.additionalLabels }}
-{{ include "lightstreamer.additionalLabels" . }}
+{{ include "lightstreamer.commonLabels" . }}
 {{- end }}
 {{- end }}
 
@@ -54,9 +70,9 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
-Additional labels
+Common labels
 */}}
-{{- define "lightstreamer.additionalLabels" -}}
+{{- define "lightstreamer.commonLabels" -}}
 {{- with .Values.additionalLabels }}
 {{- toYaml . }}
 {{- end }}
@@ -74,8 +90,226 @@ Create the name of the service account to use
 {{- end }}
 
 {{/*
+Render a probe for the deployment descriptor
+*/}}
+{{- define "lightstreamer.deployment.probe" -}}
+{{- $probe := index . 0}}
+{{- $probeName := index . 1}}
+{{- $servers := index . 2}}
+# Checking probe {{ $probeName }}
+{{- if ($probe).enabled }}
+{{ printf "%sProbe:" $probeName }}
+  {{- with $probe.healthCheck }}
+  httpGet:
+    path: /lightstreamer/healthcheck
+      {{- $serverRef := required (printf "deployment.probes.%s.healthCheck.serverRef must be set" $probeName) .serverRef }}
+      {{- $server := required (printf "servers.%s not defined" $serverRef) (get $servers $serverRef) }}
+      {{- if not $server.enabled }}
+        {{- fail (printf "deployment.probes.%s.healthCheck.serverRef must be set to an enabled server" $probeName) }}
+      {{- end }}
+    port: {{ $serverRef }}
+    scheme: {{ $server.enableHttps | default false | ternary "HTTPS" "HTTP" }}
+  initialDelaySeconds: {{ .initialDelaySeconds }}
+  periodSeconds: {{ .periodSeconds }}
+  failureThreshold: {{ .failureThreshold }}
+    {{- if eq $probeName "readiness" }}
+  successThreshold: {{ .successThreshold }}
+    {{- end }}
+  timeoutSeconds: {{ .timeoutSeconds }}
+    {{- if ne $probeName "readiness" }}
+  terminationGracePeriodSeconds: {{ .terminationGracePeriodSeconds }}
+    {{- end }}
+  {{- else }}
+    {{- toYaml (required (printf "either specify %s.healthCheck or %s.default" $probeName $probeName) $probe.default) | nindent 2 }}
+  {{- end }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Render the keystore settings for the main configuration file 
+*/}}
+{{- define "lightstreamer.configuration.keystore" -}}
+{{- $top := index . 0 -}}
+{{- $key := index . 1 -}}
+{{- $keyStore := required (printf "keystores.%s not defined" $key) (get $top $key) -}}
+<keystore{{- if not (quote $keyStore.type | empty) }} type={{ $keyStore.type | quote }}{{- end }}>
+
+    <!-- Specifies a path relative to the conf directory.
+         The referred file can be replaced at runtime and the new keystore
+         will be loaded immediately. Only in case of successful load
+         will the previous keystore be replaced.
+         NOTE: The JKS keystore "myserver.keystore", which is provided out
+         of the box, obviously contains an invalid certificate. In order to
+         use it for your experiments, remember to add a security exception
+         to your browser. -->
+    <keystore_file>./keystores/{{ $key }}/{{ required (printf "keystores.%s.keystoreFilesecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</keystore_file>
+
+    <!-- Specified the password for the keystore. The factory setting below
+         refers to the test keystore "myserver.keystore", provided out of the box.
+         The optional "type" attribute, whose default is "text", when set
+         to "file", allows you to supply the path, relative to the conf
+         directory, of a file containing the password in UTF-8 encoding.
+         Note that the password has to be stored in clear, but the file could be
+         protected from external access. Also pay attention that the file does
+         not contain any extra line termination characters.
+         In case the keystore file is replaced, a password of "file" type
+         will be reread as well. This is the only way to supply a new
+         password, if needed. Note that the password file should be modified
+         before the keystore file. -->
+    <keystore_password type="text">$env.LS_KEYSTORE_{{ $key | upper |replace "-" "_" }}_PASSWORD</keystore_password>
+
+</keystore>
+{{- end -}}
+
+{{/* 
+Render the truststore settings for the Lightstreamer configuration file 
+*/}}
+{{- define "lightstreamer.configuration.truststore" -}}
+{{- $top := index . 0 -}}
+{{- $key := index . 1 -}}
+{{- $keyStore := get $top $key -}}
+<truststore type={{ $keyStore.type | quote }}>
+
+    <!-- Specifies a path relative to the conf directory.
+         The referred file can be replaced at runtime and the new keystore
+         will be loaded immediately. Only in case of successful load
+         will the previous keystore be replaced.
+         NOTE: The JKS keystore "myserver.keystore", which is provided out
+         of the box, obviously contains an invalid certificate. In order to
+         use it for your experiments, remember to add a security exception
+         to your browser. -->
+    <truststore_file>./keystores/{{ $key }}/{{ $keyStore.keystoreFileSecretRef.key }}</truststore_file>
+
+    <!-- Specified the password for the keystore. The factory setting below
+         refers to the test keystore "myserver.keystore", provided out of the box.
+         The optional "type" attribute, whose default is "text", when set
+         to "file", allows you to supply the path, relative to the conf
+         directory, of a file containing the password in UTF-8 encoding.
+         Note that the password has to be stored in clear, but the file could be
+         protected from external access. Also pay attention that the file does
+         not contain any extra line termination characters.
+         In case the keystore file is replaced, a password of "file" type
+         will be reread as well. This is the only way to supply a new
+         password, if needed. Note that the password file should be modified
+         before the keystore file. -->
+    <truststore_password type="text">$env.KEYSTORE_{{ $key | upper }}_PASSWORD</truststore_password>
+
+</truststore>
+{{- end -}}
+
+{{/*
+Render the <appender-ref> element
+*/}}
+{{- define "lightstreamer.configuration.log.appender_ref" -}}
+{{- $top := index . 0 -}}
+{{- $logger := index . 1 -}}
+{{- range $appenderName := $logger.appenders }}
+  {{- if not (hasKey $top $appenderName) }}
+    {{- fail (printf "loggers.appenders.%s not defined" $appenderName) }}
+  {{- end }}
+<appender-ref ref={{ printf "%s%s" "LS" (title $appenderName) | quote }}/>
+{{- end }}
+{{- end }}
+
+{{/*
+Create the logging level attribute
+*/}}
+{{- define "lightstreamer.configuration.log.level" -}}
+{{- $loggerLevel := .level | default "DEBUG" }}
+{{- $admittedLevels := list "INFO" "DEBUG" "WARN" "ERROR" "FATAL" "TRACE" "OFF" -}}
+  {{- if not (has $loggerLevel $admittedLevels) }}
+    {{- fail (printf "logging.loggers.<logger name>.level must be set to one of %s" $admittedLevels) }}
+  {{- end }}
+{{- $loggerLevel -}}
+{{- end }}
+
+{{/*
+Create the logging level attribute for subloggers
+*/}}
+{{- define "lightstreamer.configuration.log.subloggers.level" -}}
+{{- $subloggers := index . 0 -}}
+{{- $loggerName := index . 1 -}}
+{{- $loggerLevel := (get $subloggers $loggerName) }}
+{{- if $loggerLevel }}
+  {{- $admittedLevels := list "INFO" "DEBUG" "WARN" "ERROR" "FATAL" "TRACE" "OFF" -}}
+    {{- if not (has $loggerLevel $admittedLevels) }}
+      {{- fail (printf "logging.loggers.lightstreamerLogger.subLoggers.%s.level must be set to one of %s" $loggerName $admittedLevels) }}
+    {{- end }}
+{{- printf " level=%s" ($loggerLevel | quote) }} 
+{{- end }}
+{{- end }}
+
+{{/*
 Create the full name of the Lightstreamer Kafka Connector 
 */}}
 {{- define "lightstreamer.kafka-connector.fullname" -}}
 {{- printf "lightstreamer-kafka-connector-%s" .Values.connectors.kafkaConnector.version }}
 {{- end }}
+
+{{/*
+Render the truststore settings for the Lightstreamer Kafka Connector configuration file
+*/}}
+{{- define "lightstreamer.kafka-connector.configuration.truststore" -}}
+{{- $prefix := index . 0 -}}
+{{- $top := index . 1 -}}
+{{- $key := index . 2 -}}
+{{- $keyStore := required (printf "keystores.%s not defined" $key) (get $top $key) -}}
+
+<param name="{{ $prefix }}.path">../../conf/keystores/{{ $key }}/{{ required (printf "keystores.%s.keystoreFileSecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</param>
+
+<!-- Optional. The password of the trust store.
+
+      If not set, checking the integrity of the trust store file configured will not
+      be possible. -->
+<param name="{{ $prefix }}.password">$env.LS_KEYSTORE_{{ $key | upper |replace "-" "_" }}_PASSWORD</param>
+
+{{- if not (quote $keyStore.type | empty) }}
+<param name="{{ $prefix }}.type">{{ $keyStore.type }}</param>
+{{- end -}}
+{{- end -}}
+
+{{/*
+Render the keystore settings for the Lightstreamer Kafka Connector configuration file
+*/}}
+{{- define "lightstreamer.kafka-connector.configuration.keystore" -}}
+{{- $prefix := index . 0 -}}
+{{- $top := index . 1 -}}
+{{- $key := index . 2 -}}
+{{- $keyStore := required (printf "keystores.%s not defined" $key) (get $top $key) -}}
+<!-- Optional. Enable a key store. Can be one of the following:
+      - true
+      - false
+
+      A key store is required if the mutual TLS is enabled on Kafka.
+
+      If enabled, the following parameters configure the key store settings:
+      - encryption.keystore.path
+      - encryption.keystore.password
+      - encryption.keystore.key.password
+
+      Default value: false. -->
+<param name="{{ $prefix }}.enable">true</param>
+
+<!-- Mandatory if key store is enabled. The path of the key store file, relative to
+      the deployment folder (LS_HOME/adapters/lightstreamer-kafka-connector-<version>). -->
+<param name="{{ $prefix }}.path">../../conf/keystores/{{ $key }}/{{ required (printf "keystores.%s.keystoreFilesecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</param>
+
+<!-- Optional. The password of the key store.
+
+      If not set, checking the integrity of the key store file configured
+      will not be possible. -->
+<param name="{{ $prefix }}.password">$env.LS_KEYSTORE_{{ $key | upper |replace "-" "_" }}_PASSWORD</param>
+
+<!-- Optional. The password of the private key in the key store file. -->
+{{- if $keyStore.keyPasswordSecretRef }}
+<param name="{{ $prefix }}.key.password">$env.LS_KEYSTORE_{{ $key | upper |replace "-" "_" }}_KEY_PASSWORD</param>
+{{- else }}
+<!--
+<param name="{{ $prefix }}.key.password">kafka-connector-private-key-password</param>
+-->
+{{- end }}
+
+{{- if not (quote $keyStore.type | empty) }}
+<param name="{{ $prefix }}.keystore.type">{{ $keyStore.type }}</param>
+{{- end -}}
+{{- end -}}
