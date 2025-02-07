@@ -241,7 +241,7 @@ service:
   # -- The node port when the `type` is set to `NodePort` or 'LoadBalancer'.
   # See https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport.
   nodePort:
-  # -- The reference to a server socket configuration (defined in the 
+  # -- The reference to a server socket configuration (defined in the
   # `servers.{}` section below)
   targetPort: defaultServer
   # -- The name of the service port
@@ -716,7 +716,7 @@ logging:
         # At `DEBUG` level, updates to be sent to the clients are dumped.
         # @default -- inherited from lightstreamerLogger
         lightstreamerLogger.pump: INFO
-        # -- Optional. Logging of management of messages received from the 
+        # -- Optional. Logging of management of messages received from the
         # clients.
         # At `DEBUG` level, details of message processing are logged.
         # All logs from this logger report the IP and port of the involved 
