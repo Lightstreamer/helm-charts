@@ -56,7 +56,7 @@ helm.sh/chart: {{ include "lightstreamer.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- if .Values.additionalLabels }}
+{{- if .Values.commonLabels }}
 {{ include "lightstreamer.commonLabels" . }}
 {{- end }}
 {{- end }}
@@ -73,7 +73,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 Common labels
 */}}
 {{- define "lightstreamer.commonLabels" -}}
-{{- with .Values.additionalLabels }}
+{{- with .Values.commonLabels }}
 {{- toYaml . }}
 {{- end }}
 {{- end }}
