@@ -1025,8 +1025,8 @@ servers:
     #   done through the `clientIdentification.skipLocalForwards` setting);
     # - by receiving the routed address directly from a TCP reverse proxy or
     #   level-4 Load Balancer through the Proxy Protocol, when the proxy is
-    #   configured to do so (this is done through the `enableProxyProtocol`
-    #   setting).
+    #   configured to do so (this is done through the 
+    #   `clientIdentification.enableProxyProtocol` setting).
     # The two techniques can also coexist, but, in that case, the address
     # through the proxy protocol would always be considered as the real client
     # address and all addresses in the chain specified in X-Forwarded-For would
