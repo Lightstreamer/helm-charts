@@ -231,7 +231,7 @@ Render the Lightstreamer edition configuration file
          {{- if not (.enableMpn | quote | empty) }}
          <feature id="mpn">{{ .enableMpn | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableMpn must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableMpn must be explicitly set" }}
          {{- end }}
 
          <!-- Max message rate (downstream).
@@ -252,7 +252,7 @@ Render the Lightstreamer edition configuration file
          {{- if not (.enableBandwidthControl | quote | empty) }}
          <feature id="bandwidth_control">{{ .enableBandwidthControl | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableBandwidthControl must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableBandwidthControl must be explicitly set" }}
          {{- end }}
 
          <!-- TLS/SSL Support.
@@ -262,7 +262,7 @@ Render the Lightstreamer edition configuration file
          {{- if not (.enableTlsSsl | quote | empty) }}
          <feature id="tls_ssl">{{ .enableTlsSsl | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableTlsSsl must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableTlsSsl must be explicitly set" }}
          {{- end }}
 
          <!-- JMX Management API.
@@ -272,7 +272,7 @@ Render the Lightstreamer edition configuration file
          {{- if not (.enableJmx | quote | empty) }}
          <feature id="jmx">{{ .enableJmx | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableJmx must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableJmx must be explicitly set" }}
          {{- end }}          
 
          <!-- JavaScript Client API.
@@ -282,7 +282,7 @@ Render the Lightstreamer edition configuration file
          {{- if not (.enableJavascriptClient | quote | empty) }}
          <feature id="javascript_client">{{ .enableJavascriptClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableJavascriptClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableJavascriptClient must be explicitly set" }}
          {{- end }}
 
          <!-- Node.js Client API.
@@ -292,7 +292,7 @@ Render the Lightstreamer edition configuration file
          {{- if not (.enableNodeJsClient | quote | empty) }}
          <feature id="nodejs_client">{{ .enableNodeJsClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableNodeJsClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableNodeJsClient must be explicitly set" }}
          {{- end }}
 
          <!-- Android Client API.
@@ -302,7 +302,7 @@ Render the Lightstreamer edition configuration file
          {{- if not (.enableAndroidClient | quote | empty) }}
          <feature id="android_client">{{ .enableAndroidClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableAndroidClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableAndroidClient must be explicitly set" }}
          {{- end }}              
 
          <!-- iOS Client API.
@@ -312,7 +312,7 @@ Render the Lightstreamer edition configuration file
          {{- if not (.enableIOSClient | quote | empty) }}
          <feature id="ios_client">{{ .enableIOSClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableIOSClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableIOSClient must be explicitly set" }}
          {{- end }}                                
 
          <!-- Flex and AIR Client API.
@@ -322,7 +322,7 @@ Render the Lightstreamer edition configuration file
          {{- if not (.enableFlexClient | quote | empty) }}
          <feature id="flex_client">{{ .enableFlexClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableFlexClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableFlexClient must be explicitly set" }}
          {{- end }}              
 
          <!-- Silverlight Client API.
@@ -332,7 +332,7 @@ Render the Lightstreamer edition configuration file
          {{- if not (.enableSilverlightClient | quote | empty) }}
          <feature id="silverlight_client">{{ .enableSilverlightClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableSilverlightClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableSilverlightClient must be explicitly set" }}
          {{- end }}              
 
          <!-- Java SE Client API.
@@ -342,7 +342,7 @@ Render the Lightstreamer edition configuration file
          {{- if not (.enableJavaSEClient | quote | empty) }}
          <feature id="javase_client">{{ .enableJavaSEClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableJavaSEClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableJavaSEClient must be explicitly set" }}
          {{- end }}
 
          <!-- Python Client API.
@@ -352,7 +352,7 @@ Render the Lightstreamer edition configuration file
          {{- if not (.enablePythonClient | quote | empty) }}
          <feature id="python_client">{{ .enablePythonClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enablePythonClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enablePythonClient must be explicitly set" }}
          {{- end }}              
 
          <!-- .NET Standard Client API.
@@ -364,7 +364,7 @@ Render the Lightstreamer edition configuration file
          {{- if not (.enableDotNETStandardClient | quote | empty) }}
          <feature id="dotnet_standard_client">{{ .enableDotNETStandardClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableDotNETStandardClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableDotNETStandardClient must be explicitly set" }}
          {{- end }}
 
          <!-- macOS Client API.
@@ -374,7 +374,7 @@ Render the Lightstreamer edition configuration file
          {{- if not (.enableMacOSClient | quote | empty) }}
          <feature id="macos_client">{{ .enableMacOSClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableMacOSClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableMacOSClient must be explicitly set" }}
          {{- end }}              
 
          <!-- tvOS Client API.
@@ -384,7 +384,7 @@ Render the Lightstreamer edition configuration file
          {{- if not (.enableTvOSClient | quote | empty) }}
          <feature id="tvos_client">{{ .enableTvOSClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableTvOSClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableTvOSClient must be explicitly set" }}
          {{- end }}              
 
          <!-- watchOS Client API.
@@ -394,7 +394,7 @@ Render the Lightstreamer edition configuration file
          {{- if not (.enableWatchOSClient | quote | empty) }}
          <feature id="watchos_client">{{ .enableWatchOSClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableWatchOSClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableWatchOSClient must be explicitly set" }}
          {{- end }}              
          
          <!-- visionOS Client API.
@@ -404,7 +404,7 @@ Render the Lightstreamer edition configuration file
          {{- if not (.enableVisionOSClient | quote | empty) }}
          <feature id="visionos_client">{{ .enableVisionOSClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableVisionOSClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableVisionOSClient must be explicitly set" }}
          {{- end }}              
          
          <!-- BlackBerry Client API.
@@ -414,7 +414,7 @@ Render the Lightstreamer edition configuration file
          {{- if not (.enableBlackBerryClient | quote | empty) }}
          <feature id="blackberry_client">{{ .enableBlackBerryClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableBlackBerryClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableBlackBerryClient must be explicitly set" }}
          {{- end }}              
 
          <!-- Java ME Client API.
@@ -424,7 +424,7 @@ Render the Lightstreamer edition configuration file
          {{- if not (.enableJavaMEClient | quote | empty) }}
          <feature id="javame_client">{{ .enableJavaMEClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableJavaMEClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableJavaMEClient must be explicitly set" }}
          {{- end }}              
 
          <!-- Flash Client API.
@@ -434,7 +434,7 @@ Render the Lightstreamer edition configuration file
          {{- if not (.enableFlashClient | quote | empty) }}
          <feature id="flash_client">{{ .enableFlashClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableFlashClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableFlashClient must be explicitly set" }}
          {{- end }}
 
          <!-- Generic Client API.
@@ -444,7 +444,7 @@ Render the Lightstreamer edition configuration file
          {{- if not (.enableGenericClient | quote | empty) }}
          <feature id="generic_client">{{ .enableGenericClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableGenericClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableGenericClient must be explicitly set" }}
          {{- end }}
     {{- end }} {{/* with .enterprise.features */}}
   {{- end }} {{/* with .enterprise.optionalFeatures */}}
