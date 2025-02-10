@@ -70,27 +70,7 @@ Render the Lightstreamer configuration file
   ===============================
 -->
 
-{{- $usedNames := list }}
-{{- $usedPorts := list }}
-{{- range $serverKey, $server :=.Values.servers }}
-  {{- if $server.enabled }}
-    {{- /* CHECK SERVER NAMES */ -}}
-    {{- $serverName := required (printf "servers.%s.name must be set" $serverKey) $server.name }}
-    {{- if has $serverName $usedNames }}
-      {{- fail (printf "servers.%s.name \"%s\" is already used" $serverKey $serverName ) }}
-    {{- end }}
-    {{- $usedNames = append $usedNames $serverName }}
-    {{- /* CHECK SERVER PORTS */ -}}
-    {{- $serverPort := required (printf "servers.%s.port must be set" $serverKey) (int $server.port) }}
-    {{- if has $serverPort $usedPorts }}
-      {{- fail (printf "servers.%s.port \"%d\" is already used" $serverKey $serverPort ) }}
-    {{- end }}
-    {{- $usedPorts = append $usedPorts $serverPort }}
-  {{- end }}
-{{- end }}
-{{- if $usedNames | empty }} 
-  {{- fail "At least one enabled server must be defined" }}
-{{- end }}
+{{- include "lightstreamer.configuration.validateAllServers" . -}}
 {{- range $serverKey, $server :=.Values.servers }}
   {{- if $server.enabled }}
     <!-- Optional and cumulative (but at least one from <http_server> and
@@ -1024,7 +1004,7 @@ Render the Lightstreamer configuration file
     <!-- Mandatory. Path of the configuration file for the internal logback-based
          logging system. The file path is relative to the conf directory. -->
     <logback_properties>./lightstreamer_log_conf.xml</logback_properties>
-{{- with .Values.management }}
+{{- with required "management must be set" .Values.management }}
 
     <!-- Optional. A set of Clients whose activity is not to be logged. -->
     <no_logging_ip>
@@ -1156,13 +1136,8 @@ Render the Lightstreamer configuration file
                  The optional "ssl" attribute, when set to "Y", enables TLS/SSL
                  communication. Note that this case is not managed by some JMX
                  clients, like jconsole. -->
-      {{- if empty .port }}
-        {{- fail "management.jmx.rmiConnector.port must be set"}}
-      {{- else }}
-        {{- with .port }}
-            <port{{- if not (quote .enableSsl | empty) }} ssl={{ .enableSsl | ternary "Y" "N" | quote }}{{- end }}>{{ int (required "management.jmx.rmiConnector.port.value must be set" .value) }}</port>
-        {{- end }}
-      {{- end }}
+       {{- $port := required "management.jmx.rmiConnector.port must be set" .port }}
+            <port{{- if not (quote $port.enableSsl | empty) }} ssl={{ $port.enableSsl | ternary "Y" "N" | quote }}{{- end }}>{{ int (required "management.jmx.rmiConnector.port.value must be set" $port.value) }}</port>
 
             <!-- Optional. TCP port that will be used by the RMI connector for
                  its own communication stuff. The port has not to be specified
@@ -1175,7 +1150,7 @@ Render the Lightstreamer configuration file
                  is considered.
                  Default: the same as configured in <port>. -->
       {{- if .dataPort }}
-        {{- with .dataPort }}
+        {{- with .dataPort }}                                                                                                             
             <data_port{{- if not (quote .enableSsl | empty) }} ssl={{ .enableSsl | ternary "Y" "N" | quote }}{{- end }}>{{ int (required "management.jmx.rmiConnector.dataPort.value must be set" .value) }}</data_port>
         {{- end }}
       {{- else }}
@@ -1269,8 +1244,10 @@ Render the Lightstreamer configuration file
                  Default: if the block is missing, any settings provided to the
                  "javax.net.ssl.keyStore" and "javax.net.ssl.keyStorePassword"
                  JVM properties will apply. -->
-      {{- with .keyStoreRef }}
-        {{- include "lightstreamer.configuration.keystore" (list $.Values.keyStores .) | nindent 12 }}
+      {{- if or .port.enableSsl (.dataPort).enableSsl }}
+        {{- with required "management.jmx.rmiConnector.keyStoreRef must be set" .keyStoreRef }}
+          {{- include "lightstreamer.configuration.keystore" (list $.Values.keyStores .) | nindent 12 }}
+        {{- end }}
       {{- else }}
             <!--
             <keystore type="JKS">
@@ -1379,8 +1356,10 @@ Render the Lightstreamer configuration file
                  be supplied in order to allow access through the connector.
                  This is also needed if you wish to use the provided "stop" script;
                  the script will always use the first user supplied. -->
-      {{- range .credentialsSecrets}}
-            <user id="$env.LS_RMI_CREDENTIAL{{ . | upper | replace "-" "_" }}_USER" password="$env.LS_RMI_CREDENTIAL{{ . | upper | replace "-" "_"}}_PASSWORD" />
+      {{- if and .credentialsSecrets (not .enablePublicAccess) }}
+        {{- range .credentialsSecrets}}
+            <user id="$env.LS_RMI_CREDENTIAL_{{ . | upper | replace "-" "_" }}_USER" password="$env.LS_RMI_CREDENTIAL_{{ . | upper | replace "-" "_"}}_PASSWORD" />
+        {{- end }}
       {{- else}}
             <!--
             <user id="other_user" password="other_password" />
@@ -1395,7 +1374,7 @@ Render the Lightstreamer configuration file
              see README.TXT in the JMX SDK for details.
              The remote server will be accessible through the url:
              "service:jmx:jmxmp://<host>:<port>". -->
-    {{- if and .jmxmpConnector .jmxmpConnector.enabled }}
+    {{- if (.jmxmpConnector).enabled }}
         <jmxmp_connector>
 
             <!-- Mandatory for this block. TCP port on which Sun/Oracle's JMXMP
@@ -1435,8 +1414,11 @@ Render the Lightstreamer configuration file
              disabled by default.
              Default: Y. -->
     {{- if .sessionMbeanAvailability }}
-      {{- $values := dict "active" "N" "inactive" "Y" "sampled_statistics_only" "sampled_statistics_only" }}
-        <disable_session_mbeans>{{ required "management.jmx.must.sessionMbeanAvailability must be set with a valid value" (get $values .sessionMbeanAvailability) }}</disable_session_mbeans>
+      {{- $sessionAvailabilityMap := dict "active" "N" "inactive" "Y" "sampled_statistics_only" "sampled_statistics_only" -}}
+      {{- if not (mustHas .sessionMbeanAvailability (keys $sessionAvailabilityMap)) }}
+        {{- fail (printf "management.jmx.sessionMbeanAvailability must be one of %s" (keys $sessionAvailabilityMap)) }}
+      {{- end }}
+        <disable_session_mbeans>{{ get $sessionAvailabilityMap .sessionMbeanAvailability }}</disable_session_mbeans>
     {{- else }}
         <!--
         <disable_session_mbeans>N</disable_session_mbeans>
@@ -1560,18 +1542,20 @@ Render the Lightstreamer configuration file
              The optional "jmxtree_visible" attribute (whose default is "Y")
              allows for restriction of the access to the JMX Tree on a user basis;
              it is only effective if <jmxtree_enabled> is set to "Y". -->
-        {{- range $credential := .credentials }}
-          {{- if $credential.secretRef}}
-            <user id="$env.LS_RMI_CREDENTIAL{{ $credential.secretRef | upper | replace "-" "_" }}_USER" password="$env.LS_RMI_CREDENTIAL{{ .secretRef | upper | replace "-" "_"}}_PASSWORD"{{- if not (quote .enableJmxTreeVisibility | empty) }} jmxtree_visible={{ $credential.enableJmxTreeVisibility | ternary "Y" "N" | quote }}{{- end }} />
-          {{- end }}
-        {{- else}}
+    {{- if and .credentials (not .enablePublicAccess) }}             
+      {{- range $credential := .credentials }}
+        {{- if $credential.secretRef}}
+        <user id="$env.LS_DASHBOARD_CREDENTIAL_{{ $credential.secretRef | upper | replace "-" "_" }}_USER" password="$env.LS_DASHBOARD_CREDENTIAL_{{ .secretRef | upper | replace "-" "_"}}_PASSWORD"{{- if not (quote .enableJmxTreeVisibility | empty) }} jmxtree_visible={{ $credential.enableJmxTreeVisibility | ternary "Y" "N" | quote }}{{- end }} />
+        {{- end }}
+      {{- end}}
+    {{- else}}
         <!--
         <user id="put_your_dashboard_user_here" password="put_your_dashboard_password_here" />
         -->
         <!--
         <user id="other_user" password="other_password" jmxtree_visible="N" />
         -->
-        {{- end }}
+    {{- end }}
 
         <!-- Optional. Enabling of the access to the Monitoring Dashboard pages
              through all server sockets. Can be one of the following:
@@ -1603,10 +1587,9 @@ Render the Lightstreamer configuration file
              allows for restriction of the access to the JMX Tree on a TCP port
              basis; it is only effective if <jmxtree_enabled> is set to "Y". -->
     {{- if not .enableAvailabilityOnAllServers }}
-      {{- range .availableOnServers }}
-        {{- $serverRef := required "dashboard.availableOnServers[].serverRef must be set" .serverRef }}
-        {{- $serverName := required (printf "servers.%s not defined " $serverRef) ($.Values.servers | dig $serverRef "name" "") }}
-        <available_on_server name={{ $serverName | quote }}{{- if not (quote .enableJmxTreeVisibility | empty) }} jmxtree_visible={{ .enableJmxTreeVisibility | ternary "Y" "N" | quote }}{{- end }} />
+      {{- range $index, $value := .availableOnServers }}
+        {{- include "lightstreamer.configuration.validateServer" (list $ (printf "management.dashboard.availableOnServers[%d].serverRef" (int $index)) $value.serverRef) }}
+        <available_on_server name={{ (get $.Values.servers $value.serverRef).name | quote }}{{- if not (quote $value.enableJmxTreeVisibility | empty) }} jmxtree_visible={{ $value.enableJmxTreeVisibility | ternary "Y" "N" | quote }}{{- end }} />
       {{- else }}
         <!--
         <available_on_server name="Lightstreamer HTTPS Server" />
@@ -1682,12 +1665,9 @@ Render the Lightstreamer configuration file
              Specific server sockets for which healthcheck requests can be issued,
              that can be identified through the mandatory "name" attribute. -->
     {{- if not .enableAvailabilityOnAllServers }}
-      {{- range $serverRef := .availableOnServers }}
-        {{- if not (quote $serverRef | empty) }}
-        <available_on_server name={{ required (printf "servers.%s not defined" $serverRef) ($.Values.servers | dig $serverRef "name" "") | quote }} />
-        {{- else }}
-        {{- fail "healthCheck.availableOnServers[] must be set with non-empty references" }}
-        {{- end }}
+      {{- range $index, $value := .availableOnServers }}
+        {{- include "lightstreamer.configuration.validateServer" (list $ (printf "management.healthCheck.availableOnServers[%d].serverRef" (int $index)) $value.serverRef) }}
+        <available_on_server name={{ (get $.Values.servers $value.serverRef).name | quote }} />
       {{- else }}
         <!--
         <available_on_server name="Lightstreamer HTTP Server" />
