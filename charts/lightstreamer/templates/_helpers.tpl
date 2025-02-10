@@ -89,26 +89,74 @@ Create the name of the service account to use
 {{- end }}
 {{- end }}
 
+{{- define "lightstreamer.configuration.validateAllServers" }}
+{{- $usedNames := list }}
+{{- $usedPorts := list }}
+{{- range $serverKey, $server :=.Values.servers }}
+  {{- if $server.enabled }}
+    {{- /* CHECK SERVER NAMES */ -}}
+    {{- $serverName := required (printf "servers.%s.name must be set" $serverKey) $server.name }}
+    {{- if has $serverName $usedNames }}
+      {{- fail (printf "servers.%s.name \"%s\" already used" $serverKey $serverName ) }}
+    {{- end }}
+    {{- $usedNames = append $usedNames $serverName }}
+    {{- /* CHECK SERVER PORTS */ -}}
+    {{- $serverPort := required (printf "servers.%s.port must be set" $serverKey) (int $server.port) }}
+    {{- if has $serverPort $usedPorts }}
+      {{- fail (printf "servers.%s.port \"%d\" already used" $serverKey $serverPort ) }}
+    {{- end }}
+    {{- $usedPorts = append $usedPorts $serverPort }}
+  {{- end }}
+{{- end }}
+{{- if $usedNames | empty }} 
+  {{- fail "At least one enabled server must be defined" }}
+{{- end }}
+{{- end }}
+
+{{- define "lightstreamer.configuration.validateServer" }}
+{{- $ := index . 0 }}
+{{- $serverKeyName := index . 1 }}
+{{- $serverKey := required (printf "%s must be set" $serverKeyName) (index . 2) }}
+{{- $server := required (printf "servers.%s not defined" $serverKey) (get $.Values.servers $serverKey ) }}
+{{- if not $server.enabled }}
+  {{- printf "%s must set to an enabled server" $serverKeyName | fail }}
+{{- end }}
+{{- end }}
+
+{{- define "lightstreamer.configuration.serverPortName" -}}
+{{ . | lower | replace "_" "- " }}
+{{- end }}
+
+{{- define "lightstreamer.service.targetPort" -}}
+{{- $serverKeyName := "Values.service.targetPort" }}
+{{- $serverKey := .Values.service.targetPort }}
+{{- include "lightstreamer.configuration.validateServer" (list . $serverKeyName $serverKey) }}
+{{- include "lightstreamer.configuration.serverPortName" $serverKey -}}
+{{- end }}
+
+{{- define "lightstreamer.deployment.healthcheckPort" -}}
+{{- $ := index . 0 }}
+{{- $probeName := index . 1 }}
+{{- $serverKeyName := printf "deployment.probes.%s.healthCheck.serverRef" $probeName }}
+{{- $serverKey := (index . 2).serverRef }}
+{{- include "lightstreamer.configuration.validateServer" (list $ $serverKeyName $serverKey) }}
+{{- include "lightstreamer.configuration.serverPortName" $serverKey -}}
+{{- end }}
+
 {{/*
 Render a probe for the deployment descriptor
 */}}
 {{- define "lightstreamer.deployment.probe" -}}
-{{- $probe := index . 0}}
-{{- $probeName := index . 1}}
-{{- $servers := index . 2}}
-# Checking probe {{ $probeName }}
+{{- $ := index . 0}}
+{{- $probe := index . 1 }}
+{{- $probeName := index . 2 }}
 {{- if ($probe).enabled }}
 {{ printf "%sProbe:" $probeName }}
   {{- with $probe.healthCheck }}
   httpGet:
     path: /lightstreamer/healthcheck
-      {{- $serverRef := required (printf "deployment.probes.%s.healthCheck.serverRef must be set" $probeName) .serverRef }}
-      {{- $server := required (printf "servers.%s not defined" $serverRef) (get $servers $serverRef) }}
-      {{- if not $server.enabled }}
-        {{- fail (printf "deployment.probes.%s.healthCheck.serverRef must be set to an enabled server" $probeName) }}
-      {{- end }}
-    port: {{ $serverRef }}
-    scheme: {{ $server.enableHttps | default false | ternary "HTTPS" "HTTP" }}
+    port: {{ include "lightstreamer.deployment.healthcheckPort" (list $ $probeName .) }}
+    scheme: {{ (get $.Values.servers .serverRef).enableHttps | default false | ternary "HTTPS" "HTTP" }}
   initialDelaySeconds: {{ .initialDelaySeconds }}
   periodSeconds: {{ .periodSeconds }}
   failureThreshold: {{ .failureThreshold }}
@@ -124,6 +172,16 @@ Render a probe for the deployment descriptor
   {{- end }}
 {{- end }}
 {{- end -}}
+
+{{/*
+Render all the probes for the deployment descriptor
+*/}}
+{{- define "lightstreamer.deployment.all-probes" -}}
+{{- $probes := .Values.deployment.probes }}
+{{- range $probeName, $probe := $probes }}
+{{- include "lightstreamer.deployment.probe" (list $ $probe $probeName) }}
+{{- end }}
+{{- end }}
 
 {{/*
 Render the keystore settings for the main configuration file 
