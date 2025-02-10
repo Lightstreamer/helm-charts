@@ -4,8 +4,9 @@
 {{ if gt (len $defaultValue) 45 -}}
 **Default:**
 
-
+```
 {{ $defaultValue | replace "`" "" }}
+```
 
 {{- else -}}
 **Default:** {{ $defaultValue }}
