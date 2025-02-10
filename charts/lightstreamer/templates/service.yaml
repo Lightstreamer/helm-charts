@@ -37,7 +37,7 @@ spec:
       targetPort: {{ include "lightstreamer.service.targetPort" . }}
       protocol: TCP
       nodePort: {{ .Values.service.nodePort }}
-      name: {{ .Values.service.name | default (printf "%s-%s" (include "lightstreamer.fullname" . ) "service") }}
+      name: {{ include "lightstreamer.service.name" . }}
   selector:
     {{- include "lightstreamer.selectorLabels" . | nindent 4 }}
     {{- with .Values.service.additionalSelectors }}
