@@ -34,14 +34,10 @@ spec:
   {{- end }}
   ports:
     - port: {{ .Values.service.port }}
-      {{- if not (hasKey .Values.servers .Values.service.targetPort) }}
-      {{- fail (printf "servers.%s not defined " .Values.service.targetPort) }}
-      {{- else }}
-      targetPort: {{ .Values.service.targetPort }}
-      {{- end }}
+      targetPort: {{ include "lightstreamer.service.targetPort" . }}
       protocol: TCP
       nodePort: {{ .Values.service.nodePort }}
-      name: {{ .Values.service.name }}
+      name: {{ .Values.service.name | default (printf "%s-%s" (include "lightstreamer.fullname" . ) "service") }}
   selector:
     {{- include "lightstreamer.selectorLabels" . | nindent 4 }}
     {{- with .Values.service.additionalSelectors }}
