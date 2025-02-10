@@ -1,29 +1,46 @@
-{{ define "chart.valuesTableHtml" }}
-
-{{- $sections := list "license" "servers" "globalSocket" "security" "management" "pushSession" "keyStores" "webServer" "cluster" "load" "connectors" }}
-{{- range $section := $sections }}
-## {{ printf "%s configuration " ($section | title) }}
-{{ range $.Values }}
-
-{{- if hasPrefix $section .Key }}
-### [{{ .Key }}](./values.yaml#L{{ .LineNumber }})
-
+{{- define "chart.extractValues" }}
 {{ if .Description }}{{ .Description }}{{ else }}{{ .AutoDescription }}{{ end }}
-{{ $defaultValue := (default .Default .AutoDefault) }}
-{{ if gt (len $defaultValue) 30 -}}
+{{ $defaultValue := (.AutoDefault | empty) | ternary .Default (printf "`%s`" .AutoDefault) }}
+{{ if gt (len $defaultValue) 45 -}}
 **Default:**
 
-```
-    {{ $defaultValue | replace "`" "" | toPrettyJson }}
-```
-  {{- else -}}
+
+{{ $defaultValue | replace "`" "" }}
+
+{{- else -}}
 **Default:** {{ $defaultValue }}
 
-  {{- end }}
+{{- end }}
+{{- end }}
 
+{{ define "chart.valuesTable" }}
+
+## Settings
+
+### Common settings
+{{- $commons := list "nameOverride" "fullnameOverride" "commonLabels" "image" "image.repository" "image.pullRepository" "image.tag"}}
+{{ range $.Values }}
+  {{- if has .Key $commons }}
+#### [{{ .Key }}](./values.yaml#L{{ .LineNumber }})
+
+      {{ template "chart.extractValues" . }}
+    {{- end }}
 {{- end }}
+
+{{- $sections := list "servers" "keyStores" "globalSocket" "security" "management" "pushSession" "mpn" "keyStores" "webServer" "cluster" "load" "license" "logging" "connectors" }}
+{{- range $section := $sections }}
+### {{ printf "%s configuration " ($section | title) }}
+  {{ range $.Values }}
+
+    {{- if hasPrefix $section .Key }}
+#### [{{ .Key }}](./values.yaml#L{{ .LineNumber }})
+
+      {{ template "chart.extractValues" . }}
+    {{- end }}
+  {{- end }}
 {{- end }}
-{{- end }}
+
+
 {{ end }}
 
 {{ template "chart.deprecationWarning" . }}
@@ -49,6 +66,6 @@ $ helm install lightstreamer-app lightstreamer/lightstreamer -n lightstreamer --
 
 {{ template "chart.requirementsSection" . }}
 
-{{ template "chart.valuesSectionHtml" . }}
+{{ template "chart.valuesTable" . }}
 
 {{ template "helm-docs.versionFooter" . }}
