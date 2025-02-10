@@ -1588,7 +1588,7 @@ Render the Lightstreamer configuration file
              basis; it is only effective if <jmxtree_enabled> is set to "Y". -->
     {{- if not .enableAvailabilityOnAllServers }}
       {{- range $index, $value := .availableOnServers }}
-        {{- include "lightstreamer.configuration.validateServer" (list $ (printf "management.dashboard.availableOnServers[%d].serverRef" (int $index)) $value.serverRef) }}
+        {{- include "lightstreamer.configuration.validateServerRef" (list $ (printf "management.dashboard.availableOnServers[%d].serverRef" (int $index)) $value.serverRef) }}
         <available_on_server name={{ (get $.Values.servers $value.serverRef).name | quote }}{{- if not (quote $value.enableJmxTreeVisibility | empty) }} jmxtree_visible={{ $value.enableJmxTreeVisibility | ternary "Y" "N" | quote }}{{- end }} />
       {{- else }}
         <!--
@@ -1666,7 +1666,7 @@ Render the Lightstreamer configuration file
              that can be identified through the mandatory "name" attribute. -->
     {{- if not .enableAvailabilityOnAllServers }}
       {{- range $index, $value := .availableOnServers }}
-        {{- include "lightstreamer.configuration.validateServer" (list $ (printf "management.healthCheck.availableOnServers[%d].serverRef" (int $index)) $value.serverRef) }}
+        {{- include "lightstreamer.configuration.validateServerRef" (list $ (printf "management.healthCheck.availableOnServers[%d].serverRef" (int $index)) $value.serverRef) }}
         <available_on_server name={{ (get $.Values.servers $value.serverRef).name | quote }} />
       {{- else }}
         <!--
