@@ -48,7 +48,7 @@ Lightstreamer Docker Image settings
 
 **Default:**
 
-{"pullPolicy":"IfNotPresent","repository":"lightstreamer","tag":"latest"}
+```{"pullPolicy":"IfNotPresent","repository":"lightstreamer","tag":"latest"}```
 #### [image.repository](./values.yaml#L33)
 
      
@@ -76,7 +76,7 @@ Mandatory. Map of HTTP/S server socket configurations. Every key in the map defi
 
 **Default:**
 
-{"defaultServer":{"backlog":null,"clientIdentification":{"enableForwardsLogging":null,"enablePrivate":null,"enableProxyProtocol":null,"proxyProtocolTimeoutMillis":null,"skipLocalForwards":null},"enableHttps":false,"enabled":true,"listeningInterface":null,"name":"Lightstreamer HTTP Server","port":8080,"portType":null,"responseHttpHeaders":{"add":[{"name":"X-Accel-Buffering","value":"no"}],"echo":null},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableClientAuth":null,"enableClientHintsForTlsSessionResumption":null,"enableMandatoryClientAuth":null,"enableStatelessTlsSessionResumption":null,"enableTlsRenegotiation":null,"enforceServerCipherSuitePreference":{"enabled":true,"order":"JVM"},"keyStoreRef":"myServerKeystore","removeCipherSuites":[],"removeProtocols":["SSL","TLSv1$","TLSv1.1"],"tlsProvider":null,"tlsSessionCacheSize":null,"tlsSessionTimeoutSeconds":null,"trustStoreRef":null}}}
+```{"defaultServer":{"backlog":null,"clientIdentification":{"enableForwardsLogging":null,"enablePrivate":null,"enableProxyProtocol":null,"proxyProtocolTimeoutMillis":null,"skipLocalForwards":null},"enableHttps":false,"enabled":true,"listeningInterface":null,"name":"Lightstreamer HTTP Server","port":8080,"portType":null,"responseHttpHeaders":{"add":[{"name":"X-Accel-Buffering","value":"no"}],"echo":null},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableClientAuth":null,"enableClientHintsForTlsSessionResumption":null,"enableMandatoryClientAuth":null,"enableStatelessTlsSessionResumption":null,"enableTlsRenegotiation":null,"enforceServerCipherSuitePreference":{"enabled":true,"order":"JVM"},"keyStoreRef":"myServerKeystore","removeCipherSuites":[],"removeProtocols":["SSL","TLSv1$","TLSv1.1"],"tlsProvider":null,"tlsSessionCacheSize":null,"tlsSessionTimeoutSeconds":null,"trustStoreRef":null}}}```
 #### [servers.defaultServer](./values.yaml#L931)
 
      
@@ -84,7 +84,7 @@ At least one must be provided. An HTTP server socket configuration.
 
 **Default:**
 
-{"backlog":null,"clientIdentification":{"enableForwardsLogging":null,"enablePrivate":null,"enableProxyProtocol":null,"proxyProtocolTimeoutMillis":null,"skipLocalForwards":null},"enableHttps":false,"enabled":true,"listeningInterface":null,"name":"Lightstreamer HTTP Server","port":8080,"portType":null,"responseHttpHeaders":{"add":[{"name":"X-Accel-Buffering","value":"no"}],"echo":null},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableClientAuth":null,"enableClientHintsForTlsSessionResumption":null,"enableMandatoryClientAuth":null,"enableStatelessTlsSessionResumption":null,"enableTlsRenegotiation":null,"enforceServerCipherSuitePreference":{"enabled":true,"order":"JVM"},"keyStoreRef":"myServerKeystore","removeCipherSuites":[],"removeProtocols":["SSL","TLSv1$","TLSv1.1"],"tlsProvider":null,"tlsSessionCacheSize":null,"tlsSessionTimeoutSeconds":null,"trustStoreRef":null}}
+```{"backlog":null,"clientIdentification":{"enableForwardsLogging":null,"enablePrivate":null,"enableProxyProtocol":null,"proxyProtocolTimeoutMillis":null,"skipLocalForwards":null},"enableHttps":false,"enabled":true,"listeningInterface":null,"name":"Lightstreamer HTTP Server","port":8080,"portType":null,"responseHttpHeaders":{"add":[{"name":"X-Accel-Buffering","value":"no"}],"echo":null},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableClientAuth":null,"enableClientHintsForTlsSessionResumption":null,"enableMandatoryClientAuth":null,"enableStatelessTlsSessionResumption":null,"enableTlsRenegotiation":null,"enforceServerCipherSuitePreference":{"enabled":true,"order":"JVM"},"keyStoreRef":"myServerKeystore","removeCipherSuites":[],"removeProtocols":["SSL","TLSv1$","TLSv1.1"],"tlsProvider":null,"tlsSessionCacheSize":null,"tlsSessionTimeoutSeconds":null,"trustStoreRef":null}}```
 #### [servers.defaultServer.backlog](./values.yaml#L955)
 
      
@@ -146,7 +146,7 @@ Optional. Can be used on a multihomed host to specify the IP address to bind the
 
 **Default:**
 
-accept connections on any/all local addresses
+```accept connections on any/all local addresses```
 #### [servers.defaultServer.name](./values.yaml#L941)
 
      
@@ -172,7 +172,7 @@ Optional. Settings that allow some control over the HTTP headers of the provided
 
 **Default:**
 
-{"add":[{"name":"X-Accel-Buffering","value":"no"}],"echo":null}
+```{"add":[{"name":"X-Accel-Buffering","value":"no"}],"echo":null}```
 #### [servers.defaultServer.responseHttpHeaders.add](./values.yaml#L1011)
 
      
@@ -192,7 +192,7 @@ Mandatory if `enableHttps` is `true`. TLS/SSL settings for this socket configura
 
 **Default:**
 
-{"allowCipherSuites":[],"allowProtocols":[],"enableClientAuth":null,"enableClientHintsForTlsSessionResumption":null,"enableMandatoryClientAuth":null,"enableStatelessTlsSessionResumption":null,"enableTlsRenegotiation":null,"enforceServerCipherSuitePreference":{"enabled":true,"order":"JVM"},"keyStoreRef":"myServerKeystore","removeCipherSuites":[],"removeProtocols":["SSL","TLSv1$","TLSv1.1"],"tlsProvider":null,"tlsSessionCacheSize":null,"tlsSessionTimeoutSeconds":null,"trustStoreRef":null}
+```{"allowCipherSuites":[],"allowProtocols":[],"enableClientAuth":null,"enableClientHintsForTlsSessionResumption":null,"enableMandatoryClientAuth":null,"enableStatelessTlsSessionResumption":null,"enableTlsRenegotiation":null,"enforceServerCipherSuitePreference":{"enabled":true,"order":"JVM"},"keyStoreRef":"myServerKeystore","removeCipherSuites":[],"removeProtocols":["SSL","TLSv1$","TLSv1.1"],"tlsProvider":null,"tlsSessionCacheSize":null,"tlsSessionTimeoutSeconds":null,"trustStoreRef":null}```
 #### [servers.defaultServer.sslConfig.allowCipherSuites](./values.yaml#L1140)
 
      
@@ -206,7 +206,7 @@ Optional, but forbidden if `removeProtocols` is used. Specifies one or more prot
 
 **Default:**
 
-the removeProtocols setting is considered; hence, if
+```the removeProtocols setting is considered; hence, if```
 #### [servers.defaultServer.sslConfig.enableClientAuth](./values.yaml#L1271)
 
      
@@ -232,7 +232,7 @@ Optional. Instructs the underlying Security Provider on whether to use stateless
 
 **Default:**
 
-the type of resumption will be  decided by the underlying
+```the type of resumption will be  decided by the underlying```
 #### [servers.defaultServer.sslConfig.enableTlsRenegotiation](./values.yaml#L1187)
 
      
@@ -282,7 +282,7 @@ Optional. If defined, overrides the default JVM's Security Provider configured i
 
 **Default:**
 
-the default JVM's Security Provider configured in the
+```the default JVM's Security Provider configured in the```
 #### [servers.defaultServer.sslConfig.tlsSessionCacheSize](./values.yaml#L1242)
 
      
@@ -290,7 +290,7 @@ Optional. Size of the cache used by the TLS implementation to handle TLS session
 
 **Default:**
 
-the cache size is decided by the underlying Security
+```the cache size is decided by the underlying Security```
 #### [servers.defaultServer.sslConfig.tlsSessionTimeoutSeconds](./values.yaml#L1254)
 
      
@@ -298,7 +298,7 @@ Optional. Maximum time in which a TLS session is kept available to the client fo
 
 **Default:**
 
-the maximum time is decided by the underlying Security
+```the maximum time is decided by the underlying Security```
 #### [servers.defaultServer.sslConfig.trustStoreRef](./values.yaml#L1294)
 
      
@@ -314,7 +314,7 @@ Keystores definition.
 
 **Default:**
 
-{"myKafkaConnectorKeystore":null,"myServerKeystore":{"keystoreFileSecretRef":{"key":"myserver.keystore","name":"myserver-keystore-secret"},"keystorePasswordSecretRef":{"key":"myserver.keypass","name":"myserver-keypass-secret"},"type":"JKS"}}
+```{"myKafkaConnectorKeystore":null,"myServerKeystore":{"keystoreFileSecretRef":{"key":"myserver.keystore","name":"myserver-keystore-secret"},"keystorePasswordSecretRef":{"key":"myserver.keypass","name":"myserver-keypass-secret"},"type":"JKS"}}```
 #### [keyStores.myKafkaConnectorKeystore](./values.yaml#L1327)
 
      
@@ -328,7 +328,7 @@ Keystore definition used by HTTPS server socket configurations. The default valu
 
 **Default:**
 
-{"keystoreFileSecretRef":{"key":"myserver.keystore","name":"myserver-keystore-secret"},"keystorePasswordSecretRef":{"key":"myserver.keypass","name":"myserver-keypass-secret"},"type":"JKS"}
+```{"keystoreFileSecretRef":{"key":"myserver.keystore","name":"myserver-keystore-secret"},"keystorePasswordSecretRef":{"key":"myserver.keypass","name":"myserver-keypass-secret"},"type":"JKS"}```
 #### [keyStores.myServerKeystore.keystoreFileSecretRef](./values.yaml#L1318)
 
      
@@ -336,7 +336,7 @@ Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key where the key
 
 **Default:**
 
-{"key":"myserver.keystore","name":"myserver-keystore-secret"}
+```{"key":"myserver.keystore","name":"myserver-keystore-secret"}```
 #### [keyStores.myServerKeystore.keystorePasswordSecretRef](./values.yaml#L1323)
 
      
@@ -344,7 +344,7 @@ Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key where keystor
 
 **Default:**
 
-{"key":"myserver.keypass","name":"myserver-keypass-secret"}
+```{"key":"myserver.keypass","name":"myserver-keypass-secret"}```
 #### [keyStores.myServerKeystore.type](./values.yaml#L1315)
 
      
@@ -360,7 +360,7 @@ Mandatory. Global socket configuration
 
 **Default:**
 
-{"handshakeTimeoutMillis":null,"readTimeoutMillis":20000,"requestLimit":50000,"useHttpVersion":null,"webSocket":{"enabled":null,"maxClosingWaitMillis":null,"maxOutboundFrameSize":null,"maxPongDelayMillis":null},"writeTimeoutMillis":120000}
+```{"handshakeTimeoutMillis":null,"readTimeoutMillis":20000,"requestLimit":50000,"useHttpVersion":null,"webSocket":{"enabled":null,"maxClosingWaitMillis":null,"maxOutboundFrameSize":null,"maxPongDelayMillis":null},"writeTimeoutMillis":120000}```
 #### [globalSocket.handshakeTimeoutMillis](./values.yaml#L1370)
 
      
@@ -392,7 +392,7 @@ Optional. WebSocket support configuration
 
 **Default:**
 
-{"enabled":null,"maxClosingWaitMillis":null,"maxOutboundFrameSize":null,"maxPongDelayMillis":null}
+```{"enabled":null,"maxClosingWaitMillis":null,"maxOutboundFrameSize":null,"maxPongDelayMillis":null}```
 #### [globalSocket.webSocket.enabled](./values.yaml#L1410)
 
      
@@ -406,7 +406,7 @@ Optional. Maximum time the Server is allowed to wait for the client "close" fram
 
 **Default:**
 
-no timeout is set and the global global.readTimeoutMillis applies
+```no timeout is set and the global global.readTimeoutMillis applies```
 #### [globalSocket.webSocket.maxOutboundFrameSize](./values.yaml#L1428)
 
      
@@ -434,7 +434,7 @@ Security configuration
 
 **Default:**
 
-{"allowedDomains":[],"crossDomainPolicy":{"acceptCredentials":true,"acceptExtraHeaders":null,"allowAccessFrom":{"fromEveryWere":{"host":"*","port":"*","scheme":"*"}},"optionsMaxAgeSeconds":3600},"enableCookiesForwarding":false,"enableProtectedJs":false,"serverIdentificationPolicy":null}
+```{"allowedDomains":[],"crossDomainPolicy":{"acceptCredentials":true,"acceptExtraHeaders":null,"allowAccessFrom":{"fromEveryWere":{"host":"*","port":"*","scheme":"*"}},"optionsMaxAgeSeconds":3600},"enableCookiesForwarding":false,"enableProtectedJs":false,"serverIdentificationPolicy":null}```
 #### [security.crossDomainPolicy](./values.yaml#L1489)
 
      
@@ -442,7 +442,7 @@ Optional. List of origins to be allowed by the browsers to consume responses to 
 
 **Default:**
 
-{"acceptCredentials":true,"acceptExtraHeaders":null,"allowAccessFrom":{"fromEveryWere":{"host":"*","port":"*","scheme":"*"}},"optionsMaxAgeSeconds":3600}
+```{"acceptCredentials":true,"acceptExtraHeaders":null,"allowAccessFrom":{"fromEveryWere":{"host":"*","port":"*","scheme":"*"}},"optionsMaxAgeSeconds":3600}```
 #### [security.crossDomainPolicy.acceptCredentials](./values.yaml#L1512)
 
      
@@ -462,7 +462,7 @@ Optional. List of Origin allowed to consume responses to cross-origin requests.
 
 **Default:**
 
-{"fromEveryWere":{"host":"*","port":"*","scheme":"*"}}
+```{"fromEveryWere":{"host":"*","port":"*","scheme":"*"}}```
 #### [security.crossDomainPolicy.allowAccessFrom.fromEveryWere](./values.yaml#L1518)
 
      
@@ -520,7 +520,7 @@ Mandatory. Logging and management configuration
 
 **Default:**
 
-{"asyncProcessingThresholdMillis":60000,"collectorMillis":2000,"dashboard":{"availableOnServers":[{"enableJmxTreeVisibility":null,"serverRef":null}],"credentials":[{"enableJmxTreeVisibility":null,"secretRef":null}],"enableAvailabilityOnAllServers":true,"enableHostnameLookup":null,"enableJmxTree":true,"enablePublicAccess":null,"urlPath":null},"enablePasswordVisibilityOnRequestLog":null,"enableStoppingServiceCheck":null,"healthCheck":{"availableOnServers":[],"enableAvailabilityOnAllServers":true},"jmx":{"enableLongListProperties":false,"jmxmpConnector":{"enabled":null,"port":null},"rmiConnector":{"allowCipherSuites":[],"allowProtocols":[],"credentialsSecrets":null,"dataPort":null,"enablePublicAccess":null,"enableTestPorts":true,"enforceServerCipherSuitePreference":{"enabled":true,"order":"JVM"},"hostName":null,"keyStoreRef":null,"listeningInterface":null,"port":{"enableSsl":false,"value":8888},"removeCipherSuites":[],"removeProtocols":["SSL","TLSv1$","TLSv1.1"],"testTimeoutMillis":5000},"sessionMbeanAvailability":null},"maxTaskWaitMillis":null,"noLoggingIpAddresses":[],"unexpectedWaitThresholdMillis":0}
+```{"asyncProcessingThresholdMillis":60000,"collectorMillis":2000,"dashboard":{"availableOnServers":[{"enableJmxTreeVisibility":null,"serverRef":null}],"credentials":[{"enableJmxTreeVisibility":null,"secretRef":null}],"enableAvailabilityOnAllServers":true,"enableHostnameLookup":null,"enableJmxTree":true,"enablePublicAccess":null,"urlPath":null},"enablePasswordVisibilityOnRequestLog":null,"enableStoppingServiceCheck":null,"healthCheck":{"availableOnServers":[],"enableAvailabilityOnAllServers":true},"jmx":{"enableLongListProperties":false,"jmxmpConnector":{"enabled":null,"port":null},"rmiConnector":{"allowCipherSuites":[],"allowProtocols":[],"credentialsSecrets":null,"dataPort":null,"enablePublicAccess":null,"enableTestPorts":true,"enforceServerCipherSuitePreference":{"enabled":true,"order":"JVM"},"hostName":null,"keyStoreRef":null,"listeningInterface":null,"port":{"enableSsl":false,"value":8888},"removeCipherSuites":[],"removeProtocols":["SSL","TLSv1$","TLSv1.1"],"testTimeoutMillis":5000},"sessionMbeanAvailability":null},"maxTaskWaitMillis":null,"noLoggingIpAddresses":[],"unexpectedWaitThresholdMillis":0}```
 #### [management.asyncProcessingThresholdMillis](./values.yaml#L1629)
 
      
@@ -540,7 +540,7 @@ Optional. Configuration of the Monitoring Dashboard. The dashboard is a webapp w
 
 **Default:**
 
-{"availableOnServers":[{"enableJmxTreeVisibility":null,"serverRef":null}],"credentials":[{"enableJmxTreeVisibility":null,"secretRef":null}],"enableAvailabilityOnAllServers":true,"enableHostnameLookup":null,"enableJmxTree":true,"enablePublicAccess":null,"urlPath":null}
+```{"availableOnServers":[{"enableJmxTreeVisibility":null,"serverRef":null}],"credentials":[{"enableJmxTreeVisibility":null,"secretRef":null}],"enableAvailabilityOnAllServers":true,"enableHostnameLookup":null,"enableJmxTree":true,"enablePublicAccess":null,"urlPath":null}```
 #### [management.dashboard.availableOnServers](./values.yaml#L1940)
 
      
@@ -548,7 +548,7 @@ Optional, but ineffective if `enableAvailabilityOnAllServers` is set to `true`. 
 
 **Default:**
 
-[{"enableJmxTreeVisibility":null,"serverRef":null}]
+```[{"enableJmxTreeVisibility":null,"serverRef":null}]```
 #### [management.dashboard.availableOnServers[0].serverRef](./values.yaml#L1943)
 
      
@@ -616,7 +616,7 @@ Optional. Configuration of the "/lightstreamer/healthcheck" request url, which a
 
 **Default:**
 
-{"availableOnServers":[],"enableAvailabilityOnAllServers":true}
+```{"availableOnServers":[],"enableAvailabilityOnAllServers":true}```
 #### [management.healthCheck.availableOnServers](./values.yaml#L1983)
 
      
@@ -636,7 +636,7 @@ Mandatory (if you wish to use the provided "stop" script). JMX preferences and e
 
 **Default:**
 
-{"enableLongListProperties":false,"jmxmpConnector":{"enabled":null,"port":null},"rmiConnector":{"allowCipherSuites":[],"allowProtocols":[],"credentialsSecrets":null,"dataPort":null,"enablePublicAccess":null,"enableTestPorts":true,"enforceServerCipherSuitePreference":{"enabled":true,"order":"JVM"},"hostName":null,"keyStoreRef":null,"listeningInterface":null,"port":{"enableSsl":false,"value":8888},"removeCipherSuites":[],"removeProtocols":["SSL","TLSv1$","TLSv1.1"],"testTimeoutMillis":5000},"sessionMbeanAvailability":null}
+```{"enableLongListProperties":false,"jmxmpConnector":{"enabled":null,"port":null},"rmiConnector":{"allowCipherSuites":[],"allowProtocols":[],"credentialsSecrets":null,"dataPort":null,"enablePublicAccess":null,"enableTestPorts":true,"enforceServerCipherSuitePreference":{"enabled":true,"order":"JVM"},"hostName":null,"keyStoreRef":null,"listeningInterface":null,"port":{"enableSsl":false,"value":8888},"removeCipherSuites":[],"removeProtocols":["SSL","TLSv1$","TLSv1.1"],"testTimeoutMillis":5000},"sessionMbeanAvailability":null}```
 #### [management.jmx.enableLongListProperties](./values.yaml#L1845)
 
      
@@ -668,7 +668,7 @@ Mandatory (if you wish to use the provided "stop" script). Enables the standard 
 
 **Default:**
 
-{"allowCipherSuites":[],"allowProtocols":[],"credentialsSecrets":null,"dataPort":null,"enablePublicAccess":null,"enableTestPorts":true,"enforceServerCipherSuitePreference":{"enabled":true,"order":"JVM"},"hostName":null,"keyStoreRef":null,"listeningInterface":null,"port":{"enableSsl":false,"value":8888},"removeCipherSuites":[],"removeProtocols":["SSL","TLSv1$","TLSv1.1"],"testTimeoutMillis":5000}
+```{"allowCipherSuites":[],"allowProtocols":[],"credentialsSecrets":null,"dataPort":null,"enablePublicAccess":null,"enableTestPorts":true,"enforceServerCipherSuitePreference":{"enabled":true,"order":"JVM"},"hostName":null,"keyStoreRef":null,"listeningInterface":null,"port":{"enableSsl":false,"value":8888},"removeCipherSuites":[],"removeProtocols":["SSL","TLSv1$","TLSv1.1"],"testTimeoutMillis":5000}```
 #### [management.jmx.rmiConnector.allowCipherSuites](./values.yaml#L1750)
 
      
@@ -694,7 +694,7 @@ Optional. TCP port that will be used by the RMI connector for its own communicat
 
 **Default:**
 
-the same as config used in rmiConnector.port
+```the same as config used in rmiConnector.port```
 #### [management.jmx.rmiConnector.enablePublicAccess](./values.yaml#L1790)
 
      
@@ -720,7 +720,7 @@ Optional. A hostname by which the RMI Server can be reached from all the clients
 
 **Default:**
 
-any setting provided to the "java.rmi.server.hostname" JVM
+```any setting provided to the "java.rmi.server.hostname" JVM```
 #### [management.jmx.rmiConnector.keyStoreRef](./values.yaml#L1744)
 
      
@@ -728,7 +728,7 @@ Mandatory if either `port.enableSsl` or `dataPort.enableSsl` is set  to true. Th
 
 **Default:**
 
-any settings provided to the javax.net.ssl.keyStore and
+```any settings provided to the javax.net.ssl.keyStore and```
 #### [management.jmx.rmiConnector.listeningInterface](./values.yaml#L1733)
 
      
@@ -736,7 +736,7 @@ Optional. Can be used on a multihomed host to specify the IP address to bind the
 
 **Default:**
 
-accept connections on any/all local addresses
+```accept connections on any/all local addresses```
 #### [management.jmx.rmiConnector.port](./values.yaml#L1674)
 
      
@@ -794,7 +794,7 @@ Mandatory. Push session configuration
 
 **Default:**
 
-{"compressionThreshold":null,"contentLength":{"default":4000000,"specialCases":null},"defaultDiffOrders":[],"defaultKeepaliveMillis":{"randomize":false,"value":5000},"enableDeltaDelivery":null,"enableEnrichedContentType":null,"jsonPatchMinLength":null,"maxBufferSize":"1000","maxDelayMillis":30,"maxIdleMillis":{"randomize":false,"value":30000},"maxKeepaliveMillis":30000,"maxPollingMillis":15000,"maxRecoveryLength":null,"maxRecoveryPollLength":null,"maxStreamingMillis":null,"minInterPollMillis":null,"minKeepaliveMillis":1000,"missingMessageTimeoutMillis":null,"preserveUnfilteredCommandOrdering":null,"reusePumpBuffers":null,"sendbuf":null,"serviceUrlPrefixes":[],"sessionRecoveryMillis":13000,"sessionTimeoutMillis":10000,"subscriptionTimeoutMillis":5000,"useChunkedEncoding":null,"useCompression":null}
+```{"compressionThreshold":null,"contentLength":{"default":4000000,"specialCases":null},"defaultDiffOrders":[],"defaultKeepaliveMillis":{"randomize":false,"value":5000},"enableDeltaDelivery":null,"enableEnrichedContentType":null,"jsonPatchMinLength":null,"maxBufferSize":"1000","maxDelayMillis":30,"maxIdleMillis":{"randomize":false,"value":30000},"maxKeepaliveMillis":30000,"maxPollingMillis":15000,"maxRecoveryLength":null,"maxRecoveryPollLength":null,"maxStreamingMillis":null,"minInterPollMillis":null,"minKeepaliveMillis":1000,"missingMessageTimeoutMillis":null,"preserveUnfilteredCommandOrdering":null,"reusePumpBuffers":null,"sendbuf":null,"serviceUrlPrefixes":[],"sessionRecoveryMillis":13000,"sessionTimeoutMillis":10000,"subscriptionTimeoutMillis":5000,"useChunkedEncoding":null,"useCompression":null}```
 #### [pushSession.compressionThreshold](./values.yaml#L2086)
 
      
@@ -910,7 +910,7 @@ Optional. Maximum number of bytes of streaming data, already sent or being sent 
 
 **Default:**
 
-the value configured for pushSession.sendbuf
+```the value configured for pushSession.sendbuf```
 #### [pushSession.maxRecoveryPollLength](./values.yaml#L2165)
 
      
@@ -924,7 +924,7 @@ Optional. Maximum lifetime allowed for single HTTP streaming responses; when thi
 
 **Default:**
 
-no limit is set; the streaming session duration will be limited
+```no limit is set; the streaming session duration will be limited```
 #### [pushSession.minInterPollMillis](./values.yaml#L2379)
 
      
@@ -1006,7 +1006,7 @@ Optional. Mobile Push Notification (MPN) module configuration. This module is ab
 
 **Default:**
 
-{"activationOnStartUp":{"enabled":null,"maxDelayMillis":null},"appleNotifierConfig":{"apps":{"myApp":{"enabled":null,"id":null,"keystoreRef":null,"pushPackageFileRef":null,"serviceLevel":null,"triggerExpressions":[]}},"connectionTimeout":null,"keyStores":{"myAppKeystore":{"keystoreFileSecretRef":null,"keystorePasswordSecretRef":null}},"maxConcurrentConnections":null,"minSendDelayMillis":null},"appleWebServicePath":null,"collectorPeriodMinutes":null,"deviceHandlerPool":{"maxFree":null,"maxSize":null},"deviceInactivityTimeoutMinutes":null,"enableModuleRecovery":null,"enabled":null,"executorPool":{"maxFree":null,"maxSize":null},"googleNotifierConfig":{"apps":{"myApp":{"enabled":null,"packageName":null,"serviceJsonFileRef":null,"serviceLevel":null,"triggerExpressions":[]}},"messagingPoolSize":null,"minSendDelayMillis":null},"hibernateConfig":{"connection":{"credentialsSecretRef":"hsql-factory-secret","dialect":"org.hibernate.dialect.HSQLDialect","jdbcDriverClass":"org.hsqldb.jdbcDriver","jdbcUrl":"jdbc:hsqldb:hsql://localhost:9001"},"optionalConfiguration":{"cache.provider_class":"org.hibernate.cache.internal.NoCacheProvider","current_session_context_class":"thread","hbm2ddl.auto":"update","hikari.connectionTimeout":"5000","show_sql":"false"}},"internalDataAdapter":null,"moduleCheckPeriodMillis":null,"moduleTimeoutMillis":null,"mpnPumpPoolSize":null,"mpnTimerPoolSize":null,"notifierPoolSize":null,"reactionOnDatabaseFailure":"continue_operation","requestTimeoutMillis":null}
+```{"activationOnStartUp":{"enabled":null,"maxDelayMillis":null},"appleNotifierConfig":{"apps":{"myApp":{"enabled":null,"id":null,"keystoreRef":null,"pushPackageFileRef":null,"serviceLevel":null,"triggerExpressions":[]}},"connectionTimeout":null,"keyStores":{"myAppKeystore":{"keystoreFileSecretRef":null,"keystorePasswordSecretRef":null}},"maxConcurrentConnections":null,"minSendDelayMillis":null},"appleWebServicePath":null,"collectorPeriodMinutes":null,"deviceHandlerPool":{"maxFree":null,"maxSize":null},"deviceInactivityTimeoutMinutes":null,"enableModuleRecovery":null,"enabled":null,"executorPool":{"maxFree":null,"maxSize":null},"googleNotifierConfig":{"apps":{"myApp":{"enabled":null,"packageName":null,"serviceJsonFileRef":null,"serviceLevel":null,"triggerExpressions":[]}},"messagingPoolSize":null,"minSendDelayMillis":null},"hibernateConfig":{"connection":{"credentialsSecretRef":"hsql-factory-secret","dialect":"org.hibernate.dialect.HSQLDialect","jdbcDriverClass":"org.hsqldb.jdbcDriver","jdbcUrl":"jdbc:hsqldb:hsql://localhost:9001"},"optionalConfiguration":{"cache.provider_class":"org.hibernate.cache.internal.NoCacheProvider","current_session_context_class":"thread","hbm2ddl.auto":"update","hikari.connectionTimeout":"5000","show_sql":"false"}},"internalDataAdapter":null,"moduleCheckPeriodMillis":null,"moduleTimeoutMillis":null,"mpnPumpPoolSize":null,"mpnTimerPoolSize":null,"notifierPoolSize":null,"reactionOnDatabaseFailure":"continue_operation","requestTimeoutMillis":null}```
 #### [mpn.activationOnStartUp](./values.yaml#L2488)
 
      
@@ -1026,7 +1026,7 @@ Optional, but effective only if `mpn.enableActivationOnStartUp` is set to `true`
 
 **Default:**
 
-the Server startup will be blocked until module startup
+```the Server startup will be blocked until module startup```
 #### [mpn.appleNotifierConfig](./values.yaml#L2608)
 
      
@@ -1034,7 +1034,7 @@ Optional. Apple platforms notifier configuration.
 
 **Default:**
 
-{"apps":{"myApp":{"enabled":null,"id":null,"keystoreRef":null,"pushPackageFileRef":null,"serviceLevel":null,"triggerExpressions":[]}},"connectionTimeout":null,"keyStores":{"myAppKeystore":{"keystoreFileSecretRef":null,"keystorePasswordSecretRef":null}},"maxConcurrentConnections":null,"minSendDelayMillis":null}
+```{"apps":{"myApp":{"enabled":null,"id":null,"keystoreRef":null,"pushPackageFileRef":null,"serviceLevel":null,"triggerExpressions":[]}},"connectionTimeout":null,"keyStores":{"myAppKeystore":{"keystoreFileSecretRef":null,"keystorePasswordSecretRef":null}},"maxConcurrentConnections":null,"minSendDelayMillis":null}```
 #### [mpn.appleNotifierConfig.apps](./values.yaml#L2634)
 
      
@@ -1042,7 +1042,7 @@ Optional. List of apps that should receive mobile push notifications.
 
 **Default:**
 
-{"myApp":{"enabled":null,"id":null,"keystoreRef":null,"pushPackageFileRef":null,"serviceLevel":null,"triggerExpressions":[]}}
+```{"myApp":{"enabled":null,"id":null,"keystoreRef":null,"pushPackageFileRef":null,"serviceLevel":null,"triggerExpressions":[]}}```
 #### [mpn.appleNotifierConfig.apps.myApp](./values.yaml#L2636)
 
      
@@ -1050,7 +1050,7 @@ An application configuration.
 
 **Default:**
 
-{"enabled":null,"id":null,"keystoreRef":null,"pushPackageFileRef":null,"serviceLevel":null,"triggerExpressions":[]}
+```{"enabled":null,"id":null,"keystoreRef":null,"pushPackageFileRef":null,"serviceLevel":null,"triggerExpressions":[]}```
 #### [mpn.appleNotifierConfig.apps.myApp.enabled](./values.yaml#L2639)
 
      
@@ -1100,7 +1100,7 @@ Optional. Keystores definition.
 
 **Default:**
 
-{"myAppKeystore":{"keystoreFileSecretRef":null,"keystorePasswordSecretRef":null}}
+```{"myAppKeystore":{"keystoreFileSecretRef":null,"keystorePasswordSecretRef":null}}```
 #### [mpn.appleNotifierConfig.keyStores.myAppKeystore](./values.yaml#L2701)
 
      
@@ -1108,7 +1108,7 @@ Keystore configuration for the app.
 
 **Default:**
 
-{"keystoreFileSecretRef":null,"keystorePasswordSecretRef":null}
+```{"keystoreFileSecretRef":null,"keystorePasswordSecretRef":null}```
 #### [mpn.appleNotifierConfig.keyStores.myAppKeystore.keystoreFileSecretRef](./values.yaml#L2704)
 
      
@@ -1158,7 +1158,7 @@ Optional. Specifies the the maximum number of idle threads the pool may have.
 
 **Default:**
 
-0, meaning the pool will not consume resources when idle
+```0, meaning the pool will not consume resources when idle```
 #### [mpn.deviceHandlerPool.maxSize](./values.yaml#L2560)
 
      
@@ -1196,7 +1196,7 @@ Optional. Specifies the the maximum number of idle threads the pool may have.
 
 **Default:**
 
-0, meaning the pool will not consume resources when idle
+```0, meaning the pool will not consume resources when idle```
 #### [mpn.executorPool.maxSize](./values.yaml#L2542)
 
      
@@ -1210,7 +1210,7 @@ Optional. Google platforms notifier configuration.
 
 **Default:**
 
-{"apps":{"myApp":{"enabled":null,"packageName":null,"serviceJsonFileRef":null,"serviceLevel":null,"triggerExpressions":[]}},"messagingPoolSize":null,"minSendDelayMillis":null}
+```{"apps":{"myApp":{"enabled":null,"packageName":null,"serviceJsonFileRef":null,"serviceLevel":null,"triggerExpressions":[]}},"messagingPoolSize":null,"minSendDelayMillis":null}```
 #### [mpn.googleNotifierConfig.apps](./values.yaml#L2733)
 
      
@@ -1218,7 +1218,7 @@ Optional. List of apps that should receive mobile push notifications.
 
 **Default:**
 
-{"myApp":{"enabled":null,"packageName":null,"serviceJsonFileRef":null,"serviceLevel":null,"triggerExpressions":[]}}
+```{"myApp":{"enabled":null,"packageName":null,"serviceJsonFileRef":null,"serviceLevel":null,"triggerExpressions":[]}}```
 #### [mpn.googleNotifierConfig.apps.myApp](./values.yaml#L2735)
 
      
@@ -1226,7 +1226,7 @@ An application configuration.
 
 **Default:**
 
-{"enabled":null,"packageName":null,"serviceJsonFileRef":null,"serviceLevel":null,"triggerExpressions":[]}
+```{"enabled":null,"packageName":null,"serviceJsonFileRef":null,"serviceLevel":null,"triggerExpressions":[]}```
 #### [mpn.googleNotifierConfig.apps.myApp.enabled](./values.yaml#L2738)
 
      
@@ -1264,7 +1264,7 @@ Optional. Size of the notifier's `MPN XXX MESSAGING` internal thread pool, which
 
 **Default:**
 
-the number of available total cores, as detected by the JVM
+```the number of available total cores, as detected by the JVM```
 #### [mpn.googleNotifierConfig.minSendDelayMillis](./values.yaml#L2725)
 
      
@@ -1278,7 +1278,7 @@ Mandatory. Hibernate configuration. The MPN module uses an Hibernate-mapped data
 
 **Default:**
 
-{"connection":{"credentialsSecretRef":"hsql-factory-secret","dialect":"org.hibernate.dialect.HSQLDialect","jdbcDriverClass":"org.hsqldb.jdbcDriver","jdbcUrl":"jdbc:hsqldb:hsql://localhost:9001"},"optionalConfiguration":{"cache.provider_class":"org.hibernate.cache.internal.NoCacheProvider","current_session_context_class":"thread","hbm2ddl.auto":"update","hikari.connectionTimeout":"5000","show_sql":"false"}}
+```{"connection":{"credentialsSecretRef":"hsql-factory-secret","dialect":"org.hibernate.dialect.HSQLDialect","jdbcDriverClass":"org.hsqldb.jdbcDriver","jdbcUrl":"jdbc:hsqldb:hsql://localhost:9001"},"optionalConfiguration":{"cache.provider_class":"org.hibernate.cache.internal.NoCacheProvider","current_session_context_class":"thread","hbm2ddl.auto":"update","hikari.connectionTimeout":"5000","show_sql":"false"}}```
 #### [mpn.hibernateConfig.connection](./values.yaml#L2425)
 
      
@@ -1286,7 +1286,7 @@ Mandatory. The Hibernate JDBC properties. The provided values are used to show a
 
 **Default:**
 
-{"credentialsSecretRef":"hsql-factory-secret","dialect":"org.hibernate.dialect.HSQLDialect","jdbcDriverClass":"org.hsqldb.jdbcDriver","jdbcUrl":"jdbc:hsqldb:hsql://localhost:9001"}
+```{"credentialsSecretRef":"hsql-factory-secret","dialect":"org.hibernate.dialect.HSQLDialect","jdbcDriverClass":"org.hsqldb.jdbcDriver","jdbcUrl":"jdbc:hsqldb:hsql://localhost:9001"}```
 #### [mpn.hibernateConfig.connection.credentialsSecretRef](./values.yaml#L2434)
 
      
@@ -1318,7 +1318,7 @@ Optional. The Hibernate optional configuration properties. See https://docs.jbos
 
 **Default:**
 
-{"cache.provider_class":"org.hibernate.cache.internal.NoCacheProvider","current_session_context_class":"thread","hbm2ddl.auto":"update","hikari.connectionTimeout":"5000","show_sql":"false"}
+```{"cache.provider_class":"org.hibernate.cache.internal.NoCacheProvider","current_session_context_class":"thread","hbm2ddl.auto":"update","hikari.connectionTimeout":"5000","show_sql":"false"}```
 #### [mpn.hibernateConfig.optionalConfiguration."cache.provider_class"](./values.yaml#L2456)
 
      
@@ -1326,7 +1326,7 @@ Disable the second-level cache
 
 **Default:**
 
-"org.hibernate.cache.internal.NoCacheProvider"
+```"org.hibernate.cache.internal.NoCacheProvider"```
 #### [mpn.hibernateConfig.optionalConfiguration."hbm2ddl.auto"](./values.yaml#L2458)
 
      
@@ -1370,7 +1370,7 @@ Optional. Size of the `MPN PUMP` internal thread pool, which is devoted to integ
 
 **Default:**
 
-the number of available total cores, as detected by the JVM
+```the number of available total cores, as detected by the JVM```
 #### [mpn.mpnTimerPoolSize](./values.yaml#L2586)
 
      
@@ -1384,7 +1384,7 @@ Optional. Size of the notifiers' `MPN XXX NOTIFIER` internal thread pool, which 
 
 **Default:**
 
-the number of available total cores, as detected by the JVM
+```the number of available total cores, as detected by the JVM```
 #### [mpn.reactionOnDatabaseFailure](./values.yaml#L2606)
 
      
@@ -1406,7 +1406,7 @@ Keystores definition.
 
 **Default:**
 
-{"myKafkaConnectorKeystore":null,"myServerKeystore":{"keystoreFileSecretRef":{"key":"myserver.keystore","name":"myserver-keystore-secret"},"keystorePasswordSecretRef":{"key":"myserver.keypass","name":"myserver-keypass-secret"},"type":"JKS"}}
+```{"myKafkaConnectorKeystore":null,"myServerKeystore":{"keystoreFileSecretRef":{"key":"myserver.keystore","name":"myserver-keystore-secret"},"keystorePasswordSecretRef":{"key":"myserver.keypass","name":"myserver-keypass-secret"},"type":"JKS"}}```
 #### [keyStores.myKafkaConnectorKeystore](./values.yaml#L1327)
 
      
@@ -1420,7 +1420,7 @@ Keystore definition used by HTTPS server socket configurations. The default valu
 
 **Default:**
 
-{"keystoreFileSecretRef":{"key":"myserver.keystore","name":"myserver-keystore-secret"},"keystorePasswordSecretRef":{"key":"myserver.keypass","name":"myserver-keypass-secret"},"type":"JKS"}
+```{"keystoreFileSecretRef":{"key":"myserver.keystore","name":"myserver-keystore-secret"},"keystorePasswordSecretRef":{"key":"myserver.keypass","name":"myserver-keypass-secret"},"type":"JKS"}```
 #### [keyStores.myServerKeystore.keystoreFileSecretRef](./values.yaml#L1318)
 
      
@@ -1428,7 +1428,7 @@ Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key where the key
 
 **Default:**
 
-{"key":"myserver.keystore","name":"myserver-keystore-secret"}
+```{"key":"myserver.keystore","name":"myserver-keystore-secret"}```
 #### [keyStores.myServerKeystore.keystorePasswordSecretRef](./values.yaml#L1323)
 
      
@@ -1436,7 +1436,7 @@ Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key where keystor
 
 **Default:**
 
-{"key":"myserver.keypass","name":"myserver-keypass-secret"}
+```{"key":"myserver.keypass","name":"myserver-keypass-secret"}```
 #### [keyStores.myServerKeystore.type](./values.yaml#L1315)
 
      
@@ -1452,7 +1452,7 @@ Optional. Internal web server configuration. Note that some of the included sett
 
 **Default:**
 
-{"compressionThreshold":null,"enableFlexCrossdomain":null,"enableSilverlightAccessPolicy":null,"enabled":true,"errorPageRef":null,"flexCrossdomainPath":null,"mimeTypesConfig":null,"notFoundPage":null,"pagesDir":null,"persistencyMinutes":null,"silverlightAccessPolicyPath":null}
+```{"compressionThreshold":null,"enableFlexCrossdomain":null,"enableSilverlightAccessPolicy":null,"enabled":true,"errorPageRef":null,"flexCrossdomainPath":null,"mimeTypesConfig":null,"notFoundPage":null,"pagesDir":null,"persistencyMinutes":null,"silverlightAccessPolicyPath":null}```
 #### [webServer.compressionThreshold](./values.yaml#L2844)
 
      
@@ -1528,7 +1528,7 @@ Optional. Clustering configuration.
 
 **Default:**
 
-{"controlLinkAddress":null,"controlLinkMachineName":null,"maxSessionDurationMinutes":null}
+```{"controlLinkAddress":null,"controlLinkMachineName":null,"maxSessionDurationMinutes":null}```
 #### [cluster.maxSessionDurationMinutes](./values.yaml#L2963)
 
      
@@ -1544,7 +1544,7 @@ Optional. Load configuration.
 
 **Default:**
 
-{"acceptPoolMaxQueue":null,"acceptPoolMaxSize":null,"eventsPoolSize":null,"forceEarlyConversions":null,"handshakePoolMaxQueue":null,"handshakePoolSize":null,"httpsAuthPoolMaxFree":null,"httpsAuthPoolMaxQueue":null,"httpsAuthPoolMaxSize":null,"maxCommonNioBufferAllocation":null,"maxCommonPumpBufferAllocation":null,"maxMpnDevices":null,"maxSessions":null,"prestartedMaxQueue":null,"pumpPoolMaxQueue":null,"pumpPoolSize":null,"selectorMaxLoad":null,"selectorPoolSize":null,"serverPoolMaxFree":null,"serverPoolMaxQueue":null,"serverPoolMaxSize":null,"snapshotPoolSize":null,"timerPoolSize":null}
+```{"acceptPoolMaxQueue":null,"acceptPoolMaxSize":null,"eventsPoolSize":null,"forceEarlyConversions":null,"handshakePoolMaxQueue":null,"handshakePoolSize":null,"httpsAuthPoolMaxFree":null,"httpsAuthPoolMaxQueue":null,"httpsAuthPoolMaxSize":null,"maxCommonNioBufferAllocation":null,"maxCommonPumpBufferAllocation":null,"maxMpnDevices":null,"maxSessions":null,"prestartedMaxQueue":null,"pumpPoolMaxQueue":null,"pumpPoolSize":null,"selectorMaxLoad":null,"selectorPoolSize":null,"serverPoolMaxFree":null,"serverPoolMaxQueue":null,"serverPoolMaxSize":null,"snapshotPoolSize":null,"timerPoolSize":null}```
 #### [load.acceptPoolMaxSize](./values.yaml#L3119)
 
      
@@ -1552,7 +1552,7 @@ Optional. Maximum number of threads allowed for the "ACCEPT" internal pool, whic
 
 **Default:**
 
-the number of available total cores, as detected by the JVM,
+```the number of available total cores, as detected by the JVM,```
 #### [load.eventsPoolSize](./values.yaml#L3030)
 
      
@@ -1560,7 +1560,7 @@ Optional. Size of the "EVENTS" internal thread pool, which is devoted to dispatc
 
 **Default:**
 
-the number of available total cores, as detected by the JVM
+```the number of available total cores, as detected by the JVM```
 #### [load.forceEarlyConversions](./values.yaml#L3227)
 
      
@@ -1580,7 +1580,7 @@ Optional. Size of the "TLS-SSL HANDSHAKE" internal pool, which is devoted to the
 
 **Default:**
 
-half the number of available total cores, as detected by the JVM
+```half the number of available total cores, as detected by the JVM```
 #### [load.httpsAuthPoolMaxFree](./values.yaml#L3183)
 
      
@@ -1588,7 +1588,7 @@ Optional. Maximum number of idle threads allowed for the "TLS-SSL AUTHENTICATION
 
 **Default:**
 
-the same as configured for the SERVER thread pool
+```the same as configured for the SERVER thread pool```
 #### [load.httpsAuthPoolMaxQueue](./values.yaml#L3193)
 
      
@@ -1602,7 +1602,7 @@ Optional. Size of the "TLS-SSL AUTHENTICATION" internal pool, which is used inst
 
 **Default:**
 
-the same as configured for the SERVER thread pool
+```the same as configured for the SERVER thread pool```
 #### [load.maxCommonNioBufferAllocation](./values.yaml#L2992)
 
      
@@ -1616,7 +1616,7 @@ Optional. Number of distinct NIO selectors (each one with its own thread) that w
 
 **Default:**
 
-the number of available total cores, as detected by the JVM
+```the number of available total cores, as detected by the JVM```
 #### [load.maxMpnDevices](./values.yaml#L2984)
 
      
@@ -1624,7 +1624,7 @@ Optional. Maximum number of concurrent MPN devices sessions allowed. Once this n
 
 **Default:**
 
-unlimited number of concurrent MPN devices sessions
+```unlimited number of concurrent MPN devices sessions```
 #### [load.maxSessions](./values.yaml#L2976)
 
      
@@ -1632,7 +1632,7 @@ Optional. Maximum number of concurrent client sessions allowed. Requests for new
 
 **Default:**
 
-unlimited number of concurrent client sessions
+```unlimited number of concurrent client sessions```
 #### [load.prestartedMaxQueue](./values.yaml#L3213)
 
      
@@ -1652,7 +1652,7 @@ Optional. Size of the "PUMP" internal thread pool, which is devoted to integrati
 
 **Default:**
 
-the number of available total cores, as detected by the JVM
+```the number of available total cores, as detected by the JVM```
 #### [load.selectorMaxLoad](./values.yaml#L3016)
 
      
@@ -1666,7 +1666,7 @@ Optional. Number of distinct NIO selectors (each one with its own thread) that w
 
 **Default:**
 
-the number of available total cores, as detected by the JVM
+```the number of available total cores, as detected by the JVM```
 #### [load.serverPoolMaxFree](./values.yaml#L3092)
 
      
@@ -1674,7 +1674,7 @@ Optional, but mandatory if `load.serverPoolMaxSize`is set to `0`. Maximum number
 
 **Default:**
 
-10, if load.serverPoolMaxSize is not defined; otherwise, the
+```10, if load.serverPoolMaxSize is not defined; otherwise, the```
 #### [load.serverPoolMaxQueue](./values.yaml#L3105)
 
      
@@ -1694,7 +1694,7 @@ Optional. Size of the "SNAPSHOT" internal thread pool, which is devoted to dispa
 
 **Default:**
 
-the number of available total cores, as detected by the JVM, or
+```the number of available total cores, as detected by the JVM, or```
 #### [load.timerPoolSize](./values.yaml#L3023)
 
      
@@ -1710,7 +1710,7 @@ Mandatory. Configure the edition, the optional features, and the type of license
 
 **Default:**
 
-{"edition":"ENTERPRISE","enableAutomaticUpdateCheck":null,"enabledCommunityEditionClientApi":"javascript_client","enterprise":{"contractId":"DEMO","enableAutomaticAuditLogUpload":true,"filePathSecretRef":{"key":null,"name":null},"licenseType":"DEMO","licenseValidation":"ONLINE","onlinePasswordSecretRef":{"key":null,"name":null},"optionalFeatures":{"enableRestrictedFeaturesSet":true,"features":{"enableAndroidClient":false,"enableBandwidthControl":false,"enableBlackBerryClient":false,"enableDotNETStandardClient":false,"enableFlashClient":false,"enableFlexClient":false,"enableGenericClient":false,"enableIOSClient":false,"enableJavaMEClient":false,"enableJavaSEClient":false,"enableJavascriptClient":false,"enableJmx":false,"enableMacOSClient":false,"enableMpn":true,"enableNodeJsClient":false,"enablePythonClient":false,"enableSilverlightClient":false,"enableTlsSsl":false,"enableTvOSClient":false,"enableVisionOSClient":false,"enableWatchOSClient":false,"maxDownstreamRate":"1"}}},"proxy":{"enableProxyAutodiscovery":null,"httpProxies":[{"credentialsSecretRef":null,"host":null,"port":null,"scheme":null}],"networkInterface":null,"pacFiles":{"filePaths":[],"fileUrls":[]},"socksProxies":[{"credentialsSecretRef":null,"host":null,"port":null,"version":null}]}}
+```{"edition":"ENTERPRISE","enableAutomaticUpdateCheck":null,"enabledCommunityEditionClientApi":"javascript_client","enterprise":{"contractId":"DEMO","enableAutomaticAuditLogUpload":true,"filePathSecretRef":{"key":null,"name":null},"licenseType":"DEMO","licenseValidation":"ONLINE","onlinePasswordSecretRef":{"key":null,"name":null},"optionalFeatures":{"enableRestrictedFeaturesSet":true,"features":{"enableAndroidClient":false,"enableBandwidthControl":false,"enableBlackBerryClient":false,"enableDotNETStandardClient":false,"enableFlashClient":false,"enableFlexClient":false,"enableGenericClient":false,"enableIOSClient":false,"enableJavaMEClient":false,"enableJavaSEClient":false,"enableJavascriptClient":false,"enableJmx":false,"enableMacOSClient":false,"enableMpn":true,"enableNodeJsClient":false,"enablePythonClient":false,"enableSilverlightClient":false,"enableTlsSsl":false,"enableTvOSClient":false,"enableVisionOSClient":false,"enableWatchOSClient":false,"maxDownstreamRate":"1"}}},"proxy":{"enableProxyAutodiscovery":null,"httpProxies":[{"credentialsSecretRef":null,"host":null,"port":null,"scheme":null}],"networkInterface":null,"pacFiles":{"filePaths":[],"fileUrls":[]},"socksProxies":[{"credentialsSecretRef":null,"host":null,"port":null,"version":null}]}}```
 #### [license.edition](./values.yaml#L297)
 
      
@@ -1736,7 +1736,7 @@ Mandatory if `edition` is set to `ENTERPRISE`. Configure the ENTERPRISE edition.
 
 **Default:**
 
-{"contractId":"DEMO","enableAutomaticAuditLogUpload":true,"filePathSecretRef":{"key":null,"name":null},"licenseType":"DEMO","licenseValidation":"ONLINE","onlinePasswordSecretRef":{"key":null,"name":null},"optionalFeatures":{"enableRestrictedFeaturesSet":true,"features":{"enableAndroidClient":false,"enableBandwidthControl":false,"enableBlackBerryClient":false,"enableDotNETStandardClient":false,"enableFlashClient":false,"enableFlexClient":false,"enableGenericClient":false,"enableIOSClient":false,"enableJavaMEClient":false,"enableJavaSEClient":false,"enableJavascriptClient":false,"enableJmx":false,"enableMacOSClient":false,"enableMpn":true,"enableNodeJsClient":false,"enablePythonClient":false,"enableSilverlightClient":false,"enableTlsSsl":false,"enableTvOSClient":false,"enableVisionOSClient":false,"enableWatchOSClient":false,"maxDownstreamRate":"1"}}}
+```{"contractId":"DEMO","enableAutomaticAuditLogUpload":true,"filePathSecretRef":{"key":null,"name":null},"licenseType":"DEMO","licenseValidation":"ONLINE","onlinePasswordSecretRef":{"key":null,"name":null},"optionalFeatures":{"enableRestrictedFeaturesSet":true,"features":{"enableAndroidClient":false,"enableBandwidthControl":false,"enableBlackBerryClient":false,"enableDotNETStandardClient":false,"enableFlashClient":false,"enableFlexClient":false,"enableGenericClient":false,"enableIOSClient":false,"enableJavaMEClient":false,"enableJavaSEClient":false,"enableJavascriptClient":false,"enableJmx":false,"enableMacOSClient":false,"enableMpn":true,"enableNodeJsClient":false,"enablePythonClient":false,"enableSilverlightClient":false,"enableTlsSsl":false,"enableTvOSClient":false,"enableVisionOSClient":false,"enableWatchOSClient":false,"maxDownstreamRate":"1"}}}```
 #### [license.enterprise.contractId](./values.yaml#L322)
 
      
@@ -1780,7 +1780,7 @@ Optional. Configure the optional features.
 
 **Default:**
 
-{"enableRestrictedFeaturesSet":true,"features":{"enableAndroidClient":false,"enableBandwidthControl":false,"enableBlackBerryClient":false,"enableDotNETStandardClient":false,"enableFlashClient":false,"enableFlexClient":false,"enableGenericClient":false,"enableIOSClient":false,"enableJavaMEClient":false,"enableJavaSEClient":false,"enableJavascriptClient":false,"enableJmx":false,"enableMacOSClient":false,"enableMpn":true,"enableNodeJsClient":false,"enablePythonClient":false,"enableSilverlightClient":false,"enableTlsSsl":false,"enableTvOSClient":false,"enableVisionOSClient":false,"enableWatchOSClient":false,"maxDownstreamRate":"1"}}
+```{"enableRestrictedFeaturesSet":true,"features":{"enableAndroidClient":false,"enableBandwidthControl":false,"enableBlackBerryClient":false,"enableDotNETStandardClient":false,"enableFlashClient":false,"enableFlexClient":false,"enableGenericClient":false,"enableIOSClient":false,"enableJavaMEClient":false,"enableJavaSEClient":false,"enableJavascriptClient":false,"enableJmx":false,"enableMacOSClient":false,"enableMpn":true,"enableNodeJsClient":false,"enablePythonClient":false,"enableSilverlightClient":false,"enableTlsSsl":false,"enableTvOSClient":false,"enableVisionOSClient":false,"enableWatchOSClient":false,"maxDownstreamRate":"1"}}```
 #### [license.enterprise.optionalFeatures.enableRestrictedFeaturesSet](./values.yaml#L367)
 
      
@@ -1932,7 +1932,7 @@ Optional. Configure a proxy server for outbound Internet access, if necessary. I
 
 **Default:**
 
-{"enableProxyAutodiscovery":null,"httpProxies":[{"credentialsSecretRef":null,"host":null,"port":null,"scheme":null}],"networkInterface":null,"pacFiles":{"filePaths":[],"fileUrls":[]},"socksProxies":[{"credentialsSecretRef":null,"host":null,"port":null,"version":null}]}
+```{"enableProxyAutodiscovery":null,"httpProxies":[{"credentialsSecretRef":null,"host":null,"port":null,"scheme":null}],"networkInterface":null,"pacFiles":{"filePaths":[],"fileUrls":[]},"socksProxies":[{"credentialsSecretRef":null,"host":null,"port":null,"version":null}]}```
 #### [license.proxy.enableProxyAutodiscovery](./values.yaml#L500)
 
      
@@ -1946,7 +1946,7 @@ Optional. List of HTTP Proxy Server configurations. The proxies all checked and 
 
 **Default:**
 
-[{"credentialsSecretRef":null,"host":null,"port":null,"scheme":null}]
+```[{"credentialsSecretRef":null,"host":null,"port":null,"scheme":null}]```
 #### [license.proxy.httpProxies[0].credentialsSecretRef](./values.yaml#L457)
 
      
@@ -2002,7 +2002,7 @@ Optional. List of SOCKS Proxy Server configurations. The proxies are all checked
 
 **Default:**
 
-[{"credentialsSecretRef":null,"host":null,"port":null,"version":null}]
+```[{"credentialsSecretRef":null,"host":null,"port":null,"version":null}]```
 #### [license.proxy.socksProxies[0].credentialsSecretRef](./values.yaml#L474)
 
      
@@ -2036,7 +2036,7 @@ Mandatory. Logging configuration for Lightstreamer Server.
 
 **Default:**
 
-{"appenders":{"console":{"pattern":"%d{\"dd.MMM.yy HH:mm:ss,SSS\"} <%5.5(%p%marker)> %m%n","type":"Console"},"dailyRolling":{"fileName":"lightstreamer.log","fileNamePattern":"lightstreamer-%d{yyyy-MM-dd}.log","pattern":"%d{\"dd-MMM-yy HH:mm:ss,SSS\"}|%-5.5(%p%marker)|%-19.19c{19}|%-27.27t|%m%n","type":"DailyRollingFile","volumeRef":null}},"extraLoggers":null,"loggers":{"com.github.markusbernhardt.proxy":{"appenders":["console"],"level":"WARN"},"com.google":{"appenders":["console"],"level":"ERROR"},"com.sun.jmx.remote":{"appenders":["console"],"level":"ERROR"},"com.turo":{"appenders":["console"],"level":"ERROR"},"com.zaxxer.hikari":{"appenders":["console"],"level":"INFO"},"common.jmx.velocity":{"appenders":["console"],"level":"ERROR"},"io.grpc":{"appenders":["console"],"level":"WARN"},"io.netty":{"appenders":["console"],"level":"ERROR"},"io.opencensus":{"appenders":["console"],"level":"WARN"},"java.sql":{"appenders":["console"],"level":"WARN"},"javax.management.mbeanserver":{"appenders":["console"],"level":"ERROR"},"javax.management.remote":{"appenders":["console"],"level":"ERROR"},"javax.net.ssl":{"appenders":["console"],"level":"OFF"},"lightstreamerHealthCheck":{"appenders":["console"],"level":"INFO"},"lightstreamerLogger":{"appenders":["console"],"level":"INFO","subLoggers":{"lightstreamerLogger.connections":"WARN","lightstreamerLogger.connections.WS":"WARN","lightstreamerLogger.connections.http":"ERROR","lightstreamerLogger.connections.proxy":"INFO","lightstreamerLogger.connections.ssl":"WARN","lightstreamerLogger.external":"INFO","lightstreamerLogger.init":"INFO","lightstreamerLogger.io":"WARN","lightstreamerLogger.io.ssl":"WARN","lightstreamerLogger.kernel":"INFO","lightstreamerLogger.license":"INFO","lightstreamerLogger.monitoring":"INFO","lightstreamerLogger.mpn":"INFO","lightstreamerLogger.mpn.apple":"WARN","lightstreamerLogger.mpn.database":"WARN","lightstreamerLogger.mpn.database.transactions":"WARN","lightstreamerLogger.mpn.google":"WARN","lightstreamerLogger.mpn.lifecycle":"INFO","lightstreamerLogger.mpn.operations":"INFO","lightstreamerLogger.mpn.pump":"WARN","lightstreamerLogger.mpn.requests":"WARN","lightstreamerLogger.mpn.status_adapters":"WARN","lightstreamerLogger.preprocessor":"INFO","lightstreamerLogger.pump":"INFO","lightstreamerLogger.pump.messages":"INFO","lightstreamerLogger.push":"INFO","lightstreamerLogger.requests":"INFO","lightstreamerLogger.requests.messages":"INFO","lightstreamerLogger.requests.polling":"WARN","lightstreamerLogger.scheduler":"INFO","lightstreamerLogger.subscriptions":"DEBUG","lightstreamerLogger.subscriptions.upd":"DEBUG","lightstreamerLogger.webServer":"WARN","lightstreamerLogger.webServer.appleWebService":"WARN","lightstreamerLogger.webServer.jmxTree":"WARN","lightstreamerLogger.webclient":"DEBUG"}},"lightstreamerMonitorTAB":{"appenders":["console"],"level":"ERROR"},"lightstreamerMonitorText":{"appenders":["console"],"level":"INFO"},"lightstreamerProxyAdapters":{"appenders":["console"],"level":"INFO"},"org.apache.http":{"appenders":["console"],"level":"ERROR"},"org.codehaus.janino":{"appenders":["console"],"level":"WARN"},"org.conscrypt":{"appenders":["console"],"level":"ERROR"},"org.hibernate":{"appenders":["console"],"level":"WARN"},"org.jboss.logging":{"appenders":["console"],"level":"WARN"},"org.jminix":{"appenders":["console"],"level":"ERROR"},"org.restlet":{"appenders":["console"],"level":"ERROR"}}}
+```{"appenders":{"console":{"pattern":"%d{\"dd.MMM.yy HH:mm:ss,SSS\"} <%5.5(%p%marker)> %m%n","type":"Console"},"dailyRolling":{"fileName":"lightstreamer.log","fileNamePattern":"lightstreamer-%d{yyyy-MM-dd}.log","pattern":"%d{\"dd-MMM-yy HH:mm:ss,SSS\"}|%-5.5(%p%marker)|%-19.19c{19}|%-27.27t|%m%n","type":"DailyRollingFile","volumeRef":null}},"extraLoggers":null,"loggers":{"com.github.markusbernhardt.proxy":{"appenders":["console"],"level":"WARN"},"com.google":{"appenders":["console"],"level":"ERROR"},"com.sun.jmx.remote":{"appenders":["console"],"level":"ERROR"},"com.turo":{"appenders":["console"],"level":"ERROR"},"com.zaxxer.hikari":{"appenders":["console"],"level":"INFO"},"common.jmx.velocity":{"appenders":["console"],"level":"ERROR"},"io.grpc":{"appenders":["console"],"level":"WARN"},"io.netty":{"appenders":["console"],"level":"ERROR"},"io.opencensus":{"appenders":["console"],"level":"WARN"},"java.sql":{"appenders":["console"],"level":"WARN"},"javax.management.mbeanserver":{"appenders":["console"],"level":"ERROR"},"javax.management.remote":{"appenders":["console"],"level":"ERROR"},"javax.net.ssl":{"appenders":["console"],"level":"OFF"},"lightstreamerHealthCheck":{"appenders":["console"],"level":"INFO"},"lightstreamerLogger":{"appenders":["console"],"level":"INFO","subLoggers":{"lightstreamerLogger.connections":"WARN","lightstreamerLogger.connections.WS":"WARN","lightstreamerLogger.connections.http":"ERROR","lightstreamerLogger.connections.proxy":"INFO","lightstreamerLogger.connections.ssl":"WARN","lightstreamerLogger.external":"INFO","lightstreamerLogger.init":"INFO","lightstreamerLogger.io":"WARN","lightstreamerLogger.io.ssl":"WARN","lightstreamerLogger.kernel":"INFO","lightstreamerLogger.license":"INFO","lightstreamerLogger.monitoring":"INFO","lightstreamerLogger.mpn":"INFO","lightstreamerLogger.mpn.apple":"WARN","lightstreamerLogger.mpn.database":"WARN","lightstreamerLogger.mpn.database.transactions":"WARN","lightstreamerLogger.mpn.google":"WARN","lightstreamerLogger.mpn.lifecycle":"INFO","lightstreamerLogger.mpn.operations":"INFO","lightstreamerLogger.mpn.pump":"WARN","lightstreamerLogger.mpn.requests":"WARN","lightstreamerLogger.mpn.status_adapters":"WARN","lightstreamerLogger.preprocessor":"INFO","lightstreamerLogger.pump":"INFO","lightstreamerLogger.pump.messages":"INFO","lightstreamerLogger.push":"INFO","lightstreamerLogger.requests":"INFO","lightstreamerLogger.requests.messages":"INFO","lightstreamerLogger.requests.polling":"WARN","lightstreamerLogger.scheduler":"INFO","lightstreamerLogger.subscriptions":"DEBUG","lightstreamerLogger.subscriptions.upd":"DEBUG","lightstreamerLogger.webServer":"WARN","lightstreamerLogger.webServer.appleWebService":"WARN","lightstreamerLogger.webServer.jmxTree":"WARN","lightstreamerLogger.webclient":"DEBUG"}},"lightstreamerMonitorTAB":{"appenders":["console"],"level":"ERROR"},"lightstreamerMonitorText":{"appenders":["console"],"level":"INFO"},"lightstreamerProxyAdapters":{"appenders":["console"],"level":"INFO"},"org.apache.http":{"appenders":["console"],"level":"ERROR"},"org.codehaus.janino":{"appenders":["console"],"level":"WARN"},"org.conscrypt":{"appenders":["console"],"level":"ERROR"},"org.hibernate":{"appenders":["console"],"level":"WARN"},"org.jboss.logging":{"appenders":["console"],"level":"WARN"},"org.jminix":{"appenders":["console"],"level":"ERROR"},"org.restlet":{"appenders":["console"],"level":"ERROR"}}}```
 #### [logging.appenders](./values.yaml#L509)
 
      
@@ -2044,7 +2044,7 @@ Mandatory. Appenders configuration. Every logger must refer to one or more appen
 
 **Default:**
 
-{"console":{"pattern":"%d{\"dd.MMM.yy HH:mm:ss,SSS\"} <%5.5(%p%marker)> %m%n","type":"Console"},"dailyRolling":{"fileName":"lightstreamer.log","fileNamePattern":"lightstreamer-%d{yyyy-MM-dd}.log","pattern":"%d{\"dd-MMM-yy HH:mm:ss,SSS\"}|%-5.5(%p%marker)|%-19.19c{19}|%-27.27t|%m%n","type":"DailyRollingFile","volumeRef":null}}
+```{"console":{"pattern":"%d{\"dd.MMM.yy HH:mm:ss,SSS\"} <%5.5(%p%marker)> %m%n","type":"Console"},"dailyRolling":{"fileName":"lightstreamer.log","fileNamePattern":"lightstreamer-%d{yyyy-MM-dd}.log","pattern":"%d{\"dd-MMM-yy HH:mm:ss,SSS\"}|%-5.5(%p%marker)|%-19.19c{19}|%-27.27t|%m%n","type":"DailyRollingFile","volumeRef":null}}```
 #### [logging.appenders.dailyRolling](./values.yaml#L512)
 
      
@@ -2052,7 +2052,7 @@ At least one must be provided. An appender configuration. Choose whatever key yo
 
 **Default:**
 
-{"fileName":"lightstreamer.log","fileNamePattern":"lightstreamer-%d{yyyy-MM-dd}.log","pattern":"%d{\"dd-MMM-yy HH:mm:ss,SSS\"}|%-5.5(%p%marker)|%-19.19c{19}|%-27.27t|%m%n","type":"DailyRollingFile","volumeRef":null}
+```{"fileName":"lightstreamer.log","fileNamePattern":"lightstreamer-%d{yyyy-MM-dd}.log","pattern":"%d{\"dd-MMM-yy HH:mm:ss,SSS\"}|%-5.5(%p%marker)|%-19.19c{19}|%-27.27t|%m%n","type":"DailyRollingFile","volumeRef":null}```
 #### [logging.appenders.dailyRolling.fileName](./values.yaml#L521)
 
      
@@ -2072,7 +2072,7 @@ Mandatory. The conversion pattern. See https://logback.qos.ch/index.html for det
 
 **Default:**
 
-"%d{\"dd-MMM-yy HH:mm:ss,SSS\"}|%-5.5(%p%marker)|%-19.19c{19}|%-27.27t|%m%n"
+```"%d{\"dd-MMM-yy HH:mm:ss,SSS\"}|%-5.5(%p%marker)|%-19.19c{19}|%-27.27t|%m%n"```
 #### [logging.appenders.dailyRolling.type](./values.yaml#L515)
 
      
@@ -2092,7 +2092,7 @@ Optional. Loggers configuration.
 
 **Default:**
 
-{"com.github.markusbernhardt.proxy":{"appenders":["console"],"level":"WARN"},"com.google":{"appenders":["console"],"level":"ERROR"},"com.sun.jmx.remote":{"appenders":["console"],"level":"ERROR"},"com.turo":{"appenders":["console"],"level":"ERROR"},"com.zaxxer.hikari":{"appenders":["console"],"level":"INFO"},"common.jmx.velocity":{"appenders":["console"],"level":"ERROR"},"io.grpc":{"appenders":["console"],"level":"WARN"},"io.netty":{"appenders":["console"],"level":"ERROR"},"io.opencensus":{"appenders":["console"],"level":"WARN"},"java.sql":{"appenders":["console"],"level":"WARN"},"javax.management.mbeanserver":{"appenders":["console"],"level":"ERROR"},"javax.management.remote":{"appenders":["console"],"level":"ERROR"},"javax.net.ssl":{"appenders":["console"],"level":"OFF"},"lightstreamerHealthCheck":{"appenders":["console"],"level":"INFO"},"lightstreamerLogger":{"appenders":["console"],"level":"INFO","subLoggers":{"lightstreamerLogger.connections":"WARN","lightstreamerLogger.connections.WS":"WARN","lightstreamerLogger.connections.http":"ERROR","lightstreamerLogger.connections.proxy":"INFO","lightstreamerLogger.connections.ssl":"WARN","lightstreamerLogger.external":"INFO","lightstreamerLogger.init":"INFO","lightstreamerLogger.io":"WARN","lightstreamerLogger.io.ssl":"WARN","lightstreamerLogger.kernel":"INFO","lightstreamerLogger.license":"INFO","lightstreamerLogger.monitoring":"INFO","lightstreamerLogger.mpn":"INFO","lightstreamerLogger.mpn.apple":"WARN","lightstreamerLogger.mpn.database":"WARN","lightstreamerLogger.mpn.database.transactions":"WARN","lightstreamerLogger.mpn.google":"WARN","lightstreamerLogger.mpn.lifecycle":"INFO","lightstreamerLogger.mpn.operations":"INFO","lightstreamerLogger.mpn.pump":"WARN","lightstreamerLogger.mpn.requests":"WARN","lightstreamerLogger.mpn.status_adapters":"WARN","lightstreamerLogger.preprocessor":"INFO","lightstreamerLogger.pump":"INFO","lightstreamerLogger.pump.messages":"INFO","lightstreamerLogger.push":"INFO","lightstreamerLogger.requests":"INFO","lightstreamerLogger.requests.messages":"INFO","lightstreamerLogger.requests.polling":"WARN","lightstreamerLogger.scheduler":"INFO","lightstreamerLogger.subscriptions":"DEBUG","lightstreamerLogger.subscriptions.upd":"DEBUG","lightstreamerLogger.webServer":"WARN","lightstreamerLogger.webServer.appleWebService":"WARN","lightstreamerLogger.webServer.jmxTree":"WARN","lightstreamerLogger.webclient":"DEBUG"}},"lightstreamerMonitorTAB":{"appenders":["console"],"level":"ERROR"},"lightstreamerMonitorText":{"appenders":["console"],"level":"INFO"},"lightstreamerProxyAdapters":{"appenders":["console"],"level":"INFO"},"org.apache.http":{"appenders":["console"],"level":"ERROR"},"org.codehaus.janino":{"appenders":["console"],"level":"WARN"},"org.conscrypt":{"appenders":["console"],"level":"ERROR"},"org.hibernate":{"appenders":["console"],"level":"WARN"},"org.jboss.logging":{"appenders":["console"],"level":"WARN"},"org.jminix":{"appenders":["console"],"level":"ERROR"},"org.restlet":{"appenders":["console"],"level":"ERROR"}}
+```{"com.github.markusbernhardt.proxy":{"appenders":["console"],"level":"WARN"},"com.google":{"appenders":["console"],"level":"ERROR"},"com.sun.jmx.remote":{"appenders":["console"],"level":"ERROR"},"com.turo":{"appenders":["console"],"level":"ERROR"},"com.zaxxer.hikari":{"appenders":["console"],"level":"INFO"},"common.jmx.velocity":{"appenders":["console"],"level":"ERROR"},"io.grpc":{"appenders":["console"],"level":"WARN"},"io.netty":{"appenders":["console"],"level":"ERROR"},"io.opencensus":{"appenders":["console"],"level":"WARN"},"java.sql":{"appenders":["console"],"level":"WARN"},"javax.management.mbeanserver":{"appenders":["console"],"level":"ERROR"},"javax.management.remote":{"appenders":["console"],"level":"ERROR"},"javax.net.ssl":{"appenders":["console"],"level":"OFF"},"lightstreamerHealthCheck":{"appenders":["console"],"level":"INFO"},"lightstreamerLogger":{"appenders":["console"],"level":"INFO","subLoggers":{"lightstreamerLogger.connections":"WARN","lightstreamerLogger.connections.WS":"WARN","lightstreamerLogger.connections.http":"ERROR","lightstreamerLogger.connections.proxy":"INFO","lightstreamerLogger.connections.ssl":"WARN","lightstreamerLogger.external":"INFO","lightstreamerLogger.init":"INFO","lightstreamerLogger.io":"WARN","lightstreamerLogger.io.ssl":"WARN","lightstreamerLogger.kernel":"INFO","lightstreamerLogger.license":"INFO","lightstreamerLogger.monitoring":"INFO","lightstreamerLogger.mpn":"INFO","lightstreamerLogger.mpn.apple":"WARN","lightstreamerLogger.mpn.database":"WARN","lightstreamerLogger.mpn.database.transactions":"WARN","lightstreamerLogger.mpn.google":"WARN","lightstreamerLogger.mpn.lifecycle":"INFO","lightstreamerLogger.mpn.operations":"INFO","lightstreamerLogger.mpn.pump":"WARN","lightstreamerLogger.mpn.requests":"WARN","lightstreamerLogger.mpn.status_adapters":"WARN","lightstreamerLogger.preprocessor":"INFO","lightstreamerLogger.pump":"INFO","lightstreamerLogger.pump.messages":"INFO","lightstreamerLogger.push":"INFO","lightstreamerLogger.requests":"INFO","lightstreamerLogger.requests.messages":"INFO","lightstreamerLogger.requests.polling":"WARN","lightstreamerLogger.scheduler":"INFO","lightstreamerLogger.subscriptions":"DEBUG","lightstreamerLogger.subscriptions.upd":"DEBUG","lightstreamerLogger.webServer":"WARN","lightstreamerLogger.webServer.appleWebService":"WARN","lightstreamerLogger.webServer.jmxTree":"WARN","lightstreamerLogger.webclient":"DEBUG"}},"lightstreamerMonitorTAB":{"appenders":["console"],"level":"ERROR"},"lightstreamerMonitorText":{"appenders":["console"],"level":"INFO"},"lightstreamerProxyAdapters":{"appenders":["console"],"level":"INFO"},"org.apache.http":{"appenders":["console"],"level":"ERROR"},"org.codehaus.janino":{"appenders":["console"],"level":"WARN"},"org.conscrypt":{"appenders":["console"],"level":"ERROR"},"org.hibernate":{"appenders":["console"],"level":"WARN"},"org.jboss.logging":{"appenders":["console"],"level":"WARN"},"org.jminix":{"appenders":["console"],"level":"ERROR"},"org.restlet":{"appenders":["console"],"level":"ERROR"}}```
 #### [logging.loggers.lightstreamerHealthCheck](./values.yaml#L801)
 
      
@@ -2118,7 +2118,7 @@ Optional. The following is the base logger of all logging messages printed by Li
 
 **Default:**
 
-{"appenders":["console"],"level":"INFO","subLoggers":{"lightstreamerLogger.connections":"WARN","lightstreamerLogger.connections.WS":"WARN","lightstreamerLogger.connections.http":"ERROR","lightstreamerLogger.connections.proxy":"INFO","lightstreamerLogger.connections.ssl":"WARN","lightstreamerLogger.external":"INFO","lightstreamerLogger.init":"INFO","lightstreamerLogger.io":"WARN","lightstreamerLogger.io.ssl":"WARN","lightstreamerLogger.kernel":"INFO","lightstreamerLogger.license":"INFO","lightstreamerLogger.monitoring":"INFO","lightstreamerLogger.mpn":"INFO","lightstreamerLogger.mpn.apple":"WARN","lightstreamerLogger.mpn.database":"WARN","lightstreamerLogger.mpn.database.transactions":"WARN","lightstreamerLogger.mpn.google":"WARN","lightstreamerLogger.mpn.lifecycle":"INFO","lightstreamerLogger.mpn.operations":"INFO","lightstreamerLogger.mpn.pump":"WARN","lightstreamerLogger.mpn.requests":"WARN","lightstreamerLogger.mpn.status_adapters":"WARN","lightstreamerLogger.preprocessor":"INFO","lightstreamerLogger.pump":"INFO","lightstreamerLogger.pump.messages":"INFO","lightstreamerLogger.push":"INFO","lightstreamerLogger.requests":"INFO","lightstreamerLogger.requests.messages":"INFO","lightstreamerLogger.requests.polling":"WARN","lightstreamerLogger.scheduler":"INFO","lightstreamerLogger.subscriptions":"DEBUG","lightstreamerLogger.subscriptions.upd":"DEBUG","lightstreamerLogger.webServer":"WARN","lightstreamerLogger.webServer.appleWebService":"WARN","lightstreamerLogger.webServer.jmxTree":"WARN","lightstreamerLogger.webclient":"DEBUG"}}
+```{"appenders":["console"],"level":"INFO","subLoggers":{"lightstreamerLogger.connections":"WARN","lightstreamerLogger.connections.WS":"WARN","lightstreamerLogger.connections.http":"ERROR","lightstreamerLogger.connections.proxy":"INFO","lightstreamerLogger.connections.ssl":"WARN","lightstreamerLogger.external":"INFO","lightstreamerLogger.init":"INFO","lightstreamerLogger.io":"WARN","lightstreamerLogger.io.ssl":"WARN","lightstreamerLogger.kernel":"INFO","lightstreamerLogger.license":"INFO","lightstreamerLogger.monitoring":"INFO","lightstreamerLogger.mpn":"INFO","lightstreamerLogger.mpn.apple":"WARN","lightstreamerLogger.mpn.database":"WARN","lightstreamerLogger.mpn.database.transactions":"WARN","lightstreamerLogger.mpn.google":"WARN","lightstreamerLogger.mpn.lifecycle":"INFO","lightstreamerLogger.mpn.operations":"INFO","lightstreamerLogger.mpn.pump":"WARN","lightstreamerLogger.mpn.requests":"WARN","lightstreamerLogger.mpn.status_adapters":"WARN","lightstreamerLogger.preprocessor":"INFO","lightstreamerLogger.pump":"INFO","lightstreamerLogger.pump.messages":"INFO","lightstreamerLogger.push":"INFO","lightstreamerLogger.requests":"INFO","lightstreamerLogger.requests.messages":"INFO","lightstreamerLogger.requests.polling":"WARN","lightstreamerLogger.scheduler":"INFO","lightstreamerLogger.subscriptions":"DEBUG","lightstreamerLogger.subscriptions.upd":"DEBUG","lightstreamerLogger.webServer":"WARN","lightstreamerLogger.webServer.appleWebService":"WARN","lightstreamerLogger.webServer.jmxTree":"WARN","lightstreamerLogger.webclient":"DEBUG"}}```
 #### [logging.loggers.lightstreamerLogger.appenders](./values.yaml#L597)
 
      
@@ -2138,7 +2138,7 @@ Optional. The levels of subloggers used to separate logging messages in families
 
 **Default:**
 
-{"lightstreamerLogger.connections":"WARN","lightstreamerLogger.connections.WS":"WARN","lightstreamerLogger.connections.http":"ERROR","lightstreamerLogger.connections.proxy":"INFO","lightstreamerLogger.connections.ssl":"WARN","lightstreamerLogger.external":"INFO","lightstreamerLogger.init":"INFO","lightstreamerLogger.io":"WARN","lightstreamerLogger.io.ssl":"WARN","lightstreamerLogger.kernel":"INFO","lightstreamerLogger.license":"INFO","lightstreamerLogger.monitoring":"INFO","lightstreamerLogger.mpn":"INFO","lightstreamerLogger.mpn.apple":"WARN","lightstreamerLogger.mpn.database":"WARN","lightstreamerLogger.mpn.database.transactions":"WARN","lightstreamerLogger.mpn.google":"WARN","lightstreamerLogger.mpn.lifecycle":"INFO","lightstreamerLogger.mpn.operations":"INFO","lightstreamerLogger.mpn.pump":"WARN","lightstreamerLogger.mpn.requests":"WARN","lightstreamerLogger.mpn.status_adapters":"WARN","lightstreamerLogger.preprocessor":"INFO","lightstreamerLogger.pump":"INFO","lightstreamerLogger.pump.messages":"INFO","lightstreamerLogger.push":"INFO","lightstreamerLogger.requests":"INFO","lightstreamerLogger.requests.messages":"INFO","lightstreamerLogger.requests.polling":"WARN","lightstreamerLogger.scheduler":"INFO","lightstreamerLogger.subscriptions":"DEBUG","lightstreamerLogger.subscriptions.upd":"DEBUG","lightstreamerLogger.webServer":"WARN","lightstreamerLogger.webServer.appleWebService":"WARN","lightstreamerLogger.webServer.jmxTree":"WARN","lightstreamerLogger.webclient":"DEBUG"}
+```{"lightstreamerLogger.connections":"WARN","lightstreamerLogger.connections.WS":"WARN","lightstreamerLogger.connections.http":"ERROR","lightstreamerLogger.connections.proxy":"INFO","lightstreamerLogger.connections.ssl":"WARN","lightstreamerLogger.external":"INFO","lightstreamerLogger.init":"INFO","lightstreamerLogger.io":"WARN","lightstreamerLogger.io.ssl":"WARN","lightstreamerLogger.kernel":"INFO","lightstreamerLogger.license":"INFO","lightstreamerLogger.monitoring":"INFO","lightstreamerLogger.mpn":"INFO","lightstreamerLogger.mpn.apple":"WARN","lightstreamerLogger.mpn.database":"WARN","lightstreamerLogger.mpn.database.transactions":"WARN","lightstreamerLogger.mpn.google":"WARN","lightstreamerLogger.mpn.lifecycle":"INFO","lightstreamerLogger.mpn.operations":"INFO","lightstreamerLogger.mpn.pump":"WARN","lightstreamerLogger.mpn.requests":"WARN","lightstreamerLogger.mpn.status_adapters":"WARN","lightstreamerLogger.preprocessor":"INFO","lightstreamerLogger.pump":"INFO","lightstreamerLogger.pump.messages":"INFO","lightstreamerLogger.push":"INFO","lightstreamerLogger.requests":"INFO","lightstreamerLogger.requests.messages":"INFO","lightstreamerLogger.requests.polling":"WARN","lightstreamerLogger.scheduler":"INFO","lightstreamerLogger.subscriptions":"DEBUG","lightstreamerLogger.subscriptions.upd":"DEBUG","lightstreamerLogger.webServer":"WARN","lightstreamerLogger.webServer.appleWebService":"WARN","lightstreamerLogger.webServer.jmxTree":"WARN","lightstreamerLogger.webclient":"DEBUG"}```
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.connections"](./values.yaml#L636)
 
      
@@ -2152,7 +2152,7 @@ Optional. Logging of details for issues related to requests over WebSockets. At 
 
 **Default:**
 
-inherited from lightstreamerLogger.connections
+```inherited from lightstreamerLogger.connections```
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.connections.http"](./values.yaml#L649)
 
      
@@ -2160,7 +2160,7 @@ Optional. Logging of client request interpretation issues. At `WARN` level, each
 
 **Default:**
 
-inherited from lightstreamerLogger.connections
+```inherited from lightstreamerLogger.connections```
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.connections.proxy"](./values.yaml#L659)
 
      
@@ -2168,7 +2168,7 @@ Optional. Logging of issues related to information received via the proxy protoc
 
 **Default:**
 
-inherited from lightstreamerLogger.connections
+```inherited from lightstreamerLogger.connections```
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.connections.ssl"](./values.yaml#L641)
 
      
@@ -2176,7 +2176,7 @@ Optional. Logging of issues related to TLS/SSL configuration and handshake manag
 
 **Default:**
 
-inherited from lightstreamerLogger.connections
+```inherited from lightstreamerLogger.connections```
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.external"](./values.yaml#L624)
 
      
@@ -2244,7 +2244,7 @@ Optional. Logging of mobile push notifications activity related to database tran
 
 **Default:**
 
-inherited from lightstreamerLogger.mpn.database
+```inherited from lightstreamerLogger.mpn.database```
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.mpn.google"](./values.yaml#L778)
 
      
@@ -2318,7 +2318,7 @@ Optional. Logging of elaboration of client message requests. At `DEBUG` level, d
 
 **Default:**
 
-inherited from lightstreamerLogger.requests
+```inherited from lightstreamerLogger.requests```
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.requests.polling"](./values.yaml#L685)
 
      
@@ -2326,7 +2326,7 @@ Optional. Logging of elaboration of client polling requests.
 
 **Default:**
 
-inherited from lightstreamerLogger.requests
+```inherited from lightstreamerLogger.requests```
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.scheduler"](./values.yaml#L705)
 
      
@@ -2346,7 +2346,7 @@ Optional. Logging of events coming from the Data Adapters. At `DEBUG` level, all
 
 **Default:**
 
-inherited from lightstreamerLogger.subscriptions
+```inherited from lightstreamerLogger.subscriptions```
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.webServer"](./values.yaml#L666)
 
      
@@ -2360,7 +2360,7 @@ Optional. Logging of handling of special requests from apple clients related to 
 
 **Default:**
 
-inherited from lightstreamerLogger.webServer
+```inherited from lightstreamerLogger.webServer```
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.webServer.jmxTree"](./values.yaml#L671)
 
      
@@ -2368,7 +2368,7 @@ Optional. Logging of request management related to the JMX Tree feature. At `DEB
 
 **Default:**
 
-inherited from lightstreamerLogger.webServer
+```inherited from lightstreamerLogger.webServer```
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.webclient"](./values.yaml#L790)
 
      
@@ -2438,7 +2438,7 @@ Optional. Connectors configuration.
 
 **Default:**
 
-{"kafkaConnector":{"adapterClassName":"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter","adapterSetId":"KafkaConnector","connections":{"quickStart":{"authentication":{"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}},"bootstrapServers":"broker:9092","enabled":true,"fields":{"enableSkipFailedMapping":null,"mappings":{"ask":"#{VALUE.ask}","ask_quantity":"#{VALUE.ask_quantity}","bid":"#{VALUE.bid}","bid_quantity":"#{VALUE.bid_quantity}","item_status":"#{VALUE.item_status}","last_price":"#{VALUE.last_price}","max":"#{VALUE.max}","min":"#{VALUE.min}","offset":"#{OFFSET}","open_price":"#{VALUE.open_price}","partition":"#{PARTITION}","pct_change":"#{VALUE.pct_change}","ref_price":"#{VALUE.ref_price}","stock_name":"#{VALUE.name}","time":"#{VALUE.time}","timestamp":"#{VALUE.timestamp}","topic":"#{TOPIC}","ts":"#{TIMESTAMP}"}},"groupId":"quickstart","logger":{"appenders":["stdout"],"level":"INFO"},"name":"K8S-QuickStart","record":{"consumeFrom":"EARLIEST","consumeWithOrderStrategy":null,"consumeWithThreadNumber":null,"extractionErrorStrategy":null,"keyEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"INTEGER"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"JSON"}},"routing":{"enableTopicRegEx":null,"itemTemplates":{"stockTemplate":"stock-#{index=KEY}"},"topicMappings":{"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}},"sslConfig":{"allowedCipherSuites":[],"allowedProtocols":[],"enableHostnameVerification":null,"enabled":true,"keyStoreRef":null,"protocol":null,"trustStoreRef":null}}},"enabled":false,"localSchemaFiles":{"myKeySchema":null,"myValueSchema":null},"logging":{"appenders":{"stdout":{"pattern":"[%d] [%-10c{1}] %-5p %m%n","type":"Console"}},"loggers":{"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter":{"appenders":["stdout"],"level":"INFO"},"org.apache.kafka":{"appenders":["stdout"],"level":"WARN"}}},"schemaRegistry":{"mySchemaRegistry":{"basicAuthentication":{"credentialsSecretRef":null,"enabled":null},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":null,"keyStoreRef":null,"trustStoreRef":null},"url":"https://schema-registry:8084"}},"version":"1.2.0"}}
+```{"kafkaConnector":{"adapterClassName":"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter","adapterSetId":"KafkaConnector","connections":{"quickStart":{"authentication":{"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}},"bootstrapServers":"broker:9092","enabled":true,"fields":{"enableSkipFailedMapping":null,"mappings":{"ask":"#{VALUE.ask}","ask_quantity":"#{VALUE.ask_quantity}","bid":"#{VALUE.bid}","bid_quantity":"#{VALUE.bid_quantity}","item_status":"#{VALUE.item_status}","last_price":"#{VALUE.last_price}","max":"#{VALUE.max}","min":"#{VALUE.min}","offset":"#{OFFSET}","open_price":"#{VALUE.open_price}","partition":"#{PARTITION}","pct_change":"#{VALUE.pct_change}","ref_price":"#{VALUE.ref_price}","stock_name":"#{VALUE.name}","time":"#{VALUE.time}","timestamp":"#{VALUE.timestamp}","topic":"#{TOPIC}","ts":"#{TIMESTAMP}"}},"groupId":"quickstart","logger":{"appenders":["stdout"],"level":"INFO"},"name":"K8S-QuickStart","record":{"consumeFrom":"EARLIEST","consumeWithOrderStrategy":null,"consumeWithThreadNumber":null,"extractionErrorStrategy":null,"keyEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"INTEGER"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"JSON"}},"routing":{"enableTopicRegEx":null,"itemTemplates":{"stockTemplate":"stock-#{index=KEY}"},"topicMappings":{"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}},"sslConfig":{"allowedCipherSuites":[],"allowedProtocols":[],"enableHostnameVerification":null,"enabled":true,"keyStoreRef":null,"protocol":null,"trustStoreRef":null}}},"enabled":false,"localSchemaFiles":{"myKeySchema":null,"myValueSchema":null},"logging":{"appenders":{"stdout":{"pattern":"[%d] [%-10c{1}] %-5p %m%n","type":"Console"}},"loggers":{"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter":{"appenders":["stdout"],"level":"INFO"},"org.apache.kafka":{"appenders":["stdout"],"level":"WARN"}}},"schemaRegistry":{"mySchemaRegistry":{"basicAuthentication":{"credentialsSecretRef":null,"enabled":null},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":null,"keyStoreRef":null,"trustStoreRef":null},"url":"https://schema-registry:8084"}},"version":"1.2.0"}}```
 #### [connectors.kafkaConnector](./values.yaml#L3232)
 
      
@@ -2446,7 +2446,7 @@ Optional. Lightstreamer Kafka Connector configuration.
 
 **Default:**
 
-{"adapterClassName":"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter","adapterSetId":"KafkaConnector","connections":{"quickStart":{"authentication":{"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}},"bootstrapServers":"broker:9092","enabled":true,"fields":{"enableSkipFailedMapping":null,"mappings":{"ask":"#{VALUE.ask}","ask_quantity":"#{VALUE.ask_quantity}","bid":"#{VALUE.bid}","bid_quantity":"#{VALUE.bid_quantity}","item_status":"#{VALUE.item_status}","last_price":"#{VALUE.last_price}","max":"#{VALUE.max}","min":"#{VALUE.min}","offset":"#{OFFSET}","open_price":"#{VALUE.open_price}","partition":"#{PARTITION}","pct_change":"#{VALUE.pct_change}","ref_price":"#{VALUE.ref_price}","stock_name":"#{VALUE.name}","time":"#{VALUE.time}","timestamp":"#{VALUE.timestamp}","topic":"#{TOPIC}","ts":"#{TIMESTAMP}"}},"groupId":"quickstart","logger":{"appenders":["stdout"],"level":"INFO"},"name":"K8S-QuickStart","record":{"consumeFrom":"EARLIEST","consumeWithOrderStrategy":null,"consumeWithThreadNumber":null,"extractionErrorStrategy":null,"keyEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"INTEGER"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"JSON"}},"routing":{"enableTopicRegEx":null,"itemTemplates":{"stockTemplate":"stock-#{index=KEY}"},"topicMappings":{"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}},"sslConfig":{"allowedCipherSuites":[],"allowedProtocols":[],"enableHostnameVerification":null,"enabled":true,"keyStoreRef":null,"protocol":null,"trustStoreRef":null}}},"enabled":false,"localSchemaFiles":{"myKeySchema":null,"myValueSchema":null},"logging":{"appenders":{"stdout":{"pattern":"[%d] [%-10c{1}] %-5p %m%n","type":"Console"}},"loggers":{"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter":{"appenders":["stdout"],"level":"INFO"},"org.apache.kafka":{"appenders":["stdout"],"level":"WARN"}}},"schemaRegistry":{"mySchemaRegistry":{"basicAuthentication":{"credentialsSecretRef":null,"enabled":null},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":null,"keyStoreRef":null,"trustStoreRef":null},"url":"https://schema-registry:8084"}},"version":"1.2.0"}
+```{"adapterClassName":"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter","adapterSetId":"KafkaConnector","connections":{"quickStart":{"authentication":{"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}},"bootstrapServers":"broker:9092","enabled":true,"fields":{"enableSkipFailedMapping":null,"mappings":{"ask":"#{VALUE.ask}","ask_quantity":"#{VALUE.ask_quantity}","bid":"#{VALUE.bid}","bid_quantity":"#{VALUE.bid_quantity}","item_status":"#{VALUE.item_status}","last_price":"#{VALUE.last_price}","max":"#{VALUE.max}","min":"#{VALUE.min}","offset":"#{OFFSET}","open_price":"#{VALUE.open_price}","partition":"#{PARTITION}","pct_change":"#{VALUE.pct_change}","ref_price":"#{VALUE.ref_price}","stock_name":"#{VALUE.name}","time":"#{VALUE.time}","timestamp":"#{VALUE.timestamp}","topic":"#{TOPIC}","ts":"#{TIMESTAMP}"}},"groupId":"quickstart","logger":{"appenders":["stdout"],"level":"INFO"},"name":"K8S-QuickStart","record":{"consumeFrom":"EARLIEST","consumeWithOrderStrategy":null,"consumeWithThreadNumber":null,"extractionErrorStrategy":null,"keyEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"INTEGER"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"JSON"}},"routing":{"enableTopicRegEx":null,"itemTemplates":{"stockTemplate":"stock-#{index=KEY}"},"topicMappings":{"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}},"sslConfig":{"allowedCipherSuites":[],"allowedProtocols":[],"enableHostnameVerification":null,"enabled":true,"keyStoreRef":null,"protocol":null,"trustStoreRef":null}}},"enabled":false,"localSchemaFiles":{"myKeySchema":null,"myValueSchema":null},"logging":{"appenders":{"stdout":{"pattern":"[%d] [%-10c{1}] %-5p %m%n","type":"Console"}},"loggers":{"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter":{"appenders":["stdout"],"level":"INFO"},"org.apache.kafka":{"appenders":["stdout"],"level":"WARN"}}},"schemaRegistry":{"mySchemaRegistry":{"basicAuthentication":{"credentialsSecretRef":null,"enabled":null},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":null,"keyStoreRef":null,"trustStoreRef":null},"url":"https://schema-registry:8084"}},"version":"1.2.0"}```
 #### [connectors.kafkaConnector.adapterClassName](./values.yaml#L3244)
 
      
@@ -2454,7 +2454,7 @@ Mandatory. Java class name of the Kafka Connector Metadata Adapter. It is possib
 
 **Default:**
 
-"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter"
+```"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter"```
 #### [connectors.kafkaConnector.adapterSetId](./values.yaml#L3239)
 
      
@@ -2468,7 +2468,7 @@ Mandatory. Connection configurations.
 
 **Default:**
 
-{"quickStart":{"authentication":{"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}},"bootstrapServers":"broker:9092","enabled":true,"fields":{"enableSkipFailedMapping":null,"mappings":{"ask":"#{VALUE.ask}","ask_quantity":"#{VALUE.ask_quantity}","bid":"#{VALUE.bid}","bid_quantity":"#{VALUE.bid_quantity}","item_status":"#{VALUE.item_status}","last_price":"#{VALUE.last_price}","max":"#{VALUE.max}","min":"#{VALUE.min}","offset":"#{OFFSET}","open_price":"#{VALUE.open_price}","partition":"#{PARTITION}","pct_change":"#{VALUE.pct_change}","ref_price":"#{VALUE.ref_price}","stock_name":"#{VALUE.name}","time":"#{VALUE.time}","timestamp":"#{VALUE.timestamp}","topic":"#{TOPIC}","ts":"#{TIMESTAMP}"}},"groupId":"quickstart","logger":{"appenders":["stdout"],"level":"INFO"},"name":"K8S-QuickStart","record":{"consumeFrom":"EARLIEST","consumeWithOrderStrategy":null,"consumeWithThreadNumber":null,"extractionErrorStrategy":null,"keyEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"INTEGER"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"JSON"}},"routing":{"enableTopicRegEx":null,"itemTemplates":{"stockTemplate":"stock-#{index=KEY}"},"topicMappings":{"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}},"sslConfig":{"allowedCipherSuites":[],"allowedProtocols":[],"enableHostnameVerification":null,"enabled":true,"keyStoreRef":null,"protocol":null,"trustStoreRef":null}}}
+```{"quickStart":{"authentication":{"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}},"bootstrapServers":"broker:9092","enabled":true,"fields":{"enableSkipFailedMapping":null,"mappings":{"ask":"#{VALUE.ask}","ask_quantity":"#{VALUE.ask_quantity}","bid":"#{VALUE.bid}","bid_quantity":"#{VALUE.bid_quantity}","item_status":"#{VALUE.item_status}","last_price":"#{VALUE.last_price}","max":"#{VALUE.max}","min":"#{VALUE.min}","offset":"#{OFFSET}","open_price":"#{VALUE.open_price}","partition":"#{PARTITION}","pct_change":"#{VALUE.pct_change}","ref_price":"#{VALUE.ref_price}","stock_name":"#{VALUE.name}","time":"#{VALUE.time}","timestamp":"#{VALUE.timestamp}","topic":"#{TOPIC}","ts":"#{TIMESTAMP}"}},"groupId":"quickstart","logger":{"appenders":["stdout"],"level":"INFO"},"name":"K8S-QuickStart","record":{"consumeFrom":"EARLIEST","consumeWithOrderStrategy":null,"consumeWithThreadNumber":null,"extractionErrorStrategy":null,"keyEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"INTEGER"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"JSON"}},"routing":{"enableTopicRegEx":null,"itemTemplates":{"stockTemplate":"stock-#{index=KEY}"},"topicMappings":{"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}},"sslConfig":{"allowedCipherSuites":[],"allowedProtocols":[],"enableHostnameVerification":null,"enabled":true,"keyStoreRef":null,"protocol":null,"trustStoreRef":null}}}```
 #### [connectors.kafkaConnector.connections.quickStart](./values.yaml#L3286)
 
      
@@ -2476,7 +2476,7 @@ At least one must be provided. Connection configuration. The Kafka Connector all
 
 **Default:**
 
-{"authentication":{"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}},"bootstrapServers":"broker:9092","enabled":true,"fields":{"enableSkipFailedMapping":null,"mappings":{"ask":"#{VALUE.ask}","ask_quantity":"#{VALUE.ask_quantity}","bid":"#{VALUE.bid}","bid_quantity":"#{VALUE.bid_quantity}","item_status":"#{VALUE.item_status}","last_price":"#{VALUE.last_price}","max":"#{VALUE.max}","min":"#{VALUE.min}","offset":"#{OFFSET}","open_price":"#{VALUE.open_price}","partition":"#{PARTITION}","pct_change":"#{VALUE.pct_change}","ref_price":"#{VALUE.ref_price}","stock_name":"#{VALUE.name}","time":"#{VALUE.time}","timestamp":"#{VALUE.timestamp}","topic":"#{TOPIC}","ts":"#{TIMESTAMP}"}},"groupId":"quickstart","logger":{"appenders":["stdout"],"level":"INFO"},"name":"K8S-QuickStart","record":{"consumeFrom":"EARLIEST","consumeWithOrderStrategy":null,"consumeWithThreadNumber":null,"extractionErrorStrategy":null,"keyEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"INTEGER"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"JSON"}},"routing":{"enableTopicRegEx":null,"itemTemplates":{"stockTemplate":"stock-#{index=KEY}"},"topicMappings":{"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}},"sslConfig":{"allowedCipherSuites":[],"allowedProtocols":[],"enableHostnameVerification":null,"enabled":true,"keyStoreRef":null,"protocol":null,"trustStoreRef":null}}
+```{"authentication":{"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}},"bootstrapServers":"broker:9092","enabled":true,"fields":{"enableSkipFailedMapping":null,"mappings":{"ask":"#{VALUE.ask}","ask_quantity":"#{VALUE.ask_quantity}","bid":"#{VALUE.bid}","bid_quantity":"#{VALUE.bid_quantity}","item_status":"#{VALUE.item_status}","last_price":"#{VALUE.last_price}","max":"#{VALUE.max}","min":"#{VALUE.min}","offset":"#{OFFSET}","open_price":"#{VALUE.open_price}","partition":"#{PARTITION}","pct_change":"#{VALUE.pct_change}","ref_price":"#{VALUE.ref_price}","stock_name":"#{VALUE.name}","time":"#{VALUE.time}","timestamp":"#{VALUE.timestamp}","topic":"#{TOPIC}","ts":"#{TIMESTAMP}"}},"groupId":"quickstart","logger":{"appenders":["stdout"],"level":"INFO"},"name":"K8S-QuickStart","record":{"consumeFrom":"EARLIEST","consumeWithOrderStrategy":null,"consumeWithThreadNumber":null,"extractionErrorStrategy":null,"keyEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"INTEGER"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"JSON"}},"routing":{"enableTopicRegEx":null,"itemTemplates":{"stockTemplate":"stock-#{index=KEY}"},"topicMappings":{"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}},"sslConfig":{"allowedCipherSuites":[],"allowedProtocols":[],"enableHostnameVerification":null,"enabled":true,"keyStoreRef":null,"protocol":null,"trustStoreRef":null}}```
 #### [connectors.kafkaConnector.connections.quickStart.authentication](./values.yaml#L3344)
 
      
@@ -2484,7 +2484,7 @@ Optional. Authentication settings for the connection.
 
 **Default:**
 
-{"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}}
+```{"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}}```
 #### [connectors.kafkaConnector.connections.quickStart.authentication.credentialsSecretRef](./values.yaml#L3362)
 
      
@@ -2504,7 +2504,7 @@ Mandatory if `mechanism` is set to `GSSAPI`. The GSSAPI authentication settings.
 
 **Default:**
 
-{"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}
+```{"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}```
 #### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.enableKeytab](./values.yaml#L3368)
 
      
@@ -2560,7 +2560,7 @@ Mandatory. Record mappings configuration.
 
 **Default:**
 
-{"enableSkipFailedMapping":null,"mappings":{"ask":"#{VALUE.ask}","ask_quantity":"#{VALUE.ask_quantity}","bid":"#{VALUE.bid}","bid_quantity":"#{VALUE.bid_quantity}","item_status":"#{VALUE.item_status}","last_price":"#{VALUE.last_price}","max":"#{VALUE.max}","min":"#{VALUE.min}","offset":"#{OFFSET}","open_price":"#{VALUE.open_price}","partition":"#{PARTITION}","pct_change":"#{VALUE.pct_change}","ref_price":"#{VALUE.ref_price}","stock_name":"#{VALUE.name}","time":"#{VALUE.time}","timestamp":"#{VALUE.timestamp}","topic":"#{TOPIC}","ts":"#{TIMESTAMP}"}}
+```{"enableSkipFailedMapping":null,"mappings":{"ask":"#{VALUE.ask}","ask_quantity":"#{VALUE.ask_quantity}","bid":"#{VALUE.bid}","bid_quantity":"#{VALUE.bid_quantity}","item_status":"#{VALUE.item_status}","last_price":"#{VALUE.last_price}","max":"#{VALUE.max}","min":"#{VALUE.min}","offset":"#{OFFSET}","open_price":"#{VALUE.open_price}","partition":"#{PARTITION}","pct_change":"#{VALUE.pct_change}","ref_price":"#{VALUE.ref_price}","stock_name":"#{VALUE.name}","time":"#{VALUE.time}","timestamp":"#{VALUE.timestamp}","topic":"#{TOPIC}","ts":"#{TIMESTAMP}"}}```
 #### [connectors.kafkaConnector.connections.quickStart.fields.enableSkipFailedMapping](./values.yaml#L3576)
 
      
@@ -2580,7 +2580,7 @@ Optional. The name of the consumer group this connection belongs to. Sets the va
 
 **Default:**
 
-kafkaConnector.adapterSetId + name + randomly generated
+```kafkaConnector.adapterSetId + name + randomly generated```
 #### [connectors.kafkaConnector.connections.quickStart.logger](./values.yaml#L3578)
 
      
@@ -2696,7 +2696,7 @@ Mandatory. Record routings configuration.
 
 **Default:**
 
-{"enableTopicRegEx":null,"itemTemplates":{"stockTemplate":"stock-#{index=KEY}"},"topicMappings":{"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}}
+```{"enableTopicRegEx":null,"itemTemplates":{"stockTemplate":"stock-#{index=KEY}"},"topicMappings":{"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}}```
 #### [connectors.kafkaConnector.connections.quickStart.routing.enableTopicRegEx](./values.yaml#L3542)
 
      
@@ -2716,7 +2716,7 @@ Mandatory. Kafka topic mappings.
 
 **Default:**
 
-{"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}
+```{"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}```
 #### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock](./values.yaml#L3521)
 
      
@@ -2724,7 +2724,7 @@ At least one must be provided. A Kafka topic mappings. Map a Kafka topic to: - o
 
 **Default:**
 
-{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}
+```{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}```
 #### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock.itemTemplateRefs](./values.yaml#L3535)
 
      
@@ -2756,7 +2756,7 @@ Optional. List of enabled secure cipher suites.
 
 **Default:**
 
-all the available cipher suites in the running JVM
+```all the available cipher suites in the running JVM```
 #### [connectors.kafkaConnector.connections.quickStart.sslConfig.allowedProtocols](./values.yaml#L3326)
 
      
@@ -2764,7 +2764,7 @@ Optional. List of enabled secure communication protocols TLSv1.2 otherwise.
 
 **Default:**
 
-[TLSv1.2, TLSv1.3] when running on Java 11 or newer,
+```[TLSv1.2, TLSv1.3] when running on Java 11 or newer,```
 #### [connectors.kafkaConnector.connections.quickStart.sslConfig.enableHostnameVerification](./values.yaml#L3332)
 
      
@@ -2790,7 +2790,7 @@ Optional. The SSL protocol to be used. Can be one of the following: `TLSv1.2`,  
 
 **Default:**
 
-TLSv1.3 when running on Java 11 or newer, TLSv1.2
+```TLSv1.3 when running on Java 11 or newer, TLSv1.2```
 #### [connectors.kafkaConnector.connections.quickStart.sslConfig.trustStoreRef](./values.yaml#L3337)
 
      
@@ -2822,7 +2822,7 @@ Mandatory. Kafka Connector global Logging configuration.
 
 **Default:**
 
-{"appenders":{"stdout":{"pattern":"[%d] [%-10c{1}] %-5p %m%n","type":"Console"}},"loggers":{"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter":{"appenders":["stdout"],"level":"INFO"},"org.apache.kafka":{"appenders":["stdout"],"level":"WARN"}}}
+```{"appenders":{"stdout":{"pattern":"[%d] [%-10c{1}] %-5p %m%n","type":"Console"}},"loggers":{"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter":{"appenders":["stdout"],"level":"INFO"},"org.apache.kafka":{"appenders":["stdout"],"level":"WARN"}}}```
 #### [connectors.kafkaConnector.logging.appenders](./values.yaml#L3249)
 
      
@@ -2830,7 +2830,7 @@ Mandatory. Appenders configuration. Every logger must refer to one or more appen
 
 **Default:**
 
-{"stdout":{"pattern":"[%d] [%-10c{1}] %-5p %m%n","type":"Console"}}
+```{"stdout":{"pattern":"[%d] [%-10c{1}] %-5p %m%n","type":"Console"}}```
 #### [connectors.kafkaConnector.logging.appenders.stdout](./values.yaml#L3251)
 
      
@@ -2838,7 +2838,7 @@ At least one must be provided. An appender configuration.
 
 **Default:**
 
-{"pattern":"[%d] [%-10c{1}] %-5p %m%n","type":"Console"}
+```{"pattern":"[%d] [%-10c{1}] %-5p %m%n","type":"Console"}```
 #### [connectors.kafkaConnector.logging.appenders.stdout.pattern](./values.yaml#L3256)
 
      
@@ -2858,7 +2858,7 @@ Optional. Global loggers configuration.
 
 **Default:**
 
-{"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter":{"appenders":["stdout"],"level":"INFO"},"org.apache.kafka":{"appenders":["stdout"],"level":"WARN"}}
+```{"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter":{"appenders":["stdout"],"level":"INFO"},"org.apache.kafka":{"appenders":["stdout"],"level":"WARN"}}```
 #### [connectors.kafkaConnector.logging.loggers."com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter"](./values.yaml#L3269)
 
      
@@ -2890,7 +2890,7 @@ Optional. Set of Schema Registry configurations.
 
 **Default:**
 
-{"mySchemaRegistry":{"basicAuthentication":{"credentialsSecretRef":null,"enabled":null},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":null,"keyStoreRef":null,"trustStoreRef":null},"url":"https://schema-registry:8084"}}
+```{"mySchemaRegistry":{"basicAuthentication":{"credentialsSecretRef":null,"enabled":null},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":null,"keyStoreRef":null,"trustStoreRef":null},"url":"https://schema-registry:8084"}}```
 #### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry](./values.yaml#L3601)
 
      
@@ -2898,7 +2898,7 @@ Mandatory if either `connections.{}.keyEvaluator.type` or is `connections.{}.val
 
 **Default:**
 
-{"basicAuthentication":{"credentialsSecretRef":null,"enabled":null},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":null,"keyStoreRef":null,"trustStoreRef":null},"url":"https://schema-registry:8084"}
+```{"basicAuthentication":{"credentialsSecretRef":null,"enabled":null},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":null,"keyStoreRef":null,"trustStoreRef":null},"url":"https://schema-registry:8084"}```
 #### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.basicAuthentication](./values.yaml#L3607)
 
      
@@ -2906,7 +2906,7 @@ Optional. Basic HTTP authentication of a connection against the Schema Registry.
 
 **Default:**
 
-{"credentialsSecretRef":null,"enabled":null}
+```{"credentialsSecretRef":null,"enabled":null}```
 #### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.basicAuthentication.credentialsSecretRef](./values.yaml#L3614)
 
      
@@ -2926,7 +2926,7 @@ Mandatory if the https protocol is specified in `url`. TLS/SSL settings.
 
 **Default:**
 
-{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":null,"keyStoreRef":null,"trustStoreRef":null}
+```{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":null,"keyStoreRef":null,"trustStoreRef":null}```
 #### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.allowCipherSuites](./values.yaml#L3626)
 
      
@@ -2934,7 +2934,7 @@ Optional. List of enabled secure cipher suites.
 
 **Default:**
 
-all the available cipher suites in the running JVM
+```all the available cipher suites in the running JVM```
 #### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.allowProtocols](./values.yaml#L3621)
 
      
@@ -2942,7 +2942,7 @@ Optional. List of enabled secure communication protocols TLSv1.2 otherwise.
 
 **Default:**
 
-[TLSv1.2, TLSv1.3] when running on Java 11 or newer,
+```[TLSv1.2, TLSv1.3] when running on Java 11 or newer,```
 #### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.enableHostnameVerification](./values.yaml#L3630)
 
      
