@@ -79,7 +79,7 @@ Common labels
 {{- end }}
 
 {{/*
-Create the name of the service account to use
+Create the name of the service account to use.
 */}}
 {{- define "lightstreamer.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
@@ -89,62 +89,37 @@ Create the name of the service account to use
 {{- end }}
 {{- end }}
 
-{{- define "lightstreamer.configuration.validateAllServers" }}
-{{- $usedNames := list }}
-{{- $usedPorts := list }}
-{{- range $serverKey, $server :=.Values.servers }}
-  {{- if $server.enabled }}
-    {{- /* CHECK SERVER NAMES */ -}}
-    {{- $serverName := required (printf "servers.%s.name must be set" $serverKey) $server.name }}
-    {{- if has $serverName $usedNames }}
-      {{- fail (printf "servers.%s.name \"%s\" already used" $serverKey $serverName ) }}
-    {{- end }}
-    {{- $usedNames = append $usedNames $serverName }}
-    {{- /* CHECK SERVER PORTS */ -}}
-    {{- $serverPort := required (printf "servers.%s.port must be set" $serverKey) (int $server.port) }}
-    {{- if has $serverPort $usedPorts }}
-      {{- fail (printf "servers.%s.port \"%d\" already used" $serverKey $serverPort ) }}
-    {{- end }}
-    {{- $usedPorts = append $usedPorts $serverPort }}
-  {{- end }}
-{{- end }}
-{{- if $usedNames | empty }} 
-  {{- fail "At least one enabled server must be defined" }}
-{{- end }}
+{{/*
+Render the Service name.
+*/}}
+{{- define "lightstreamer.service.name" -}}
+{{ .Values.service.name | default (printf "%s-%s" (include "lightstreamer.fullname" . ) "service") }}
 {{- end }}
 
-{{- define "lightstreamer.configuration.validateServer" }}
-{{- $ := index . 0 }}
-{{- $serverKeyName := index . 1 }}
-{{- $serverKey := required (printf "%s must be set" $serverKeyName) (index . 2) }}
-{{- $server := required (printf "servers.%s not defined" $serverKey) (get $.Values.servers $serverKey ) }}
-{{- if not $server.enabled }}
-  {{- printf "%s must set to an enabled server" $serverKeyName | fail }}
-{{- end }}
-{{- end }}
-
-{{- define "lightstreamer.configuration.serverPortName" -}}
-{{ . | lower | replace "_" "- " }}
-{{- end }}
-
+{{/*
+Render the Service target port.
+*/}}
 {{- define "lightstreamer.service.targetPort" -}}
 {{- $serverKeyName := "Values.service.targetPort" }}
 {{- $serverKey := .Values.service.targetPort }}
-{{- include "lightstreamer.configuration.validateServer" (list . $serverKeyName $serverKey) }}
+{{- include "lightstreamer.configuration.validateServerRef" (list . $serverKeyName $serverKey) }}
 {{- include "lightstreamer.configuration.serverPortName" $serverKey -}}
 {{- end }}
 
+{{/*
+Render the port used health check.
+*/}}
 {{- define "lightstreamer.deployment.healthcheckPort" -}}
 {{- $ := index . 0 }}
 {{- $probeName := index . 1 }}
 {{- $serverKeyName := printf "deployment.probes.%s.healthCheck.serverRef" $probeName }}
 {{- $serverKey := (index . 2).serverRef }}
-{{- include "lightstreamer.configuration.validateServer" (list $ $serverKeyName $serverKey) }}
+{{- include "lightstreamer.configuration.validateServerRef" (list $ $serverKeyName $serverKey) }}
 {{- include "lightstreamer.configuration.serverPortName" $serverKey -}}
 {{- end }}
 
 {{/*
-Render a probe for the deployment descriptor
+Render a probe for the deployment descriptor.
 */}}
 {{- define "lightstreamer.deployment.probe" -}}
 {{- $ := index . 0}}
@@ -174,13 +149,61 @@ Render a probe for the deployment descriptor
 {{- end -}}
 
 {{/*
-Render all the probes for the deployment descriptor
+Render all the probes for the deployment descriptor-
 */}}
 {{- define "lightstreamer.deployment.all-probes" -}}
 {{- $probes := .Values.deployment.probes }}
 {{- range $probeName, $probe := $probes }}
 {{- include "lightstreamer.deployment.probe" (list $ $probe $probeName) }}
 {{- end }}
+{{- end }}
+
+{{/*
+Validate all the server configurations, ensuring that at least on enabled 
+server exists and no duplicated names or ports are defined.
+*/}}
+{{- define "lightstreamer.configuration.validateAllServers" }}
+{{- $usedNames := list }}
+{{- $usedPorts := list }}
+{{- range $serverKey, $server :=.Values.servers }}
+  {{- if $server.enabled }}
+    {{- /* CHECK SERVER NAMES */ -}}
+    {{- $serverName := required (printf "servers.%s.name must be set" $serverKey) $server.name }}
+    {{- if has $serverName $usedNames }}
+      {{- fail (printf "servers.%s.name \"%s\" already used" $serverKey $serverName ) }}
+    {{- end }}
+    {{- $usedNames = append $usedNames $serverName }}
+    {{- /* CHECK SERVER PORTS */ -}}
+    {{- $serverPort := required (printf "servers.%s.port must be set" $serverKey) (int $server.port) }}
+    {{- if has $serverPort $usedPorts }}
+      {{- fail (printf "servers.%s.port \"%d\" already used" $serverKey $serverPort ) }}
+    {{- end }}
+    {{- $usedPorts = append $usedPorts $serverPort }}
+  {{- end }}
+{{- end }}
+{{- if $usedNames | empty }} 
+  {{- fail "At least one enabled server must be defined" }}
+{{- end }}
+{{- end }}
+
+{{/*
+Validate a server configuration reference, ensuring that the server exists and is enabled.
+*/}}
+{{- define "lightstreamer.configuration.validateServerRef" }}
+{{- $ := index . 0 }}
+{{- $serverKeyName := index . 1 }}
+{{- $serverKey := required (printf "%s must be set" $serverKeyName) (index . 2) }}
+{{- $server := required (printf "servers.%s not defined" $serverKey) (get $.Values.servers $serverKey ) }}
+{{- if not $server.enabled }}
+  {{- printf "%s must set to an enabled server" $serverKeyName | fail }}
+{{- end }}
+{{- end }}
+
+{{/*
+  Render the server name when used as port reference.
+*/}}
+{{- define "lightstreamer.configuration.serverPortName" -}}
+{{ . | lower | replace "_" "- " }}
 {{- end }}
 
 {{/*
@@ -256,7 +279,7 @@ Render the truststore settings for the Lightstreamer configuration file
 {{- end -}}
 
 {{/*
-Render the <appender-ref> element
+Render the <appender-ref> element.
 */}}
 {{- define "lightstreamer.configuration.log.appender_ref" -}}
 {{- $top := index . 0 -}}
@@ -270,7 +293,7 @@ Render the <appender-ref> element
 {{- end }}
 
 {{/*
-Create the logging level attribute
+Create the logging level attribute.
 */}}
 {{- define "lightstreamer.configuration.log.level" -}}
 {{- $loggerLevel := .level | default "DEBUG" }}
@@ -282,7 +305,7 @@ Create the logging level attribute
 {{- end }}
 
 {{/*
-Create the logging level attribute for subloggers
+Create the logging level attribute for subloggers.
 */}}
 {{- define "lightstreamer.configuration.log.subloggers.level" -}}
 {{- $subloggers := index . 0 -}}
@@ -298,14 +321,14 @@ Create the logging level attribute for subloggers
 {{- end }}
 
 {{/*
-Create the full name of the Lightstreamer Kafka Connector 
+Create the full name of the Lightstreamer Kafka Connector .
 */}}
 {{- define "lightstreamer.kafka-connector.fullname" -}}
 {{- printf "lightstreamer-kafka-connector-%s" .Values.connectors.kafkaConnector.version }}
 {{- end }}
 
 {{/*
-Render the truststore settings for the Lightstreamer Kafka Connector configuration file
+Render the truststore settings for the Lightstreamer Kafka Connector configuration file.
 */}}
 {{- define "lightstreamer.kafka-connector.configuration.truststore" -}}
 {{- $prefix := index . 0 -}}
@@ -327,7 +350,7 @@ Render the truststore settings for the Lightstreamer Kafka Connector configurati
 {{- end -}}
 
 {{/*
-Render the keystore settings for the Lightstreamer Kafka Connector configuration file
+Render the keystore settings for the Lightstreamer Kafka Connector configuration file.
 */}}
 {{- define "lightstreamer.kafka-connector.configuration.keystore" -}}
 {{- $prefix := index . 0 -}}
