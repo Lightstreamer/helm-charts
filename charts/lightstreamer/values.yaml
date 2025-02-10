@@ -950,7 +950,7 @@ servers:
     # @default -- false
     enableHttps: false
     # -- (int) Optional. Size of the system buffer for incoming TCP connections
-    # Overrides the default system setting
+    # Overrides the default system setting.
     # @default -- the system setting
     backlog:
     # -- (string) Optional. Provides meta-information on how this listening
@@ -1022,7 +1022,7 @@ servers:
     # - by taking advantage of the X-Forwarded-For HTTP header, that
     #   intermediate HTTP proxies and level-7 Load Balancers usually set to
     #   supply connection routing information in an incremental way (this is
-    #   done through the "skip_local_forwards" subelement);
+    #   done through the `clientIdentification.skipLocalForwards` setting);
     # - by receiving the routed address directly from a TCP reverse proxy or
     #   level-4 Load Balancer through the Proxy Protocol, when the proxy is
     #   configured to do so (this is done through the `enableProxyProtocol`
