@@ -1902,7 +1902,7 @@ In case of file-based license validation, allows to activate periodic automatic 
 #### [license.enterprise.filePathSecretRef](./values.yaml#L340)
 
      
-Mandatory if if `licenseValidation` set to `FILE`. Secret name and key where the license file is stored.
+Mandatory if `licenseValidation` set to `FILE`. Secret name and key where the license file is stored.
 
 **Default:** `{"key":null,"name":null}`
 #### [license.enterprise.licenseType](./values.yaml#L315)
@@ -1914,13 +1914,13 @@ Mandatory. The type of the ENTERPRISE edition. Possible values: `DEMO`, `EVALUAT
 #### [license.enterprise.licenseValidation](./values.yaml#L330)
 
      
-Optional. Choose between online (cloud-based) and file-based license validation. If set to `ONLINE`, the following host names below must be reachable on port 443:  - `https://clm1.lightstreamer.com/` - `https://clm2.lightstreamer.com/`. If set to `FILE`, based on `licenseType`, one or both the values are possible. For EVALUATION and STARTUP: ONLINE is mandatory. For PRODUCTION, HOT-STANDBY, NON-PRODUCTION-FULL, and NON-PRODUCTION-LIMITED: you can choose between ONLINE and FILE. For DEMO: the value is ignored, as no validation is done.
+Optional. Choose between online (cloud-based) and file-based license validation. If set to `ONLINE`, the following host names below must be reachable on port 443:  - `https://clm1.lightstreamer.com/` - `https://clm2.lightstreamer.com/`. If set to `FILE`, based on `licenseType`, one or both the values are possible. For `EVALUATION` and `STARTUP`: `ONLINE` is mandatory. For `PRODUCTION`, `HOT-STANDBY`, `NON-PRODUCTION-FULL`, and  `NON-PRODUCTION-LIMITED`: you can choose between `ONLINE` and `FILE`. For `D`EMO: the value is ignored, as no validation is done.
 
 **Default:** `"ONLINE"`
 #### [license.enterprise.onlinePasswordSecretRef](./values.yaml#L335)
 
      
-Used only if `licenseValidation` set to "ONLINE". Secret name and key where the password used for validation of online licenses is stored. Leave blank if `licenseType` is set to `DEMO` or `licenseValidation` set to `FILE`.
+Used only if `licenseValidation` set to `ONLINE`. Secret name and key where the password used for validation of online licenses is stored. Leave blank if `licenseType` is set to `DEMO` or `licenseValidation` set to `FILE`.
 
 **Default:** `{"key":null,"name":null}`
 #### [license.enterprise.optionalFeatures](./values.yaml#L356)

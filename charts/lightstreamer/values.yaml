@@ -323,19 +323,19 @@ license:
     # - `https://clm1.lightstreamer.com/`
     # - `https://clm2.lightstreamer.com/`.
     # If set to `FILE`, based on `licenseType`, one or both the values are possible.
-    # For EVALUATION and STARTUP: ONLINE is mandatory.
-    # For PRODUCTION, HOT-STANDBY, NON-PRODUCTION-FULL, and NON-PRODUCTION-LIMITED:
-    # you can choose between ONLINE and FILE.
-    # For DEMO: the value is ignored, as no validation is done.
+    # For `EVALUATION` and `STARTUP`: `ONLINE` is mandatory.
+    # For `PRODUCTION`, `HOT-STANDBY`, `NON-PRODUCTION-FULL`, and 
+    # `NON-PRODUCTION-LIMITED`: you can choose between `ONLINE` and `FILE`.
+    # For `D`EMO: the value is ignored, as no validation is done.
     licenseValidation: ONLINE
-    # -- Used only if `licenseValidation` set to "ONLINE".
+    # -- Used only if `licenseValidation` set to `ONLINE`.
     # Secret name and key where the password used for validation of online
     # licenses is stored.
     # Leave blank if `licenseType` is set to `DEMO` or `licenseValidation` set to `FILE`.
     onlinePasswordSecretRef:
       name:
       key:
-    # -- Mandatory if if `licenseValidation` set to `FILE`. Secret name and key
+    # -- Mandatory if `licenseValidation` set to `FILE`. Secret name and key
     # where the license file is stored.
     filePathSecretRef:
       name:
