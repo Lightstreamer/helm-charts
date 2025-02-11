@@ -1126,7 +1126,7 @@ Optional. Enablement of the application configuration.
 #### [mpn.appleNotifierConfig.apps.myApp.id](./values.yaml#L2642)
 
      
-Mandatory if `enabled` is set to `true`. The app ID, which corresponds to the bundle ID of the app's binary. Note that for web apps (i.e. targeting Safari push notification) the ID must begin with `web`", e.g.: `web.com.mydomain.myapp`.
+Mandatory if `enabled` is set to `true`. The app ID, which corresponds to the bundle ID of the app's binary. Note that for web apps (i.e. targeting Safari push notification) the ID must begin with `web`, e.g.: `web.com.mydomain.myapp`.
 
 **Default:** `nil`
 #### [mpn.appleNotifierConfig.apps.myApp.keystoreRef](./values.yaml#L2662)
