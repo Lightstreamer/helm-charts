@@ -299,7 +299,7 @@ Create the logging level attribute.
 {{- $loggerLevel := .level | default "DEBUG" }}
 {{- $admittedLevels := list "INFO" "DEBUG" "WARN" "ERROR" "FATAL" "TRACE" "OFF" -}}
   {{- if not (has $loggerLevel $admittedLevels) }}
-    {{- fail (printf "logging.loggers.<logger name>.level must be set to one of %s" $admittedLevels) }}
+    {{- fail (printf "logging.loggers.<logger name>.level must be one of %s" $admittedLevels) }}
   {{- end }}
 {{- $loggerLevel -}}
 {{- end }}
@@ -314,7 +314,7 @@ Create the logging level attribute for subloggers.
 {{- if $loggerLevel }}
   {{- $admittedLevels := list "INFO" "DEBUG" "WARN" "ERROR" "FATAL" "TRACE" "OFF" -}}
     {{- if not (has $loggerLevel $admittedLevels) }}
-      {{- fail (printf "logging.loggers.lightstreamerLogger.subLoggers.%s.level must be set to one of %s" $loggerName $admittedLevels) }}
+      {{- fail (printf "logging.loggers.lightstreamerLogger.subLoggers.%s.level must be one of %s" $loggerName $admittedLevels) }}
     {{- end }}
 {{- printf " level=%s" ($loggerLevel | quote) }} 
 {{- end }}
