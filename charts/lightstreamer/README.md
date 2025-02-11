@@ -3044,7 +3044,7 @@ Optional. The configmap name and key where the local schema file is stored.
 #### [connectors.kafkaConnector.logging](./values.yaml#L3241)
 
      
-Mandatory. Kafka Connector global Logging configuration.
+Mandatory. Kafka Connector global logging configuration.
 
 **Default:**
 
@@ -3169,7 +3169,7 @@ Mandatory if the https protocol is specified in `url`. TLS/SSL settings.
 ```
 {"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":null,"keyStoreRef":null,"trustStoreRef":null}
 ```
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.allowCipherSuites](./values.yaml#L3618)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.allowCipherSuites](./values.yaml#L3617)
 
      
 Optional. List of enabled secure cipher suites.
@@ -3179,29 +3179,29 @@ Optional. List of enabled secure cipher suites.
 ```
 all the available cipher suites in the running JVM
 ```
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.allowProtocols](./values.yaml#L3613)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.allowProtocols](./values.yaml#L3612)
 
      
-Optional. List of enabled secure communication protocols TLSv1.2 otherwise.
+Optional. List of enabled secure communication protocols.
 
 **Default:**
 
 ```
-[TLSv1.2, TLSv1.3] when running on Java 11 or newer,
+[TLSv1.2, TLSv1.3] when running on Java 11 or newer, TLSv1.2 otherwise
 ```
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.enableHostnameVerification](./values.yaml#L3622)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.enableHostnameVerification](./values.yaml#L3621)
 
      
 Optional. Enablement of the hostname verification.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.keyStoreRef](./values.yaml#L3632)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.keyStoreRef](./values.yaml#L3631)
 
      
 Optional. The reference to a keystore used if mutual TLS is enabled on the Schema Registry. See the `keyStores.myKafkaConnectorKeystore` settings for general details on keystore configuration for the Kafka Connector.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.trustStoreRef](./values.yaml#L3627)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.trustStoreRef](./values.yaml#L3626)
 
      
 Optional. The reference to a keystore used to validate the certificates provided by the Schema Registry. See the `keyStores.myKafkaConnectorKeystore` settings for general details on keystore configuration for the Kafka Connector.

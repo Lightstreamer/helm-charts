@@ -3237,7 +3237,7 @@ connectors:
     # the factory class.
     # See https://github.com/Lightstreamer/Lightstreamer-kafka-connector/tree/main?tab=readme-ov-file#customize-the-kafkaconnector-metadata-adapter-class
     adapterClassName: "com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter"
-    # -- Mandatory. Kafka Connector global Logging configuration.
+    # -- Mandatory. Kafka Connector global logging configuration.
     logging:
       # -- Mandatory. Appenders configuration.
       # Every logger must refer to one or more appenders defined here.
@@ -3607,9 +3607,8 @@ connectors:
         # -- Mandatory if the https protocol is specified in `url`. TLS/SSL
         # settings.
         sslConfig:
-          # -- Optional. List of enabled secure communication protocols
-          # @default -- [TLSv1.2, TLSv1.3] when running on Java 11 or newer,
-          # TLSv1.2 otherwise.
+          # -- Optional. List of enabled secure communication protocols.
+          # @default -- [TLSv1.2, TLSv1.3] when running on Java 11 or newer, TLSv1.2 otherwise
           allowProtocols: []
             # - TLSv1.2
             # - TLSv1.3
