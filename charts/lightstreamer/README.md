@@ -136,7 +136,7 @@ Optional, but nonzero values forbidden if `enableProxyProtocol` is `true`. Numbe
 #### [servers.defaultServer.enableHttps](./values.yaml#L947)
 
      
-Optional. Enabling of the https protocol. HTTPS service is an optional feature, available depending on Edition and License Type. To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default, available at /dashboard). See `sslConfig` for general details on TLS/SSL configuration.
+Optional. Enabling of the https protocol. HTTPS service is an optional feature, available depending on Edition and License Type. To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default, available at `/dashboard`). See `sslConfig` for general details on TLS/SSL configuration.
 
 **Default:** `false`
 #### [servers.defaultServer.enabled](./values.yaml#L930)
@@ -674,7 +674,7 @@ Optional. Enabling of the healthcheck url on all server sockets. If set to `true
 #### [management.jmx](./values.yaml#L1655)
 
      
-Mandatory (if you wish to use the provided "stop" script). JMX preferences and external access configuration. Full JMX features is an optional feature, available depending on Edition and License Type; if not available, only the Server shutdown operation via JMX is allowed. To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default, available at /dashboard).
+Mandatory (if you wish to use the provided "stop" script). JMX preferences and external access configuration. Full JMX features is an optional feature, available depending on Edition and License Type; if not available, only the Server shutdown operation via JMX is allowed. To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default, available at `/dashboard`).
 
 **Default:**
 
@@ -708,7 +708,7 @@ Mandatory if enabled is set to `true`. TCP port on which Sun/Oracle's JMXMP conn
 #### [management.jmx.rmiConnector](./values.yaml#L1671)
 
      
-Mandatory (if you wish to use the provided "stop" script). Enables the standard RMI connector. The remote MBean server will be accessible through this url: `service:jmx:rmi:///jndi/rmi://<host>:<port>/lsjmx`. If full JMX features is not available, only the "Server" MBean is supplied and only the Server shutdown operation is available. The JVM platform MBean server is also exposed and it is accessible through the url: `service:jmx:rmi:///jndi/rmi://<host>:<port>/jmxrmi`. Note that the configuration of the connector applies to both cases; hence, access to the JVM platform MBean server from this connector is not configured through the "com.sun.management.jmxremote" JVM properties. Also note that TLS/SSL is an optional feature, available depending on Edition and License Type. To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default, available at /dashboard).
+Mandatory (if you wish to use the provided "stop" script). Enables the standard RMI connector. The remote MBean server will be accessible through this url: `service:jmx:rmi:///jndi/rmi://<host>:<port>/lsjmx`. If full JMX features is not available, only the "Server" MBean is supplied and only the Server shutdown operation is available. The JVM platform MBean server is also exposed and it is accessible through the url: `service:jmx:rmi:///jndi/rmi://<host>:<port>/jmxrmi`. Note that the configuration of the connector applies to both cases; hence, access to the JVM platform MBean server from this connector is not configured through the `com.sun.management.jmxremote` JVM properties. Also note that TLS/SSL is an optional feature, available depending on Edition and License Type. To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default, available at `/dashboard`).
 
 **Default:**
 
@@ -1062,7 +1062,7 @@ Optional. Enabling the use of the "gzip" content encoding, as defined by the HTT
 #### [mpn](./values.yaml#L2394)
 
      
-Optional. Mobile Push Notification (MPN) module configuration. This module is able to receive updates from an item subscription on behalf of a user, and forward them to a mobile push notification service, such as Apple's APNs or Google's FCM. If not defined, the MPN module will not start in any case, and all requests related to mobile push notifications will be rejected. Mobile Push Notification support is an optional feature, available depending on Edition and License Type. To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default, available at /dashboard).
+Optional. Mobile Push Notification (MPN) module configuration. This module is able to receive updates from an item subscription on behalf of a user, and forward them to a mobile push notification service, such as Apple's APNs or Google's FCM. If not defined, the MPN module will not start in any case, and all requests related to mobile push notifications will be rejected. Mobile Push Notification support is an optional feature, available depending on Edition and License Type. To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default, available at `/dashboard`).
 
 **Default:**
 
