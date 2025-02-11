@@ -2229,9 +2229,9 @@ pushSession:
   # order specified by this list, until one is found which is compatible with
   # both client capabilities and the involved values.
   # Available names are:
-  # - jsonpatch: computes the difference in JSON Patch format, provided
+  # - `jsonpatch`: computes the difference in JSON Patch format, provided
   # that the values are valid JSON representations;
-  # - diff_match_patch: computes the difference with Google's
+  # - `diff_match_patch`: computes the difference with Google's
   # "diff-match-patch" algorithm ( the result is then serialized to the custom
   # "TLCP-diff" format).
   # Note that trying "diff" algorithms on unsuitable data may waste resources.
