@@ -1175,10 +1175,10 @@ servers:
         # -- (string) Optional. Preference order for choosing the cipher suite.
         # If set to `JVM`  ordering is demanded to the underlying Security
         # Provider, which, usually, privileges the strongest suites.
-        # If set to 'config' (which is allowed only if `allowCipherSuites` is
+        # If set to `config` (which is allowed only if `allowCipherSuites` is
         # used), the order in which the `allowCipherSuites` elements are
         # specified determines the preference order.
-        # @default `JVM`
+        # @default -- JVM
         order: "JVM"
       # -- Optional. If set to `false`, causes any client-initiated TLS
       # renegotiation request to be refused by closing the connection. This
