@@ -130,7 +130,7 @@ Optional. Timeout applied while reading for information  through the proxy proto
 #### [servers.defaultServer.clientIdentification.skipLocalForwards](./values.yaml#L1099)
 
      
-Optional, but nonzero values forbidden if `enableProxyProtocol` is `true`. Number of entries in the X-Forwarded-For header that are expected to be supplied on each HTTP request (including Websocket handshake) by the intermediate nodes (e.g. reverse proxies, load balancers) that stand in the local environment. If N entries are expected from local nodes, this means that the Nth-nearest entry corresponds to the node connected to the farthest local intermediate node, hence to the client. So, that entry will be used as the real client address. In particular, it will appear in all log lines that refer to the involved HTTP request or Websocket. If set to `0` or left at the default, all entries in _X-Forwarded-For_ will be considered as written by client-side proxies, hence the connection endpoint address will be used (unless, of course, `enableProxyProtocol` is set to `true`, which overrides the behavior). Note that a similar correction for port and protocol is not applied; hence, when an address corrected through a nonzero setting is reported, any port and protocol associated will still refer to the actual connection.
+Optional, but nonzero values forbidden if  `enableProxyProtocol` is set to `true`. Number of entries in the  _X-Forwarded-For_ header that are expected to be supplied on each HTTP  request (including Websocket handshake) by the intermediate nodes (e.g. reverse proxies, load balancers) that stand in the local environment. If N entries are expected from local nodes, this means that the Nth-nearest entry corresponds to the node connected to the farthest local intermediate node, hence to the client. So, that entry will be used as the real client address. In particular, it will appear in all log lines that refer to the involved HTTP request or Websocket. If set to `0` or left at the default, all entries in _X-Forwarded-For_ will be considered as written by client-side proxies, hence the connection endpoint address will be used (unless, of course, `enableProxyProtocol` is set to `true`, which overrides the behavior). Note that a similar correction for port and protocol is not applied; hence, when an address corrected through a nonzero setting is reported, any port and protocol associated will still refer to the actual connection.
 
 **Default:** `0`
 #### [servers.defaultServer.enableHttps](./values.yaml#L948)
@@ -316,7 +316,7 @@ decided by the underlying Security Provider's configuration
 #### [servers.defaultServer.sslConfig.trustStoreRef](./values.yaml#L1298)
 
      
-Mandatory when at least one of `enableClientAuth` and `enableMandatoryClientAuth` is set to `true`. The reference to a keystore to be used by the HTTPS service to accept client certificates. It can be used to supply client certificates that should be accepted, in addition to those with a valid certificate chain, for instance while testing with self-signed certificates. See the `keyStores.myServerKeystore` settings for general details on keystore configuration. Note that the further constraints reported there with regard to accessing the certificates in a JKS keystore don't hold in this case, where the latter is used as a truststore. Moreover, the handling of keystore replacement doesn't apply here.
+Mandatory if at least one of `enableClientAuth` and `enableMandatoryClientAuth` is set to `true`. The reference to a keystore to be used by the HTTPS service to accept client certificates. It can be used to supply client certificates that should be accepted, in addition to those with a valid certificate chain, for instance while testing with self-signed certificates. See the `keyStores.myServerKeystore` settings for general details on keystore configuration. Note that the further constraints reported there with regard to accessing the certificates in a JKS keystore don't hold in this case, where the latter is used as a truststore. Moreover, the handling of keystore replacement doesn't apply here.
 
 **Default:** `nil`
 ### KeyStores configuration
@@ -1590,7 +1590,7 @@ Optional. The configmap name and the key where an HTML page to be returned upon 
 #### [webServer.flexCrossdomainPath](./values.yaml#L2870)
 
      
-Mandatory when `webServer.enableFlexCrossdomain` is true. Path of the file to be returned upon requests for the `/crossdomain.xml` URL. It is ignored when `webServer.enableFlexCrossdomain` is false. The file content should be encoded with the iso-8859-1 charset. The file path is relative to the conf directory.
+Mandatory if `webServer.enableFlexCrossdomain` is set to `true`. Path of the file to be returned upon requests for the `/crossdomain.xml` URL. It is ignored when `webServer.enableFlexCrossdomain` is false. The file content should be encoded with the iso-8859-1 charset. The file path is relative to the conf directory.
 
 **Default:** `nil`
 #### [webServer.mimeTypesConfig](./values.yaml#L2831)
@@ -1620,7 +1620,7 @@ Optional. Caching time, in minutes, to be allowed to the browser (through the "e
 #### [webServer.silverlightAccessPolicyPath](./values.yaml#L2899)
 
      
-Mandatory when `web.enableSilverlightAccessPolicy` is `true`. Path of the file to be returned upon requests for the `/clientaccesspolicy.xml` URL. It is ignored when `web.enableSilverlightAccessPolicy` is false. The file content should be encoded with the iso-8859-1 charset. The file path is relative to the conf directory.
+Mandatory if `web.enableSilverlightAccessPolicy` is set to `true`. Path of the file to be returned upon requests for the `/clientaccesspolicy.xml` URL. It is ignored when `web.enableSilverlightAccessPolicy` is false. The file content should be encoded with the iso-8859-1 charset. The file path is relative to the conf directory.
 
 **Default:** `nil`
 ### Cluster configuration

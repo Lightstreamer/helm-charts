@@ -1077,11 +1077,11 @@ servers:
       # pool and this setting protects that pool against such unlikely events.
       # @default -- 1000
       proxyProtocolTimeoutMillis:
-      # -- (int) Optional, but nonzero values forbidden if `enableProxyProtocol`
-      # is `true`. Number of entries in the X-Forwarded-For header that are
-      # expected to be supplied on each HTTP request (including Websocket
-      # handshake) by the intermediate nodes (e.g. reverse proxies, load
-      # balancers) that stand in the local environment.
+      # -- (int) Optional, but nonzero values forbidden if 
+      # `enableProxyProtocol` is set to `true`. Number of entries in the 
+      # _X-Forwarded-For_ header that are expected to be supplied on each HTTP 
+      # request (including Websocket handshake) by the intermediate nodes (e.g.
+      # reverse proxies, load balancers) that stand in the local environment.
       # If N entries are expected from local nodes, this means that the
       # Nth-nearest entry corresponds to the node connected to the farthest
       # local intermediate node, hence to the client. So, that entry will be
@@ -1283,7 +1283,7 @@ servers:
       # consequence of `enableClientAuth`.
       # @default -- false
       enableMandatoryClientAuth:
-      # -- Mandatory when at least one of `enableClientAuth` and
+      # -- Mandatory if at least one of `enableClientAuth` and
       # `enableMandatoryClientAuth` is set to `true`. The reference to a
       # keystore to be used by the HTTPS service to accept client certificates.
       # It can be used to supply client certificates that should be accepted,
@@ -2862,7 +2862,7 @@ webServer:
   # `/clientaccesspolicy.xml` is not provided.
   # @default -- false
   enableFlexCrossdomain:
-  # -- Mandatory when `webServer.enableFlexCrossdomain` is true.
+  # -- Mandatory if `webServer.enableFlexCrossdomain` is set to `true`.
   # Path of the file to be returned upon requests for the `/crossdomain.xml`
   # URL. It is ignored when `webServer.enableFlexCrossdomain` is false.
   # The file content should be encoded with the iso-8859-1 charset.
@@ -2890,7 +2890,7 @@ webServer:
   # runtime when `/clientaccesspolicy.xml` is not provided.
   # @default -- false
   enableSilverlightAccessPolicy:
-  # -- Mandatory when `web.enableSilverlightAccessPolicy` is `true`.
+  # -- Mandatory if `web.enableSilverlightAccessPolicy` is set to `true`.
   # Path of the file to be returned upon requests for the
   # `/clientaccesspolicy.xml` URL. It is ignored when
   # `web.enableSilverlightAccessPolicy` is false.
