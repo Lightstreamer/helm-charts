@@ -2870,7 +2870,7 @@ webServer:
   # The file content should be encoded with the iso-8859-1 charset.
   # The file path is relative to the conf directory.
   flexCrossdomainPath:
-  # -- Optional. Enables the processing of the `/clientaccesspolicy.xml" URL,
+  # -- Optional. Enables the processing of the `/clientaccesspolicy.xml` URL,
   # required by the Silverlight runtime in order to allow pages from a
   # different host to request data to Lightstreamer Server host.
   # See http://msdn.microsoft.com/en-us/library/cc838250(VS.95).aspx#crossdomain_communication
