@@ -2957,7 +2957,7 @@ cluster:
   # opportunity to migrate the new session to a different instance.
   # See the Clustering document for details on this mechanism and on how
   # rebalancing can be pursued.
-  # @default -- unlimited
+  # @default -- unlimited maximum session duration
   maxSessionDurationMinutes:
 
 # -- Optional. Load configuration.

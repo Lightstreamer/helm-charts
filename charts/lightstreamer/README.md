@@ -1652,7 +1652,7 @@ Optional. Host name to be used, in addition to the domain name specified on the 
      
 Optional. If set and positive, specifies a maximum duration to be enforced on each session. If the limit expires, the session is closed and the client can only establish a new session. This is useful when a cluster of Server instances is in place, as it leaves the Load Balancer the opportunity to migrate the new session to a different instance. See the Clustering document for details on this mechanism and on how rebalancing can be pursued.
 
-**Default:** `unlimited`
+**Default:** `unlimited maximum session duration`
 ### Load configuration
  
 #### [load](./values.yaml#L2964)
