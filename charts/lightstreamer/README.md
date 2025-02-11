@@ -2268,7 +2268,7 @@ Optional. Loggers configuration.
 #### [logging.loggers.lightstreamerHealthCheck](./values.yaml#L797)
 
      
-Optional. Logging healthcheck request processing at INFO level. The logger does not inherit from `lightstreamerLogger` in order to simplify sending the log to a dedicated appender. All log from this logger reports the IP and port of the involved connection.
+Optional. Logging healthcheck request processing at `INFO` level. The logger does not inherit from `lightstreamerLogger` in order to simplify sending the log to a dedicated appender. All log from this logger reports the IP and port of the involved connection.
 
 **Default:** `{"appenders":["console"],"level":"INFO"}`
 #### [logging.loggers.lightstreamerHealthCheck.appenders](./values.yaml#L800)
@@ -2286,7 +2286,7 @@ Optional. The level of the logger.
 #### [logging.loggers.lightstreamerLogger](./values.yaml#L590)
 
      
-Optional. The following is the base logger of all logging messages printed by Lightstreamer Kernel (with a few exceptions). Messages logged at `INFO` level notify major server activities, like session starting and ending. If these messages are enabled, they are also supplied to the internal MONITOR data adapter, together with `WARN` and `ERROR` messages. Messages logged at `DEBUG` level notify minor operations and all data flow inside the Server. They should not be enabled with production load levels. No useful messages are logged at `TRACE` level. The level is reserved for `DEBUG` versions of the Server. Severe `ERROR` messages are logged with a `FATAL` marker; in fact, a `FATAL` level is not natively supported by logback. Thanks to the marker, these messages can be filtered through logback's MarkerFilter. By the factory pattern configuration, `FATAL` is logged instead of `ERROR` for these messages (note the tricky "%-5.5(%p%marker)" pattern).
+Optional. The following is the base logger of all logging messages printed by Lightstreamer Kernel (with a few exceptions). Messages logged at `INFO` level notify major server activities, like session starting and ending. If these messages are enabled, they are also supplied to the internal `MONITOR` data adapter, together with `WARN` and `ERROR` messages. Messages logged at `DEBUG` level notify minor operations and all data flow inside the Server. They should not be enabled with production load levels. No useful messages are logged at `TRACE` level. The level is reserved for `DEBUG` versions of the Server. Severe `ERROR` messages are logged with a `FATAL` marker; in fact, a `FATAL` level is not natively supported by logback. Thanks to the marker, these messages can be filtered through logback's MarkerFilter. By the factory pattern configuration, `FATAL` is logged instead of `ERROR` for these messages (note the tricky `%-5.5(%p%marker)` pattern).
 
 **Default:**
 
@@ -2320,7 +2320,7 @@ Optional. The levels of subloggers used to separate logging messages in families
      
 Optional. Logging of client request dispatching. At `DEBUG` level, request processing details are reported. All log from this logger and its subloggers reports the IP and port of the involved connection
 
-**Default:** `inherited from `lightstreamerLogger``
+**Default:** `inherited from lightstreamerLogger`
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.connections.WS"](./values.yaml#L650)
 
      

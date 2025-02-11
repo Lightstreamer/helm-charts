@@ -574,7 +574,7 @@ logging:
     # printed by Lightstreamer Kernel (with a few exceptions).
     # Messages logged at `INFO` level notify major server activities, like
     # session starting and ending. If these messages are enabled, they are also
-    # supplied to the internal MONITOR data adapter, together with `WARN` and
+    # supplied to the internal `MONITOR` data adapter, together with `WARN` and
     # `ERROR` messages.
     # Messages logged at `DEBUG` level notify minor operations and all data flow
     # inside the Server. They should not be enabled with production load
@@ -586,7 +586,7 @@ logging:
     # Thanks to the marker, these messages can be filtered through logback's
     # MarkerFilter.
     # By the factory pattern configuration, `FATAL` is logged instead of `ERROR`
-    # for these messages (note the tricky "%-5.5(%p%marker)" pattern).
+    # for these messages (note the tricky `%-5.5(%p%marker)` pattern).
     lightstreamerLogger:
       # -- Optional. List of references to the appenders defined in
       # `.logging.appenders`.
@@ -628,12 +628,12 @@ logging:
         # -- Optional. Logging of client request dispatching.
         # At `DEBUG` level, request processing details are reported.
         # All log from this logger and its subloggers reports the IP and port of the involved connection
-        # @default -- inherited from `lightstreamerLogger`
+        # @default -- inherited from lightstreamerLogger
         lightstreamerLogger.connections: WARN
         # -- Optional. Logging of issues related to TLS/SSL configuration and
         # handshake management.
         # At `DEBUG` level, details on the cipher suites are report.
-        # @default -- inherited from `lightstreamerLogger.connections`
+        # @default -- inherited from lightstreamerLogger.connections
         lightstreamerLogger.connections.ssl: WARN
         # -- Optional. Logging of client request interpretation issues.
         # At `WARN` level, each time a request contains an unexpected HTTP header,
@@ -641,12 +641,12 @@ logging:
         # that an interpretation error is possible.
         # At `INFO` level, details upon request refusals are reported.
         # At `DEBUG` level, details for all requests and responses are reported.
-        # @default -- inherited from `lightstreamerLogger.connections`
+        # @default -- inherited from lightstreamerLogger.connections
         lightstreamerLogger.connections.http: ERROR
         # -- Optional. Logging of details for issues related to requests over
         # WebSockets.
         # At `DEBUG` level, details for all requests and responses are reported.
-        # @default -- inherited from `lightstreamerLogger.connections`
+        # @default -- inherited from lightstreamerLogger.connections
         lightstreamerLogger.connections.WS: WARN
         # -- Optional. Logging of issues related to information received via
         # the proxy protocol, when enabled.
@@ -789,7 +789,7 @@ logging:
         # At `DEBUG` level, JMX connectors initialization details are logged.
         # @default -- inherited from `lightstreamerLogger`
         lightstreamerLogger.monitoring: INFO
-    # -- Optional. Logging healthcheck request processing at INFO level.
+    # -- Optional. Logging healthcheck request processing at `INFO` level.
     # The logger does not inherit from `lightstreamerLogger` in order to
     # simplify sending the log to a dedicated appender.
     # All log from this logger reports the IP and port of the involved
