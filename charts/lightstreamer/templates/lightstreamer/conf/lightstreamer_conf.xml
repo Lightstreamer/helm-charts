@@ -438,7 +438,7 @@ Render the Lightstreamer configuration file
       {{- with .enforceServerCipherSuitePreference }}
         {{- if .order }}
           {{- if not (mustHas .order (list "JVM" "config")) }}
-            {{- fail "sslConfig.enforceServerCipherSuitePreference must be set one of \"JVM\", \"config\"" }}
+            {{- fail "sslConfig.enforceServerCipherSuitePreference must be one of: \"JVM\", \"config\"" }}
           {{- end }}
         {{- end }}
         <enforce_server_cipher_suite_preference{{ if not (quote .order | empty) }} order={{ .order | quote }}{{ end }}>{{ .enabled | default false | ternary "Y" "N" }}</enforce_server_cipher_suite_preference>
@@ -1357,7 +1357,7 @@ Render the Lightstreamer configuration file
                  This is also needed if you wish to use the provided "stop" script;
                  the script will always use the first user supplied. -->
       {{- if not .enablePublicAccess }}
-        {{- range required "management.jmx.rmiConnector.credentialsSecrets must be set" .credentialsSecrets}}
+        {{- range .credentialsSecrets}}
             <user id="$env.LS_RMI_CREDENTIAL_{{ . | upper | replace "-" "_" }}_USER" password="$env.LS_RMI_CREDENTIAL_{{ . | upper | replace "-" "_"}}_PASSWORD" />
         {{- end }}
       {{- else}}
@@ -1416,7 +1416,7 @@ Render the Lightstreamer configuration file
     {{- if .sessionMbeanAvailability }}
       {{- $sessionAvailabilityMap := dict "active" "N" "inactive" "Y" "sampled_statistics_only" "sampled_statistics_only" -}}
       {{- if not (mustHas .sessionMbeanAvailability (keys $sessionAvailabilityMap)) }}
-        {{- fail (printf "management.jmx.sessionMbeanAvailability must be one of %s" (keys $sessionAvailabilityMap)) }}
+        {{- fail (printf "management.jmx.sessionMbeanAvailability must be one of: %s" (keys $sessionAvailabilityMap)) }}
       {{- end }}
         <disable_session_mbeans>{{ get $sessionAvailabilityMap .sessionMbeanAvailability }}</disable_session_mbeans>
     {{- else }}
@@ -1875,6 +1875,9 @@ Render the Lightstreamer configuration file
          statistics are still based on the non-compressed content.
          Default: AUTO. -->
     {{- if .useCompression}}
+      {{- if not (has .useCompression (list "Y" "N" "AUTO")) }}
+        {{- fail "pushSession.useCompression must be one of: \"Y\", \"N\", \"AUTO\"" }}
+      {{- end }}
     <use_compression>{{ .useCompression }}</use_compression>
     {{- else }}
     <!--
@@ -2118,6 +2121,11 @@ Render the Lightstreamer configuration file
          through the Data Adapter interface.
          Default: an empty list. -->
     {{- if .defaultDiffOrders }}
+      {{- range $key, $diff := .defaultDiffOrders }}
+        {{- if not (has $diff (list "jsonpatch" "diff_match_patch") )}}
+          {{ printf "pushSession.defaultDiffOrders[%d] must be one of: \"jsonpatch\",\"diff_match_patch\"" $key | fail }}
+        {{- end }}
+      {{- end }}
     <default_diff_order>{{ join "," .defaultDiffOrders }}</default_diff_order>
     {{- else }}
     <!--
@@ -2660,7 +2668,7 @@ Render the Lightstreamer configuration file
              - "abort_operation" to abort the ongoing operation or
              - "continue_operation" to continue the ongoing operation. -->
   {{- if not (has .reactionOnDatabaseFailure (list "abort_operation" "continue_operation")) }}
-    {{- fail "mpn.reactionOnDatabaseFailure must be set to one of: \"abort_operation\", \"continue_operation\"" }}
+    {{- fail "mpn.reactionOnDatabaseFailure must be one of: \"abort_operation\", \"continue_operation\"" }}
   {{- else }}
         <reaction_on_database_failure>{{ .reactionOnDatabaseFailure }}</reaction_on_database_failure>     
   {{- end }}

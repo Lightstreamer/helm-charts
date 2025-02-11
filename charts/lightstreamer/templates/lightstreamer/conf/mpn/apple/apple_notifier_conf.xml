@@ -94,7 +94,7 @@ limitations under the License.
            corresponding "development" client environment that can receive
            notifications. Use either "production" or "test". -->
       {{- if not (has $app.serviceLevel (list "test" "development" "production" )) }}
-        {{- fail (printf "mpn.appleNotifierConfig.apps.%s.serviceLevel must be one of: test, development, production" $appName) }}
+        {{- fail (printf "mpn.appleNotifierConfig.apps.%s.serviceLevel must be one of: \"test\", \"development\", \"production\"" $appName) }}
       {{- else }}
       <service_level>{{ $app.serviceLevel }}</service_level>
       {{- end }}

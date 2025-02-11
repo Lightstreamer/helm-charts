@@ -126,7 +126,7 @@ Render the Lightstreamer Kafka Connector configuration file
              Default value: TLSv1.3 when running on Java 11 or newer, TLSv1.2 otherwise. -->
         {{- if .protocol }}
           {{- if not (mustHas .protocol (list "TLSv1.2" "TLSv1.3")) }}
-            {{- fail (printf "connectors.kafkaConnector.connections.%s.sslConfig.protocol must be one of \"TLSv1.2\", \"TLSv1.3\"" $key) }}
+            {{- fail (printf "connectors.kafkaConnector.connections.%s.sslConfig.protocol must be one of: \"TLSv1.2\", \"TLSv1.3\"" $key) }}
           {{- end }}
         <param name="encryption.protocol">{{ .protocol }}</param>
         {{- else }}
@@ -264,7 +264,7 @@ Render the Lightstreamer Kafka Connector configuration file
              Default value: PLAIN.-->
           {{- if not (quote .mechanism | empty )}}
             {{- if not (mustHas .mechanism (list "PLAIN" "SCRAM-SHA-256" "SCRAM-SHA-512" "GSSAPI")) }}
-              {{- fail (printf "connectors.kafkaConnector.connections.%s.authentication.mechanism must be one of \"PLAIN\", \"SCRAM-SHA-256\", \"SCRAM-SHA-512\", \"GSSAPI\"" $key) }}
+              {{- fail (printf "connectors.kafkaConnector.connections.%s.authentication.mechanism must be one of: \"PLAIN\", \"SCRAM-SHA-256\", \"SCRAM-SHA-512\", \"GSSAPI\"" $key) }}
             {{- end }}
         <param name="authentication.mechanism">{{ .mechanism }}</param>
           {{- else }}
@@ -376,7 +376,7 @@ Render the Lightstreamer Kafka Connector configuration file
              Default value: LATEST. -->
         {{- if .consumeFrom }}
           {{- if not (mustHas .consumeFrom (list "EARLIEST" "LATEST")) }}
-             {{- fail (printf "connectors.kafkaConnector.connections.%s.record.consumeFrom must be one of \"EARLIEST\", \"LATEST\"" $key) }}
+             {{- fail (printf "connectors.kafkaConnector.connections.%s.record.consumeFrom must be one of: \"EARLIEST\", \"LATEST\"" $key) }}
           {{- end }}
         <param name="record.consume.from">{{ .consumeFrom }}</param>
         {{- else }}
@@ -413,7 +413,7 @@ Render the Lightstreamer Kafka Connector configuration file
              Default value: ORDER_BY_PARTITION. -->
         {{- if .consumeWithOrderStrategy }}
           {{- if not (mustHas .consumeWithOrderStrategy (list "ORDER_BY_PARTITION" "ORDER_BY_KEY" "UNORDERED")) }}
-            {{- fail (printf "connectors.kafkaConnector.connections.%s.record.consumeWithOrderStrategy must be one of \"ORDER_BY_PARTITION\", \"ORDER_BY_KEY\", \"UNORDERED\"" $key) }}
+            {{- fail (printf "connectors.kafkaConnector.connections.%s.record.consumeWithOrderStrategy must be one of: \"ORDER_BY_PARTITION\", \"ORDER_BY_KEY\", \"UNORDERED\"" $key) }}
           {{- else }}
         <param name="record.consume.with.order.strategy">{{ .consumeWithOrderStrategy }}</param>
           {{- end }}
@@ -443,7 +443,7 @@ Render the Lightstreamer Kafka Connector configuration file
         {{- with .keyEvaluator }}
           {{- if .type }}
             {{- if not (mustHas .type (list "AVRO" "JSON" "STRING" "INTEGER" "BOOLEAN" "BYTE_ARRAY" "BYTE_BUFFER" "BYTES" "DOUBLE" "FLOAT" "LONG" "SHORT" "UUID")) }}
-              {{- fail (printf "connectors.kafkaConnector.connections.%s.record.keyEvaluator.type must be one of \"AVRO\", \"JSON\", \"STRING\", \"INTEGER\", \"BOOLEAN\", \"BYTE_ARRAY\", \"BYTE_BUFFER\", \"BYTES\", \"DOUBLE\", \"FLOAT\", \"LONG\", \"SHORT\", \"UUID\"" $key) }}
+              {{- fail (printf "connectors.kafkaConnector.connections.%s.record.keyEvaluator.type must be one of: \"AVRO\", \"JSON\", \"STRING\", \"INTEGER\", \"BOOLEAN\", \"BYTE_ARRAY\", \"BYTE_BUFFER\", \"BYTES\", \"DOUBLE\", \"FLOAT\", \"LONG\", \"SHORT\", \"UUID\"" $key) }}
             {{- else }}
         <param name="record.key.evaluator.type">{{ .type }}</param>
             {{- end }}
@@ -504,7 +504,7 @@ Render the Lightstreamer Kafka Connector configuration file
         {{- with .valueEvaluator }}
           {{- if .type }}
             {{- if not (mustHas .type (list "AVRO" "JSON" "STRING" "INTEGER" "BOOLEAN" "BYTE_ARRAY" "BYTE_BUFFER" "BYTES" "DOUBLE" "FLOAT" "LONG" "SHORT" "UUID")) }}
-              {{- fail (printf "connectors.kafkaConnector.connections.%s.record.valueEvaluator.type must be one of \"AVRO\", \"JSON\", \"STRING\", \"INTEGER\", \"BOOLEAN\", \"BYTE_ARRAY\", \"BYTE_BUFFER\", \"BYTES\", \"DOUBLE\", \"FLOAT\", \"LONG\", \"SHORT\", \"UUID\"" $key) }}
+              {{- fail (printf "connectors.kafkaConnector.connections.%s.record.valueEvaluator.type must be one of: \"AVRO\", \"JSON\", \"STRING\", \"INTEGER\", \"BOOLEAN\", \"BYTE_ARRAY\", \"BYTE_BUFFER\", \"BYTES\", \"DOUBLE\", \"FLOAT\", \"LONG\", \"SHORT\", \"UUID\"" $key) }}
             {{- else }}
         <param name="record.value.evaluator.type">{{ .type }}</param>
             {{- end }}
@@ -555,7 +555,7 @@ Render the Lightstreamer Kafka Connector configuration file
              Default: "IGNORE_AND_CONTINUE". -->
         {{- if .extractionErrorStrategy }}
           {{- if not (mustHas .extractionErrorStrategy (list "IGNORE_AND_CONTINUE" "FORCE_UNSUBSCRIPTION")) }}
-            {{- fail (printf "connectors.kafkaConnector.connections.%s.record.extractionErrorStrategy must be one of \"IGNORE_AND_CONTINUE\", \"FORCE_UNSUBSCRIPTION\"" $key) }}
+            {{- fail (printf "connectors.kafkaConnector.connections.%s.record.extractionErrorStrategy must be one of: \"IGNORE_AND_CONTINUE\", \"FORCE_UNSUBSCRIPTION\"" $key) }}
           {{- end }}
         <param name="record.extraction.error.strategy">{{ .extractionErrorStrategy }}</param>
         {{- else }}

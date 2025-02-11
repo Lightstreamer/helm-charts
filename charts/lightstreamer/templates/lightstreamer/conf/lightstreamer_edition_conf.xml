@@ -52,9 +52,9 @@ Render the Lightstreamer edition configuration file
            - COMMUNITY
            - ENTERPRISE -->
   {{- if not (mustHas .edition (list "COMMUNITY" "ENTERPRISE") )}}
-    {{- fail "license.edition must be one of \"COMMUNITY\", \"ENTERPRISE\"" -}}
+    {{- fail "license.edition must be one of: \"COMMUNITY\", \"ENTERPRISE\"" -}}
   {{- else }}
-      <edition>{{ required "license.edition must be one of \"COMMUNITY\", \"ENTERPRISE\"" .edition }}</edition>
+      <edition>{{ .edition }}</edition>
   {{- end }}
 
       <!-- ###############################
@@ -83,7 +83,7 @@ Render the Lightstreamer edition configuration file
          -->
   {{- $allowedClientApis := list "javascript_client" "nodejs_client" "android_client" "ios_client" "flex_client" "silverlight_client" "javase_client" "python_client" "dotnet_standard_client" "macos_client" "tvos_client" "watchos_client" "blackberry_client" "javame_client" "flash_client" "generic_client" }}
   {{- if not (mustHas .enabledCommunityEditionClientApi $allowedClientApis)}}    
-    {{- fail (printf "license.enabledCommunityEditionClientApi must be one of %s" $allowedClientApis) -}}
+    {{- fail (printf "license.enabledCommunityEditionClientApi must be one of: %s" $allowedClientApis) -}}
   {{- else }}
          <enabled_client_api>{{ .enabledCommunityEditionClientApi }}</enabled_client_api>
   {{- end }}
@@ -106,7 +106,7 @@ Render the Lightstreamer edition configuration file
               - PRODUCTION
               - HOT-STANDBY -->
       {{- if not (mustHas .licenseType (list "DEMO" "EVALUATION" "STARTUP" "NON-PRODUCTION-LIMITED" "NON-PRODUCTION-FULL" "PRODUCTION" "HOT-STANDBY")) }}
-        {{- fail "license.enterprise.licenseType must be one of \"DEMO\", \"EVALUATION\", \"STARTUP\", \"NON-PRODUCTION-LIMITED\", \"NON-PRODUCTION-FULL\", \"PRODUCTION\", \"HOT-STANDBY\"" -}}
+        {{- fail "license.enterprise.licenseType must be one of: \"DEMO\", \"EVALUATION\", \"STARTUP\", \"NON-PRODUCTION-LIMITED\", \"NON-PRODUCTION-FULL\", \"PRODUCTION\", \"HOT-STANDBY\"" -}}
       {{- else }}
          <license_type>{{ .licenseType }}</license_type>
       {{- end }}
@@ -133,7 +133,7 @@ Render the Lightstreamer edition configuration file
          -->
        {{- else }}
          {{- if not (mustHas .licenseValidation (list "ONLINE" "FILE")) }}
-           {{- fail "license.enterprise.licenseValidation must be one of \"ONLINE\", \"FILE\"" -}}
+           {{- fail "license.enterprise.licenseValidation must be one: of \"ONLINE\", \"FILE\"" -}}
          {{- end }}
          {{- if and (has .licenseType (list "EVALUATION" "STARTUP")) (ne .licenseValidation "ONLINE") }}
            {{- fail "license.enterprise.licenseValidation must be \"ONLINE\" for EVALUATION and STARTUP license types" -}}
@@ -240,7 +240,7 @@ Render the Lightstreamer edition configuration file
               - 3: max 3 updates/sec for each item
               - unlimited: unlimited updates/sec for each item -->
          {{- if not (mustHas .maxDownstreamRate (list "1" "3" "unlimited") ) }} 
-           {{- fail "license.enterprise.optionalFeatures.maxDownstreamRate must be one of \"1\", \"3\", \"unlimited\"" }}
+           {{- fail "license.enterprise.optionalFeatures.maxDownstreamRate must be one of: \"1\", \"3\", \"unlimited\"" }}
          {{- else }}
          <feature id="max_downstream_rate">{{ .maxDownstreamRate  }}</feature>
          {{- end }}    

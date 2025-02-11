@@ -77,7 +77,7 @@ limitations under the License.
            If not set to "test" the following parameter becomes
            mandatory. -->
       {{- if not (has $app.serviceLevel (list "test" "dry_run" "production" )) }}
-        {{- fail (printf "mpn.googleNotifierConfig.apps.%s.serviceLevel must be one of: test, dry_run, production" $appName) }}
+        {{- fail (printf "mpn.googleNotifierConfig.apps.%s.serviceLevel must be one of: \"test\", \"dry_run\", \"production\"" $appName) }}
       {{- else }}
       <service_level>{{ $app.serviceLevel }}</service_level>
       {{- end }}
