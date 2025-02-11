@@ -2366,19 +2366,19 @@ inherited from lightstreamerLogger.connections
      
 Optional. Logging of external services activity. At `DEBUG` level, details on external services activities and configuration, as well as details on connectivity issues, are reported.
 
-**Default:** `inherited from `lightstreamerLogger``
+**Default:** `inherited from lightstreamerLogger`
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.init"](./values.yaml#L605)
 
      
 Optional. Logging of system components initialization. At `DEBUG` level, initialization details, error details and all configuration settings are reported.
 
-**Default:** `inherited from `lightstreamerLogger``
+**Default:** `inherited from lightstreamerLogger`
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.io"](./values.yaml#L623)
 
      
 Optional. Logging of activity and issues in connection management.
 
-**Default:** `inherited from `lightstreamerLogger``
+**Default:** `inherited from lightstreamerLogger`
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.io.ssl"](./values.yaml#L627)
 
      
@@ -2390,37 +2390,37 @@ Optional. Logging of activity and issues in TLS configuration. At `DEBUG` level,
      
 Optional. Logging of background activities and related configuration and issues.
 
-**Default:** `inherited from `lightstreamerLogger``
+**Default:** `inherited from lightstreamerLogger`
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.license"](./values.yaml#L610)
 
      
 Optional. Logging of license check phase. At `DEBUG` level, check details and error details can be found in case of license check failure.
 
-**Default:** `inherited from `lightstreamerLogger``
+**Default:** `inherited from lightstreamerLogger`
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.monitoring"](./values.yaml#L791)
 
      
 Optional. Logging of JMX setup issues; note that full JMX features could be restricted depending on Edition and License Type. At `DEBUG` level, JMX connectors initialization details are logged.
 
-**Default:** `inherited from `lightstreamerLogger``
+**Default:** `inherited from lightstreamerLogger`
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.mpn"](./values.yaml#L721)
 
      
 Optional. Logging of mobile push notifications activity, done through the various subloggers.
 
-**Default:** `inherited from `lightstreamerLogger``
+**Default:** `inherited from lightstreamerLogger`
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.mpn.apple"](./values.yaml#L767)
 
      
 Optional. Logging of mobile push notifications activity related to  Apple platforms; for activity related with notification submission, specific subloggers are present for each application, e.g.: `lightstreamerLogger.mpn.apple.com.mydomain.myapp`. At `INFO` level, all push notification payloads are dumped.
 
-**Default:** `inherited from `lightstreamerLogger.mpn``
+**Default:** `inherited from lightstreamerLogger.mpn`
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.mpn.database"](./values.yaml#L753)
 
      
 Optional. Logging of mobile push notifications activity related to database. At `DEBUG` level, all database operation entry and exit points are logged.
 
-**Default:** `inherited from `lightstreamerLogger.mpn``
+**Default:** `inherited from lightstreamerLogger.mpn`
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.mpn.database.transactions"](./values.yaml#L760)
 
      
@@ -2436,67 +2436,67 @@ inherited from lightstreamerLogger.mpn.database
      
 Optional. Logging of mobile push notifications activity related to Google platforms; for activity related with notification submission, specific subloggers are present for each application, e.g.: `lightstreamerLogger.mpn.google.com.mydomain.myapp`. At `INFO` level, all push notification payloads are dumped.
 
-**Default:** `inherited from `lightstreamerLogger.mpn``
+**Default:** `inherited from lightstreamerLogger.mpn`
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.mpn.lifecycle"](./values.yaml#L726)
 
      
 Optional. Logging of MPN Module recurrent activity. At `INFO` level, main operation exit points and outcomes are dumped. At `DEBUG` level, the various operation entry entry and exit points are logged.
 
-**Default:** `inherited from `lightstreamerLogger.mpn``
+**Default:** `inherited from lightstreamerLogger.mpn`
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.mpn.operations"](./values.yaml#L732)
 
      
 Optional,. Logging of mobile push notifications activity. At `INFO` level, main operation exit points and outcomes are dumped. At `DEBUG` level, the various operation entry entry and exit points are logged.
 
-**Default:** `inherited from `lightstreamerLogger.mpn``
+**Default:** `inherited from lightstreamerLogger.mpn`
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.mpn.pump"](./values.yaml#L747)
 
      
 Optional. Logging of mobile push notifications activity related to notification gathering. At `INFO` level, all push notifications ready to be sent are dumped.
 
-**Default:** `inherited from `lightstreamerLogger.mpn``
+**Default:** `inherited from lightstreamerLogger.mpn`
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.mpn.requests"](./values.yaml#L742)
 
      
 Optional. Logging of mobile push notifications request processing; requests include those from clients (through the "client" sublogger) and those related with internal operations. At `INFO` level, all request processing exit points and outcomes are dumped. At `DEBUG` level, all request processing entry points are logged. All log related with client requests reports the IP and port of the involved connection.
 
-**Default:** `inherited from `lightstreamerLogger.mpn``
+**Default:** `inherited from lightstreamerLogger.mpn`
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.mpn.status_adapters"](./values.yaml#L778)
 
      
 Optional. Logging of issues related with the special adapters handled by the MPN Module.
 
-**Default:** `inherited from `lightstreamerLogger.mpn``
+**Default:** `inherited from lightstreamerLogger.mpn`
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.preprocessor"](./values.yaml#L697)
 
      
 Optional. Logging of events preprocessing stage. At `DEBUG` level, events dispatched to ItemEventBuffers are dumped.
 
-**Default:** `inherited from `lightstreamerLogger``
+**Default:** `inherited from lightstreamerLogger`
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.pump"](./values.yaml#L706)
 
      
 Optional. Logging of InfoPump and ItemEventBuffers internal activity. At `DEBUG` level, updates to be sent to the clients are dumped.
 
-**Default:** `inherited from `lightstreamerLogger``
+**Default:** `inherited from lightstreamerLogger`
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.pump.messages"](./values.yaml#L712)
 
      
 Optional. Logging of management of messages received from the clients. At `DEBUG` level, details of message processing are logged. All log from this logger reports the IP and port of the involved connection.
 
-**Default:** `inherited from `lightstreamerLogger.pump``
+**Default:** `inherited from lightstreamerLogger.pump`
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.push"](./values.yaml#L717)
 
      
 Optional. Logging of socket write activity. At `DEBUG` level, all socket writes are dumped. All log from this logger reports the IP and port of the involved connection.
 
-**Default:** `inherited from `lightstreamerLogger``
+**Default:** `inherited from lightstreamerLogger`
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.requests"](./values.yaml#L678)
 
      
 Optional. Logging of parsing and elaboration of client requests At `DEBUG` level, client request details are reported. All log from this logger and its subloggers reports the IP and port of the involved connection.
 
-**Default:** `inherited from `lightstreamerLogger``
+**Default:** `inherited from lightstreamerLogger`
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.requests.messages"](./values.yaml#L685)
 
      
@@ -2522,13 +2522,13 @@ inherited from lightstreamerLogger.requests
      
 Optional. Logging of internal thread management and events dispatching.
 
-**Default:** `inherited from `lightstreamerLogger``
+**Default:** `inherited from lightstreamerLogger`
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.subscriptions"](./values.yaml#L689)
 
      
 Optional. Logging of Data Adapters interactions. At `DEBUG` level, details on subscription operations are reported.
 
-**Default:** `inherited from `lightstreamerLogger``
+**Default:** `inherited from lightstreamerLogger`
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.subscriptions.upd"](./values.yaml#L693)
 
      
@@ -2544,7 +2544,7 @@ inherited from lightstreamerLogger.subscriptions
      
 Optional. Logging of internal web server activity; it also logs requests of static resources related to push request. At `DEBUG` level, error details are reported. All log from this logger and its subloggers reports the IP and port of the involved connection.
 
-**Default:** `inherited from `lightstreamerLogger``
+**Default:** `inherited from lightstreamerLogger`
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.webServer.appleWebService"](./values.yaml#L672)
 
      
@@ -2570,7 +2570,7 @@ inherited from lightstreamerLogger.webServer
      
 Optional. Logging of JavaScript client messages. A at `DEBUG` level, log messages sent by the Web and Node.js (Unified API) Client Libraries are logged. Remote logging must be enabled on the client side. All log from this logger reports the IP and port of the involved connection.
 
-**Default:** `inherited from `lightstreamerLogger``
+**Default:** `inherited from lightstreamerLogger`
 #### [logging.loggers.lightstreamerMonitorTAB](./values.yaml#L565)
 
      
