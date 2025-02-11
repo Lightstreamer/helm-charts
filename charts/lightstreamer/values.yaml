@@ -326,11 +326,10 @@ license:
     # For `EVALUATION` and `STARTUP`: `ONLINE` is mandatory.
     # For `PRODUCTION`, `HOT-STANDBY`, `NON-PRODUCTION-FULL`, and 
     # `NON-PRODUCTION-LIMITED`: you can choose between `ONLINE` and `FILE`.
-    # For `D`EMO: the value is ignored, as no validation is done.
+    # For `DEMO`: the value is ignored, as no validation is done.
     licenseValidation: ONLINE
-    # -- Used only if `licenseValidation` set to `ONLINE`.
-    # Secret name and key where the password used for validation of online
-    # licenses is stored.
+    # -- Mandatory if `licenseValidation` is set to `ONLINE`. Secret name and 
+    # key where the password used for validation of online licenses is stored.
     # Leave blank if `licenseType` is set to `DEMO` or `licenseValidation` set to `FILE`.
     onlinePasswordSecretRef:
       name:
