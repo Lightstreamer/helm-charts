@@ -3297,12 +3297,11 @@ connectors:
         bootstrapServers: broker:9092
         # -- (string) Optional. The name of the consumer group this connection
         # belongs to.
-        # Sets the value for the "group.id" key used to configure the internal
+        # Sets the value for the `group.id` key used to configure the internal
         # Kafka Consumer.
         # See https://kafka.apache.org/documentation/#consumerconfigs_group.id
         # for details.
-        # @default -- kafkaConnector.adapterSetId + name + randomly generated
-        # suffix.
+        # @default -- kafkaConnector.adapterSetId + name + randomly generated suffix.
         groupId: quickstart
         # -- Optional. TLS/SSL settings for the connection.
         # @default -- all settings at their defaults
@@ -3371,7 +3370,7 @@ connectors:
               enableStoreKey:
               # -- (string) Mandatory. The name of the Kerberos service.
               kerberosServiceName:
-              # -- (string) Mandatory if enableTicketCache is set to `true`.
+              # -- (string) Mandatory if `enableTicketCache` is set to `true`.
               # The name of the principal to be used.
               principal:
               # -- Optional. Enablement of the use of a ticket cache.
@@ -3540,7 +3539,7 @@ connectors:
           # Mandatory. Record data to Lightstreamer field mappings.
           mappings:
             # -- At least one must be provided. A field mapping.
-            # Map the value extracted through the "#{extraction_expression}" to
+            # Map the value extracted through the `#{extraction_expression}` to
             # the Lightstreamer field name specified by key.
             # The expression is written in the Data Extraction Language. See
             # documentation at:
@@ -3566,7 +3565,7 @@ connectors:
           # -- Optional. If set to `true`, if a field mapping fails, that
           # specific field's value will simply be omitted from the update sent
           # to the Lightstreamer clients, while other successfully mapped fields
-          # from the same record will still be delivered. Can be one of the
+          # from the same record will still be delivered.
           # @default -- false
           enableSkipFailedMapping:
         # -- Optional. Logger configuration for the connection.
