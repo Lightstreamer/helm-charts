@@ -1608,7 +1608,7 @@ Optional. Path of an HTML page to be returned as the body upon a "404 Not Found"
 #### [webServer.pagesDir](./values.yaml#L2821)
 
      
-Optional. Path of the file system directory to be used by the internal web server as the root for URL path mapping. The path is relative to the conf directory. Note that the /lightstreamer URL path (as any alternative paths defined through `pushSession.serviceUrlPrefix`) is reserved, as well as the base URL path of the Monitoring Dashboard(see `management.dashboard.urlPath`); hence, subdirectories of the pages directory with conflicting names would be ignored.
+Optional. Path of the file system directory to be used by the internal web server as the root for URL path mapping. The path is relative to the conf directory. Note that the `/lightstreamer` URL path (as any alternative paths defined through `pushSession.serviceUrlPrefix`) is reserved, as well as the base URL path of the Monitoring Dashboard(see `management.dashboard.urlPath`); hence, subdirectories of the pages directory with conflicting names would be ignored.
 
 **Default:** `../pages`
 #### [webServer.persistencyMinutes](./values.yaml#L2827)

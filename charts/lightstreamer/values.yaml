@@ -2811,7 +2811,7 @@ webServer:
     # key: ErrorPage.html
   # -- Optional. Path of the file system directory to be used by the internal
   # web server as the root for URL path mapping.
-  # The path is relative to the conf directory. Note that the /lightstreamer
+  # The path is relative to the conf directory. Note that the `/lightstreamer`
   # URL path (as any alternative paths defined through
   # `pushSession.serviceUrlPrefix`) is reserved, as well as the base URL path
   # of the Monitoring Dashboard(see `management.dashboard.urlPath`); hence,
