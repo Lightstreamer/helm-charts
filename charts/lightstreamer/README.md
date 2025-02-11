@@ -450,7 +450,7 @@ Optional. Maximum time the Server is allowed to wait before answering to a clien
 #### [globalSocket.writeTimeoutMillis](./values.yaml#L1394)
 
      
-Optional. Longest operation time accepted while writing data on a socket. If this value is exceeded, the socket is closed. Note that this may also affect very slow clients. The time actually considered may be approximated and may be a few seconds higher, for internal performance reasons. If missing or 0, the check is suppressed.
+Optional. Longest operation time accepted while writing data on a socket. If this value is exceeded, the socket is closed. Note that this may also affect very slow clients. The time actually considered may be approximated and may be a few seconds higher, for internal performance reasons. If missing or `0`, the check is suppressed.
 
 **Default:** `the check is suppressed`
 ### Security configuration
@@ -478,7 +478,7 @@ Optional. List of origins to be allowed by the browsers to consume responses to 
 #### [security.crossDomainPolicy.acceptCredentials](./values.yaml#L1519)
 
      
-Optional. Specify f the server should authorize the client to send its credentials on a CORS request. This setting does not impact the user/password sent over the Lightstreamer protocol,but, if set to `false`, might prevent, or force a fallback connection, on clients sending CORS requests carrying cookies, http-basic-authentication or client-side certificates.
+Optional. Specify jf the server should authorize the client to send  its credentials on a CORS request. This setting does not impact the user/password sent over the Lightstreamer protocol, but, if set to `false`, might prevent, or force a fallback connection, on clients sending CORS requests carrying cookies, http-basic-authentication or client-side certificates.
 
 **Default:** `false`
 #### [security.crossDomainPolicy.acceptExtraHeaders](./values.yaml#L1511)

@@ -1389,7 +1389,7 @@ globalSocket:
   # also affect very slow clients.
   # The time actually considered may be approximated and may be a few seconds
   # higher, for internal performance reasons.
-  # If missing or 0, the check is suppressed.
+  # If missing or `0`, the check is suppressed.
   # @default -- the check is suppressed
   writeTimeoutMillis: 120000
   # -- (string) Optional. Enabling the use of the full HTTP 1.1 syntax for all
@@ -1509,9 +1509,9 @@ security:
     # (e.g.: `acceptExtraHeaders: "custom-header1, custom-header2"`).
     # @default -- ""
     acceptExtraHeaders:
-    # -- Optional. Specify f the server should authorize the client to send its
-    # credentials on a CORS request. This setting does not impact the
-    # user/password sent over the Lightstreamer protocol,but, if set to
+    # -- Optional. Specify jf the server should authorize the client to send 
+    # its credentials on a CORS request. This setting does not impact the
+    # user/password sent over the Lightstreamer protocol, but, if set to
     # `false`, might prevent, or force a fallback connection, on clients
     # sending CORS requests carrying cookies, http-basic-authentication or
     # client-side certificates.
