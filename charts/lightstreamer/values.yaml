@@ -2422,8 +2422,8 @@ mpn:
     # -- Mandatory. The Hibernate JDBC properties.
     # The provided values are used to show an example of connections settings
     # for HSQL (suitable for testing).
-    # The HSQL jar must be included in the lib/mp/hibernate folder of the Docker
-    # image.
+    # The HSQL jar must be included in the `lib/mp/hibernate` folder of the 
+    # Docker image.
     connection:
       # -- Mandatory. JDBC driver class.
       jdbcDriverClass: org.hsqldb.jdbcDriver
@@ -2432,7 +2432,7 @@ mpn:
       # -- Mandatory. The name of the secret containing the credentials. The
       # secret must contain the keys `user` and `password`.
       # The `hsql-hibernate-secret` secret is provided out of the box and
-      # contains the default "SA" user with empty password.
+      # contains the default `SA` user with empty password.
       credentialsSecretRef: hsql-factory-secret
       # -- Optional. Full class name of the dialect to use.
       "dialect": "org.hibernate.dialect.HSQLDialect"
@@ -2450,15 +2450,15 @@ mpn:
     # -- Optional. The Hibernate optional configuration properties.
     # See https://docs.jboss.org/hibernate/orm/3.3/reference/en/html/session-configuration.html#configuration-optional
     optionalConfiguration:
-      # -- HikariCP database connection pool configuration
+      # -- HikariCP database connection pool configuration.
       "hikari.connectionTimeout": "5000"
-      # -- Enable Hibernate's automatic session context management
+      # -- Enable Hibernate's automatic session context management.
       "current_session_context_class": "thread"
-      # -- Disable the second-level cache
+      # -- Disable the second-level cache.
       "cache.provider_class": "org.hibernate.cache.internal.NoCacheProvider"
       # -- Automatically create/update the database schema on startup.
       "hbm2ddl.auto": "update"
-      # -- Debugging: echo all executed SQL to console
+      # -- Debugging: echo all executed SQL to console.
       "show_sql": "false"
   # -- (int) Optional. Timeout for MPN request processing. As each MPN request
   # interacts with the database, a timeout is applied so that a disconnected
@@ -2721,7 +2721,7 @@ mpn:
     # permanently) any successive notification.
     # Mobile push notifications fired by a trigger are not subject to this limit
     # and may be sent at higher pace.
-    # @default -- 1000 (1 sec)
+    # @default -- 1000
     minSendDelayMillis:
     # -- (int) Optional. Size of the notifier's `MPN XXX MESSAGING` internal
     # thread pool, which is devoted to sending the notifications payload. Each

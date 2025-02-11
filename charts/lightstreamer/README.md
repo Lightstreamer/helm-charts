@@ -1352,7 +1352,7 @@ the number of available total cores, as detected by the JVM
      
 Optional. Minimum delay between successive mobile push notifications for the same app/device pair. Each app/device pair is subject to constraints on the pace mobile push notifications may be sent to it. For this reason, a minimum delay is set and may be altered with this parameter. Lowering it too much, and subsequently sending notifications with a high frequency, may cause Google's Firebase Cloud Messaging service ("FCM") to close the connection and ban (temporarily or permanently) any successive notification. Mobile push notifications fired by a trigger are not subject to this limit and may be sent at higher pace.
 
-**Default:** `1000 (1 sec)`
+**Default:** `1000`
 #### [mpn.hibernateConfig](./values.yaml#L2421)
 
      
@@ -1366,7 +1366,7 @@ Mandatory. Hibernate configuration. The MPN module uses an Hibernate-mapped data
 #### [mpn.hibernateConfig.connection](./values.yaml#L2427)
 
      
-Mandatory. The Hibernate JDBC properties. The provided values are used to show an example of connections settings for HSQL (suitable for testing). The HSQL jar must be included in the lib/mp/hibernate folder of the Docker image.
+Mandatory. The Hibernate JDBC properties. The provided values are used to show an example of connections settings for HSQL (suitable for testing). The HSQL jar must be included in the `lib/mp/hibernate` folder of the  Docker image.
 
 **Default:**
 
@@ -1376,7 +1376,7 @@ Mandatory. The Hibernate JDBC properties. The provided values are used to show a
 #### [mpn.hibernateConfig.connection.credentialsSecretRef](./values.yaml#L2436)
 
      
-Mandatory. The name of the secret containing the credentials. The secret must contain the keys `user` and `password`. The `hsql-hibernate-secret` secret is provided out of the box and contains the default "SA" user with empty password.
+Mandatory. The name of the secret containing the credentials. The secret must contain the keys `user` and `password`. The `hsql-hibernate-secret` secret is provided out of the box and contains the default `SA` user with empty password.
 
 **Default:** `"hsql-factory-secret"`
 #### [mpn.hibernateConfig.connection.dialect](./values.yaml#L2438)
@@ -1410,7 +1410,7 @@ Optional. The Hibernate optional configuration properties. See https://docs.jbos
 #### [mpn.hibernateConfig.optionalConfiguration."cache.provider_class"](./values.yaml#L2458)
 
      
-Disable the second-level cache
+Disable the second-level cache.
 
 **Default:**
 
@@ -1426,19 +1426,19 @@ Automatically create/update the database schema on startup.
 #### [mpn.hibernateConfig.optionalConfiguration."hikari.connectionTimeout"](./values.yaml#L2454)
 
      
-HikariCP database connection pool configuration
+HikariCP database connection pool configuration.
 
 **Default:** `"5000"`
 #### [mpn.hibernateConfig.optionalConfiguration.current_session_context_class](./values.yaml#L2456)
 
      
-Enable Hibernate's automatic session context management
+Enable Hibernate's automatic session context management.
 
 **Default:** `"thread"`
 #### [mpn.hibernateConfig.optionalConfiguration.show_sql](./values.yaml#L2462)
 
      
-Debugging: echo all executed SQL to console
+Debugging: echo all executed SQL to console.
 
 **Default:** `"false"`
 #### [mpn.internalDataAdapter](./values.yaml#L2416)
