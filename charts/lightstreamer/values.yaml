@@ -2626,8 +2626,8 @@ mpn:
     maxConcurrentConnections:
     # -- (int) Optional. Timeout for connecting to APNS services. In case of
     # slow outgoing connectivity, increasing the timeout may be beneficial.
-    # @default -- 30000 (30 sec)
-    connectionTimeout:
+    # @default -- 30000
+    connectionTimeoutMillis:
     # -- Optional. List of apps that should receive mobile push notifications.
     apps:
       # -- An application configuration.
