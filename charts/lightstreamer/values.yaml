@@ -963,7 +963,7 @@ servers:
     #
     # If set to `PRIORITY`, requests issued to this port will follow a fast
     # track. In particular, they will be never enqueued to the SERVER thread
-    # pool, but only the ACCEPT pool; and they will not be subject to any
+    # pool, but only the `ACCEPT` pool; and they will not be subject to any
     # backpressure-related limitation (like `load.acceptPoolMaxQueue`). This
     # should ensure that the requests will be fulfilled as soon as possible,
     # even when the Server is overloaded. Such priority port is, therefore,
@@ -973,9 +973,9 @@ servers:
     # be entered, with possible enqueueing. Anyway, such port is only meant for
     # internal use and it is recommended not to leave it publicly accessible.
     # Furthermore, in case of HTTPS server socket (`enableHttps` set to `true`)
-    # TLS-handshake-related tasks will not be enqueued to the TLS-SSL HANDSHAKE
-    # or TLS-SSL AUTHENTICATION thread pool, but only to a dedicated pool.
-    #
+    # TLS-handshake-related tasks will not be enqueued to the 
+    # `TLS-SSL HANDSHAKE` or `TLS-SSL AUTHENTICATION` thread pool, but only to 
+    # a dedicated pool.
     # If set to `GENERAL_PURPOSE`, the port can be used for any kind of request.
     # It can always be set in case of doubts. Note that ports can be
     # `CREATE_ONLY` or `CONTROL_ONLY` only depending on client behavior. For 
@@ -1072,7 +1072,7 @@ servers:
       # immediately after connection start; so the timeout can only apply to 
       # cases of wrong configuration, local network issues or illegal access to 
       # this port.
-      # For this reason, the read is performed directly in the ACCEPT thread
+      # For this reason, the read is performed directly in the `ACCEPT` thread
       # pool and this setting protects that pool against such unlikely events.
       # @default -- 1000
       proxyProtocolTimeoutMillis:
@@ -1363,8 +1363,8 @@ globalSocket:
   readTimeoutMillis: 20000
   # -- (int) Optional. Longest inactivity time accepted while waiting for a
   # slow operation during a TLS/SSL handshake. This involves both reads,
-  # writes, and encryption tasks managed by the "TLS-SSL HANDSHAKE" or
-  # "TLS-SSL AUTHENTICATION" internal pools. If this value is exceeded, the
+  # writes, and encryption tasks managed by the `TLS-SSL HANDSHAKE` or
+  # `TLS-SSL AUTHENTICATION` internal pools. If this value is exceeded, the
   # socket is closed.
   # The time actually considered may be approximated and may be a few seconds
   # higher, for internal performance reasons.
@@ -1580,7 +1580,7 @@ security:
     # - "my-alt-domain.com"
   # -- (string) Optional. Server identification policy to be used for all
   # server responses. Upon any HTTP request, the Server identifies itself
-  # through the "Server" HTTP response header. However, omitting version
+  # through the `Server` HTTP response header. However, omitting version
   # information may make external attacks more difficult.
   # If set to `FULL`, the Server identifies itself as:
   # `Lightstreamer Server/X.Y.Z build BBBB (Lightstreamer Push Server -
@@ -1657,7 +1657,7 @@ management:
     # Enables the standard RMI connector.
     # The remote MBean server will be accessible through this url:
     # `service:jmx:rmi:///jndi/rmi://<host>:<port>/lsjmx`.
-    # If full JMX features is not available, only the "Server" MBean is
+    # If full JMX features is not available, only the `Server` MBean is
     # supplied and only the Server shutdown operation is available.
     # The JVM platform MBean server is also exposed and it is accessible
     # through the url: `service:jmx:rmi:///jndi/rmi://<host>:<port>/jmxrmi`.
@@ -1816,11 +1816,11 @@ management:
     # -- (string) Optional. Enabling of the availability of session-related
     # mbeans, the  ones identified by `type="Session"`.
     # If set to `active`, for each active session, a corresponding mbean of
-    # type "Session" is available with full functionality.
+    # type `Session` is available with full functionality.
     # If set to `sampled_statistics_only`, for each active session, a
-    # corresponding mbean of type "Session" is available, but all the statistics
+    # corresponding mbean of type `Session` is available, but all the statistics
     # based on periodic sampling are disabled.
-    # If set to `inactive`, no mbeans of type "Session" are generated, but for
+    # If set to `inactive`, no mbeans of type `Session` are generated, but for
     # a fake mbean which acts as a reminder that the option can be enabled.
     # The support for session-related mbeans can pose a significant overload on
     # the Server when many sessions are active and many of them are
@@ -1837,16 +1837,16 @@ management:
     # For all these properties, corresponding operations are also provided.
     # If set to `true`, all list properties are enabled; in some cases, their
     # value may be an extremely long list; consider, for instance,
-    # `CurrentSessionList` in the ResourceMBean.
+    # `CurrentSessionList` in the `ResourceMBean`.
     # If set to `false`, properties that can, potentially, return extremely long
     # lists won't yield the correct value, but just a reminder text; for
-    # instance, this applies to `CurrentSessionList` in the ResourceMBean.
+    # instance, this applies to `CurrentSessionList` in the `ResourceMBean`.
     # @default -- true
     enableLongListProperties: false
   # -- Optional. Startup check that the conditions for the correct working of
   # the provided "stop" script are met (see `jmx`).
   # If set to `true`, the startup will wail if the JMX RMI connector is not
-  # configured or the ServerMBean cannot bet started. This also enforces the
+  # configured or the `ServerMBean` cannot bet started. This also enforces the
   # check of the JMX port reachability ( see `rmiConnector.enableTestPorts`
   # and the remarks on the test effectiveness); if the test fails, the
   # startup will also fail.
@@ -2521,14 +2521,14 @@ mpn:
   # or it has no active subscriptions. A suspended device may be resumed with a
   # token change (typically, client libraries handle this situation
   # automatically).
-  # @default -- 10080 (7 days)
+  # @default -- 10080
   deviceInactivityTimeoutMinutes:
   # -- (int) Optional. Periodicity of the device garbage collector. Once every
   # this number of minutes, devices that have been inactive for more than
   # `deviceInactivityTimeoutMinutes` are permanently deleted.
-  # @default -- 60 (1 hour)
+  # @default -- 60
   collectorPeriodMinutes:
-  # -- Optional. Sizes of request processor's ("MPN EXECUTOR") thread pool.
+  # -- Optional. Sizes of request processor's (`MPN EXECUTOR`) thread pool.
   # The request processor is devoted to process incoming MPN requests, such as
   # subscription activations and deactivations. These requests access the
   # database and may be subject to blocking in case of database disconnection.
@@ -2615,7 +2615,7 @@ mpn:
     # notification.
     # Mobile push notifications fired by a trigger are not subject to this limit
     # and may be sent at higher pace.
-    # @default -- 1000 (1 sec)
+    # @default -- 1000
     minSendDelayMillis:
     # -- (int) Optional. Maximum number of concurrent connections to APNS
     # services. The connection pool starts with 1 connection and grows
@@ -3019,14 +3019,14 @@ load:
   # allocating multiple threads for this task may be beneficial.
   # @default -- 1
   timerPoolSize:
-  # -- (int) Optional. Size of the "EVENTS" internal thread pool, which is
+  # -- (int) Optional. Size of the `EVENTS` internal thread pool, which is
   # devoted to dispatching the update events received from a Data Adapter to
   # the proper client sessions, according with each session subscriptions.
   # This task does not include blocking operations; however, on multiprocessor
   # machines, allocating multiple threads for this task may be beneficial.
   # @default -- the number of available total cores, as detected by the JVM
   eventsPoolSize:
-  # -- (int) Optional. Size of the "SNAPSHOT" internal thread pool, which is
+  # -- (int) Optional. Size of the `SNAPSHOT` internal thread pool, which is
   # devoted to dispatching the snapshot events upon new subscriptions from
   # client sessions.
   # This task does not include blocking operations; however, on multiprocessor
@@ -3034,7 +3034,7 @@ load:
   # @default -- the number of available total cores, as detected by the JVM, or
   # `10`, if the number of cores is less
   snapshotPoolSize:
-  # -- (int) Optional. Size of the "PUMP" internal thread pool, which is
+  # -- (int) Optional. Size of the `PUMP` internal thread pool, which is
   # devoted to integrating the update events pertaining to each session and to
   # creating the update commands for the client, whenever needed.
   # This task does not include blocking operations; however, on multiprocessor
@@ -3042,16 +3042,16 @@ load:
   # @default -- the number of available total cores, as detected by the JVM
   pumpPoolSize:
   # -- (int) Optional. Maximum number of tasks allowed to be queued to enter
-  # the "PUMP" thread pool before undertaking backpressure actions.
+  # the `PUMP` thread pool before undertaking backpressure actions.
   # In particular, the same restrictive actions associated to the
   # `load.serverPoolMaxQueue` check will be performed (regardless that
   # `load.serverPoolMaxQueue` itself is set).
-  # A steadily long queue on the PUMP pool may be the consequence of a CPU
+  # A steadily long queue on the `PUMP` pool may be the consequence of a CPU
   # shortage due to a huge streaming activity.
   # A negative value disables the check.
   # @default -- -1
   pumpPoolMaxQueue:
-  # -- (int) Optional. Maximum number of threads allowed for the "SERVER"
+  # -- (int) Optional. Maximum number of threads allowed for the `SERVER`
   # internal pool, which is devoted to the management of the client requests.
   # This kind of tasks includes operations that are potentially blocking:
   # - `getHostName`;
@@ -3066,14 +3066,14 @@ load:
   # - file access by the internal web server, though it should be used  only in
   #   demo and test scenarios.
   # Note that specific thread pools can optionally be defined in order to
-  # handle some of the tasks that, by default, are handled by the SERVER thread
-  # pool. They are defined in "adapters.xml"; see the templates provided in the
-  # In-Process Adapter SDK for details.
+  # handle some of the tasks that, by default, are handled by the `SERVER` 
+  # thread pool. They are defined in "adapters.xml"; see the templates provided
+  # in the In-Process Adapter SDK for details.
   # A zero value means a potentially unlimited number of threads.
   # @default -- 1000
   serverPoolMaxSize:
   # -- (int) Optional, but mandatory if `load.serverPoolMaxSize`is set to `0`.
-  # Maximum number of idle threads allowed for the "SERVER" internal pool,
+  # Maximum number of idle threads allowed for the `SERVER` internal pool,
   # which is devoted to the management of the client requests.
   # Put in a different way, it is the minimum number of threads that can be
   # present in the pool. To accomplish this setting, at pool initialization,
@@ -3089,19 +3089,19 @@ load:
   # `unlimited`, in which case this setting is mandatory
   serverPoolMaxFree:
   # -- (int) Optional. Maximum number of tasks allowed to be queued to enter
-  # the "SERVER" thread pool before undertaking backpressure actions.
+  # the `SERVER` thread pool before undertaking backpressure actions.
   # In particular, as long as the number is exceeded, the creation of new
-  # sessions will be refused and made to fail; additionally, the same r
+  # sessions will be refused and made to fail; additionally, the same
   # restrictive action on the accept loops associated to the
   # `load.acceptPoolMaxQueue` check will be performed (regardless that
   # `load.acceptPoolMaxQueue` itself is set).
-  # On the other hand, if the MPN DEVICE HANDLER pool is defined in `mpn` it 
+  # On the other hand, if the `MPN DEVICE HANDLER` pool is defined in `mpn` it 
   # also overrides the SERVER or dedicated pools, but its queue is not included
   # in the check.
   # A negative value disables the check.
   # @default -- 100
   serverPoolMaxQueue:
-  # -- (int) Optional. Maximum number of threads allowed for the "ACCEPT"
+  # -- (int) Optional. Maximum number of threads allowed for the `ACCEPT`
   # internal pool, which is devoted to the parsing of the client requests.
   # This task does not include blocking operations; however, on multiprocessor
   # machines, allocating multiple threads for this task may be beneficial.
@@ -3116,7 +3116,7 @@ load:
   # which is also the minimum number of threads left in the pool
   acceptPoolMaxSize:
   #  -- (int) Optional. Maximum number of tasks allowed to be queued to enter
-  #  the "ACCEPT" thread pool before undertaking backpressure actions.
+  #  the `ACCEPT` thread pool before undertaking backpressure actions.
   #  The setting only affects the listening sockets with
   #  `servers.{}.portType` configured as CREATE_ONLY. As long as the
   #  number is exceeded, the accept loops of these sockets will be kept
@@ -3125,12 +3125,12 @@ load:
   #  discarded; the effect may vary depending on the backlog settings.
   #  Note that, in the absence of sockets configured as CREATE_ONLY, no
   #  backpressure action will take place.
-  #  A long queue on the ACCEPT pool may be the consequence of a CPU shortage
+  #  A long queue on the `ACCEPT` pool may be the consequence of a CPU shortage
   #  during (or caused by) a high client connection activity.
   #  A negative value disables the check.
   #  @default -- `-1`
   acceptPoolMaxQueue:
-  # -- (int) Optional. Size of the "TLS-SSL HANDSHAKE" internal pool, which is
+  # -- (int) Optional. Size of the `TLS-SSL HANDSHAKE` internal pool, which is
   # devoted to the management of operations needed to accomplish TLS/SSL
   # handshakes on the listening sockets specified through
   # the `servers.{}` configuration with `enableHttps` set to `true`.
@@ -3144,7 +3144,7 @@ load:
   # (obviously, if there is only one core, the default will be 1)
   handshakePoolSize:
   # -- (int) Optional. Maximum number of tasks allowed to be queued to enter
-  # the "TLS-SSL HANDSHAKE" thread pool before undertaking backpressure
+  # the `TLS-SSL HANDSHAKE` thread pool before undertaking backpressure
   # actions.
   # The setting only regards the listening sockets specified through
   # the `servers.{}` configurations (with `enableHttps` set to `true`) that are
@@ -3168,19 +3168,19 @@ load:
   # A negative value disables the check.
   # @default -- 100
   handshakePoolMaxQueue:
-  # -- (int) Optional. Size of the "TLS-SSL AUTHENTICATION" internal pool,
-  # which is used instead of the "TLS-SSL HANDSHAKE" pool for listening
+  # -- (int) Optional. Size of the `TLS-SSL AUTHENTICATION` internal pool,
+  # which is used instead of the `TLS-SSL HANDSHAKE` pool for listening
   # sockets that are configured to request the client certificate. This kind of
   # task may exhibit a blocking behavior in some cases.
   # @default -- the same as configured for the SERVER thread pool
   httpsAuthPoolMaxSize:
   # -- (int) Optional. Maximum number of idle threads allowed for the
-  # "TLS-SSL AUTHENTICATION" internal pool.
+  # `TLS-SSL AUTHENTICATION` internal pool.
   # It behaves in the same way as the `load.serverPoolMaxFree` setting.
   # @default -- the same as configured for the SERVER thread pool
   httpsAuthPoolMaxFree:
   # -- (int) Optional. Maximum number of tasks allowed to be queued to enter
-  # the "TLS-SSL AUTHENTICATION" thread pool before undertaking backpressure
+  # the `TLS-SSL AUTHENTICATION` thread pool before undertaking backpressure
   # actions.
   # The effect is similar to the more common `load.handShakePoolMaxQueue`, with
   # the difference that it regards listening sockets specified through
