@@ -1694,8 +1694,7 @@ management:
       # access url, but needs an explicit server-side configuration.
       # Note that, if you wish to use the provided "stop" script, the specified
       # hostname has to be visible also from local clients.
-      # @default -- any setting provided to the `java.rmi.server.hostname` JVM
-      # property
+      # @default -- the value of the  `java.rmi.server.hostname` JVM property
       hostName:
       # -- Optional. Enabling of a preliminary test on the reachability of the 
       # RMI Server through the configured hostname. Note that the reachability 
