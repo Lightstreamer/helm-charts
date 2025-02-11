@@ -1138,13 +1138,13 @@ Mandatory if `serviceLevel` is set to `development` or `production`. The referen
 #### [mpn.appleNotifierConfig.apps.myApp.pushPackageFileRef](./values.yaml#L2668)
 
      
-Optional. The configmap name and the key where the push package zip file is stored. This file contains a descriptor of the web app (i.e. targeting Safari push notification), and is mandatory only for web apps (ignore in other cases). See the General Concepts document for more information on how to produce this file. -->
+Optional. The configmap name and the key where the push package zip file is stored. This file contains a descriptor of the web app (i.e. targeting Safari push notification), and is mandatory only for web apps (ignore in other cases). See the General Concepts document for more information on how to produce this file.
 
 **Default:** `nil`
 #### [mpn.appleNotifierConfig.apps.myApp.serviceLevel](./values.yaml#L2656)
 
      
-Mandatory if `enabled` is set to `true`. Specifies the intended service level for the current app ID, must be one of: `test`, `development`, `production`. If set to `test`, notification will be logged only and no connection will be established with Apple's servers. The corresponding logger is `lightstreamerLogger.mpn.apple`, notifications are logged at `INFO` level (see logging.loggers.lightstreamerLogger.subLoggers.lightstreamerLogger.mpn.apple). If set to `development` or `production`, notifications will be sent to, respectively, Apple's development or production servers. Note that for web apps (i.e. targeting Safari push notification) the `development` service level should not be used, as there is no corresponding `development` client environment that can receive notifications. Use either `production` or `test`.
+Mandatory if `enabled` is set to `true`. Specifies the intended service level for the current app ID, must be one of: `test`, `development`, `production`. If set to `test`, notification will be logged only and no connection will be established with Apple's servers. The corresponding logger is `lightstreamerLogger.mpn.apple`, notifications are logged at `INFO` level (see `logging.loggers.lightstreamerLogger.subLoggers.lightstreamerLogger.mpn.apple`). If set to `development` or `production`, notifications will be sent to, respectively, Apple's development or production servers. Note that for web apps (i.e. targeting Safari push notification) the `development` service level should not be used, as there is no corresponding `development` client environment that can receive notifications. Use either `production` or `test`.
 
 **Default:** `nil`
 #### [mpn.appleNotifierConfig.apps.myApp.triggerExpressions](./values.yaml#L2694)

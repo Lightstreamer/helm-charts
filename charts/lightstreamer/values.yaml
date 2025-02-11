@@ -2646,7 +2646,7 @@ mpn:
         # logged only and no connection will be established with Apple's
         # servers. The corresponding logger is `lightstreamerLogger.mpn.apple`,
         # notifications are logged at `INFO` level
-        # (see logging.loggers.lightstreamerLogger.subLoggers.lightstreamerLogger.mpn.apple).
+        # (see `logging.loggers.lightstreamerLogger.subLoggers.lightstreamerLogger.mpn.apple`).
         # If set to `development` or `production`, notifications will be sent
         # to, respectively, Apple's development or production servers.
         # Note that for web apps (i.e. targeting Safari push notification) the
@@ -2664,7 +2664,7 @@ mpn:
         # zip file is stored. This file contains a descriptor of the web app
         # (i.e. targeting Safari push notification), and is mandatory only for
         # web apps (ignore in other cases). See the General Concepts document
-        # for more information on how to produce this file. -->
+        # for more information on how to produce this file.
         pushPackageFileRef:
           # name: push-package-map
           # key: push_package.zip
