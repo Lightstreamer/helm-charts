@@ -1181,12 +1181,12 @@ servers:
         # @default `JVM`
         order: "JVM"
       # -- Optional. If set to `false`, causes any client-initiated TLS
-      #  renegotiation request to be refused by closing the connection. This
+      # renegotiation request to be refused by closing the connection. This
       # policy may be evaluated in a trade-off between encryption strength and
       # performance risks.
       # Note that, with the default SunJSSE Security Provider, a better way to
       # achieve the same at a global JVM level is by setting the dedicated
-      # "jdk.tls.rejectClientInitiatedRenegotiation" JVM property to `true`.
+      # `jdk.tls.rejectClientInitiatedRenegotiation` JVM property to `true`.
       # @default -- true
       enableTlsRenegotiation:
       # -- Optional, but forbidden if `removeProtocols` is used.
