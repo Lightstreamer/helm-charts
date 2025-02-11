@@ -2093,14 +2093,14 @@ pushSession:
   # if set to `false`, the server will specify the `text/plain` content-type.
   # @default -- true
   enableEnrichedContentType:
-  # -- (int) Optional. Maximum size for any ItemEventBuffer.
-  # It applies to RAW and COMMAND mode and to any other case of unfiltered
+  # -- (int) Optional. Maximum size for any `ItemEventBuffer`.
+  # It applies to `RAW` and `COMMAND` mode and to any other case of unfiltered
   # subscription.
   # For filtered subscriptions, it poses an upper limit on the maximum buffer
   # size that can be granted by the Metadata Adapter or requested through the
   # subscription parameters. Similarly, it poses an upper limit to the length
-  # of the snapshot that can be sent in DISTINCT mode, regardless of the value
-  # returned by getDistinctSnapshotLength.
+  # of the snapshot that can be sent in `DISTINCT` mode, regardless of the 
+  # value returned by `getDistinctSnapshotLength`.
   # See the General Concepts document for details on when these buffers are
   # used. An excessive use of these buffers may give rise to a significant
   # memory footprint; to prevent this, a lower size limit can be set.
@@ -2204,7 +2204,7 @@ pushSession:
   # and new value for updates which involve a small change.
   # If set to `false`, the Server always sends to the clients the actual values
   # in the updates; note that any missing field in an update from the Data
-  # Adapter for an item in MERGE mode is just a shortcut for an unchanged
+  # Adapter for an item in `MERGE` mode is just a shortcut for an unchanged
   # value, hence the old value will be resent anyway.
   # Adopting the "delta delivery" is in general more efficient than always
   # sending the values. On the other hand, checking for unchanged values and/or
@@ -2255,7 +2255,7 @@ pushSession:
   # @default -- 50
   jsonPatchMinLength:
   # -- Optional. Configuration of the update management for items subscribed to
-  # in COMMAND mode with unfiltered dispatching.
+  # in `COMMAND` mode with unfiltered dispatching.
   # If set to `true`, the order in which updates are received from the Data
   # Adapter is preserved when sending updates to the clients; in this case, any
   # frequency limits imposed by license limitations are applied to the whole
