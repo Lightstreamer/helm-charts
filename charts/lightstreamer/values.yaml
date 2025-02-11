@@ -3140,7 +3140,7 @@ load:
   # CPU-intensive; hence, it is advisable to set a value smaller than the
   # number of available cores.
   # @default -- half the number of available total cores, as detected by the 
-  # JVM (obviously, if there is only one core, the default will be 1)
+  # JVM
   handshakePoolSize:
   # -- (int) Optional. Maximum number of tasks allowed to be queued to enter
   # the `TLS-SSL HANDSHAKE` thread pool before undertaking backpressure
