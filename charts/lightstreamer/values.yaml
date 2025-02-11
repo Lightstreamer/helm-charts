@@ -1415,7 +1415,7 @@ globalSocket:
     # answering to a client "ping" request. In case a client sends very
     # frequent "ping" requests, only the "pong" associated to the most recent
     # request received is sent, while the previous requests will be ignored.
-    # Note that the above is possible also when 0 is specified.
+    # Note that the above is possible also when `0` is specified.
     # @default -- 0
     maxPongDelayMillis:
     # -- (int) Optional. Maximum time the Server is allowed to wait for the
@@ -1901,10 +1901,10 @@ management:
     # If set to `true`, requests for the Monitoring Dashboard are always
     # accepted.
     # If set to `false`, requests for the Monitoring Dashboard are subject to a
-    # check for credentials to be specified through the `users` settings;
+    # check for credentials to be specified through the `credentials` settings;
     # hence, a user credential submission dialog may be presented by the
-    # browser. If no "users" settings is defined, the Monitoring Dashboard will
-    # not be accessible in any way.
+    # browser. If no `credentials` settings is defined, the Monitoring 
+    # Dashboard will not be accessible in any way.
     # @default -- false
     enablePublicAccess:
     # -- Optional, but ineffective if `enablePublicAccess` is set to `true`.
@@ -2373,7 +2373,7 @@ pushSession:
   # connection is kept waiting until this time has elapsed.
   # In fact, neither a `pushSession.minPollingMillis` nor a
   # `pushSession.maxPollingMillis` setting are provided, hence a client is
-  # allowed to request 0 for both, so that the real polling frequency will only
+  # allowed to request `0` for both, so that the real polling frequency will only
   # be determined by roundtrip times.
   # However, in order to avoid that a similar case causes too much load on the
   # Server, this setting can be used as a protection, to limit the polling
