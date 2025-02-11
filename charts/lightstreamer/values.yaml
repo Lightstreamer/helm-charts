@@ -1532,8 +1532,8 @@ security:
         # "any host or IP".
         # If a host name is specified it can be prefixed with a wildcard as
         # long as at least the second level domain is explicitly specified
-        # (i.e.:*.my-domain.com and *.sites.my-domain.com are valid entries
-        # while *.com is not)
+        # (i.e.: `*.my-domain.com` and `*.sites.my-domain.com` are valid 
+        # entries while `*.com` is not).
         host: "*"
         # -- Mandatory. A a valid port or `*` to specify any port.
         port: "*"

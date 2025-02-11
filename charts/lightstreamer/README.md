@@ -506,7 +506,7 @@ Optional. Defines a rule against which Origin headers will be checked.
 #### [security.crossDomainPolicy.allowAccessFrom.fromEveryWere.host](./values.yaml#L1537)
 
      
-Mandatory. A valid host name, IPv4 or IPv6 representing, an authorized Origin. Also a `*` is accepted with the meaning of "any host or IP". If a host name is specified it can be prefixed with a wildcard as long as at least the second level domain is explicitly specified (i.e.:*.my-domain.com and *.sites.my-domain.com are valid entries while *.com is not)
+Mandatory. A valid host name, IPv4 or IPv6 representing, an authorized Origin. Also a `*` is accepted with the meaning of "any host or IP". If a host name is specified it can be prefixed with a wildcard as long as at least the second level domain is explicitly specified (i.e.: `*.my-domain.com` and `*.sites.my-domain.com` are valid  entries while `*.com` is not).
 
 **Default:** `"*"`
 #### [security.crossDomainPolicy.allowAccessFrom.fromEveryWere.port](./values.yaml#L1539)
