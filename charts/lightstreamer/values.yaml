@@ -1355,9 +1355,9 @@ keyStores:
       # name: kafka-connector-private-key-pass-secret
       # key: kafka-connector.private.key.pass
 
-# -- Mandatory. Global socket configuration
+# -- Mandatory. Global socket configuration.
 globalSocket:
-  # -- (int) (Mandatory) Longest inactivity time accepted while waiting for a
+  # -- (int) Mandatory. Longest inactivity time accepted while waiting for a
   # slow request to be received. If this value is exceeded, the socket is
   # closed. Reusable HTTP connections are also closed if they are not reused
   # for longer than this time.
@@ -1434,7 +1434,7 @@ globalSocket:
     # @default -- 16384
     maxOutboundFrameSize:
 
-# -- Security configuration
+# -- Optional. Security configuration.
 security:
   # -- Optional. Disabling of the protection for JavaScript pages, supplied by
   # the Server, that carry user data.
@@ -1596,7 +1596,7 @@ security:
   # @default -- FULL
   serverIdentificationPolicy:
 
-# -- Mandatory. Logging and management configuration
+# -- Mandatory. Logging and management configuration.
 management:
   # -- Optional. A set of Clients whose activity is not to be logged.
   # @default -- []
@@ -1989,7 +1989,7 @@ management:
     # @default -- []
     availableOnServers: []
 
-# -- Mandatory. Push session configuration
+# -- Mandatory. Push session configuration.
 pushSession:
   # -- Optional. If used, defines one or multiple alternative url paths for all
   # requests related to the streaming services, which will be composed by the

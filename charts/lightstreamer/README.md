@@ -394,7 +394,7 @@ Optional. Longest inactivity time accepted while waiting for a slow operation du
 #### [globalSocket.readTimeoutMillis](./values.yaml#L1367)
 
      
-(Mandatory) Longest inactivity time accepted while waiting for a slow request to be received. If this value is exceeded, the socket is closed. Reusable HTTP connections are also closed if they are not reused for longer than this time. The time actually considered may be approximated and may be a few seconds higher, for internal performance reasons. A `0` value suppresses the check.
+Mandatory. Longest inactivity time accepted while waiting for a slow request to be received. If this value is exceeded, the socket is closed. Reusable HTTP connections are also closed if they are not reused for longer than this time. The time actually considered may be approximated and may be a few seconds higher, for internal performance reasons. A `0` value suppresses the check.
 
 **Default:** `20000`
 #### [globalSocket.requestLimit](./values.yaml#L1386)
