@@ -1356,8 +1356,8 @@ Render the Lightstreamer configuration file
                  be supplied in order to allow access through the connector.
                  This is also needed if you wish to use the provided "stop" script;
                  the script will always use the first user supplied. -->
-      {{- if and .credentialsSecrets (not .enablePublicAccess) }}
-        {{- range .credentialsSecrets}}
+      {{- if not .enablePublicAccess }}
+        {{- range required "management.jmx.rmiConnector.credentialsSecrets must be set" .credentialsSecrets}}
             <user id="$env.LS_RMI_CREDENTIAL_{{ . | upper | replace "-" "_" }}_USER" password="$env.LS_RMI_CREDENTIAL_{{ . | upper | replace "-" "_"}}_PASSWORD" />
         {{- end }}
       {{- else}}
