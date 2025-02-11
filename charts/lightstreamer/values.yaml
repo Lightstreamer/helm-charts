@@ -248,7 +248,7 @@ service:
 # -- Optional. Lightstreamer Ingress configuration (https://kubernetes.io/docs/concepts/services-networking/ingress/)
 ingress:
   # -- Enablement of the Ingress
-  enabled: true
+  enabled: 
   # -- Additional Ingress annotations
   annotations: {}
   # -- Additional Ingress labels
@@ -437,9 +437,9 @@ license:
     # If any SOCKS proxy in `socksProxies` is configured too, it is checked in
     # parallel with the defined HTTP proxies.
     httpProxies:
-      - # -- (string) Optional, but empty value are skipped. Host name or IP
+      - # -- (string) Optional, but empty values are skipped. Host name or IP
         # address of the proxy server.
-        # Examples: "proxy.mycompany.com", "192.168.0.5".
+        # Examples: `proxy.mycompany.com`, `192.168.0.5`.
         host:
         # -- (int) Optional. Port number of the proxy server.
         port:
@@ -455,12 +455,13 @@ license:
     # If any HTTP proxy is configured in `httpProxies` too, it is checked in
     # parallel with the defined SOCKS proxies.
     socksProxies:
-      - # -- (string) Optional. Host name or IP address of the proxy server.
-        # Examples: "socks.mycompany.com", "192.168.0.9"
+      - # -- (string) Optional, but empty value are skipped. Host name or IP 
+        # address of the proxy server.
+        # Examples: `socks.mycompany.com`, `192.168.0.9`.
         host:
-        # -- (int) Mandatory. Port number of the SOCKS server.
+        # -- (int) Optional. Port number of the SOCKS server.
         port:
-        # -- (string) Protocol version to use.
+        # -- (string) Optional. Protocol version to use.
         # Possible values: `SOCKS4`, `SOCKS4a`, `SOCKS5`.
         version:
         # -- Mandatory if proxy authentication is required. The name of the
