@@ -364,7 +364,6 @@ license:
       # -- Mandatory if `enableRestrictedFeaturesSet` is set to `true`. Set of
       # features to enable. If a required feature is not allowed by the license
       # in use, the server will not start.
-      # @default -- {}
       features:
         # -- Mandatory. Mobile Push Notifications.
         enableMpn: true
