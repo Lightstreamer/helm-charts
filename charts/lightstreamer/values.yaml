@@ -1018,7 +1018,7 @@ servers:
     # -- Optional. Settings that allow for better recognition of the remote
     # address of the connected clients. This can be done in two ways:
     #
-    # - by taking advantage of the X-Forwarded-For HTTP header, that
+    # - by taking advantage of the `X-Forwarded-For` HTTP header, that
     #   intermediate HTTP proxies and level-7 Load Balancers usually set to
     #   supply connection routing information in an incremental way (this is
     #   done through the `skipLocalForwards` setting);
@@ -1030,8 +1030,8 @@ servers:
     #
     # The two techniques can also coexist, but, in that case, the address
     # through the proxy protocol would always be considered as the real client
-    # address and all addresses in the chain specified in X-Forwarded-For would
-    # be considered as written by client-side proxies.
+    # address and all addresses in the chain specified in `X-Forwarded-For` 
+    # would be considered as written by client-side proxies.
     # The address determined in this way will be used in all cases in which the
     # client address is reported or checked. For logging purposes, the
     # connection endpoint will still be written, but the real remote address,
@@ -1079,7 +1079,7 @@ servers:
       proxyProtocolTimeoutMillis:
       # -- (int) Optional, but nonzero values forbidden if 
       # `enableProxyProtocol` is set to `true`. Number of entries in the 
-      # _X-Forwarded-For_ header that are expected to be supplied on each HTTP 
+      # `X-Forwarded-For` header that are expected to be supplied on each HTTP 
       # request (including Websocket handshake) by the intermediate nodes (e.g.
       # reverse proxies, load balancers) that stand in the local environment.
       # If N entries are expected from local nodes, this means that the
@@ -1087,7 +1087,7 @@ servers:
       # local intermediate node, hence to the client. So, that entry will be
       # used as the real client address. In particular, it will appear in all
       # log lines that refer to the involved HTTP request or Websocket.
-      # If set to `0` or left at the default, all entries in _X-Forwarded-For_
+      # If set to `0` or left at the default, all entries in `X-Forwarded-For`
       # will be considered as written by client-side proxies, hence the
       # connection endpoint address will be used (unless, of course,
       # `enableProxyProtocol` is set to `true`, which overrides the behavior).
@@ -1098,7 +1098,7 @@ servers:
       # @default -- 0
       skipLocalForwards:
       # -- Optional. If set to `true`, causes the list of entries of the
-      # X-Forwarded-For header, when available, to be added to log lines
+      # `X-Forwarded-For` header, when available, to be added to log lines
       # related to the involved HTTP request or Websocket.
       # If `skipLocalForwards` is nonzero, only the entries farther than the
       # determined "real" remote address are included.
@@ -1473,7 +1473,7 @@ security:
   # responses to requests sent to this Server through cross-origin XHR or
   # through WebSockets; in fact, when a requesting page asks for streaming data
   # in this way, the browser should specify the page origin through the
-  # "Origin" HTTP header, to give the Server a chance to accept or refuse the
+  # `Origin` HTTP header, to give the Server a chance to accept or refuse the
   # request. This is the most common way streaming data is requested by the Web
   # (Unified API) Client Library. You can see the Client Guide for the Web
   # (Unified API) Client SDK earlier than 8.0.0 for details on all the possible
@@ -2820,7 +2820,7 @@ webServer:
   # @default -- ../pages
   pagesDir:
   # -- (int) Optional. Caching time, in minutes, to be allowed to the browser
-  # (through the "expires" HTTP header) for all the resources supplied by the
+  # (through the `expires` HTTP header) for all the resources supplied by the
   # internal web server.
   # A zero value disables caching by the browser.
   # @default -- 0
