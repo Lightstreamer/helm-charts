@@ -1868,7 +1868,7 @@ Mandatory. Lightstreamer edition to use. To know full details, open the Welcome 
 #### [license.enableAutomaticUpdateCheck](./values.yaml#L424)
 
      
-Optional. Periodically check whether any Lightstreamer Server update is available. In such case, a notification is written to the log file. If set to true, perform automatic update check. The following host name must be reachable on port 443: https://service.lightstreamer.com/ If set to false, do not perform automatic update check.
+Optional. Periodically check whether any Lightstreamer Server update is available. In such case, a notification is written to the log file. If set to `true`, perform automatic update check. The following host name must be reachable on port 443: https://service.lightstreamer.com/. If set to `false`, do not perform automatic update check.
 
 **Default:** `true`
 #### [license.enabledCommunityEditionClientApi](./values.yaml#L308)
@@ -1890,19 +1890,19 @@ Mandatory if `edition` is set to `ENTERPRISE`. Configure the ENTERPRISE edition.
 #### [license.enterprise.contractId](./values.yaml#L318)
 
      
-Mandatory, Identifier of the contract in place. Use `DEMO` to run with the embedded Demo license.
+Mandatory. Identifier of the contract in place. Use `DEMO` to run with the embedded Demo license.
 
 **Default:** `"DEMO"`
 #### [license.enterprise.enableAutomaticAuditLogUpload](./values.yaml#L354)
 
      
-In case of file-based license validation, allows to activate periodic automatic upload. This makes it much easier for the systems admins to deliver the logs, as contractually agreed. In case of online license validation, the audit logs are always automatically uploaded to the Online License Manager, irrespective of this setting. If enabled, the host `https://service.lightstreamer.com` must be  reachable on port 443 If not enabled, audit logs must be delivered manually if required by license terms.
+In case of file-based license validation, allows to activate periodic automatic upload. This makes it much easier for the systems admins to deliver the logs, as contractually agreed. In case of online license validation, the audit logs are always automatically uploaded to the Online License Manager, irrespective of this setting. If enabled, the host `https://service.lightstreamer.com` must be  reachable on port 443. If not enabled, audit logs must be delivered manually if required by license terms.
 
 **Default:** `true`
 #### [license.enterprise.filePathSecretRef](./values.yaml#L340)
 
      
-Used only if `licenseValidation` set to `FILE`. Secret name and key where the license file is stored.
+Mandatory if if `licenseValidation` set to `FILE`. Secret name and key where the license file is stored.
 
 **Default:** `{"key":null,"name":null}`
 #### [license.enterprise.licenseType](./values.yaml#L315)

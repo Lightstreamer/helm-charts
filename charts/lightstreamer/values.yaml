@@ -313,7 +313,7 @@ license:
     # Possible values: `DEMO`, `EVALUATION`, `STARTUP`, `NON-PRODUCTION-LIMITED`,
     # `NON-PRODUCTION-FULL`, `PRODUCTION`, `HOT-STANDBY`.
     licenseType: DEMO
-    # -- (string) Mandatory, Identifier of the contract in place. Use `DEMO` to
+    # -- (string) Mandatory. Identifier of the contract in place. Use `DEMO` to
     # run with the embedded Demo license.
     contractId: DEMO
     # -- (string) Optional. Choose between online (cloud-based) and file-based
@@ -335,8 +335,8 @@ license:
     onlinePasswordSecretRef:
       name:
       key:
-    # -- Used only if `licenseValidation` set to `FILE`.
-    # Secret name and key where the license file is stored.
+    # -- Mandatory if if `licenseValidation` set to `FILE`. Secret name and key
+    # where the license file is stored.
     filePathSecretRef:
       name:
       key:
@@ -347,7 +347,7 @@ license:
     # automatically uploaded to the Online License Manager, irrespective
     # of this setting.
     # If enabled, the host `https://service.lightstreamer.com` must be 
-    # reachable on port 443
+    # reachable on port 443.
     # If not enabled, audit logs must be delivered manually if required by
     # license terms.
     # @default -- true
@@ -417,9 +417,9 @@ license:
         enableGenericClient: false
   # -- Optional. Periodically check whether any Lightstreamer Server update is
   # available. In such case, a notification is written to the log file.
-  # If set to true, perform automatic update check. The following host name
-  # must be reachable on port 443: https://service.lightstreamer.com/
-  # If set to false, do not perform automatic update check.
+  # If set to `true`, perform automatic update check. The following host name
+  # must be reachable on port 443: https://service.lightstreamer.com/.
+  # If set to `false`, do not perform automatic update check.
   # @default -- true
   enableAutomaticUpdateCheck:
   # -- Optional. Configure a proxy server for outbound Internet access, if
