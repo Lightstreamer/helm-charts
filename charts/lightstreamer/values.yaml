@@ -1694,7 +1694,7 @@ management:
       # access url, but needs an explicit server-side configuration.
       # Note that, if you wish to use the provided "stop" script, the specified
       # hostname has to be visible also from local clients.
-      # @default -- the value of the  `java.rmi.server.hostname` JVM property
+      # @default -- the value of the `java.rmi.server.hostname` JVM property
       hostName:
       # -- Optional. Enabling of a preliminary test on the reachability of the 
       # RMI Server through the configured hostname. Note that the reachability 
@@ -1710,9 +1710,9 @@ management:
       # @default -- true
       enableTestPorts: true
       # -- (int) Optional. Timeout to be posed on the connection attempts 
-      # through the RMI Connector. If 0, no timeout will be posed.
+      # through the RMI Connector. If `0`, no timeout will be posed.
       # The setting affects:
-      # - The reachability test (if enabled through <test_ports>).
+      # - The reachability test (if enabled through `enableTestPorts`).
       # - The connector setup operation; in fact this operation may involve a
       #   connection attempt, whose failure, however, would not prevent the
       #   setup from being successful. If the configured hostname were not
@@ -1733,16 +1733,14 @@ management:
       # accessible, even from local clients.
       # @default -- accept connections on any/all local addresses
       listeningInterface:
-        # -- Mandatory if either `port.enableSsl` or `dataPort.enableSsl` is set 
-        # to true. The reference to a keystore configuration (defined in 
-        # `keystore`) to be used in case TLS/SSL is enabled for part or all of 
-        # the communication.
+      # -- Mandatory if either `port.enableSsl` or `dataPort.enableSsl` is set 
+      # to true. The reference to a keystore configuration (defined in 
+      # `keystore`) to be used in case TLS/SSL is enabled for part or all of 
+      # the communication.
       # See the `keystores.myServerKeystore` for general details on keystore
       # configuration. These include the runtime replacement of the keystore,
       # with one difference: if the load of the new keystore fails, the RMI
       # Connector may be left unreachable.
-      # @default -- any settings provided to the `javax.net.ssl.keyStore` and
-      # `javax.net.ssl.keyStorePassword` JVM properties will apply
       keyStoreRef:
       # -- (list) Optional, but forbidden if `removeCipherSuites` is used.
       # Specifies all the cipher suites allowed for the interaction, in case
@@ -1779,7 +1777,7 @@ management:
       # protocols in order to remove the matching ones from the enabled
       # protocols set to be used in case TLS/SSL is enabled for part or all the
       # communication.
-      # See notes for `servers.{}.sslConfig.removeProtocols.
+      # See notes for `servers.{}.sslConfig.removeProtocols`.
       removeProtocols:
         - SSL
         - TLSv1$
