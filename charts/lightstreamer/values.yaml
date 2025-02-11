@@ -1986,12 +1986,12 @@ management:
 pushSession:
   # -- Optional. If used, defines one or multiple alternative url paths for all
   # requests related to the streaming services, which will be composed by the
-  # specified prefix followed by /lightstreamer.
+  # specified prefix followed by `/lightstreamer`.
   # Then it will be possible to instruct the Unified Client SDKs to use an
   # alternative path by adding its prefix to the supplied Server address.
   # The specified path prefixes must be absolute.
   # Note that, regardless of this setting, the standard path, which is
-  # /lightstreamer, is always active.
+  # `/lightstreamer`, is always active.
   # By supporting dedicated paths, it becomes possible to address different
   # Server installations with the same hostname, by instructing an intermediate
   # proxy to forward each client request to the proper place based on the
@@ -2032,11 +2032,11 @@ pushSession:
   # -- (int) Optional. Maximum lifetime allowed for single HTTP streaming
   # responses; when this timeout expires, the connection is closed, though the
   # session remains active and the Client can continue listening to the
-  # UpdateEvents by binding the session to another connection.
+  # `UpdateEvents` by binding the session to another connection.
   # Setting this timeout is not needed in normal cases; it is provided just in
   # case any user agent or intermediary node turned out to be causing issues on
   # very long-lasting HTTP responses.
-  # The Setting is not applied to polling responses and to streaming responses
+  # The setting is not applied to polling responses and to streaming responses
   # over WebSockets.
   # If not specified,
   # @default -- no limit is set; the streaming session duration will be limited
@@ -2160,7 +2160,7 @@ pushSession:
   # Note that recovery is available only for some client versions; if any other
   # version were involved, no data would be kept.
   # A `0` value also prevents any accumulation of memory. On the other hand, a
-  # value of -1 relieves any limit.
+  # value of `-1` relieves any limit.
   # @default -- -1
   maxRecoveryPollLength:
   # -- (int) Optional. Longest time the subscriptions currently in place on a
@@ -2178,7 +2178,7 @@ pushSession:
   subscriptionTimeoutMillis: 5000
   # -- (int) Optional. Timeout used to ensure the proper ordering of
   # client-sent messages, within the specified message sequence, before sending
-  # them to the Metadata Adapter through notifyUserMessage.
+  # them to the Metadata Adapter through `notifyUserMessage`.
   # In case a client request is late or does not reach the Server, the next
   # request may be delayed until this timeout expires, while waiting for the
   # late request to be received; then, the next request is forwarded and the
