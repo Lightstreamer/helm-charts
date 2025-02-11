@@ -1120,8 +1120,7 @@ servers:
       # provider, which is already available in the Server distribution (but
       # note that the library includes native code that only targets the main
       # platforms).
-      # @default -- the default JVM's Security Provider configured in the
-      # java.security file of the JDK installation.
+      # @default -- the default JVM's Security Provider
       tlsProvider:
       # -- Mandatory. The reference to a keystore configuration (defined in
       # `keyStores`).
