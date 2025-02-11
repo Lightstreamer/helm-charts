@@ -1656,11 +1656,11 @@ management:
     # -- Mandatory (if you wish to use the provided "stop" script).
     # Enables the standard RMI connector.
     # The remote MBean server will be accessible through this url:
-    # "service:jmx:rmi:///jndi/rmi://<host>:<port>/lsjmx".
+    # `service:jmx:rmi:///jndi/rmi://<host>:<port>/lsjmx`.
     # If full JMX features is not available, only the "Server" MBean is
     # supplied and only the Server shutdown operation is available.
     # The JVM platform MBean server is also exposed and it is accessible
-    # through the url: "service:jmx:rmi:///jndi/rmi://<host>:<port>/jmxrmi".
+    # through the url: `service:jmx:rmi:///jndi/rmi://<host>:<port>/jmxrmi`.
     # Note that the configuration of the connector applies to both cases;
     # hence, access to the JVM platform MBean server from this connector is not
     # configured through the "com.sun.management.jmxremote" JVM properties.
@@ -1807,7 +1807,7 @@ management:
     # implementation library is added to the Server classpath; see README.TXT
     # in the JMX SDK for details.
     # The remote server will be accessible through the url:
-    # "service:jmx:jmxmp://<host>:<jmxmpConnector.port>".
+    # `service:jmx:jmxmp://<host>:<jmxmpConnector.port>`.
     jmxmpConnector:
       # -- Optional. Enables Sun/Oracle's JMXMP connector.
       # @default -- false
@@ -2395,7 +2395,7 @@ mpn:
   # -- Optional. MPN module master switch. If N, the MPN module will
   # not start in any case, and all requests related to mobile push
   # Note that, by enabling the module, the handling of the special
-  #  URL configured by <apple_web_service_path> is also enabled.
+  #  URL configured by `appleWebServicePath` is also enabled.
   # @default -- false
   enabled:
   # -- (string) Optional. Specifies the root path of the web service URL to be
@@ -2845,59 +2845,59 @@ webServer:
   # we guess that no overall benefit would be reached.
   # @default -- 8192
   compressionThreshold:
-  # -- Optional. Enables the processing of the "/crossdomain.xml" URL, required
+  # -- Optional. Enables the processing of the `/crossdomain.xml` URL, required
   # by the Flash player in order to allow pages from a different host to
   # request data to Lightstreamer Server host.
   # See the "WebSite Controls" section on
   # http://www.adobe.com/devnet/flashplayer/articles/flash_player_9_security.pdf
   # for details on the contents of the document to be returned.
-  # If set to `true`, the Server accepts requests for "/crossdomain.xml"; the
+  # If set to `true`, the Server accepts requests for `/crossdomain.xml`; the
   # file configured through the `webServer.flexCrossdomainPath` setting is
   # returned. Enabling internal web server (through `webServer.enabled`) is
   # not needed; note that if the internal web server is enabled, the processing
-  # of the "/crossdomain.xml" URL is different than the processing of the other
+  # of the `/crossdomain.xml` URL is different than the processing of the other
   # URLs.
-  # If set to `false`, no special processing for the "/crossdomain.xml" requests
+  # If set to `false`, no special processing for the `/crossdomain.xml` requests
   # is performed.
   # Note that if the internal web server is enabled, then the processing of the
-  # "/crossdomain.xml" URL is performed as for any other URL (i.e. a file named
-  # "crossdomain.xml" is looked for in the directory configured as the root for
+  # `/crossdomain.xml` URL is performed as for any other URL (i.e. a file named
+  # `crossdomain.xml` is looked for in the directory configured as the root for
   # URL path mapping).
-  # Note that "/crossdomain.xml" is also used by the Silverlight runtime when
-  # "/clientaccesspolicy.xml" is not provided.
+  # Note that `/crossdomain.xml` is also used by the Silverlight runtime when
+  # `/clientaccesspolicy.xml` is not provided.
   # @default -- false
   enableFlexCrossdomain:
   # -- Mandatory when `webServer.enableFlexCrossdomain` is true.
-  # Path of the file to be returned upon requests for the "/crossdomain.xml"
+  # Path of the file to be returned upon requests for the `/crossdomain.xml`
   # URL. It is ignored when `webServer.enableFlexCrossdomain` is false.
   # The file content should be encoded with the iso-8859-1 charset.
   # The file path is relative to the conf directory.
   flexCrossdomainPath:
-  # -- Optional. Enables the processing of the "/clientaccesspolicy.xml" URL,
+  # -- Optional. Enables the processing of the `/clientaccesspolicy.xml" URL,
   # required by the Silverlight runtime in order to allow pages from a
   # different host to request data to Lightstreamer Server host.
   # See http://msdn.microsoft.com/en-us/library/cc838250(VS.95).aspx#crossdomain_communication
   # for details on the contents of the document to be returned.
   # If set to `true`, the Server accepts requests for
-  # "/clientaccesspolicy.xml"; the file configured through the
+  # `/clientaccesspolicy.xml`; the file configured through the
   # `webServer.silverlightAccessPolicyPath` setting is returned.
   # Enabling internal web server (through `webServer.enabled`) is not needed;
   # note that if the internal web server is enabled, the processing of the
-  #  "/clientaccesspolicy.xml" URLis different than the processing of the other
+  # `/clientaccesspolicy.xml` URLis different than the processing of the other
   # URLs.
-  # If set to `false`, no special processing for the "/clientaccesspolicy.xml"
+  # If set to `false`, no special processing for the `/clientaccesspolicy.xml`
   # requests is performed.
   # Note that if the internal web server is enabled, then the processing of the
-  #  "/clientaccesspolicy.xml" URL is performed as for any other URL (i.e. a
-  # file named "clientaccesspolicy.xml" is looked for in the directory
+  # `/clientaccesspolicy.xml` URL is performed as for any other URL (i.e. a
+  # file named "clientaccesspolicy.xml" is looked for in the directory 
   # configured as the root for URL path mapping).
-  # Note that "/crossdomain.xml" is also used by the Silverlight
-  # runtime when "/clientaccesspolicy.xml" is not provided.
+  # Note that `/crossdomain.xml` is also used by the Silverlight
+  # runtime when `/clientaccesspolicy.xml` is not provided.
   # @default -- false
   enableSilverlightAccessPolicy:
   # -- Mandatory when `web.enableSilverlightAccessPolicy` is `true`.
   # Path of the file to be returned upon requests for the
-  # "/clientaccesspolicy.xml" URL. It is ignored when
+  # `/clientaccesspolicy.xml` URL. It is ignored when
   # `web.enableSilverlightAccessPolicy` is false.
   # The file content should be encoded with the iso-8859-1 charset.
   # The file path is relative to the conf directory.
