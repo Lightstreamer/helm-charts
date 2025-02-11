@@ -1498,9 +1498,9 @@ security:
     # requests, the server allows the client to store the result of such
     # OPTIONS for the specified number of seconds. Thus a previously authorized
     # client may not give up its authorization, even if the related origin is
-    # removed from the list and the server is restarted, until its
+    # removed from the list and the server is restarted, until its 
     # authorization expires.
-    # @default `3600`
+    # @default -- `3600`
     optionsMaxAgeSeconds: 3600
     # -- Optional. In case the client wishes to send custom headers to the
     # server, it requires approval from the server itself. This setting

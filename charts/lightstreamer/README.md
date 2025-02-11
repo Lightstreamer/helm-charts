@@ -524,9 +524,9 @@ Mandatory. A valid scheme name (usually http or https) or `*`; the latter matche
 #### [security.crossDomainPolicy.optionsMaxAgeSeconds](./values.yaml#L1504)
 
      
-Optional. In case an HTTP OPTIONS request is sent to authorize future requests, the server allows the client to store the result of such OPTIONS for the specified number of seconds. Thus a previously authorized client may not give up its authorization, even if the related origin is removed from the list and the server is restarted, until its authorization expires. @default `3600`
+Optional. In case an HTTP OPTIONS request is sent to authorize future requests, the server allows the client to store the result of such OPTIONS for the specified number of seconds. Thus a previously authorized client may not give up its authorization, even if the related origin is removed from the list and the server is restarted, until its  authorization expires.
 
-**Default:** `3600`
+**Default:** ``3600``
 #### [security.enableCookiesForwarding](./values.yaml#L1474)
 
      
