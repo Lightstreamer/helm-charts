@@ -2683,7 +2683,7 @@ At least one must be provided. Connection configuration. The Kafka Connector all
 ```
 {"authentication":{"authentication":null,"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}},"bootstrapServers":"broker:9092","enabled":true,"fields":{"enableSkipFailedMapping":null,"mappings":{"ask":"#{VALUE.ask}","ask_quantity":"#{VALUE.ask_quantity}","bid":"#{VALUE.bid}","bid_quantity":"#{VALUE.bid_quantity}","item_status":"#{VALUE.item_status}","last_price":"#{VALUE.last_price}","max":"#{VALUE.max}","min":"#{VALUE.min}","offset":"#{OFFSET}","open_price":"#{VALUE.open_price}","partition":"#{PARTITION}","pct_change":"#{VALUE.pct_change}","ref_price":"#{VALUE.ref_price}","stock_name":"#{VALUE.name}","time":"#{VALUE.time}","timestamp":"#{VALUE.timestamp}","topic":"#{TOPIC}","ts":"#{TIMESTAMP}"}},"groupId":"quickstart","logger":{"appenders":["stdout"],"level":"INFO"},"name":"K8S-QuickStart","record":{"consumeFrom":"EARLIEST","consumeWithOrderStrategy":null,"consumeWithThreadNumber":null,"extractionErrorStrategy":null,"keyEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"INTEGER"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"JSON"}},"routing":{"enableTopicRegEx":null,"itemTemplates":{"stockTemplate":"stock-#{index=KEY}"},"topicMappings":{"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}},"sslConfig":{"allowedCipherSuites":[],"allowedProtocols":[],"enableHostnameVerification":null,"enabled":true,"keyStoreRef":null,"protocol":null,"trustStoreRef":null}}
 ```
-#### [connectors.kafkaConnector.connections.quickStart.authentication](./values.yaml#L3338)
+#### [connectors.kafkaConnector.connections.quickStart.authentication](./values.yaml#L3336)
 
      
 Optional. Authentication settings for the connection.
@@ -2693,19 +2693,19 @@ Optional. Authentication settings for the connection.
 ```
 {"authentication":null,"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}}
 ```
-#### [connectors.kafkaConnector.connections.quickStart.authentication.credentialsSecretRef](./values.yaml#L3356)
+#### [connectors.kafkaConnector.connections.quickStart.authentication.credentialsSecretRef](./values.yaml#L3354)
 
      
 Mandatory if `mechanism` is set to `PLAIN`, `SCRAM-SHA-256`, `SCRAM-SHA-512`. The name of the secret containing the  credentials. The secret must contain the keys `user` and `password`.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.connections.quickStart.authentication.enabled](./values.yaml#L3342)
+#### [connectors.kafkaConnector.connections.quickStart.authentication.enabled](./values.yaml#L3340)
 
      
 Optional. Enablement of the authentication of the connection against the Kafka Cluster.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi](./values.yaml#L3359)
+#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi](./values.yaml#L3357)
 
      
 Mandatory if `mechanism` is set to `GSSAPI`. The GSSAPI authentication settings.
@@ -2715,37 +2715,37 @@ Mandatory if `mechanism` is set to `GSSAPI`. The GSSAPI authentication settings.
 ```
 {"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}
 ```
-#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.enableKeytab](./values.yaml#L3362)
+#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.enableKeytab](./values.yaml#L3360)
 
      
 Optional. Enablement of the use of a keytab.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.enableStoreKey](./values.yaml#L3370)
+#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.enableStoreKey](./values.yaml#L3368)
 
      
 Optional. Enablement of the storage of the principal key.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.enableTicketCache](./values.yaml#L3378)
+#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.enableTicketCache](./values.yaml#L3376)
 
      
 Optional. Enablement of the use of a ticket cache.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.kerberosServiceName](./values.yaml#L3372)
+#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.kerberosServiceName](./values.yaml#L3370)
 
      
 Mandatory. The name of the Kerberos service.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.keytabFilePathRef](./values.yaml#L3365)
+#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.keytabFilePathRef](./values.yaml#L3363)
 
      
 Mandatory if `enableKeytab` is set to `true`. The configmap name and key where the the keytab file is stored
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.principal](./values.yaml#L3375)
+#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.principal](./values.yaml#L3373)
 
      
 Mandatory if `enableTicketCache` is set to `true`. The name of the principal to be used.
@@ -2763,7 +2763,7 @@ Mandatory. The Kafka Cluster bootstrap server endpoint expressed as the list of 
 Enablement of the connection. If set to `false`, the Lightstreamer Server will automatically deny every subscription made to the connection.
 
 **Default:** `true`
-#### [connectors.kafkaConnector.connections.quickStart.fields](./values.yaml#L3538)
+#### [connectors.kafkaConnector.connections.quickStart.fields](./values.yaml#L3536)
 
      
 Mandatory. Record mappings configuration.
@@ -2773,13 +2773,13 @@ Mandatory. Record mappings configuration.
 ```
 {"enableSkipFailedMapping":null,"mappings":{"ask":"#{VALUE.ask}","ask_quantity":"#{VALUE.ask_quantity}","bid":"#{VALUE.bid}","bid_quantity":"#{VALUE.bid_quantity}","item_status":"#{VALUE.item_status}","last_price":"#{VALUE.last_price}","max":"#{VALUE.max}","min":"#{VALUE.min}","offset":"#{OFFSET}","open_price":"#{VALUE.open_price}","partition":"#{PARTITION}","pct_change":"#{VALUE.pct_change}","ref_price":"#{VALUE.ref_price}","stock_name":"#{VALUE.name}","time":"#{VALUE.time}","timestamp":"#{VALUE.timestamp}","topic":"#{TOPIC}","ts":"#{TIMESTAMP}"}}
 ```
-#### [connectors.kafkaConnector.connections.quickStart.fields.enableSkipFailedMapping](./values.yaml#L3570)
+#### [connectors.kafkaConnector.connections.quickStart.fields.enableSkipFailedMapping](./values.yaml#L3568)
 
      
 Optional. If set to `true`, if a field mapping fails, that specific field's value will simply be omitted from the update sent to the Lightstreamer clients, while other successfully mapped fields from the same record will still be delivered.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.connections.quickStart.fields.mappings.timestamp](./values.yaml#L3547)
+#### [connectors.kafkaConnector.connections.quickStart.fields.mappings.timestamp](./values.yaml#L3545)
 
      
 At least one must be provided. A field mapping. Map the value extracted through the `#{extraction_expression}` to the Lightstreamer field name specified by key. The expression is written in the Data Extraction Language. See documentation at: https://github.com/lightstreamer/Lightstreamer-kafka-connector?tab=readme-ov-file#record-mapping-fieldfield_name
@@ -2793,21 +2793,21 @@ Optional. The name of the consumer group this connection belongs to. Sets the va
 **Default:**
 
 ```
-kafkaConnector.adapterSetId + name + randomly generated suffix.
+kafkaConnector.adapterSetId + name + randomly generated suffix
 ```
-#### [connectors.kafkaConnector.connections.quickStart.logger](./values.yaml#L3572)
+#### [connectors.kafkaConnector.connections.quickStart.logger](./values.yaml#L3570)
 
      
 Optional. Logger configuration for the connection.
 
 **Default:** `{"appenders":["stdout"],"level":"INFO"}`
-#### [connectors.kafkaConnector.connections.quickStart.logger.appenders](./values.yaml#L3575)
+#### [connectors.kafkaConnector.connections.quickStart.logger.appenders](./values.yaml#L3573)
 
      
 Mandatory. List of references to the appenders defined in `kafkaConnector.logging.appenders`.
 
 **Default:** `["stdout"]`
-#### [connectors.kafkaConnector.connections.quickStart.logger.level](./values.yaml#L3578)
+#### [connectors.kafkaConnector.connections.quickStart.logger.level](./values.yaml#L3576)
 
      
 Mandatory. The logger level.
@@ -2819,91 +2819,91 @@ Mandatory. The logger level.
 Mandatory and unique across all configurations. The connection name. This value will be used by the Clients to request real-time data from this specific Kafka connection through a Subscription object. The connection name is also used to group all logging messages belonging to the same connection.
 
 **Default:** `"K8S-QuickStart"`
-#### [connectors.kafkaConnector.connections.quickStart.record](./values.yaml#L3381)
+#### [connectors.kafkaConnector.connections.quickStart.record](./values.yaml#L3379)
 
      
 Optional. Record evaluation settings.
 
 **Default:** `all settings at their defaults`
-#### [connectors.kafkaConnector.connections.quickStart.record.consumeFrom](./values.yaml#L3389)
+#### [connectors.kafkaConnector.connections.quickStart.record.consumeFrom](./values.yaml#L3387)
 
      
 Optional. Specifies where to start consuming events from: - `LATEST`: start consuming events from the end of the topic partition - `EARLIEST`: start consuming events from the beginning of the topic partition Sets the value of the `auto.offset.reset` key to configure the internal Kafka Consumer.
 
 **Default:** `LATEST`
-#### [connectors.kafkaConnector.connections.quickStart.record.consumeWithOrderStrategy](./values.yaml#L3406)
+#### [connectors.kafkaConnector.connections.quickStart.record.consumeWithOrderStrategy](./values.yaml#L3404)
 
      
 Optional, but effective only if `consumeWithThreadNumber` is set to a value greater than 1 (which includes the default value). The order strategy to be used for concurrent processing of the incoming deserialized records. If set to `ORDER_BY_PARTITION`, maintain the order of records within each partition. If set to `ORDER_BY_KEY`, maintain the order among the records sharing the same key. If set to `UNORDERED`, provide no ordering guarantees.
 
 **Default:** `ORDER_BY_PARTITION`
-#### [connectors.kafkaConnector.connections.quickStart.record.consumeWithThreadNumber](./values.yaml#L3395)
+#### [connectors.kafkaConnector.connections.quickStart.record.consumeWithThreadNumber](./values.yaml#L3393)
 
      
 Optional. The number of threads to be used for concurrent processing of the incoming deserialized records. If set to `-1`, the number of threads will be automatically determined based on the number of available CPU cores.
 
 **Default:** `1`
-#### [connectors.kafkaConnector.connections.quickStart.record.extractionErrorStrategy](./values.yaml#L3467)
+#### [connectors.kafkaConnector.connections.quickStart.record.extractionErrorStrategy](./values.yaml#L3465)
 
      
 Optional. The error handling strategy to be used if an error occurs while extracting data from incoming deserialized records. If set to `IGNORE_AND_CONTINUE`, the error is ignored and the processing of the record continues. If set to `FORCE_UNSUBSCRIPTION`, the processing of the record is stopped and the unsubscription of the items requested by all the Lightstreamer clients subscribed to this connection is forced.
 
 **Default:** `IGNORE_AND_CONTINUE`
-#### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator](./values.yaml#L3409)
+#### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator](./values.yaml#L3407)
 
      
 Optional. Key evaluator configuration.
 
 **Default:** `all settings at their defaults`
-#### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator.enableSchemaRegistry](./values.yaml#L3438)
+#### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator.enableSchemaRegistry](./values.yaml#L3436)
 
      
 Enablement of the Confluent Schema Registry for  validation of the key. Must be set to `true` when `keyEvaluator.type` is set to `AVRO` and no local schema are specified.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator.localSchemaFilePathRef](./values.yaml#L3432)
+#### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator.localSchemaFilePathRef](./values.yaml#L3430)
 
      
 Mandatory if `type` is set to `AVRO` and `enableSchemaRegistry` is set to `false`. The configmap name and key where the local schema for message validation of the key is stored. The setting takes precedence over `enableSchemaRegistry` if the latter is set to `true`.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator.type](./values.yaml#L3426)
+#### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator.type](./values.yaml#L3424)
 
      
-Optional. The format to be used to deserialize the key of a Kafka record. Can be one of the following: - AVRO - JSON - STRING - INTEGER - BOOLEAN - BYTE_ARRAY - BYTE_BUFFER - BYTES - DOUBLE - FLOAT - LONG - SHORT - UUID
+Optional. The format to be used to deserialize the key of a Kafka record. Can be one of the following: - `AVRO` - `JSON` - `STRING` - `INTEGER` - `BOOLEAN` - `BYTE_ARRAY` - `BYTE_BUFFER` - `BYTES` - ``DOUBLE` - `FLOAT` - `LONG` - `SHORT` - `UUID`
 
 **Default:** `STRING`
-#### [connectors.kafkaConnector.connections.quickStart.record.schemaRegistryRef](./values.yaml#L3470)
+#### [connectors.kafkaConnector.connections.quickStart.record.schemaRegistryRef](./values.yaml#L3468)
 
      
 Optional. The reference to Schema Registry configuration defined in `connectors.kafkaConnector.schemaRegistry`.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator](./values.yaml#L3441)
+#### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator](./values.yaml#L3439)
 
      
 Optional. Value evaluator configuration.
 
 **Default:** `all settings at their defaults`
-#### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator.enableSchemaRegistry](./values.yaml#L3458)
+#### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator.enableSchemaRegistry](./values.yaml#L3456)
 
      
 Enablement of the Confluent Schema Registry for validation of the value. Must be set to `true` when `valueEvaluator.type` is set to `AVRO` and no local schema are specified.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator.localSchemaFilePathRef](./values.yaml#L3452)
+#### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator.localSchemaFilePathRef](./values.yaml#L3450)
 
      
 Mandatory if `type` is set to `AVRO` and `enableSchemaRegistry` is set to `false`. The configmap name and key where the local schema for message validation of the value is stored. The setting takes precedence over `enableSchemaRegistry` if the latter is set to `true`.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator.type](./values.yaml#L3446)
+#### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator.type](./values.yaml#L3444)
 
      
 Optional. The format to be used to deserialize the value of a Kafka record. See `record.keyEvaluator.type` for the list of supported formats.
 
 **Default:** `STRING`
-#### [connectors.kafkaConnector.connections.quickStart.routing](./values.yaml#L3472)
+#### [connectors.kafkaConnector.connections.quickStart.routing](./values.yaml#L3470)
 
      
 Mandatory. Record routings configuration.
@@ -2913,19 +2913,19 @@ Mandatory. Record routings configuration.
 ```
 {"enableTopicRegEx":null,"itemTemplates":{"stockTemplate":"stock-#{index=KEY}"},"topicMappings":{"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}}
 ```
-#### [connectors.kafkaConnector.connections.quickStart.routing.enableTopicRegEx](./values.yaml#L3536)
+#### [connectors.kafkaConnector.connections.quickStart.routing.enableTopicRegEx](./values.yaml#L3534)
 
      
 Optional. Enable `connectors.kafkaConnector.routing.topicMappings.{}.topic` to be treated as a regular expression rather than of a literal topic name.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.connections.quickStart.routing.itemTemplates](./values.yaml#L3479)
+#### [connectors.kafkaConnector.connections.quickStart.routing.itemTemplates](./values.yaml#L3477)
 
      
 Optional. Maps of item template expressions. An expressions is made of: - ITEM_PREFIX: the prefix of the item name - BINDABLE_EXPRESSIONS: a sequence of bindable extraction expressions. See https://lightstreamer.com/api/ls-kafka-connector/latest/ls-kafka-connector/record-extraction.html
 
 **Default:** `{}`
-#### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings](./values.yaml#L3482)
+#### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings](./values.yaml#L3480)
 
      
 Mandatory. Kafka topic mappings.
@@ -2935,7 +2935,7 @@ Mandatory. Kafka topic mappings.
 ```
 {"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}
 ```
-#### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock](./values.yaml#L3515)
+#### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock](./values.yaml#L3513)
 
      
 At least one must be provided. A Kafka topic mappings. Map a Kafka topic to: - one or more simple items - one or more item templates - any combination of the above  Examples:  topicMappingSample1:   topic: "aTopicName"   items:     - "item1"     - "item2"     - "itemN"  topicMappingSample2:   topic: "anotherTopicName"   itemTemplateRefs:     - "itemTemplate1"     - "itemTemplate2"     - "itemTemplateN"  topicMappingSample3   topic: "yetAnotherTopicName"   items:     - "item1"     - "item2"     - "itemN"   itemTemplateRefs:     - "itemTemplate1"     - "itemTemplate2"     - "itemTemplateN"
@@ -2945,19 +2945,19 @@ At least one must be provided. A Kafka topic mappings. Map a Kafka topic to: - o
 ```
 {"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}
 ```
-#### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock.itemTemplateRefs](./values.yaml#L3529)
+#### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock.itemTemplateRefs](./values.yaml#L3527)
 
      
 Mandatory if `items` is empty. List of item template to which the topic must be mapped.
 
 **Default:** `[]`
-#### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock.items](./values.yaml#L3522)
+#### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock.items](./values.yaml#L3520)
 
      
 Mandatory if `itemTemplateRefs` is empty. List of simple items to which the topic must be mapped.
 
 **Default:** `[]`
-#### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock.topic](./values.yaml#L3518)
+#### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock.topic](./values.yaml#L3516)
 
      
 Mandatory and unique across all topic mappings. The Kafka topic name.
@@ -2969,7 +2969,7 @@ Mandatory and unique across all topic mappings. The Kafka topic name.
 Optional. TLS/SSL settings for the connection.
 
 **Default:** `all settings at their defaults`
-#### [connectors.kafkaConnector.connections.quickStart.sslConfig.allowedCipherSuites](./values.yaml#L3323)
+#### [connectors.kafkaConnector.connections.quickStart.sslConfig.allowedCipherSuites](./values.yaml#L3321)
 
      
 Optional. List of enabled secure cipher suites.
@@ -2979,17 +2979,17 @@ Optional. List of enabled secure cipher suites.
 ```
 all the available cipher suites in the running JVM
 ```
-#### [connectors.kafkaConnector.connections.quickStart.sslConfig.allowedProtocols](./values.yaml#L3320)
+#### [connectors.kafkaConnector.connections.quickStart.sslConfig.allowedProtocols](./values.yaml#L3318)
 
      
-Optional. List of enabled secure communication protocols TLSv1.2 otherwise.
+Optional. List of enabled secure communication protocols
 
 **Default:**
 
 ```
-[TLSv1.2, TLSv1.3] when running on Java 11 or newer,
+[TLSv1.2, TLSv1.3] when running on Java 11 or newer TLSv1.2 otherwise.
 ```
-#### [connectors.kafkaConnector.connections.quickStart.sslConfig.enableHostnameVerification](./values.yaml#L3326)
+#### [connectors.kafkaConnector.connections.quickStart.sslConfig.enableHostnameVerification](./values.yaml#L3324)
 
      
 Optional. Enablement of the hostname verification.
@@ -3001,23 +3001,23 @@ Optional. Enablement of the hostname verification.
 Optional. Enablement of the encryption.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.connections.quickStart.sslConfig.keyStoreRef](./values.yaml#L3336)
+#### [connectors.kafkaConnector.connections.quickStart.sslConfig.keyStoreRef](./values.yaml#L3334)
 
      
 Optional. The reference to a keystore used if mutual TLS is enabled on Kafka brokers. See the `keyStores.myKafkaConnectorKeystore` settings for general details on keystore configuration for the Kafka Connector.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.connections.quickStart.sslConfig.protocol](./values.yaml#L3316)
+#### [connectors.kafkaConnector.connections.quickStart.sslConfig.protocol](./values.yaml#L3315)
 
      
-Optional. The SSL protocol to be used. Can be one of the following: `TLSv1.2`,  `TLSv1.3`. otherwise
+Optional. The SSL protocol to be used. Can be one of the following: `TLSv1.2`,  `TLSv1.3`.
 
 **Default:**
 
 ```
-TLSv1.3 when running on Java 11 or newer, TLSv1.2
+TLSv1.3 when running on Java 11 or newer, TLSv1.2 otherwise
 ```
-#### [connectors.kafkaConnector.connections.quickStart.sslConfig.trustStoreRef](./values.yaml#L3331)
+#### [connectors.kafkaConnector.connections.quickStart.sslConfig.trustStoreRef](./values.yaml#L3329)
 
      
 Optional. The reference to a keystore used to validate the certificates provided by the Kafka brokers. See the `keyStores.myKafkaConnectorKeystore` settings for general details on keystore configuration for the Kafka Connector.
@@ -3029,13 +3029,13 @@ Optional. The reference to a keystore used to validate the certificates provided
 Optional. Enablement of the Lightstreamer Kafka Connector.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.localSchemaFiles](./values.yaml#L3580)
+#### [connectors.kafkaConnector.localSchemaFiles](./values.yaml#L3578)
 
      
 Optional. Local schema files used for message validation.
 
 **Default:** `{"myKeySchema":null,"myValueSchema":null}`
-#### [connectors.kafkaConnector.localSchemaFiles.myKeySchema](./values.yaml#L3583)
+#### [connectors.kafkaConnector.localSchemaFiles.myKeySchema](./values.yaml#L3581)
 
      
 Optional. The configmap name and key where the local schema file is stored.
@@ -3117,7 +3117,7 @@ Mandatory. List of references to the appenders to be used by the logger.
 Mandatory. The logger level.
 
 **Default:** `"WARN"`
-#### [connectors.kafkaConnector.schemaRegistry](./values.yaml#L3591)
+#### [connectors.kafkaConnector.schemaRegistry](./values.yaml#L3589)
 
      
 Optional. Set of Schema Registry configurations.
@@ -3127,7 +3127,7 @@ Optional. Set of Schema Registry configurations.
 ```
 {"mySchemaRegistry":{"basicAuthentication":{"credentialsSecretRef":null,"enabled":null},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":null,"keyStoreRef":null,"trustStoreRef":null},"url":"https://schema-registry:8084"}}
 ```
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry](./values.yaml#L3595)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry](./values.yaml#L3593)
 
      
 Mandatory if either `connections.{}.keyEvaluator.type` or is `connections.{}.valueEvaluator.type` set to `AVRO` and no local schema paths are specified. Schema Registry configuration.
@@ -3137,7 +3137,7 @@ Mandatory if either `connections.{}.keyEvaluator.type` or is `connections.{}.val
 ```
 {"basicAuthentication":{"credentialsSecretRef":null,"enabled":null},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":null,"keyStoreRef":null,"trustStoreRef":null},"url":"https://schema-registry:8084"}
 ```
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.basicAuthentication](./values.yaml#L3601)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.basicAuthentication](./values.yaml#L3599)
 
      
 Optional. Basic HTTP authentication of a connection against the Schema Registry.
@@ -3147,19 +3147,19 @@ Optional. Basic HTTP authentication of a connection against the Schema Registry.
 ```
 {"credentialsSecretRef":null,"enabled":null}
 ```
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.basicAuthentication.credentialsSecretRef](./values.yaml#L3608)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.basicAuthentication.credentialsSecretRef](./values.yaml#L3606)
 
      
 Mandatory if `enable` is set to `true`. The name of the secret containing the credentials. The secret must contain the keys `user` and `password`.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.basicAuthentication.enabled](./values.yaml#L3604)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.basicAuthentication.enabled](./values.yaml#L3602)
 
      
 Optional. Enablement of the Basic HTTP authentication.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig](./values.yaml#L3611)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig](./values.yaml#L3609)
 
      
 Mandatory if the https protocol is specified in `url`. TLS/SSL settings.
@@ -3169,7 +3169,7 @@ Mandatory if the https protocol is specified in `url`. TLS/SSL settings.
 ```
 {"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":null,"keyStoreRef":null,"trustStoreRef":null}
 ```
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.allowCipherSuites](./values.yaml#L3620)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.allowCipherSuites](./values.yaml#L3618)
 
      
 Optional. List of enabled secure cipher suites.
@@ -3179,7 +3179,7 @@ Optional. List of enabled secure cipher suites.
 ```
 all the available cipher suites in the running JVM
 ```
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.allowProtocols](./values.yaml#L3615)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.allowProtocols](./values.yaml#L3613)
 
      
 Optional. List of enabled secure communication protocols TLSv1.2 otherwise.
@@ -3189,25 +3189,25 @@ Optional. List of enabled secure communication protocols TLSv1.2 otherwise.
 ```
 [TLSv1.2, TLSv1.3] when running on Java 11 or newer,
 ```
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.enableHostnameVerification](./values.yaml#L3624)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.enableHostnameVerification](./values.yaml#L3622)
 
      
 Optional. Enablement of the hostname verification.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.keyStoreRef](./values.yaml#L3634)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.keyStoreRef](./values.yaml#L3632)
 
      
 Optional. The reference to a keystore used if mutual TLS is enabled on the Schema Registry. See the `keyStores.myKafkaConnectorKeystore` settings for general details on keystore configuration for the Kafka Connector.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.trustStoreRef](./values.yaml#L3629)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.trustStoreRef](./values.yaml#L3627)
 
      
 Optional. The reference to a keystore used to validate the certificates provided by the Schema Registry. See the `keyStores.myKafkaConnectorKeystore` settings for general details on keystore configuration for the Kafka Connector.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.url](./values.yaml#L3598)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.url](./values.yaml#L3596)
 
      
 Mandatory. The URL of the Confluent Schema Registry. An encrypted connection is enabled by specifying the "https" protocol.

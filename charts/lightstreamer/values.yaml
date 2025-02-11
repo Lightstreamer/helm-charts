@@ -3301,7 +3301,7 @@ connectors:
         # Kafka Consumer.
         # See https://kafka.apache.org/documentation/#consumerconfigs_group.id
         # for details.
-        # @default -- kafkaConnector.adapterSetId + name + randomly generated suffix.
+        # @default -- kafkaConnector.adapterSetId + name + randomly generated suffix
         groupId: quickstart
         # -- Optional. TLS/SSL settings for the connection.
         # @default -- all settings at their defaults
@@ -3311,12 +3311,10 @@ connectors:
           enabled: true
           # -- (string) Optional. The SSL protocol to be used. Can be one of
           # the following: `TLSv1.2`,  `TLSv1.3`.
-          # @default -- TLSv1.3 when running on Java 11 or newer, TLSv1.2
-          # otherwise
+          # @default -- TLSv1.3 when running on Java 11 or newer, TLSv1.2 otherwise
           protocol:
           # -- Optional. List of enabled secure communication protocols
-          # @default -- [TLSv1.2, TLSv1.3] when running on Java 11 or newer,
-          # TLSv1.2 otherwise.
+          # @default -- [TLSv1.2, TLSv1.3] when running on Java 11 or newer TLSv1.2 otherwise.
           allowedProtocols: []
           # -- Optional. List of enabled secure cipher suites.
           # @default -- all the available cipher suites in the running JVM
@@ -3409,19 +3407,19 @@ connectors:
           keyEvaluator:
             # -- (string) Optional. The format to be used to deserialize the
             # key of a Kafka record. Can be one of the following:
-            # - AVRO
-            # - JSON
-            # - STRING
-            # - INTEGER
-            # - BOOLEAN
-            # - BYTE_ARRAY
-            # - BYTE_BUFFER
-            # - BYTES
-            # - DOUBLE
-            # - FLOAT
-            # - LONG
-            # - SHORT
-            # - UUID
+            # - `AVRO`
+            # - `JSON`
+            # - `STRING`
+            # - `INTEGER`
+            # - `BOOLEAN`
+            # - `BYTE_ARRAY`
+            # - `BYTE_BUFFER`
+            # - `BYTES`
+            # - ``DOUBLE`
+            # - `FLOAT`
+            # - `LONG`
+            # - `SHORT`
+            # - `UUID`
             # @default -- STRING
             type: INTEGER
             # -- Mandatory if `type` is set to `AVRO` and
