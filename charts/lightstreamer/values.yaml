@@ -1250,13 +1250,14 @@ servers:
       # the client for resumption. This holds for both stateless and stateful
       # TLS resumption (see `enableStatelessTlsSessionResumption`).
       # In the latter case, the session also has to be kept in a cache.
-      # A value of 0 poses no time limit.
+      # A value of `0` poses no time limit.
       # Note, however, that the underlying Security Provider may ignore this
       # setting (possibly depending of the protocol version in use).
-      # @default -- the maximum time is decided by the underlying Security
-      # Provider. For the default SunJSSE, it is 86400 seconds, unless
-      # configured through the "jdk.tls.server.sessionTicketTimeout" JVM
+      # If not specified, the maximum time is decided by the underlying 
+      # Security Provider. For the default SunJSSE, it is `86400` seconds, 
+      # unless configured through the `jdk.tls.server.sessionTicketTimeout` JVM
       # property.
+      # @default -- decided by the underlying Security Provider's configuration
       tlsSessionTimeoutSeconds:
       # -- Optional. If set to `true`, tries to improve the TLS session
       # resumption feature by providing the underlying Security Provider with
