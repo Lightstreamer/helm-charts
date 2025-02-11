@@ -2805,12 +2805,10 @@ webServer:
   # `false`), this also applies to all non-reserved URLs; otherwise,
   # nonexisting non-reserved URLs will get the HTTP 404 error as usual.
   # The file content should be encoded with the iso-8859-1 charset.
-  # The file path is relative to the conf directory.
   # @default -- the proper page is provided by the Server
   errorPageRef:
     # name: resources
     # key: ErrorPage.html
-
   # -- Optional. Path of the file system directory to be used by the internal
   # web server as the root for URL path mapping.
   # The path is relative to the conf directory. Note that the /lightstreamer
@@ -2886,7 +2884,7 @@ webServer:
   # requests is performed.
   # Note that if the internal web server is enabled, then the processing of the
   # `/clientaccesspolicy.xml` URL is performed as for any other URL (i.e. a
-  # file named "clientaccesspolicy.xml" is looked for in the directory 
+  # file named `clientaccesspolicy.xml` is looked for in the directory 
   # configured as the root for URL path mapping).
   # Note that `/crossdomain.xml` is also used by the Silverlight
   # runtime when `/clientaccesspolicy.xml` is not provided.
