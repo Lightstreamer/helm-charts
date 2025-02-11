@@ -2870,7 +2870,7 @@ Mandatory if `type` is set to `AVRO` and `enableSchemaRegistry` is set to `false
 #### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator.type](./values.yaml#L3424)
 
      
-Optional. The format to be used to deserialize the key of a Kafka record. Can be one of the following: - `AVRO` - `JSON` - `STRING` - `INTEGER` - `BOOLEAN` - `BYTE_ARRAY` - `BYTE_BUFFER` - `BYTES` - ``DOUBLE` - `FLOAT` - `LONG` - `SHORT` - `UUID`
+Optional. The format to be used to deserialize the key of a Kafka record. Possible values: - `AVRO` - `JSON` - `STRING` - `INTEGER` - `BOOLEAN` - `BYTE_ARRAY` - `BYTE_BUFFER` - `BYTES` - ``DOUBLE` - `FLOAT` - `LONG` - `SHORT` - `UUID`
 
 **Default:** `STRING`
 #### [connectors.kafkaConnector.connections.quickStart.record.schemaRegistryRef](./values.yaml#L3468)
@@ -2987,7 +2987,7 @@ Optional. List of enabled secure communication protocols
 **Default:**
 
 ```
-[TLSv1.2, TLSv1.3] when running on Java 11 or newer TLSv1.2 otherwise.
+[TLSv1.2, TLSv1.3] when running on Java 11 or newer TLSv1.2 otherwise
 ```
 #### [connectors.kafkaConnector.connections.quickStart.sslConfig.enableHostnameVerification](./values.yaml#L3324)
 
@@ -3010,7 +3010,7 @@ Optional. The reference to a keystore used if mutual TLS is enabled on Kafka bro
 #### [connectors.kafkaConnector.connections.quickStart.sslConfig.protocol](./values.yaml#L3315)
 
      
-Optional. The SSL protocol to be used. Can be one of the following: `TLSv1.2`,  `TLSv1.3`.
+Optional. The SSL protocol to be used. Possible values: `TLSv1.2`,  `TLSv1.3`.
 
 **Default:**
 

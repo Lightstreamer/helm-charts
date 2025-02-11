@@ -3309,12 +3309,12 @@ connectors:
           # -- Optional. Enablement of the encryption.
           # @default -- false
           enabled: true
-          # -- (string) Optional. The SSL protocol to be used. Can be one of
-          # the following: `TLSv1.2`,  `TLSv1.3`.
+          # -- (string) Optional. The SSL protocol to be used. Possible values:
+          # `TLSv1.2`,  `TLSv1.3`.
           # @default -- TLSv1.3 when running on Java 11 or newer, TLSv1.2 otherwise
           protocol:
           # -- Optional. List of enabled secure communication protocols
-          # @default -- [TLSv1.2, TLSv1.3] when running on Java 11 or newer TLSv1.2 otherwise.
+          # @default -- [TLSv1.2, TLSv1.3] when running on Java 11 or newer TLSv1.2 otherwise
           allowedProtocols: []
           # -- Optional. List of enabled secure cipher suites.
           # @default -- all the available cipher suites in the running JVM
@@ -3406,7 +3406,7 @@ connectors:
           # @default -- all settings at their defaults
           keyEvaluator:
             # -- (string) Optional. The format to be used to deserialize the
-            # key of a Kafka record. Can be one of the following:
+            # key of a Kafka record. Possible values:
             # - `AVRO`
             # - `JSON`
             # - `STRING`
