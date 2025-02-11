@@ -1795,7 +1795,7 @@ Optional. Size of the `PUMP` internal thread pool, which is devoted to integrati
 **Default:**
 
 ```
-the number of total cores, as detected by the JVM
+the number of available total cores, as detected by the JVM
 ```
 #### [load.selectorMaxLoad](./values.yaml#L3014)
 

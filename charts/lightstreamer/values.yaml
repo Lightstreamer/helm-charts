@@ -3038,7 +3038,7 @@ load:
   # creating the update commands for the client, whenever needed.
   # This task does not include blocking operations; however, on multiprocessor
   # machines, allocating multiple threads for this task may be beneficial.
-  # @default -- the number of total cores, as detected by the JVM
+  # @default -- the number of available total cores, as detected by the JVM
   pumpPoolSize:
   # -- (int) Optional. Maximum number of tasks allowed to be queued to enter
   # the `PUMP` thread pool before undertaking backpressure actions.
