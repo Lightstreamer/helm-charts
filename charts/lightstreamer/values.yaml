@@ -1441,7 +1441,7 @@ security:
   # JavaScript pages can be supplied upon requests by old versions of the Web
   # and Node.js (Unified API) Client Libraries, whereas recent versions no
   # longer make use of this kind of pages. The protection prevents such pages
-  # from being imported in a <script> block and, as a consequence, from being
+  # from being imported in a _<script>_ block and, as a consequence, from being
   # directly executed within a hosting page regardless of its origin.
   # This protection allows the Server to fully comply with the prescriptions to
   # prevent the so-called "JavaScript Hijacking".
@@ -1587,12 +1587,12 @@ security:
   # through the "Server" HTTP response header. However, omitting version
   # information may make external attacks more difficult.
   # If set to `FULL`, the Server identifies itself as:
-  # Lightstreamer Server/X.Y.Z build BBBB (Lightstreamer Push Server -
-  # www.lightstreamer.com) EEEEEE edition.
+  # `Lightstreamer Server/X.Y.Z build BBBB (Lightstreamer Push Server -
+  # www.lightstreamer.com) EEEEEE edition`.
   # If set to `MINIMAL`, the Server identifies itself, depending on the
-  # Edition: for Enterprise edition, as Lightstreamer Server; for Community
-  # edition, as Lightstreamer Server (Lightstreamer Push Server -
-  # www.lightstreamer.com) COMMUNITY edition.
+  # Edition: for Enterprise edition, `as Lightstreamer Server`; for Community
+  # edition, as `Lightstreamer Server (Lightstreamer Push Server -
+  # www.lightstreamer.com) COMMUNITY edition`.
   # @default -- FULL
   serverIdentificationPolicy:
 
