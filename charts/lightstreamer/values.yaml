@@ -3118,12 +3118,12 @@ load:
   # -- (int) Optional. Maximum number of tasks allowed to be queued to enter
   # the `ACCEPT` thread pool before undertaking backpressure actions.
   # The setting only affects the listening sockets with
-  # `servers.{}.portType` configured as CREATE_ONLY. As long as the
+  # `servers.{}.portType` configured as `CREATE_ONLY`. As long as the
   # number is exceeded, the accept loops of these sockets will be kept
   # waiting.
   # By suspending the accept loop, some SYN packets from the clients may be
   # discarded; the effect may vary depending on the backlog settings.
-  # Note that, in the absence of sockets configured as CREATE_ONLY, no
+  # Note that, in the absence of sockets configured as `CREATE_ONLY`, no
   # backpressure action will take place.
   # A long queue on the `ACCEPT` pool may be the consequence of a CPU shortage
   # during (or caused by) a high client connection activity.
@@ -3196,7 +3196,7 @@ load:
   # `load.serverPoolMaxQueue` check will be performed (regardless that
   # `load.serverPoolMaxQueue` itself is set).
   # The setting is meant to be used in configurations which define a
-  # CREATE_ONLY port in http and a CONTROL_ONLY port in https.
+  # `CREATE_ONLY` port in http and a `CONTROL_ONLY` port in https.
   # In these cases, and when a massive client reconnection is occurring, the
   # number of pending bind operations can grow so much that the needed TLS
   # handshakes can take arbitrarily long and cause the clients to time-out and
@@ -3205,7 +3205,7 @@ load:
   # their bind in due time could keep other clients blocked.
   # Note that, if defined, the setting will also inhibit
   # `load.handshakePoolMaxQueue` and `load.httpsAuthPoolMaxQueue` from
-  # affecting the accept loop of CONTROL_ONLY ports in https.
+  # affecting the accept loop of `CONTROL_ONLY` ports in https.
   # A negative value disables the check.
   # @default -- -1
   prestartedMaxQueue:
