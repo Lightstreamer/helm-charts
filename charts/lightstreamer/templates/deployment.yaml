@@ -66,9 +66,11 @@ spec:
             {{- toYaml .Values.deployment.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- with .Values.lifecycle }}
+          {{- if .Values.management.jmx  }}
           lifecycle:
-            {{- toYaml . | nindent 12 }}
+            preStop:
+              exec:
+                command: ["/lightstreamer/bin/unix-like/LS.sh", "stop"]
           {{- end }}
           ports:
           {{- /* START CONTAINER PORTS */ -}}
