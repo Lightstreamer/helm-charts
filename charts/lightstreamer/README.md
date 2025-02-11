@@ -370,7 +370,7 @@ Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key where keystor
 #### [keyStores.myServerKeystore.type](./values.yaml#L1322)
 
      
-Optional. The keystore type. The currently supported types are: - JKS, which is the Sun/Oracle's custom keystore type, whose support is   made available by every Java installation; - PKCS12, which is supported by all recent Java installations; - PKCS11, which as a bridge to an external PKCS11 implementation;   this is an experimental extension; contact Lightstreamer Support for   details.
+Optional. The keystore type. The currently supported types are: - `JKS`, which is the Sun/Oracle's custom keystore type, whose support is   made available by every Java installation; - `PKCS12`, which is supported by all recent Java installations; - `PKCS11`, which as a bridge to an external PKCS11 implementation;   this is an experimental extension; contact Lightstreamer Support for   details.
 
 **Default:** `JKS`
 ### GlobalSocket configuration
@@ -1546,7 +1546,7 @@ Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key where keystor
 #### [keyStores.myServerKeystore.type](./values.yaml#L1322)
 
      
-Optional. The keystore type. The currently supported types are: - JKS, which is the Sun/Oracle's custom keystore type, whose support is   made available by every Java installation; - PKCS12, which is supported by all recent Java installations; - PKCS11, which as a bridge to an external PKCS11 implementation;   this is an experimental extension; contact Lightstreamer Support for   details.
+Optional. The keystore type. The currently supported types are: - `JKS`, which is the Sun/Oracle's custom keystore type, whose support is   made available by every Java installation; - `PKCS12`, which is supported by all recent Java installations; - `PKCS11`, which as a bridge to an external PKCS11 implementation;   this is an experimental extension; contact Lightstreamer Support for   details.
 
 **Default:** `JKS`
 ### WebServer configuration
