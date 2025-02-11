@@ -1590,7 +1590,7 @@ security:
   # `Lightstreamer Server/X.Y.Z build BBBB (Lightstreamer Push Server -
   # www.lightstreamer.com) EEEEEE edition`.
   # If set to `MINIMAL`, the Server identifies itself, depending on the
-  # Edition: for Enterprise edition, `as Lightstreamer Server`; for Community
+  # Edition: for Enterprise edition, as `Lightstreamer Server`; for Community
   # edition, as `Lightstreamer Server (Lightstreamer Push Server -
   # www.lightstreamer.com) COMMUNITY edition`.
   # @default -- FULL
@@ -1872,7 +1872,7 @@ management:
   # The Dashboard leans on an internal Adapter Set, named "MONITOR".
   # The following settings configure access restrictions to Monitoring Dashboard
   # pages.
-  # *** IMPORTANT *** The Monitoring Dashboard enables data view and
+  # ***IMPORTANT***. The Monitoring Dashboard enables data view and
   # management, including the Server shutdown operation, from a remote browser.
   # We recommend configuring the credentials and protecting them by making the
   # Monitoring Dashboard only available on https server sockets through the
