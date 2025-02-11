@@ -1038,9 +1038,13 @@ Mandatory. Longest time a disconnected session can be kept alive while waiting f
 #### [pushSession.subscriptionTimeoutMillis](./values.yaml#L2178)
 
      
-Optional. Longest time the subscriptions currently in place on a session can be kept active after the session has been closed, in order to prevent unsubscriptions from the Data Adapter that would be immediately followed by new subscriptions in case the client were just refreshing the page. As a consequence of this wait, some items might temporarily appear as being subscribed to, even if no session were using them. If a session is closed after being kept active because of the `pushSession.sessionTimeoutMillis` or `pushSession.sessionRecoveryMillis` setting, the accomplished wait is considered as valid also for the subscription wait purpose. @default - the time configured for `pushSession.sessionTimeoutMillis`.
+Optional. Longest time the subscriptions currently in place on a session can be kept active after the session has been closed, in order to prevent unsubscriptions from the Data Adapter that would be immediately followed by new subscriptions in case the client were just refreshing the page. As a consequence of this wait, some items might temporarily appear as being subscribed to, even if no session were using them. If a session is closed after being kept active because of the `pushSession.sessionTimeoutMillis` or `pushSession.sessionRecoveryMillis` setting, the accomplished wait is considered as valid also for the subscription wait purpose.
 
-**Default:** `5000`
+**Default:**
+
+```
+the time configured for pushSession.sessionTimeoutMillis
+```
 #### [pushSession.useChunkedEncoding](./values.yaml#L2061)
 
      

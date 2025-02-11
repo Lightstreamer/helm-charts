@@ -2174,7 +2174,7 @@ pushSession:
   # `pushSession.sessionTimeoutMillis` or `pushSession.sessionRecoveryMillis`
   # setting, the accomplished wait is considered as valid also for the
   # subscription wait purpose.
-  # @default - the time configured for `pushSession.sessionTimeoutMillis`.
+  # @default -- the time configured for `pushSession.sessionTimeoutMillis`
   subscriptionTimeoutMillis: 5000
   # -- (int) Optional. Timeout used to ensure the proper ordering of
   # client-sent messages, within the specified message sequence, before sending
