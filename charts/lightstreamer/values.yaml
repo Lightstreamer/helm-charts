@@ -2133,7 +2133,7 @@ pushSession:
   # events already sent for this time duration, to support unexpected recovery
   # requests.
   # The client should try a recovery request immediately after detecting the
-  # interruption; but, the request may come later when, for instance,
+  # interruption; but, the request may come later when, for instance:
   # - there is a network outage of a few seconds and the client must retry,
   # - the client detects the interruption because of the stalled timeout.
   # Hence, the optimal value should be tuned according with client-side
@@ -2171,7 +2171,7 @@ pushSession:
   # As a consequence of this wait, some items might temporarily appear as being
   # subscribed to, even if no session were using them.
   # If a session is closed after being kept active because of the
-  # `pushSession.sessionTimeoutMillis` or "pushSession.sessionRecoveryMillis`
+  # `pushSession.sessionTimeoutMillis` or `pushSession.sessionRecoveryMillis`
   # setting, the accomplished wait is considered as valid also for the
   # subscription wait purpose.
   # @default - the time configured for `pushSession.sessionTimeoutMillis`.
