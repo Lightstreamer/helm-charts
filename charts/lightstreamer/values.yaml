@@ -1788,9 +1788,9 @@ management:
       # authentication; the allowed users are set in the "user" elements.
       # @default -- false
       enablePublicAccess:
-      # -- (list) Mandatory if `enablePublicAccess` is set to `true`. The 
-      # reference to the secrets containing the credentials of the users 
-      # enabled to access the RMI connector.
+      # -- (list) Optional, but ineffective if `enablePublicAccess` is set to 
+      # `true`. The reference to the secrets containing the credentials of the
+      # users enabled to access the RMI connector.
       # Every secret must contains the keys `user` and `password`.
       # If `enablePublicAccess` is set to `false`, at least one set of
       # credentials should be supplied in order to allow access through the
@@ -1814,7 +1814,7 @@ management:
       # has to be specified in the client access url.
       port:
     # -- (string) Optional. Enabling of the availability of session-related
-    # mbeans, the  ones identified by type="Session".
+    # mbeans, the  ones identified by `type="Session"`.
     # If set to `active`, for each active session, a corresponding mbean of
     # type "Session" is available with full functionality.
     # If set to `sampled_statistics_only`, for each active session, a
@@ -2071,7 +2071,7 @@ pushSession:
   # kinds of contents.
   # If set to `AUTO`, Gzip compression will not be used, unless using it is
   # recommended in order to handle special cases (and provided that all the
-  # conditions for compression are met; see case Y above).
+  # conditions for compression are met; see case `Y` above).
   # Streaming responses are compressed incrementally.
   # The use of compression may relieve the network level at the expense of the
   # Server performance. Note that bandwidth control and output statistics are
@@ -2079,7 +2079,7 @@ pushSession:
   # @default -- AUTO
   useCompression:
   # -- (int) Optional. Size in bytes of the response body below which compression
-  # is not applied, regardless of the "use_compression" setting, as we guess
+  # is not applied, regardless of the `useCompression` setting, as we guess
   # that no benefit would come. It is not applied to streaming responses,
   # which are compressed incrementally.
   # @default -- 1024
