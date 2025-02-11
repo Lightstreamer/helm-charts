@@ -1665,13 +1665,13 @@ Optional. Load configuration.
 ```
 {"acceptPoolMaxQueue":null,"acceptPoolMaxSize":null,"eventsPoolSize":null,"forceEarlyConversions":null,"handshakePoolMaxQueue":null,"handshakePoolSize":null,"httpsAuthPoolMaxFree":null,"httpsAuthPoolMaxQueue":null,"httpsAuthPoolMaxSize":null,"maxCommonNioBufferAllocation":null,"maxCommonPumpBufferAllocation":null,"maxMpnDevices":null,"maxSessions":null,"prestartedMaxQueue":null,"pumpPoolMaxQueue":null,"pumpPoolSize":null,"selectorMaxLoad":null,"selectorPoolSize":null,"serverPoolMaxFree":null,"serverPoolMaxQueue":null,"serverPoolMaxSize":null,"snapshotPoolSize":null,"timerPoolSize":null}
 ```
-#### [load.acceptPoolMaxQueue](./values.yaml#L3132)
+#### [load.acceptPoolMaxQueue](./values.yaml#L3131)
 
      
 Optional. Maximum number of tasks allowed to be queued to enter the `ACCEPT` thread pool before undertaking backpressure actions. The setting only affects the listening sockets with `servers.{}.portType` configured as `CREATE_ONLY`. As long as the number is exceeded, the accept loops of these sockets will be kept waiting. By suspending the accept loop, some SYN packets from the clients may be discarded; the effect may vary depending on the backlog settings. Note that, in the absence of sockets configured as `CREATE_ONLY`, no backpressure action will take place. A long queue on the `ACCEPT` pool may be the consequence of a CPU shortage during (or caused by) a high client connection activity. A negative value disables the check.
 
 **Default:** `-1`
-#### [load.acceptPoolMaxSize](./values.yaml#L3117)
+#### [load.acceptPoolMaxSize](./values.yaml#L3116)
 
      
 Optional. Maximum number of threads allowed for the `ACCEPT` internal pool, which is devoted to the parsing of the client requests. This task does not include blocking operations; however, on multiprocessor machines, allocating multiple threads for this task may be beneficial. Only in corner cases, it is possible that some operations turn out to be blocking; in particular: - `getHostName`, only if banned hostnames are configured; - socket close, only if banned hostnames are configured; - read from the "proxy protocol", only if configured; - service of requests on a "priority port", only available for internal use. A zero value means a potentially unlimited number of threads.
@@ -1689,21 +1689,21 @@ Optional. Size of the `EVENTS` internal thread pool, which is devoted to dispatc
 **Default:**
 
 ```
-the number of available total cores, as detected by the JVM
+the number of total cores, as detected by the JVM
 ```
-#### [load.forceEarlyConversions](./values.yaml#L3224)
+#### [load.forceEarlyConversions](./values.yaml#L3223)
 
      
 Optional. Policy to be adopted in order to manage the extraction of the field values from the item events and their conversion to If set to `true`, causes field conversion to be performed before the events are dispatched to the various sessions; this may lead to some wasted conversions, in case an event is filtered out later by all interested clients or in case a field is not subscribed to by any client. Note that events which don't provide an iterator (see the Data Adapter interface documentation) cannot be managed in this way. If set to `false`, causes field conversion to be performed only as soon as it is needed; in this case, as the same event object may be shared by many sessions, some synchronization logic is needed and this may lead to poor scaling in case many clients subscribe to the same item.
 
 **Default:** `true`
-#### [load.handshakePoolMaxQueue](./values.yaml#L3169)
+#### [load.handshakePoolMaxQueue](./values.yaml#L3168)
 
      
 Optional. Maximum number of tasks allowed to be queued to enter the `TLS-SSL HANDSHAKE` thread pool before undertaking backpressure actions. The setting only regards the listening sockets specified through the `servers.{}` configurations (with `enableHttps` set to `true`) that are not configured to request the client certificate. More precisely: - If there are https sockets with `servers.{}.portType` configured as   `CREATE_ONLY`, then, as long as the number is exceeded, the accept loops    of these sockets will be kept waiting.   By suspending the accept loop, some SYN packets from the clients may be   discarded; the effect may vary depending on the backlog settings. - Otherwise, if there are https sockets configured as `CONTROL_ONLY`and    none is configured as the default `GENERAL_PURPOSE`, then, as long as the    number is exceeded, the accept loops of these sockets will be kept    waiting instead.   Additionally, the same action on the accept loops associated to the   `load.acceptPoolMaxQueue` check will be performed (regardless that   `load.acceptPoolMaxQueue` itself is set). Note that the latter action may    affect both http and https sockets. Note that, in the absence of sockets configured as specified above, no backpressure action will take place. A negative value disables the check.
 
 **Default:** `100`
-#### [load.handshakePoolSize](./values.yaml#L3144)
+#### [load.handshakePoolSize](./values.yaml#L3143)
 
      
 Optional. Size of the `TLS-SSL HANDSHAKE` internal pool, which is devoted to the management of operations needed to accomplish TLS/SSL handshakes on the listening sockets specified through the `servers.{}` configuration with `enableHttps` set to `true`. In particular, this pool is only used when the socket is not configured to request the client certificate (see `servers.{}.sslConfig.enableClientAuth` and `servers.{}.security.enableMandatoryClientAuth`); in this case, the tasks are not expected to be blocking. Note that the operation may be CPU-intensive; hence, it is advisable to set a value smaller than the number of available cores.
@@ -1713,7 +1713,7 @@ Optional. Size of the `TLS-SSL HANDSHAKE` internal pool, which is devoted to the
 ```
 half the number of total cores, as detected by the JVM
 ```
-#### [load.httpsAuthPoolMaxFree](./values.yaml#L3180)
+#### [load.httpsAuthPoolMaxFree](./values.yaml#L3179)
 
      
 Optional. Maximum number of idle threads allowed for the `TLS-SSL AUTHENTICATION` internal pool. It behaves in the same way as the `load.serverPoolMaxFree` setting.
@@ -1723,13 +1723,13 @@ Optional. Maximum number of idle threads allowed for the `TLS-SSL AUTHENTICATION
 ```
 the same as configured for the SERVER thread pool
 ```
-#### [load.httpsAuthPoolMaxQueue](./values.yaml#L3190)
+#### [load.httpsAuthPoolMaxQueue](./values.yaml#L3189)
 
      
 Optional. Maximum number of tasks allowed to be queued to enter the `TLS-SSL AUTHENTICATION` thread pool before undertaking backpressure actions. The effect is similar to the more common `load.handShakePoolMaxQueue`, with the difference that it regards listening sockets specified through `server.httpsServer` that are configured to request the client certificate (see `useClientAuth` and `forceClientAuth`). A negative value disables the check.
 
 **Default:** `100`
-#### [load.httpsAuthPoolMaxSize](./values.yaml#L3175)
+#### [load.httpsAuthPoolMaxSize](./values.yaml#L3174)
 
      
 Optional. Size of the `TLS-SSL AUTHENTICATION` internal pool, which is used instead of the `TLS-SSL HANDSHAKE` pool for listening sockets that are configured to request the client certificate. This kind of task may exhibit a blocking behavior in some cases.
@@ -1775,19 +1775,19 @@ Optional. Maximum number of concurrent client sessions allowed. Requests for new
 ```
 unlimited number of concurrent client sessions
 ```
-#### [load.prestartedMaxQueue](./values.yaml#L3210)
+#### [load.prestartedMaxQueue](./values.yaml#L3209)
 
      
 Optional. Maximum number of sessions that can be left in "prestarted" state, that is, waiting for the first bind or control operation, before undertaking backpressure actions. In particular, the same restrictive actions associated to the `load.serverPoolMaxQueue` check will be performed (regardless that `load.serverPoolMaxQueue` itself is set). The setting is meant to be used in configurations which define a `CREATE_ONLY` port in http and a `CONTROL_ONLY` port in https. In these cases, and when a massive client reconnection is occurring, the number of pending bind operations can grow so much that the needed TLS handshakes can take arbitrarily long and cause the clients to time-out and restart session establishment from scratch. However, consider that the presence of many clients that don't perform their bind in due time could keep other clients blocked. Note that, if defined, the setting will also inhibit `load.handshakePoolMaxQueue` and `load.httpsAuthPoolMaxQueue` from affecting the accept loop of `CONTROL_ONLY` ports in https. A negative value disables the check.
 
 **Default:** `-1`
-#### [load.pumpPoolMaxQueue](./values.yaml#L3053)
+#### [load.pumpPoolMaxQueue](./values.yaml#L3052)
 
      
 Optional. Maximum number of tasks allowed to be queued to enter the `PUMP` thread pool before undertaking backpressure actions. In particular, the same restrictive actions associated to the `load.serverPoolMaxQueue` check will be performed (regardless that `load.serverPoolMaxQueue` itself is set). A steadily long queue on the `PUMP` pool may be the consequence of a CPU shortage due to a huge streaming activity. A negative value disables the check.
 
 **Default:** `-1`
-#### [load.pumpPoolSize](./values.yaml#L3043)
+#### [load.pumpPoolSize](./values.yaml#L3042)
 
      
 Optional. Size of the `PUMP` internal thread pool, which is devoted to integrating the update events pertaining to each session and to creating the update commands for the client, whenever needed. This task does not include blocking operations; however, on multiprocessor machines, allocating multiple threads for this task may be beneficial.
@@ -1795,7 +1795,7 @@ Optional. Size of the `PUMP` internal thread pool, which is devoted to integrati
 **Default:**
 
 ```
-the number of available total cores, as detected by the JVM
+the number of total cores, as detected by the JVM
 ```
 #### [load.selectorMaxLoad](./values.yaml#L3014)
 
@@ -1813,33 +1813,33 @@ Optional. Number of distinct NIO selectors (each one with its own thread) that w
 ```
 the number of available total cores, as detected by the JVM
 ```
-#### [load.serverPoolMaxFree](./values.yaml#L3091)
+#### [load.serverPoolMaxFree](./values.yaml#L3090)
 
      
 Optional, but mandatory if `load.serverPoolMaxSize`is set to `0`. Maximum number of idle threads allowed for the `SERVER` internal pool, which is devoted to the management of the client requests. Put in a different way, it is the minimum number of threads that can be present in the pool. To accomplish this setting, at pool initialization, suitable idle threads are created; then, each time a thread becomes idle, it is discarded only if enough threads are already in the pool. It must not be greater than `load.serverPoolMaxSize` (unless the latter is set to `0`, i.e. `unlimited`); however, it may be lower, in case `load.serverPoolMaxSize` is kept high in order to face request bursts; a zero value means no idle threads allowed in the pool, though this is not recommended for performance reasons. The default value is `10`, if `load.serverPoolMaxSize` is not defined;  otherwise, the same as `load.serverPoolMaxSize`, unless the latter is set  to `0`, i.e. `unlimited`, in which case this setting is mandatory
 
 **Default:** `see description`
-#### [load.serverPoolMaxQueue](./values.yaml#L3104)
+#### [load.serverPoolMaxQueue](./values.yaml#L3103)
 
      
-Optional. Maximum number of tasks allowed to be queued to enter the `SERVER` thread pool before undertaking backpressure actions. In particular, as long as the number is exceeded, the creation of new sessions will be refused and made to fail; additionally, the same restrictive action on the accept loops associated to the `load.acceptPoolMaxQueue` check will be performed (regardless that `load.acceptPoolMaxQueue` itself is set). On the other hand, if the `MPN DEVICE HANDLER` pool is defined in `mpn` it  also overrides the SERVER or dedicated pools, but its queue is not included in the check. A negative value disables the check.
+Optional. Maximum number of tasks allowed to be queued to enter the `SERVER` thread pool before undertaking backpressure actions. In particular, as long as the number is exceeded, the creation of new sessions will be refused and made to fail; additionally, the same restrictive action on the accept loops associated to the `load.acceptPoolMaxQueue` check will be performed (regardless that `load.acceptPoolMaxQueue` itself is set). On the other hand, if the `MPN DEVICE HANDLER` pool is defined in `mpn` it  also overrides the `SERVER` or dedicated pools, but its queue is not  included in the check. A negative value disables the check.
 
 **Default:** `100`
-#### [load.serverPoolMaxSize](./values.yaml#L3074)
+#### [load.serverPoolMaxSize](./values.yaml#L3073)
 
      
-Optional. Maximum number of threads allowed for the `SERVER` internal pool, which is devoted to the management of the client requests. This kind of tasks includes operations that are potentially blocking: - `getHostName`; - socket close; - calls to a Metadata Adapter that may need to access to some external   resource (i.e. mainly `notifyUser`, `getItems`, `getSchema`; other    methods should be implemented as nonblocking, by leaning on data cached    by `notifyUser`); - calls to a Data Adapter that may need to access to some external resource   (i.e. subscribe and unsubscribe, though it should always be possible to   implement such calls asynchronously); - file access by the internal web server, though it should be used  only in   demo and test scenarios. Note that specific thread pools can optionally be defined in order to handle some of the tasks that, by default, are handled by the `SERVER`  thread pool. They are defined in "adapters.xml"; see the templates provided in the In-Process Adapter SDK for details. A zero value means a potentially unlimited number of threads.
+Optional. Maximum number of threads allowed for the `SERVER` internal pool, which is devoted to the management of the client requests. This kind of tasks includes operations that are potentially blocking: - `getHostName`; - socket close; - calls to a Metadata Adapter that may need to access to some external   resource (i.e. mainly `notifyUser`, `getItems`, `getSchema`; other    methods should be implemented as nonblocking, by leaning on data cached    by `notifyUser`); - calls to a Data Adapter that may need to access to some external resource   (i.e. subscribe and unsubscribe, though it should always be possible to   implement such calls asynchronously); - file access by the internal web server, though it should be used  only in   demo and test scenarios. Note that specific thread pools can optionally be defined in order to handle some of the tasks that, by default, are handled by the `SERVER`  thread pool. They are defined in `adapters.xml`; see the templates provided in the In-Process Adapter SDK for details. A zero value means a potentially unlimited number of threads.
 
 **Default:** `1000`
-#### [load.snapshotPoolSize](./values.yaml#L3036)
+#### [load.snapshotPoolSize](./values.yaml#L3035)
 
      
-Optional. Size of the `SNAPSHOT` internal thread pool, which is devoted to dispatching the snapshot events upon new subscriptions from client sessions. This task does not include blocking operations; however, on multiprocessor machines, allocating multiple threads for this task may be beneficial. `10`, if the number of cores is less
+Optional. Size of the `SNAPSHOT` internal thread pool, which is devoted to dispatching the snapshot events upon new subscriptions from client sessions. This task does not include blocking operations; however, on multiprocessor machines, allocating multiple threads for this task may be beneficial.
 
 **Default:**
 
 ```
-the number of available total cores, as detected by the JVM, or
+min(10, the number of total cores, as detected by the JVM)
 ```
 #### [load.timerPoolSize](./values.yaml#L3021)
 
@@ -2623,7 +2623,7 @@ Optional. The level of the logger.
 **Default:** `DEBUG`
 ### Connectors configuration
  
-#### [connectors](./values.yaml#L3227)
+#### [connectors](./values.yaml#L3226)
 
      
 Optional. Connectors configuration.
@@ -2633,7 +2633,7 @@ Optional. Connectors configuration.
 ```
 {"kafkaConnector":{"adapterClassName":"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter","adapterSetId":"KafkaConnector","connections":{"quickStart":{"authentication":{"authentication":null,"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}},"bootstrapServers":"broker:9092","enabled":true,"fields":{"enableSkipFailedMapping":null,"mappings":{"ask":"#{VALUE.ask}","ask_quantity":"#{VALUE.ask_quantity}","bid":"#{VALUE.bid}","bid_quantity":"#{VALUE.bid_quantity}","item_status":"#{VALUE.item_status}","last_price":"#{VALUE.last_price}","max":"#{VALUE.max}","min":"#{VALUE.min}","offset":"#{OFFSET}","open_price":"#{VALUE.open_price}","partition":"#{PARTITION}","pct_change":"#{VALUE.pct_change}","ref_price":"#{VALUE.ref_price}","stock_name":"#{VALUE.name}","time":"#{VALUE.time}","timestamp":"#{VALUE.timestamp}","topic":"#{TOPIC}","ts":"#{TIMESTAMP}"}},"groupId":"quickstart","logger":{"appenders":["stdout"],"level":"INFO"},"name":"K8S-QuickStart","record":{"consumeFrom":"EARLIEST","consumeWithOrderStrategy":null,"consumeWithThreadNumber":null,"extractionErrorStrategy":null,"keyEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"INTEGER"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"JSON"}},"routing":{"enableTopicRegEx":null,"itemTemplates":{"stockTemplate":"stock-#{index=KEY}"},"topicMappings":{"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}},"sslConfig":{"allowedCipherSuites":[],"allowedProtocols":[],"enableHostnameVerification":null,"enabled":true,"keyStoreRef":null,"protocol":null,"trustStoreRef":null}}},"enabled":false,"localSchemaFiles":{"myKeySchema":null,"myValueSchema":null},"logging":{"appenders":{"stdout":{"pattern":"[%d] [%-10c{1}] %-5p %m%n","type":"Console"}},"loggers":{"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter":{"appenders":["stdout"],"level":"INFO"},"org.apache.kafka":{"appenders":["stdout"],"level":"WARN"}}},"schemaRegistry":{"mySchemaRegistry":{"basicAuthentication":{"credentialsSecretRef":null,"enabled":null},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":null,"keyStoreRef":null,"trustStoreRef":null},"url":"https://schema-registry:8084"}},"version":"1.2.0"}}
 ```
-#### [connectors.kafkaConnector](./values.yaml#L3229)
+#### [connectors.kafkaConnector](./values.yaml#L3228)
 
      
 Optional. Lightstreamer Kafka Connector configuration.
@@ -2643,7 +2643,7 @@ Optional. Lightstreamer Kafka Connector configuration.
 ```
 {"adapterClassName":"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter","adapterSetId":"KafkaConnector","connections":{"quickStart":{"authentication":{"authentication":null,"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}},"bootstrapServers":"broker:9092","enabled":true,"fields":{"enableSkipFailedMapping":null,"mappings":{"ask":"#{VALUE.ask}","ask_quantity":"#{VALUE.ask_quantity}","bid":"#{VALUE.bid}","bid_quantity":"#{VALUE.bid_quantity}","item_status":"#{VALUE.item_status}","last_price":"#{VALUE.last_price}","max":"#{VALUE.max}","min":"#{VALUE.min}","offset":"#{OFFSET}","open_price":"#{VALUE.open_price}","partition":"#{PARTITION}","pct_change":"#{VALUE.pct_change}","ref_price":"#{VALUE.ref_price}","stock_name":"#{VALUE.name}","time":"#{VALUE.time}","timestamp":"#{VALUE.timestamp}","topic":"#{TOPIC}","ts":"#{TIMESTAMP}"}},"groupId":"quickstart","logger":{"appenders":["stdout"],"level":"INFO"},"name":"K8S-QuickStart","record":{"consumeFrom":"EARLIEST","consumeWithOrderStrategy":null,"consumeWithThreadNumber":null,"extractionErrorStrategy":null,"keyEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"INTEGER"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"JSON"}},"routing":{"enableTopicRegEx":null,"itemTemplates":{"stockTemplate":"stock-#{index=KEY}"},"topicMappings":{"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}},"sslConfig":{"allowedCipherSuites":[],"allowedProtocols":[],"enableHostnameVerification":null,"enabled":true,"keyStoreRef":null,"protocol":null,"trustStoreRef":null}}},"enabled":false,"localSchemaFiles":{"myKeySchema":null,"myValueSchema":null},"logging":{"appenders":{"stdout":{"pattern":"[%d] [%-10c{1}] %-5p %m%n","type":"Console"}},"loggers":{"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter":{"appenders":["stdout"],"level":"INFO"},"org.apache.kafka":{"appenders":["stdout"],"level":"WARN"}}},"schemaRegistry":{"mySchemaRegistry":{"basicAuthentication":{"credentialsSecretRef":null,"enabled":null},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":null,"keyStoreRef":null,"trustStoreRef":null},"url":"https://schema-registry:8084"}},"version":"1.2.0"}
 ```
-#### [connectors.kafkaConnector.adapterClassName](./values.yaml#L3241)
+#### [connectors.kafkaConnector.adapterClassName](./values.yaml#L3240)
 
      
 Mandatory. Java class name of the Kafka Connector Metadata Adapter. It is possible to provide a custom implementation by extending the factory class. See https://github.com/Lightstreamer/Lightstreamer-kafka-connector/tree/main?tab=readme-ov-file#customize-the-kafkaconnector-metadata-adapter-class
@@ -2653,13 +2653,13 @@ Mandatory. Java class name of the Kafka Connector Metadata Adapter. It is possib
 ```
 "com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter"
 ```
-#### [connectors.kafkaConnector.adapterSetId](./values.yaml#L3236)
+#### [connectors.kafkaConnector.adapterSetId](./values.yaml#L3235)
 
      
 Mandatory. Define the Kafka Connector Adapter Set and its unique ID.
 
 **Default:** `"KafkaConnector"`
-#### [connectors.kafkaConnector.connections](./values.yaml#L3276)
+#### [connectors.kafkaConnector.connections](./values.yaml#L3275)
 
      
 Mandatory. Connection configurations.
@@ -2669,7 +2669,7 @@ Mandatory. Connection configurations.
 ```
 {"quickStart":{"authentication":{"authentication":null,"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}},"bootstrapServers":"broker:9092","enabled":true,"fields":{"enableSkipFailedMapping":null,"mappings":{"ask":"#{VALUE.ask}","ask_quantity":"#{VALUE.ask_quantity}","bid":"#{VALUE.bid}","bid_quantity":"#{VALUE.bid_quantity}","item_status":"#{VALUE.item_status}","last_price":"#{VALUE.last_price}","max":"#{VALUE.max}","min":"#{VALUE.min}","offset":"#{OFFSET}","open_price":"#{VALUE.open_price}","partition":"#{PARTITION}","pct_change":"#{VALUE.pct_change}","ref_price":"#{VALUE.ref_price}","stock_name":"#{VALUE.name}","time":"#{VALUE.time}","timestamp":"#{VALUE.timestamp}","topic":"#{TOPIC}","ts":"#{TIMESTAMP}"}},"groupId":"quickstart","logger":{"appenders":["stdout"],"level":"INFO"},"name":"K8S-QuickStart","record":{"consumeFrom":"EARLIEST","consumeWithOrderStrategy":null,"consumeWithThreadNumber":null,"extractionErrorStrategy":null,"keyEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"INTEGER"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"JSON"}},"routing":{"enableTopicRegEx":null,"itemTemplates":{"stockTemplate":"stock-#{index=KEY}"},"topicMappings":{"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}},"sslConfig":{"allowedCipherSuites":[],"allowedProtocols":[],"enableHostnameVerification":null,"enabled":true,"keyStoreRef":null,"protocol":null,"trustStoreRef":null}}}
 ```
-#### [connectors.kafkaConnector.connections.quickStart](./values.yaml#L3283)
+#### [connectors.kafkaConnector.connections.quickStart](./values.yaml#L3282)
 
      
 At least one must be provided. Connection configuration. The Kafka Connector allows the configuration of different independent connections to different Kafka broker/clusters. Since the Kafka Connector manages the physical connection to Kafka by wrapping an internal Kafka Consumer, several configuration settings are identical to those required by the usual Kafka Consumer configuration.
@@ -2679,7 +2679,7 @@ At least one must be provided. Connection configuration. The Kafka Connector all
 ```
 {"authentication":{"authentication":null,"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}},"bootstrapServers":"broker:9092","enabled":true,"fields":{"enableSkipFailedMapping":null,"mappings":{"ask":"#{VALUE.ask}","ask_quantity":"#{VALUE.ask_quantity}","bid":"#{VALUE.bid}","bid_quantity":"#{VALUE.bid_quantity}","item_status":"#{VALUE.item_status}","last_price":"#{VALUE.last_price}","max":"#{VALUE.max}","min":"#{VALUE.min}","offset":"#{OFFSET}","open_price":"#{VALUE.open_price}","partition":"#{PARTITION}","pct_change":"#{VALUE.pct_change}","ref_price":"#{VALUE.ref_price}","stock_name":"#{VALUE.name}","time":"#{VALUE.time}","timestamp":"#{VALUE.timestamp}","topic":"#{TOPIC}","ts":"#{TIMESTAMP}"}},"groupId":"quickstart","logger":{"appenders":["stdout"],"level":"INFO"},"name":"K8S-QuickStart","record":{"consumeFrom":"EARLIEST","consumeWithOrderStrategy":null,"consumeWithThreadNumber":null,"extractionErrorStrategy":null,"keyEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"INTEGER"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"JSON"}},"routing":{"enableTopicRegEx":null,"itemTemplates":{"stockTemplate":"stock-#{index=KEY}"},"topicMappings":{"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}},"sslConfig":{"allowedCipherSuites":[],"allowedProtocols":[],"enableHostnameVerification":null,"enabled":true,"keyStoreRef":null,"protocol":null,"trustStoreRef":null}}
 ```
-#### [connectors.kafkaConnector.connections.quickStart.authentication](./values.yaml#L3341)
+#### [connectors.kafkaConnector.connections.quickStart.authentication](./values.yaml#L3340)
 
      
 Optional. Authentication settings for the connection.
@@ -2689,19 +2689,19 @@ Optional. Authentication settings for the connection.
 ```
 {"authentication":null,"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}}
 ```
-#### [connectors.kafkaConnector.connections.quickStart.authentication.credentialsSecretRef](./values.yaml#L3359)
+#### [connectors.kafkaConnector.connections.quickStart.authentication.credentialsSecretRef](./values.yaml#L3358)
 
      
 Mandatory if `mechanism` is set to `PLAIN`, `SCRAM-SHA-256`, `SCRAM-SHA-512`. The name of the secret containing the  credentials. The secret must contain the keys `user` and `password`.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.connections.quickStart.authentication.enabled](./values.yaml#L3345)
+#### [connectors.kafkaConnector.connections.quickStart.authentication.enabled](./values.yaml#L3344)
 
      
 Optional. Enablement of the authentication of the connection against the Kafka Cluster.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi](./values.yaml#L3362)
+#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi](./values.yaml#L3361)
 
      
 Mandatory if `mechanism` is set to `GSSAPI`. The GSSAPI authentication settings.
@@ -2711,55 +2711,55 @@ Mandatory if `mechanism` is set to `GSSAPI`. The GSSAPI authentication settings.
 ```
 {"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}
 ```
-#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.enableKeytab](./values.yaml#L3365)
+#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.enableKeytab](./values.yaml#L3364)
 
      
 Optional. Enablement of the use of a keytab.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.enableStoreKey](./values.yaml#L3373)
+#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.enableStoreKey](./values.yaml#L3372)
 
      
 Optional. Enablement of the storage of the principal key.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.enableTicketCache](./values.yaml#L3381)
+#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.enableTicketCache](./values.yaml#L3380)
 
      
 Optional. Enablement of the use of a ticket cache.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.kerberosServiceName](./values.yaml#L3375)
+#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.kerberosServiceName](./values.yaml#L3374)
 
      
 Mandatory. The name of the Kerberos service.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.keytabFilePathRef](./values.yaml#L3368)
+#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.keytabFilePathRef](./values.yaml#L3367)
 
      
 Mandatory if `enableKeytab` is set to `true`. The configmap name and key where the the keytab file is stored
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.principal](./values.yaml#L3378)
+#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.principal](./values.yaml#L3377)
 
      
 Mandatory if enableTicketCache is set to `true`. The name of the principal to be used.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.connections.quickStart.bootstrapServers](./values.yaml#L3299)
+#### [connectors.kafkaConnector.connections.quickStart.bootstrapServers](./values.yaml#L3298)
 
      
 Mandatory. The Kafka Cluster bootstrap server endpoint expressed as the list of host/port pairs used to establish the initial connect.
 
 **Default:** `"broker:9092"`
-#### [connectors.kafkaConnector.connections.quickStart.enabled](./values.yaml#L3295)
+#### [connectors.kafkaConnector.connections.quickStart.enabled](./values.yaml#L3294)
 
      
 Enablement of the connection. If set to `false`, the Lightstreamer Server will automatically deny every subscription made to the connection.
 
 **Default:** `true`
-#### [connectors.kafkaConnector.connections.quickStart.fields](./values.yaml#L3541)
+#### [connectors.kafkaConnector.connections.quickStart.fields](./values.yaml#L3540)
 
      
 Mandatory. Record mappings configuration.
@@ -2769,19 +2769,19 @@ Mandatory. Record mappings configuration.
 ```
 {"enableSkipFailedMapping":null,"mappings":{"ask":"#{VALUE.ask}","ask_quantity":"#{VALUE.ask_quantity}","bid":"#{VALUE.bid}","bid_quantity":"#{VALUE.bid_quantity}","item_status":"#{VALUE.item_status}","last_price":"#{VALUE.last_price}","max":"#{VALUE.max}","min":"#{VALUE.min}","offset":"#{OFFSET}","open_price":"#{VALUE.open_price}","partition":"#{PARTITION}","pct_change":"#{VALUE.pct_change}","ref_price":"#{VALUE.ref_price}","stock_name":"#{VALUE.name}","time":"#{VALUE.time}","timestamp":"#{VALUE.timestamp}","topic":"#{TOPIC}","ts":"#{TIMESTAMP}"}}
 ```
-#### [connectors.kafkaConnector.connections.quickStart.fields.enableSkipFailedMapping](./values.yaml#L3573)
+#### [connectors.kafkaConnector.connections.quickStart.fields.enableSkipFailedMapping](./values.yaml#L3572)
 
      
 Optional. If set to `true`, if a field mapping fails, that specific field's value will simply be omitted from the update sent to the Lightstreamer clients, while other successfully mapped fields from the same record will still be delivered. Can be one of the
 
 **Default:** `false`
-#### [connectors.kafkaConnector.connections.quickStart.fields.mappings.timestamp](./values.yaml#L3550)
+#### [connectors.kafkaConnector.connections.quickStart.fields.mappings.timestamp](./values.yaml#L3549)
 
      
 At least one must be provided. A field mapping. Map the value extracted through the "#{extraction_expression}" to the Lightstreamer field name specified by key. The expression is written in the Data Extraction Language. See documentation at: https://github.com/lightstreamer/Lightstreamer-kafka-connector?tab=readme-ov-file#record-mapping-fieldfield_name
 
 **Default:** `"#{VALUE.timestamp}"`
-#### [connectors.kafkaConnector.connections.quickStart.groupId](./values.yaml#L3308)
+#### [connectors.kafkaConnector.connections.quickStart.groupId](./values.yaml#L3307)
 
      
 Optional. The name of the consumer group this connection belongs to. Sets the value for the "group.id" key used to configure the internal Kafka Consumer. See https://kafka.apache.org/documentation/#consumerconfigs_group.id for details. suffix.
@@ -2791,115 +2791,115 @@ Optional. The name of the consumer group this connection belongs to. Sets the va
 ```
 kafkaConnector.adapterSetId + name + randomly generated
 ```
-#### [connectors.kafkaConnector.connections.quickStart.logger](./values.yaml#L3575)
+#### [connectors.kafkaConnector.connections.quickStart.logger](./values.yaml#L3574)
 
      
 Optional. Logger configuration for the connection.
 
 **Default:** `{"appenders":["stdout"],"level":"INFO"}`
-#### [connectors.kafkaConnector.connections.quickStart.logger.appenders](./values.yaml#L3578)
+#### [connectors.kafkaConnector.connections.quickStart.logger.appenders](./values.yaml#L3577)
 
      
 Mandatory. List of references to the appenders defined in `kafkaConnector.logging.appenders`.
 
 **Default:** `["stdout"]`
-#### [connectors.kafkaConnector.connections.quickStart.logger.level](./values.yaml#L3581)
+#### [connectors.kafkaConnector.connections.quickStart.logger.level](./values.yaml#L3580)
 
      
 Mandatory. The logger level.
 
 **Default:** `"INFO"`
-#### [connectors.kafkaConnector.connections.quickStart.name](./values.yaml#L3290)
+#### [connectors.kafkaConnector.connections.quickStart.name](./values.yaml#L3289)
 
      
 Mandatory and unique across all configurations. The connection name. This value will be used by the Clients to request real-time data from this specific Kafka connection through a Subscription object. The connection name is also used to group all logging messages belonging to the same connection.
 
 **Default:** `"K8S-QuickStart"`
-#### [connectors.kafkaConnector.connections.quickStart.record](./values.yaml#L3384)
+#### [connectors.kafkaConnector.connections.quickStart.record](./values.yaml#L3383)
 
      
 Optional. Record evaluation settings.
 
 **Default:** `all settings at their defaults`
-#### [connectors.kafkaConnector.connections.quickStart.record.consumeFrom](./values.yaml#L3392)
+#### [connectors.kafkaConnector.connections.quickStart.record.consumeFrom](./values.yaml#L3391)
 
      
 Optional. Specifies where to start consuming events from: - `LATEST`: start consuming events from the end of the topic partition - `EARLIEST`: start consuming events from the beginning of the topic partition Sets the value of the `auto.offset.reset` key to configure the internal Kafka Consumer.
 
 **Default:** `LATEST`
-#### [connectors.kafkaConnector.connections.quickStart.record.consumeWithOrderStrategy](./values.yaml#L3409)
+#### [connectors.kafkaConnector.connections.quickStart.record.consumeWithOrderStrategy](./values.yaml#L3408)
 
      
 Optional, but effective only if `consumeWithThreadNumber` is set to a value greater than 1 (which includes the default value). The order strategy to be used for concurrent processing of the incoming deserialized records. If set to `ORDER_BY_PARTITION`, maintain the order of records within each partition. If set to `ORDER_BY_KEY`, maintain the order among the records sharing the same key. If set to `UNORDERED`, provide no ordering guarantees.
 
 **Default:** `ORDER_BY_PARTITION`
-#### [connectors.kafkaConnector.connections.quickStart.record.consumeWithThreadNumber](./values.yaml#L3398)
+#### [connectors.kafkaConnector.connections.quickStart.record.consumeWithThreadNumber](./values.yaml#L3397)
 
      
 Optional. The number of threads to be used for concurrent processing of the incoming deserialized records. If set to `-1`, the number of threads will be automatically determined based on the number of available CPU cores.
 
 **Default:** `1`
-#### [connectors.kafkaConnector.connections.quickStart.record.extractionErrorStrategy](./values.yaml#L3470)
+#### [connectors.kafkaConnector.connections.quickStart.record.extractionErrorStrategy](./values.yaml#L3469)
 
      
 Optional. The error handling strategy to be used if an error occurs while extracting data from incoming deserialized records. If set to `IGNORE_AND_CONTINUE`, the error is ignored and the processing of the record continues. If set to `FORCE_UNSUBSCRIPTION`, the processing of the record is stopped and the unsubscription of the items requested by all the Lightstreamer clients subscribed to this connection is forced.
 
 **Default:** `IGNORE_AND_CONTINUE`
-#### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator](./values.yaml#L3412)
+#### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator](./values.yaml#L3411)
 
      
 Optional. Key evaluator configuration.
 
 **Default:** `all settings at their defaults`
-#### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator.enableSchemaRegistry](./values.yaml#L3441)
+#### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator.enableSchemaRegistry](./values.yaml#L3440)
 
      
 Enablement of the Confluent Schema Registry for  validation of the key. Must be set to `true` when `keyEvaluator.type` is set to `AVRO` and no local schema are specified.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator.localSchemaFilePathRef](./values.yaml#L3435)
+#### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator.localSchemaFilePathRef](./values.yaml#L3434)
 
      
 Mandatory if `type` is set to `AVRO` and `enableSchemaRegistry` is set to `false`. The configmap name and key where the local schema for message validation of the key is stored. The setting takes precedence over `enableSchemaRegistry` if the latter is set to `true`.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator.type](./values.yaml#L3429)
+#### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator.type](./values.yaml#L3428)
 
      
 Optional. The format to be used to deserialize the key of a Kafka record. Can be one of the following: - AVRO - JSON - STRING - INTEGER - BOOLEAN - BYTE_ARRAY - BYTE_BUFFER - BYTES - DOUBLE - FLOAT - LONG - SHORT - UUID
 
 **Default:** `STRING`
-#### [connectors.kafkaConnector.connections.quickStart.record.schemaRegistryRef](./values.yaml#L3473)
+#### [connectors.kafkaConnector.connections.quickStart.record.schemaRegistryRef](./values.yaml#L3472)
 
      
 Optional. The reference to Schema Registry configuration defined in `connectors.kafkaConnector.schemaRegistry`.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator](./values.yaml#L3444)
+#### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator](./values.yaml#L3443)
 
      
 Optional. Value evaluator configuration.
 
 **Default:** `all settings at their defaults`
-#### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator.enableSchemaRegistry](./values.yaml#L3461)
+#### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator.enableSchemaRegistry](./values.yaml#L3460)
 
      
 Enablement of the Confluent Schema Registry for validation of the value. Must be set to `true` when `valueEvaluator.type` is set to `AVRO` and no local schema are specified.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator.localSchemaFilePathRef](./values.yaml#L3455)
+#### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator.localSchemaFilePathRef](./values.yaml#L3454)
 
      
 Mandatory if `type` is set to `AVRO` and `enableSchemaRegistry` is set to `false`. The configmap name and key where the local schema for message validation of the value is stored. The setting takes precedence over `enableSchemaRegistry` if the latter is set to `true`.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator.type](./values.yaml#L3449)
+#### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator.type](./values.yaml#L3448)
 
      
 Optional. The format to be used to deserialize the value of a Kafka record. See `record.keyEvaluator.type` for the list of supported formats.
 
 **Default:** `STRING`
-#### [connectors.kafkaConnector.connections.quickStart.routing](./values.yaml#L3475)
+#### [connectors.kafkaConnector.connections.quickStart.routing](./values.yaml#L3474)
 
      
 Mandatory. Record routings configuration.
@@ -2909,19 +2909,19 @@ Mandatory. Record routings configuration.
 ```
 {"enableTopicRegEx":null,"itemTemplates":{"stockTemplate":"stock-#{index=KEY}"},"topicMappings":{"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}}
 ```
-#### [connectors.kafkaConnector.connections.quickStart.routing.enableTopicRegEx](./values.yaml#L3539)
+#### [connectors.kafkaConnector.connections.quickStart.routing.enableTopicRegEx](./values.yaml#L3538)
 
      
 Optional. Enable `connectors.kafkaConnector.routing.topicMappings.{}.topic` to be treated as a regular expression rather than of a literal topic name.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.connections.quickStart.routing.itemTemplates](./values.yaml#L3482)
+#### [connectors.kafkaConnector.connections.quickStart.routing.itemTemplates](./values.yaml#L3481)
 
      
 Optional. Maps of item template expressions. An expressions is made of: - ITEM_PREFIX: the prefix of the item name - BINDABLE_EXPRESSIONS: a sequence of bindable extraction expressions. See https://lightstreamer.com/api/ls-kafka-connector/latest/ls-kafka-connector/record-extraction.html
 
 **Default:** `{}`
-#### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings](./values.yaml#L3485)
+#### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings](./values.yaml#L3484)
 
      
 Mandatory. Kafka topic mappings.
@@ -2931,7 +2931,7 @@ Mandatory. Kafka topic mappings.
 ```
 {"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}
 ```
-#### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock](./values.yaml#L3518)
+#### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock](./values.yaml#L3517)
 
      
 At least one must be provided. A Kafka topic mappings. Map a Kafka topic to: - one or more simple items - one or more item templates - any combination of the above  Examples:  topicMappingSample1:   topic: "aTopicName"   items:     - "item1"     - "item2"     - "itemN"  topicMappingSample2:   topic: "anotherTopicName"   itemTemplateRefs:     - "itemTemplate1"     - "itemTemplate2"     - "itemTemplateN"  topicMappingSample3   topic: "yetAnotherTopicName"   items:     - "item1"     - "item2"     - "itemN"   itemTemplateRefs:     - "itemTemplate1"     - "itemTemplate2"     - "itemTemplateN"
@@ -2941,31 +2941,31 @@ At least one must be provided. A Kafka topic mappings. Map a Kafka topic to: - o
 ```
 {"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}
 ```
-#### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock.itemTemplateRefs](./values.yaml#L3532)
+#### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock.itemTemplateRefs](./values.yaml#L3531)
 
      
 Mandatory if `items` is empty. List of item template to which the topic must be mapped.
 
 **Default:** `[]`
-#### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock.items](./values.yaml#L3525)
+#### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock.items](./values.yaml#L3524)
 
      
 Mandatory if `itemTemplateRefs` is empty. List of simple items to which the topic must be mapped.
 
 **Default:** `[]`
-#### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock.topic](./values.yaml#L3521)
+#### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock.topic](./values.yaml#L3520)
 
      
 Mandatory and unique across all topic mappings. The Kafka topic name.
 
 **Default:** `"stock"`
-#### [connectors.kafkaConnector.connections.quickStart.sslConfig](./values.yaml#L3311)
+#### [connectors.kafkaConnector.connections.quickStart.sslConfig](./values.yaml#L3310)
 
      
 Optional. TLS/SSL settings for the connection.
 
 **Default:** `all settings at their defaults`
-#### [connectors.kafkaConnector.connections.quickStart.sslConfig.allowedCipherSuites](./values.yaml#L3326)
+#### [connectors.kafkaConnector.connections.quickStart.sslConfig.allowedCipherSuites](./values.yaml#L3325)
 
      
 Optional. List of enabled secure cipher suites.
@@ -2975,7 +2975,7 @@ Optional. List of enabled secure cipher suites.
 ```
 all the available cipher suites in the running JVM
 ```
-#### [connectors.kafkaConnector.connections.quickStart.sslConfig.allowedProtocols](./values.yaml#L3323)
+#### [connectors.kafkaConnector.connections.quickStart.sslConfig.allowedProtocols](./values.yaml#L3322)
 
      
 Optional. List of enabled secure communication protocols TLSv1.2 otherwise.
@@ -2985,25 +2985,25 @@ Optional. List of enabled secure communication protocols TLSv1.2 otherwise.
 ```
 [TLSv1.2, TLSv1.3] when running on Java 11 or newer,
 ```
-#### [connectors.kafkaConnector.connections.quickStart.sslConfig.enableHostnameVerification](./values.yaml#L3329)
+#### [connectors.kafkaConnector.connections.quickStart.sslConfig.enableHostnameVerification](./values.yaml#L3328)
 
      
 Optional. Enablement of the hostname verification.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.connections.quickStart.sslConfig.enabled](./values.yaml#L3314)
+#### [connectors.kafkaConnector.connections.quickStart.sslConfig.enabled](./values.yaml#L3313)
 
      
 Optional. Enablement of the encryption.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.connections.quickStart.sslConfig.keyStoreRef](./values.yaml#L3339)
+#### [connectors.kafkaConnector.connections.quickStart.sslConfig.keyStoreRef](./values.yaml#L3338)
 
      
 Optional. The reference to a keystore used if mutual TLS is enabled on Kafka brokers. See the `keyStores.myKafkaConnectorKeystore` settings for general details on keystore configuration for the Kafka Connector.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.connections.quickStart.sslConfig.protocol](./values.yaml#L3319)
+#### [connectors.kafkaConnector.connections.quickStart.sslConfig.protocol](./values.yaml#L3318)
 
      
 Optional. The SSL protocol to be used. Can be one of the following: `TLSv1.2`,  `TLSv1.3`. otherwise
@@ -3013,31 +3013,31 @@ Optional. The SSL protocol to be used. Can be one of the following: `TLSv1.2`,  
 ```
 TLSv1.3 when running on Java 11 or newer, TLSv1.2
 ```
-#### [connectors.kafkaConnector.connections.quickStart.sslConfig.trustStoreRef](./values.yaml#L3334)
+#### [connectors.kafkaConnector.connections.quickStart.sslConfig.trustStoreRef](./values.yaml#L3333)
 
      
 Optional. The reference to a keystore used to validate the certificates provided by the Kafka brokers. See the `keyStores.myKafkaConnectorKeystore` settings for general details on keystore configuration for the Kafka Connector.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.enabled](./values.yaml#L3232)
+#### [connectors.kafkaConnector.enabled](./values.yaml#L3231)
 
      
 Optional. Enablement of the Lightstreamer Kafka Connector.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.localSchemaFiles](./values.yaml#L3583)
+#### [connectors.kafkaConnector.localSchemaFiles](./values.yaml#L3582)
 
      
 Optional. Local schema files used for message validation.
 
 **Default:** `{"myKeySchema":null,"myValueSchema":null}`
-#### [connectors.kafkaConnector.localSchemaFiles.myKeySchema](./values.yaml#L3586)
+#### [connectors.kafkaConnector.localSchemaFiles.myKeySchema](./values.yaml#L3585)
 
      
 Optional. The configmap name and key where the local schema file is stored.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.logging](./values.yaml#L3243)
+#### [connectors.kafkaConnector.logging](./values.yaml#L3242)
 
      
 Mandatory. Kafka Connector global Logging configuration.
@@ -3047,7 +3047,7 @@ Mandatory. Kafka Connector global Logging configuration.
 ```
 {"appenders":{"stdout":{"pattern":"[%d] [%-10c{1}] %-5p %m%n","type":"Console"}},"loggers":{"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter":{"appenders":["stdout"],"level":"INFO"},"org.apache.kafka":{"appenders":["stdout"],"level":"WARN"}}}
 ```
-#### [connectors.kafkaConnector.logging.appenders](./values.yaml#L3246)
+#### [connectors.kafkaConnector.logging.appenders](./values.yaml#L3245)
 
      
 Mandatory. Appenders configuration. Every logger must refer to one or more appenders defined here.
@@ -3057,7 +3057,7 @@ Mandatory. Appenders configuration. Every logger must refer to one or more appen
 ```
 {"stdout":{"pattern":"[%d] [%-10c{1}] %-5p %m%n","type":"Console"}}
 ```
-#### [connectors.kafkaConnector.logging.appenders.stdout](./values.yaml#L3248)
+#### [connectors.kafkaConnector.logging.appenders.stdout](./values.yaml#L3247)
 
      
 At least one must be provided. An appender configuration.
@@ -3067,19 +3067,19 @@ At least one must be provided. An appender configuration.
 ```
 {"pattern":"[%d] [%-10c{1}] %-5p %m%n","type":"Console"}
 ```
-#### [connectors.kafkaConnector.logging.appenders.stdout.pattern](./values.yaml#L3253)
+#### [connectors.kafkaConnector.logging.appenders.stdout.pattern](./values.yaml#L3252)
 
      
 Mandatory. The appender layout.
 
 **Default:** `"[%d] [%-10c{1}] %-5p %m%n"`
-#### [connectors.kafkaConnector.logging.appenders.stdout.type](./values.yaml#L3251)
+#### [connectors.kafkaConnector.logging.appenders.stdout.type](./values.yaml#L3250)
 
      
 Mandatory. The appender type. Currently, only the `Console` type is supported.
 
 **Default:** `"Console"`
-#### [connectors.kafkaConnector.logging.loggers](./values.yaml#L3255)
+#### [connectors.kafkaConnector.logging.loggers](./values.yaml#L3254)
 
      
 Optional. Global loggers configuration.
@@ -3089,31 +3089,31 @@ Optional. Global loggers configuration.
 ```
 {"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter":{"appenders":["stdout"],"level":"INFO"},"org.apache.kafka":{"appenders":["stdout"],"level":"WARN"}}
 ```
-#### [connectors.kafkaConnector.logging.loggers."com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter"](./values.yaml#L3266)
+#### [connectors.kafkaConnector.logging.loggers."com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter"](./values.yaml#L3265)
 
      
 Logger for the Kafka Connector Metadata Adapter. Replace the name with the one of the custom Metadata Adapter class.
 
 **Default:** `{"appenders":["stdout"],"level":"INFO"}`
-#### [connectors.kafkaConnector.logging.loggers."org.apache.kafka"](./values.yaml#L3257)
+#### [connectors.kafkaConnector.logging.loggers."org.apache.kafka"](./values.yaml#L3256)
 
      
 The logger name
 
 **Default:** `{"appenders":["stdout"],"level":"WARN"}`
-#### [connectors.kafkaConnector.logging.loggers."org.apache.kafka".appenders](./values.yaml#L3260)
+#### [connectors.kafkaConnector.logging.loggers."org.apache.kafka".appenders](./values.yaml#L3259)
 
      
 Mandatory. List of references to the appenders to be used by the logger.
 
 **Default:** `["stdout"]`
-#### [connectors.kafkaConnector.logging.loggers."org.apache.kafka".level](./values.yaml#L3263)
+#### [connectors.kafkaConnector.logging.loggers."org.apache.kafka".level](./values.yaml#L3262)
 
      
 Mandatory. The logger level.
 
 **Default:** `"WARN"`
-#### [connectors.kafkaConnector.schemaRegistry](./values.yaml#L3594)
+#### [connectors.kafkaConnector.schemaRegistry](./values.yaml#L3593)
 
      
 Optional. Set of Schema Registry configurations.
@@ -3123,7 +3123,7 @@ Optional. Set of Schema Registry configurations.
 ```
 {"mySchemaRegistry":{"basicAuthentication":{"credentialsSecretRef":null,"enabled":null},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":null,"keyStoreRef":null,"trustStoreRef":null},"url":"https://schema-registry:8084"}}
 ```
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry](./values.yaml#L3598)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry](./values.yaml#L3597)
 
      
 Mandatory if either `connections.{}.keyEvaluator.type` or is `connections.{}.valueEvaluator.type` set to `AVRO` and no local schema paths are specified. Schema Registry configuration.
@@ -3133,7 +3133,7 @@ Mandatory if either `connections.{}.keyEvaluator.type` or is `connections.{}.val
 ```
 {"basicAuthentication":{"credentialsSecretRef":null,"enabled":null},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":null,"keyStoreRef":null,"trustStoreRef":null},"url":"https://schema-registry:8084"}
 ```
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.basicAuthentication](./values.yaml#L3604)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.basicAuthentication](./values.yaml#L3603)
 
      
 Optional. Basic HTTP authentication of a connection against the Schema Registry.
@@ -3143,19 +3143,19 @@ Optional. Basic HTTP authentication of a connection against the Schema Registry.
 ```
 {"credentialsSecretRef":null,"enabled":null}
 ```
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.basicAuthentication.credentialsSecretRef](./values.yaml#L3611)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.basicAuthentication.credentialsSecretRef](./values.yaml#L3610)
 
      
 Mandatory if `enable` is set to `true`. The name of the secret containing the credentials. The secret must contain the keys `user` and `password`.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.basicAuthentication.enabled](./values.yaml#L3607)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.basicAuthentication.enabled](./values.yaml#L3606)
 
      
 Optional. Enablement of the Basic HTTP authentication.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig](./values.yaml#L3614)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig](./values.yaml#L3613)
 
      
 Mandatory if the https protocol is specified in `url`. TLS/SSL settings.
@@ -3165,7 +3165,7 @@ Mandatory if the https protocol is specified in `url`. TLS/SSL settings.
 ```
 {"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":null,"keyStoreRef":null,"trustStoreRef":null}
 ```
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.allowCipherSuites](./values.yaml#L3623)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.allowCipherSuites](./values.yaml#L3622)
 
      
 Optional. List of enabled secure cipher suites.
@@ -3175,7 +3175,7 @@ Optional. List of enabled secure cipher suites.
 ```
 all the available cipher suites in the running JVM
 ```
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.allowProtocols](./values.yaml#L3618)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.allowProtocols](./values.yaml#L3617)
 
      
 Optional. List of enabled secure communication protocols TLSv1.2 otherwise.
@@ -3185,31 +3185,31 @@ Optional. List of enabled secure communication protocols TLSv1.2 otherwise.
 ```
 [TLSv1.2, TLSv1.3] when running on Java 11 or newer,
 ```
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.enableHostnameVerification](./values.yaml#L3627)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.enableHostnameVerification](./values.yaml#L3626)
 
      
 Optional. Enablement of the hostname verification.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.keyStoreRef](./values.yaml#L3637)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.keyStoreRef](./values.yaml#L3636)
 
      
 Optional. The reference to a keystore used if mutual TLS is enabled on the Schema Registry. See the `keyStores.myKafkaConnectorKeystore` settings for general details on keystore configuration for the Kafka Connector.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.trustStoreRef](./values.yaml#L3632)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.trustStoreRef](./values.yaml#L3631)
 
      
 Optional. The reference to a keystore used to validate the certificates provided by the Schema Registry. See the `keyStores.myKafkaConnectorKeystore` settings for general details on keystore configuration for the Kafka Connector.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.url](./values.yaml#L3601)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.url](./values.yaml#L3600)
 
      
 Mandatory. The URL of the Confluent Schema Registry. An encrypted connection is enabled by specifying the "https" protocol.
 
 **Default:** `"https://schema-registry:8084"`
-#### [connectors.kafkaConnector.version](./values.yaml#L3234)
+#### [connectors.kafkaConnector.version](./values.yaml#L3233)
 
      
 Mandatory. The Lightstreamer Kafka Connector version to install.

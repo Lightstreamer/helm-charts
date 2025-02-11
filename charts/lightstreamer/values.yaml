@@ -3024,22 +3024,21 @@ load:
   # the proper client sessions, according with each session subscriptions.
   # This task does not include blocking operations; however, on multiprocessor
   # machines, allocating multiple threads for this task may be beneficial.
-  # @default -- the number of available total cores, as detected by the JVM
+  # @default -- the number of total cores, as detected by the JVM
   eventsPoolSize:
   # -- (int) Optional. Size of the `SNAPSHOT` internal thread pool, which is
   # devoted to dispatching the snapshot events upon new subscriptions from
   # client sessions.
   # This task does not include blocking operations; however, on multiprocessor
   # machines, allocating multiple threads for this task may be beneficial.
-  # @default -- the number of available total cores, as detected by the JVM, or
-  # `10`, if the number of cores is less
+  # @default -- min(10, the number of total cores, as detected by the JVM)
   snapshotPoolSize:
   # -- (int) Optional. Size of the `PUMP` internal thread pool, which is
   # devoted to integrating the update events pertaining to each session and to
   # creating the update commands for the client, whenever needed.
   # This task does not include blocking operations; however, on multiprocessor
   # machines, allocating multiple threads for this task may be beneficial.
-  # @default -- the number of available total cores, as detected by the JVM
+  # @default -- the number of total cores, as detected by the JVM
   pumpPoolSize:
   # -- (int) Optional. Maximum number of tasks allowed to be queued to enter
   # the `PUMP` thread pool before undertaking backpressure actions.
@@ -3067,7 +3066,7 @@ load:
   #   demo and test scenarios.
   # Note that specific thread pools can optionally be defined in order to
   # handle some of the tasks that, by default, are handled by the `SERVER` 
-  # thread pool. They are defined in "adapters.xml"; see the templates provided
+  # thread pool. They are defined in `adapters.xml`; see the templates provided
   # in the In-Process Adapter SDK for details.
   # A zero value means a potentially unlimited number of threads.
   # @default -- 1000
@@ -3097,8 +3096,8 @@ load:
   # `load.acceptPoolMaxQueue` check will be performed (regardless that
   # `load.acceptPoolMaxQueue` itself is set).
   # On the other hand, if the `MPN DEVICE HANDLER` pool is defined in `mpn` it 
-  # also overrides the SERVER or dedicated pools, but its queue is not included
-  # in the check.
+  # also overrides the `SERVER` or dedicated pools, but its queue is not 
+  # included in the check.
   # A negative value disables the check.
   # @default -- 100
   serverPoolMaxQueue:
