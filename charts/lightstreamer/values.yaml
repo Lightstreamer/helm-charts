@@ -934,8 +934,8 @@ servers:
     enabled: true
     # -- Mandatory. The name of the HTTP/S server. Note that it is notified to
     # the client upon connection and it is made available to application code
-    # by the Unified Client SDKs through the serverSocketName property in the
-    # ConnectionDetails class. It must be an ASCII string with no control
+    # by the Unified Client SDKs through the _serverSocketName_ property in the
+    # _ConnectionDetails_ class. It must be an ASCII string with no control
     # characters and it must be unique among all server configurations.
     # The name must be unique among all server configurations.
     name: "Lightstreamer HTTP Server"
@@ -957,10 +957,11 @@ servers:
     # socket will be used, according with the deployment configuration.
     # This can inform the Server of a restricted set of requests expected on
     # the port, which may improve the internal backpressure mechanisms.
-    # If set to `CREATE_ONLY`, declares that the port is only devoted to "S"
+    #
+    # If set to `CREATE_ONLY`, declares that the port is only devoted to `S`
     # connections, according with the provided Clustering.pdf document.
     #
-    # If set to `CONTROL_ONLY`, declares that the port is only devoted to "CR"
+    # If set to `CONTROL_ONLY`, declares that the port is only devoted to `CR`
     # connections,according with the provided Clustering.pdf document. The
     # Server will enforce the restriction.
     #
@@ -981,8 +982,8 @@ servers:
     #
     # If set to `GENERAL_PURPOSE`, the port can be used for any kind of request.
     # It can always be set in case of doubts. Note that ports can be
-    # CREATE_ONLY or CONTROL_ONLY only depending on client behavior. For clients
-    # based on LS SDK libraries, this is related to the use of the
+    # `CREATE_ONLY` or `CONTROL_ONLY` only depending on client behavior. For 
+    # clients based on LS SDK libraries, this is related to the use of the
     # `cluster.controlLinkAddress` setting. Usage examples are provided in the
     # Clustering.pdf document.
     # @default -- "GENERAL_PURPOSE"
@@ -1006,7 +1007,7 @@ servers:
         # - "cookie"
       # -- Optional. Requests to add to the HTTP response header a line with
       # the specified `name` (mandatory) and `value` (optional).
-      # The suggested setting for "X-Accel-Buffering" may help to enable
+      # The suggested setting for _X-Accel-Buffering_ may help to enable
       # streaming support when proxies of several types are involved.
       add:
         - name: "X-Accel-Buffering"
@@ -1019,14 +1020,17 @@ servers:
     listeningInterface:
     # -- Optional. Settings that allow for better recognition of the remote
     # address of the connected clients. This can be done in two ways:
+    #
     # - by taking advantage of the X-Forwarded-For HTTP header, that
     #   intermediate HTTP proxies and level-7 Load Balancers usually set to
     #   supply connection routing information in an incremental way (this is
-    #   done through the `clientIdentification.skipLocalForwards` setting);
+    #   done through the `skipLocalForwards` setting);
+
     # - by receiving the routed address directly from a TCP reverse proxy or
     #   level-4 Load Balancer through the Proxy Protocol, when the proxy is
-    #   configured to do so (this is done through the 
-    #   `clientIdentification.enableProxyProtocol` setting).
+    #   configured to do so (this is done through the `enableProxyProtocol` 
+    #   setting).
+    #
     # The two techniques can also coexist, but, in that case, the address
     # through the proxy protocol would always be considered as the real client
     # address and all addresses in the chain specified in X-Forwarded-For would
@@ -1043,7 +1047,7 @@ servers:
       # being sent to the clients. In fact, the address is notified to the
       # client upon connection and it is made available to application code by
       # the most recent Unified Client SDKs through the clientIp property in
-      # the ConnectionDetails class.
+      # the _ConnectionDetails_ class.
       # For instance, the flag can and should be set to `true` in case the
       # identification of the remote address is not properly tuned and the
       # determined address may be a local one.
@@ -1066,12 +1070,12 @@ servers:
       # handled; only information for normal TCP connections is considered.
       # @default -- false
       enableProxyProtocol:
-      # -- (int) Optional. Optional. Timeout applied while reading for
-      # information through the proxy protocol, when enabled. Note that a
-      # reverse proxy or load balancer speaking the proxy protocol is bound to
-      # send information immediately after connection start; so the timeout can
-      # only apply to cases of wrong configuration, local network issues or
-      # illegal access to this port.
+      # -- (int) Optional. Timeout applied while reading for information 
+      # through the proxy protocol, when enabled. Note that a reverse proxy or
+      # load balancer speaking the proxy protocol is bound to send information
+      # immediately after connection start; so the timeout can only apply to 
+      # cases of wrong configuration, local network issues or illegal access to 
+      # this port.
       # For this reason, the read is performed directly in the ACCEPT thread
       # pool and this setting protects that pool against such unlikely events.
       # @default -- 1000
@@ -1086,7 +1090,7 @@ servers:
       # local intermediate node, hence to the client. So, that entry will be
       # used as the real client address. In particular, it will appear in all
       # log lines that refer to the involved HTTP request or Websocket.
-      # If set to `0` or left at the default, all entries in X-Forwarded-For
+      # If set to `0` or left at the default, all entries in _X-Forwarded-For_
       # will be considered as written by client-side proxies, hence the
       # connection endpoint address will be used (unless, of course,
       # `enableProxyProtocol` is set to `true`, which overrides the behavior).
@@ -1191,15 +1195,16 @@ servers:
       # For Oracle JVMs, the available names are the "SSLContext Algorithms"
       # listed here:
       # https://docs.oracle.com/en/java/javase/17/docs/specs/security/standard-names.html#sslcontext-algorithms
-      # @default -- the `removeProtocols` setting is considered; hence, if
-      # `removeProtocols` is also not used, all protocols enabled by the
+      # If not specified, the `removeProtocols` setting is considered; hence, 
+      # if `removeProtocols` is also not used, all protocols enabled by the 
       # Security Provider will be available.
+      # @default -- []
       allowProtocols: []
         # - TLSv1.2
         # - TLSv1.3
       # -- Optional, but forbidden if `allowProtocols` is used.
-      # Pattern to be matched against the names of the enabled TLS/SSL
-      # protocols in order to remove the matching ones from the enabled
+      # Pattern to be matched against the names of the enabled TLS/SSL 
+      # protocols in order to remove the matching ones from the enabled 
       # protocols set.
       # Any pattern in java.util.regex.Pattern format can be specified.
       # This allows for customization of the choice of the TLS/SSL protocols to
@@ -1226,19 +1231,21 @@ servers:
       # Conscrypt Security Provider is used. For instance, with the default
       # SunJSSE Security Provider, the use of stateful or stateless resumption
       # can only be configured at global JVM level, through the
-      # "jdk.tls.server.enableSessionTicketExtension" JVM property.
-      # @default -- the type of resumption will be  decided by the underlying
-      # Security Provider, based on its own configuration.
+      # `jdk.tls.server.enableSessionTicketExtension` JVM property.
+      # If not specified, the type of resumption will be decided by the 
+      # underlying Security Provider, based on its own configuration.
+      # @default -- the underlying Security Provider's configuration.
       enableStatelessTlsSessionResumption:
       # -- Optional. Size of the cache used by the TLS implementation to handle
       # TLS session resumptions when stateful resumption is configured (see
-      # `enableStatelessTlsSessionResumption`).
-      # A value of 0 poses no size limit.
+      # `enableStatelessTlsSessionResumption`). 
+      # A value of `0` poses no size limit.
       # Note, however, that the underlying Security Provider may ignore this
       # setting (possibly depending on the protocol version in use).
-      # @default -- the cache size is decided by the underlying Security
-      # Provider. For the default SunJSSE, it is 20480 TLS sessions, unless
-      # configured through the "javax.net.ssl.sessionCacheSize" JVM property.
+      # If not specified, the cache size is decided by the underlying Security 
+      # Provider. For the default SunJSSE, it is `20480` TLS sessions, unless
+      # configured through the  `javax.net.ssl.sessionCacheSize` JVM property.
+      # @default -- decided by the underlying Security Provider's configuration
       tlsSessionCacheSize:
       # -- Optional. Maximum time in which a TLS session is kept available to
       # the client for resumption. This holds for both stateless and stateful
