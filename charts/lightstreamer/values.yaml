@@ -934,8 +934,8 @@ servers:
     enabled: true
     # -- Mandatory. The name of the HTTP/S server. Note that it is notified to
     # the client upon connection and it is made available to application code
-    # by the Unified Client SDKs through the _serverSocketName_ property in the
-    # _ConnectionDetails_ class. It must be an ASCII string with no control
+    # by the Unified Client SDKs through the `serverSocketName` property in the
+    # `ConnectionDetails` class. It must be an ASCII string with no control
     # characters and it must be unique among all server configurations.
     # The name must be unique among all server configurations.
     name: "Lightstreamer HTTP Server"
@@ -1046,8 +1046,8 @@ servers:
       # -- Optional.  If set to `true`, prevents the determined address from
       # being sent to the clients. In fact, the address is notified to the
       # client upon connection and it is made available to application code by
-      # the most recent Unified Client SDKs through the clientIp property in
-      # the _ConnectionDetails_ class.
+      # the most recent Unified Client SDKs through the `clientIp` property in
+      # the `ConnectionDetails` class.
       # For instance, the flag can and should be set to `true` in case the
       # identification of the remote address is not properly tuned and the
       # determined address may be a local one.
@@ -1243,7 +1243,7 @@ servers:
       # setting (possibly depending on the protocol version in use).
       # If not specified, the cache size is decided by the underlying Security 
       # Provider. For the default SunJSSE, it is `20480` TLS sessions, unless
-      # configured through the  `javax.net.ssl.sessionCacheSize` JVM property.
+      # configured through the `javax.net.ssl.sessionCacheSize` JVM property.
       # @default -- decided by the underlying Security Provider's configuration
       tlsSessionCacheSize:
       # -- Optional. Maximum time in which a TLS session is kept available to
@@ -1462,7 +1462,7 @@ security:
   # @default -- true
   enableProtectedJs: false
   # -- Optional. Use this setting to enable the forwarding of the cookies to
-  # the Metadata Adapter through the httpHeaders argument of the "notifyUser"
+  # the Metadata Adapter through the `httpHeaders` argument of the `notifyUser`
   # method.
   # Please note that in any case cookies should not be used to authenticate
   # users, otherwise, having `enableProtectedJs` set to `false` and/or a too
@@ -1566,10 +1566,10 @@ security:
     # In this kind of requests, the requesting page should be allowed by the
     # browser to access data contained in the Server-originated page only if
     # both pages declare a common subdomain. So, the page should declare a
-    # subdomain as its "document.domain" property and will ask the Server to
+    # subdomain as its `document.domain` property and will ask the Server to
     # declare the same subdomain on the response page.
     # In that case, the Server will be allowed to set the requested subdomain
-    # as the "document.domain" property of the data page only if configured
+    # as the `document.domain` property of the data page only if configured
     # here, otherwise the whole request will be refused.
     # On the other hand, if no setting is provided, then this check is
     # disabled. Note that, in any case, the consistency of the declared
@@ -1698,7 +1698,7 @@ management:
       # access url, but needs an explicit server-side configuration.
       # Note that, if you wish to use the provided "stop" script, the specified
       # hostname has to be visible also from local clients.
-      # @default -- any setting provided to the "java.rmi.server.hostname" JVM
+      # @default -- any setting provided to the `java.rmi.server.hostname` JVM
       # property
       hostName:
       # -- Optional. Enabling of a preliminary test on the reachability of the 
@@ -2836,7 +2836,7 @@ webServer:
   persistencyMinutes:
   # -- Optional. Path of the MIME types configuration property file.
   # The file path is relative to the conf directory.
-  # @default --  `./mime_types.properties`
+  # @default --  ./mime_types.properties
   mimeTypesConfig:
   # -- Optional. Path of an HTML page to be returned as the body upon a
   # "404 Not Found" answer caused by the request of a nonexistent URL.
@@ -2919,8 +2919,8 @@ cluster:
   #  the same Server instance, then this setting is not needed.
   #  See the Clustering.pdf document for details.
   #  Note: When this setting is used, clients based on any Unified Client SDK
-  #  that supports the optional setEarlyWSOpenEnabled method in the
-  #  ConnectionOptions class should invoke this method with false, to improve
+  #  that supports the optional `setEarlyWSOpenEnabled` method in the
+  #  `ConnectionOptions` class should invoke this method with false, to improve
   #  startup performances.
   #  In case a request comes from a web client and
   #  `cluster.controlLinkMachineName` is also specified, the latter setting may
@@ -3063,12 +3063,12 @@ load:
   # -- (int) Optional. Maximum number of threads allowed for the "SERVER"
   # internal pool, which is devoted to the management of the client requests.
   # This kind of tasks includes operations that are potentially blocking:
-  # - getHostName;
+  # - `getHostName`;
   # - socket close;
   # - calls to a Metadata Adapter that may need to access to some external
-  #   resource (i.e. mainly notifyUser, getItems, getSchema; other methods
-  #   should be implemented as nonblocking, by leaning on data cached by
-  #   notifyUser);
+  #   resource (i.e. mainly `notifyUser`, `getItems`, `getSchema`; other 
+  #   methods should be implemented as nonblocking, by leaning on data cached 
+  #   by `notifyUser`);
   # - calls to a Data Adapter that may need to access to some external resource
   #   (i.e. subscribe and unsubscribe, though it should always be possible to
   #   implement such calls asynchronously);

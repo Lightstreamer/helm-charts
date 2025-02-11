@@ -112,7 +112,7 @@ Optional. If set to `true`, causes the list of entries of the X-Forwarded-For he
 #### [servers.defaultServer.clientIdentification.enablePrivate](./values.yaml#L1055)
 
      
-Optional.  If set to `true`, prevents the determined address from being sent to the clients. In fact, the address is notified to the client upon connection and it is made available to application code by the most recent Unified Client SDKs through the clientIp property in the _ConnectionDetails_ class. For instance, the flag can and should be set to `true` in case the identification of the remote address is not properly tuned and the determined address may be a local one.
+Optional.  If set to `true`, prevents the determined address from being sent to the clients. In fact, the address is notified to the client upon connection and it is made available to application code by the most recent Unified Client SDKs through the `clientIp` property in the `ConnectionDetails` class. For instance, the flag can and should be set to `true` in case the identification of the remote address is not properly tuned and the determined address may be a local one.
 
 **Default:** `false`
 #### [servers.defaultServer.clientIdentification.enableProxyProtocol](./values.yaml#L1072)
@@ -158,7 +158,7 @@ accept connections on any/all local addresses
 #### [servers.defaultServer.name](./values.yaml#L941)
 
      
-Mandatory. The name of the HTTP/S server. Note that it is notified to the client upon connection and it is made available to application code by the Unified Client SDKs through the _serverSocketName_ property in the _ConnectionDetails_ class. It must be an ASCII string with no control characters and it must be unique among all server configurations. The name must be unique among all server configurations.
+Mandatory. The name of the HTTP/S server. Note that it is notified to the client upon connection and it is made available to application code by the Unified Client SDKs through the `serverSocketName` property in the `ConnectionDetails` class. It must be an ASCII string with no control characters and it must be unique among all server configurations. The name must be unique among all server configurations.
 
 **Default:** `"Lightstreamer HTTP Server"`
 #### [servers.defaultServer.port](./values.yaml#L943)
@@ -296,7 +296,7 @@ Optional. If defined, overrides the default JVM's Security Provider configured i
 #### [servers.defaultServer.sslConfig.tlsSessionCacheSize](./values.yaml#L1248)
 
      
-Optional. Size of the cache used by the TLS implementation to handle TLS session resumptions when stateful resumption is configured (see `enableStatelessTlsSessionResumption`).  A value of `0` poses no size limit. Note, however, that the underlying Security Provider may ignore this setting (possibly depending on the protocol version in use). If not specified, the cache size is decided by the underlying Security  Provider. For the default SunJSSE, it is `20480` TLS sessions, unless configured through the  `javax.net.ssl.sessionCacheSize` JVM property.
+Optional. Size of the cache used by the TLS implementation to handle TLS session resumptions when stateful resumption is configured (see `enableStatelessTlsSessionResumption`).  A value of `0` poses no size limit. Note, however, that the underlying Security Provider may ignore this setting (possibly depending on the protocol version in use). If not specified, the cache size is decided by the underlying Security  Provider. For the default SunJSSE, it is `20480` TLS sessions, unless configured through the `javax.net.ssl.sessionCacheSize` JVM property.
 
 **Default:**
 
@@ -530,7 +530,7 @@ Optional. In case an HTTP OPTIONS request is sent to authorize future requests, 
 #### [security.enableCookiesForwarding](./values.yaml#L1474)
 
      
-Optional. Use this setting to enable the forwarding of the cookies to the Metadata Adapter through the httpHeaders argument of the "notifyUser" method. Please note that in any case cookies should not be used to authenticate users, otherwise, having `enableProtectedJs` set to `false` and/or a too permissive policy in the `crossDomainPolicy` will expose the server to CSRF attacks. If set to `true`, cookies are forwarded to the Metadata Adapter. If set to `false`, cookies are hidden from the Metadata Adapter.
+Optional. Use this setting to enable the forwarding of the cookies to the Metadata Adapter through the `httpHeaders` argument of the `notifyUser` method. Please note that in any case cookies should not be used to authenticate users, otherwise, having `enableProtectedJs` set to `false` and/or a too permissive policy in the `crossDomainPolicy` will expose the server to CSRF attacks. If set to `true`, cookies are forwarded to the Metadata Adapter. If set to `false`, cookies are hidden from the Metadata Adapter.
 
 **Default:** `false`
 #### [security.enableProtectedJs](./values.yaml#L1463)
@@ -769,7 +769,7 @@ Optional. A hostname by which the RMI Server can be reached from all the clients
 **Default:**
 
 ```
-any setting provided to the "java.rmi.server.hostname" JVM
+any setting provided to the java.rmi.server.hostname JVM
 ```
 #### [management.jmx.rmiConnector.keyStoreRef](./values.yaml#L1751)
 
@@ -1602,7 +1602,7 @@ Mandatory when `webServer.enableFlexCrossdomain` is true. Path of the file to be
      
 Optional. Path of the MIME types configuration property file. The file path is relative to the conf directory.
 
-**Default:** ` `./mime_types.properties``
+**Default:** ` ./mime_types.properties`
 #### [webServer.notFoundPage](./values.yaml#L2846)
 
      
@@ -1818,7 +1818,7 @@ Optional. Maximum number of tasks allowed to be queued to enter the "SERVER" thr
 #### [load.serverPoolMaxSize](./values.yaml#L3083)
 
      
-Optional. Maximum number of threads allowed for the "SERVER" internal pool, which is devoted to the management of the client requests. This kind of tasks includes operations that are potentially blocking: - getHostName; - socket close; - calls to a Metadata Adapter that may need to access to some external   resource (i.e. mainly notifyUser, getItems, getSchema; other methods   should be implemented as nonblocking, by leaning on data cached by   notifyUser); - calls to a Data Adapter that may need to access to some external resource   (i.e. subscribe and unsubscribe, though it should always be possible to   implement such calls asynchronously); - file access by the internal web server, though it should be used  only in   demo and test scenarios. Note that specific thread pools can optionally be defined in order to handle some of the tasks that, by default, are handled by the SERVER thread pool. They are defined in "adapters.xml"; see the templates provided in the In-Process Adapter SDK for details. A zero value means a potentially unlimited number of threads.
+Optional. Maximum number of threads allowed for the "SERVER" internal pool, which is devoted to the management of the client requests. This kind of tasks includes operations that are potentially blocking: - `getHostName`; - socket close; - calls to a Metadata Adapter that may need to access to some external   resource (i.e. mainly `notifyUser`, `getItems`, `getSchema`; other    methods should be implemented as nonblocking, by leaning on data cached    by `notifyUser`); - calls to a Data Adapter that may need to access to some external resource   (i.e. subscribe and unsubscribe, though it should always be possible to   implement such calls asynchronously); - file access by the internal web server, though it should be used  only in   demo and test scenarios. Note that specific thread pools can optionally be defined in order to handle some of the tasks that, by default, are handled by the SERVER thread pool. They are defined in "adapters.xml"; see the templates provided in the In-Process Adapter SDK for details. A zero value means a potentially unlimited number of threads.
 
 **Default:** `1000`
 #### [load.snapshotPoolSize](./values.yaml#L3045)
