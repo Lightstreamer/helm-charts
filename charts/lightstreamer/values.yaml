@@ -2087,10 +2087,10 @@ pushSession:
   # -- Optional. Configuration of the content-type to be specified in the
   # response headers when answering to session requests issued by native client
   # libraries and custom clients.
-  # If set to `true`, the server will specify the text/enriched content-type.
+  # If set to `true`, the server will specify the `text/enriched` content-type.
   # This setting might be preferable when communicating over certain service
   # providers that may otherwise buffer streaming connections.
-  # if set to `false`, the server will specify the text/plain content-type.
+  # if set to `false`, the server will specify the `text/plain` content-type.
   # @default -- true
   enableEnrichedContentType:
   # -- (int) Optional. Maximum size for any ItemEventBuffer.
