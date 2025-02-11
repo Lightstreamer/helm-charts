@@ -3107,13 +3107,12 @@ load:
   # machines, allocating multiple threads for this task may be beneficial.
   # Only in corner cases, it is possible that some operations turn out to be
   # blocking; in particular:
-  # - getHostName, only if banned hostnames are configured;
+  # - `getHostName`, only if banned hostnames are configured;
   # - socket close, only if banned hostnames are configured;
   # - read from the "proxy protocol", only if configured;
   # - service of requests on a "priority port", only available for internal use.
   # A zero value means a potentially unlimited number of threads.
-  # @default -- the number of available total cores, as detected by the JVM,
-  # which is also the minimum number of threads left in the pool
+  # @default -- the number of available total cores, as detected by the JVM
   acceptPoolMaxSize:
   # -- (int) Optional. Maximum number of tasks allowed to be queued to enter
   # the `ACCEPT` thread pool before undertaking backpressure actions.
@@ -3135,7 +3134,7 @@ load:
   # handshakes on the listening sockets specified through
   # the `servers.{}` configuration with `enableHttps` set to `true`.
   # In particular, this pool is only used when the socket is not configured to
-  # request the client certificate (see servers.{}.sslConfig.enableClientAuth`
+  # request the client certificate (see `servers.{}.sslConfig.enableClientAuth`
   # and `servers.{}.security.enableMandatoryClientAuth`); in this case, the
   # tasks are not expected to be blocking. Note that the operation may be
   # CPU-intensive; hence, it is advisable to set a value smaller than the
