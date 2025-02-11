@@ -1312,10 +1312,10 @@ keyStores:
   myServerKeystore:
     # -- (string) Optional. The keystore type.
     # The currently supported types are:
-    # - JKS, which is the Sun/Oracle's custom keystore type, whose support is
+    # - `JKS`, which is the Sun/Oracle's custom keystore type, whose support is
     #   made available by every Java installation;
-    # - PKCS12, which is supported by all recent Java installations;
-    # - PKCS11, which as a bridge to an external PKCS11 implementation;
+    # - `PKCS12`, which is supported by all recent Java installations;
+    # - `PKCS11`, which as a bridge to an external PKCS11 implementation;
     #   this is an experimental extension; contact Lightstreamer Support for
     #   details.
     # @default -- JKS
@@ -1363,7 +1363,7 @@ globalSocket:
   # for longer than this time.
   # The time actually considered may be approximated and may be a few seconds
   # higher, for internal performance reasons.
-  # A 0 value suppresses the check.
+  # A `0` value suppresses the check.
   readTimeoutMillis: 20000
   # -- (int) Optional. Longest inactivity time accepted while waiting for a
   # slow operation during a TLS/SSL handshake. This involves both reads,
@@ -1372,7 +1372,7 @@ globalSocket:
   # socket is closed.
   # The time actually considered may be approximated and may be a few seconds
   # higher, for internal performance reasons.
-  # A 0 value suppresses the check.
+  # A `0` value suppresses the check.
   # @default -- 4000
   handshakeTimeoutMillis:
   # -- (int) Optional. Maximum length in bytes accepted for a request.
@@ -1619,7 +1619,7 @@ management:
   # Hence, all invocations to the Adapters (but for the initialization phase)
   # are monitored and a warning is logged whenever their execution takes more
   # than this time.
-  # A 0 value disables the check.
+  # A `0` value disables the check.
   # @default -- 1000
   unexpectedWaitThresholdMillis: 0
   # -- (int) Optional. Threshold time for long asynchronous processing alerts.
@@ -1631,14 +1631,14 @@ management:
   # Hence, the longest current execution time is periodically sampled by the
   # Server Monitor on each pool and, whenever it exceeds this threshold on a
   # pool, a warning is logged. Note that warning messages can be issued
-  # repeatedly. A 0 value disables the check.
+  # repeatedly. A `0` value disables the check.
   # @default -- 10000
   asyncProcessingThresholdMillis: 60000
   # -- (int) Optional. Threshold wait time for a task enqueued for running on
   # any of the internal thread pools.
   # The current wait time is periodically sampled by the Server Monitor on each
   # pool and, whenever it exceeds this threshold on a pool, a warning is
-  # logged. Note that warning messages can be issued repeatedly. A 0 value
+  # logged. Note that warning messages can be issued repeatedly. A `0` value
   # disables the check.
   # @default -- 10000
   maxTaskWaitMillis:
@@ -2147,7 +2147,7 @@ pushSession:
   # timeouts to ensure the better coverage of cases.
   # Note that recovery is available only for some client versions; if any other
   # version were involved, the session would be closed immediately.
-  # A 0 value also prevents any accumulation of memory.
+  # A `0` value also prevents any accumulation of memory.
   # @default -- 0
   sessionRecoveryMillis: 13000
   # -- (int) Optional. Maximum number of bytes of streaming data, already sent
@@ -2157,7 +2157,7 @@ pushSession:
   # packets.
   # Note that recovery is available only for some client versions; if any other
   # version were involved, no data would be kept.
-  # A 0 value also prevents any accumulation of memory.
+  # A `0` value also prevents any accumulation of memory.
   # @default -- the value configured for `pushSession.sendbuf`
   maxRecoveryLength:
   # -- (int) Optional. Maximum size supported for keeping a polling response,
@@ -2166,7 +2166,7 @@ pushSession:
   # connection and prevent the client from receiving the latest response.
   # Note that recovery is available only for some client versions; if any other
   # version were involved, no data would be kept.
-  # A 0 value also prevents any accumulation of memory. On the other hand, a
+  # A `0` value also prevents any accumulation of memory. On the other hand, a
   # value of -1 relieves any limit.
   # @default -- -1
   maxRecoveryPollLength:

@@ -388,13 +388,13 @@ Mandatory. Global socket configuration
 #### [globalSocket.handshakeTimeoutMillis](./values.yaml#L1377)
 
      
-Optional. Longest inactivity time accepted while waiting for a slow operation during a TLS/SSL handshake. This involves both reads, writes, and encryption tasks managed by the "TLS-SSL HANDSHAKE" or "TLS-SSL AUTHENTICATION" internal pools. If this value is exceeded, the socket is closed. The time actually considered may be approximated and may be a few seconds higher, for internal performance reasons. A 0 value suppresses the check.
+Optional. Longest inactivity time accepted while waiting for a slow operation during a TLS/SSL handshake. This involves both reads, writes, and encryption tasks managed by the "TLS-SSL HANDSHAKE" or "TLS-SSL AUTHENTICATION" internal pools. If this value is exceeded, the socket is closed. The time actually considered may be approximated and may be a few seconds higher, for internal performance reasons. A `0` value suppresses the check.
 
 **Default:** `4000`
 #### [globalSocket.readTimeoutMillis](./values.yaml#L1367)
 
      
-(Mandatory) Longest inactivity time accepted while waiting for a slow request to be received. If this value is exceeded, the socket is closed. Reusable HTTP connections are also closed if they are not reused for longer than this time. The time actually considered may be approximated and may be a few seconds higher, for internal performance reasons. A 0 value suppresses the check.
+(Mandatory) Longest inactivity time accepted while waiting for a slow request to be received. If this value is exceeded, the socket is closed. Reusable HTTP connections are also closed if they are not reused for longer than this time. The time actually considered may be approximated and may be a few seconds higher, for internal performance reasons. A `0` value suppresses the check.
 
 **Default:** `20000`
 #### [globalSocket.requestLimit](./values.yaml#L1386)
@@ -560,7 +560,7 @@ Mandatory. Logging and management configuration
 #### [management.asyncProcessingThresholdMillis](./values.yaml#L1636)
 
      
-Optional. Threshold time for long asynchronous processing alerts. Data and Metadata Adapter calls, even when performed through asynchronous invocations (where available), should still take a reasonable time to complete. This is especially important if limits to the number of concurrent tasks are set; moreover, tasks forgotten for any reason and never completed may cause a memory leak. Hence, the longest current execution time is periodically sampled by the Server Monitor on each pool and, whenever it exceeds this threshold on a pool, a warning is logged. Note that warning messages can be issued repeatedly. A 0 value disables the check.
+Optional. Threshold time for long asynchronous processing alerts. Data and Metadata Adapter calls, even when performed through asynchronous invocations (where available), should still take a reasonable time to complete. This is especially important if limits to the number of concurrent tasks are set; moreover, tasks forgotten for any reason and never completed may cause a memory leak. Hence, the longest current execution time is periodically sampled by the Server Monitor on each pool and, whenever it exceeds this threshold on a pool, a warning is logged. Note that warning messages can be issued repeatedly. A `0` value disables the check.
 
 **Default:** `10000`
 #### [management.collectorMillis](./values.yaml#L1651)
@@ -824,7 +824,7 @@ Optional. Enabling of the availability of session-related mbeans, the  ones iden
 #### [management.maxTaskWaitMillis](./values.yaml#L1644)
 
      
-Optional. Threshold wait time for a task enqueued for running on any of the internal thread pools. The current wait time is periodically sampled by the Server Monitor on each pool and, whenever it exceeds this threshold on a pool, a warning is logged. Note that warning messages can be issued repeatedly. A 0 value disables the check.
+Optional. Threshold wait time for a task enqueued for running on any of the internal thread pools. The current wait time is periodically sampled by the Server Monitor on each pool and, whenever it exceeds this threshold on a pool, a warning is logged. Note that warning messages can be issued repeatedly. A `0` value disables the check.
 
 **Default:** `10000`
 #### [management.noLoggingIpAddresses](./values.yaml#L1603)
@@ -836,7 +836,7 @@ Optional. A set of Clients whose activity is not to be logged.
 #### [management.unexpectedWaitThresholdMillis](./values.yaml#L1624)
 
      
-Optional. Threshold time for long Adapter call alerts. All Data and Metadata Adapter calls should perform as fast as possible, to ensure that client requests are accomplished quickly. Slow methods may also require that proper thread pools are configured. Hence, all invocations to the Adapters (but for the initialization phase) are monitored and a warning is logged whenever their execution takes more than this time. A 0 value disables the check.
+Optional. Threshold time for long Adapter call alerts. All Data and Metadata Adapter calls should perform as fast as possible, to ensure that client requests are accomplished quickly. Slow methods may also require that proper thread pools are configured. Hence, all invocations to the Adapters (but for the initialization phase) are monitored and a warning is logged whenever their execution takes more than this time. A `0` value disables the check.
 
 **Default:** `1000`
 ### PushSession configuration
@@ -962,7 +962,7 @@ Mandatory. Longest time a client is allowed to wait, after receiving a poll answ
 #### [pushSession.maxRecoveryLength](./values.yaml#L2162)
 
      
-Optional. Maximum number of bytes of streaming data, already sent or being sent to the Client, that should be kept, in order to allow the Client to recover the session, in case a network issue should interrupt the streaming connection and prevent the client from receiving the latest packets. Note that recovery is available only for some client versions; if any other version were involved, no data would be kept. A 0 value also prevents any accumulation of memory.
+Optional. Maximum number of bytes of streaming data, already sent or being sent to the Client, that should be kept, in order to allow the Client to recover the session, in case a network issue should interrupt the streaming connection and prevent the client from receiving the latest packets. Note that recovery is available only for some client versions; if any other version were involved, no data would be kept. A `0` value also prevents any accumulation of memory.
 
 **Default:**
 
@@ -972,7 +972,7 @@ the value configured for pushSession.sendbuf
 #### [pushSession.maxRecoveryPollLength](./values.yaml#L2172)
 
      
-Optional. Maximum size supported for keeping a polling response, already sent or being sent to the Client, in order to allow the Client to recover the session, in case a network issue should interrupt the polling connection and prevent the client from receiving the latest response. Note that recovery is available only for some client versions; if any other version were involved, no data would be kept. A 0 value also prevents any accumulation of memory. On the other hand, a value of -1 relieves any limit.
+Optional. Maximum size supported for keeping a polling response, already sent or being sent to the Client, in order to allow the Client to recover the session, in case a network issue should interrupt the polling connection and prevent the client from receiving the latest response. Note that recovery is available only for some client versions; if any other version were involved, no data would be kept. A `0` value also prevents any accumulation of memory. On the other hand, a value of -1 relieves any limit.
 
 **Default:** `-1`
 #### [pushSession.maxStreamingMillis](./values.yaml#L2052)
@@ -1030,7 +1030,7 @@ Optional. If used, defines one or multiple alternative url paths for all request
 #### [pushSession.sessionRecoveryMillis](./values.yaml#L2152)
 
      
-Optional. Longest time a session can be kept alive, after the interruption of a connection at network level, waiting for the Client to attempt a recovery. Since a disconnection may affect the Client without affecting the Server, this also instructs the Server to keep track of the events already sent for this time duration, to support unexpected recovery requests. The client should try a recovery request immediately after detecting the interruption; but, the request may come later when, for instance, - there is a network outage of a few seconds and the client must retry, - the client detects the interruption because of the stalled timeout. Hence, the optimal value should be tuned according with client-side timeouts to ensure the better coverage of cases. Note that recovery is available only for some client versions; if any other version were involved, the session would be closed immediately. A 0 value also prevents any accumulation of memory.
+Optional. Longest time a session can be kept alive, after the interruption of a connection at network level, waiting for the Client to attempt a recovery. Since a disconnection may affect the Client without affecting the Server, this also instructs the Server to keep track of the events already sent for this time duration, to support unexpected recovery requests. The client should try a recovery request immediately after detecting the interruption; but, the request may come later when, for instance, - there is a network outage of a few seconds and the client must retry, - the client detects the interruption because of the stalled timeout. Hence, the optimal value should be tuned according with client-side timeouts to ensure the better coverage of cases. Note that recovery is available only for some client versions; if any other version were involved, the session would be closed immediately. A `0` value also prevents any accumulation of memory.
 
 **Default:** `0`
 #### [pushSession.sessionTimeoutMillis](./values.yaml#L2135)
