@@ -730,7 +730,7 @@ Optional, but forbidden if `removeProtocols` is used. Specifies one or more prot
 #### [management.jmx.rmiConnector.credentialsSecrets](./values.yaml#L1801)
 
      
-Mandatory if `enablePublicAccess` is set to `true`. The  reference to the secrets containing the credentials of the users  enabled to access the RMI connector. Every secret must contains the keys `user` and `password`. If `enablePublicAccess` is set to `false`, at least one set of credentials should be supplied in order to allow access through the connector. This is also needed if you wish to use the provided "stop" script; the script will always use the first user supplied.
+Optional, but ineffective if `enablePublicAccess` is set to  `true`. The reference to the secrets containing the credentials of the users enabled to access the RMI connector. Every secret must contains the keys `user` and `password`. If `enablePublicAccess` is set to `false`, at least one set of credentials should be supplied in order to allow access through the connector. This is also needed if you wish to use the provided "stop" script; the script will always use the first user supplied.
 
 **Default:** `[]`
 #### [management.jmx.rmiConnector.dataPort](./values.yaml#L1688)
@@ -814,7 +814,7 @@ Optional. Timeout to be posed on the connection attempts  through the RMI Connec
 #### [management.jmx.sessionMbeanAvailability](./values.yaml#L1830)
 
      
-Optional. Enabling of the availability of session-related mbeans, the  ones identified by type="Session". If set to `active`, for each active session, a corresponding mbean of type "Session" is available with full functionality. If set to `sampled_statistics_only`, for each active session, a corresponding mbean of type "Session" is available, but all the statistics based on periodic sampling are disabled. If set to `inactive`, no mbeans of type "Session" are generated, but for a fake mbean which acts as a reminder that the option can be enabled. The support for session-related mbeans can pose a significant overload on the Server when many sessions are active and many of them are continuously created and closed. For this reason, the support is disabled by default.
+Optional. Enabling of the availability of session-related mbeans, the  ones identified by `type="Session"`. If set to `active`, for each active session, a corresponding mbean of type "Session" is available with full functionality. If set to `sampled_statistics_only`, for each active session, a corresponding mbean of type "Session" is available, but all the statistics based on periodic sampling are disabled. If set to `inactive`, no mbeans of type "Session" are generated, but for a fake mbean which acts as a reminder that the option can be enabled. The support for session-related mbeans can pose a significant overload on the Server when many sessions are active and many of them are continuously created and closed. For this reason, the support is disabled by default.
 
 **Default:** `inactive`
 #### [management.maxTaskWaitMillis](./values.yaml#L1640)
@@ -850,7 +850,7 @@ Mandatory. Push session configuration.
 #### [pushSession.compressionThreshold](./values.yaml#L2086)
 
      
-Optional. Size in bytes of the response body below which compression is not applied, regardless of the "use_compression" setting, as we guess that no benefit would come. It is not applied to streaming responses, which are compressed incrementally.
+Optional. Size in bytes of the response body below which compression is not applied, regardless of the `useCompression` setting, as we guess that no benefit would come. It is not applied to streaming responses, which are compressed incrementally.
 
 **Default:** `1024`
 #### [pushSession.contentLength](./values.yaml#L2019)
@@ -1050,7 +1050,7 @@ Optional. Enabling the use of the "chunked" transfer encoding, as defined by the
 #### [pushSession.useCompression](./values.yaml#L2080)
 
      
-Optional. Enabling the use of the "gzip" content encoding, as defined by the HTTP 1.1 specifications, for sending the resource contents on HTTP responses; compression is currently not supported for responses over WebSockets. If set to `Y`, Gzip compression will be used anytime an HTTP 1.1 response is allowed (for streaming responses, the "chunked" transfer encoding should also be allowed), provided that the client has declared to accept it through the proper http request headers. If set to `N`, causes no specific content encoding to be applied for all kinds of contents. If set to `AUTO`, Gzip compression will not be used, unless using it is recommended in order to handle special cases (and provided that all the conditions for compression are met; see case Y above). Streaming responses are compressed incrementally. The use of compression may relieve the network level at the expense of the Server performance. Note that bandwidth control and output statistics are still based on the non-compressed content.
+Optional. Enabling the use of the "gzip" content encoding, as defined by the HTTP 1.1 specifications, for sending the resource contents on HTTP responses; compression is currently not supported for responses over WebSockets. If set to `Y`, Gzip compression will be used anytime an HTTP 1.1 response is allowed (for streaming responses, the "chunked" transfer encoding should also be allowed), provided that the client has declared to accept it through the proper http request headers. If set to `N`, causes no specific content encoding to be applied for all kinds of contents. If set to `AUTO`, Gzip compression will not be used, unless using it is recommended in order to handle special cases (and provided that all the conditions for compression are met; see case `Y` above). Streaming responses are compressed incrementally. The use of compression may relieve the network level at the expense of the Server performance. Note that bandwidth control and output statistics are still based on the non-compressed content.
 
 **Default:** `AUTO`
 ### Mpn configuration
