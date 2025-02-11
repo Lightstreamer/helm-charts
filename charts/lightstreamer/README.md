@@ -243,7 +243,7 @@ Optional. Instructs the underlying Security Provider on whether to use stateless
 **Default:**
 
 ```
-the underlying Security Provider's configuration.
+the underlying Security Provider's configuration
 ```
 #### [servers.defaultServer.sslConfig.enableTlsRenegotiation](./values.yaml#L1186)
 
@@ -1081,17 +1081,13 @@ Optional. Enabling of the startup of the module upon Server startup. If module s
 Optional. If set to `true`, a module startup will be initiated immediately at Server startup through the mechanism set by `maxDelay`. If set to `false`, the Server will start with an inactive module. Note: the initialization of a new module (as well as the deactivation of the current module), can be requested at any time through the JMX interface (full JMX features is an optional feature, available depending on Edition and License Type).
 
 **Default:** `true`
-#### [mpn.activationOnStartUp.maxDelayMillis](./values.yaml#L2509)
+#### [mpn.activationOnStartUp.maxDelayMillis](./values.yaml#L2507)
 
      
-Optional, but effective only if `mpn.enableActivationOnStartUp` is set to `true`. If not specified, or set to `-1`, the Server startup will be blocked until module startup completion; if the module startup fails, the Server startup will fail in turn. Otherwise, the Server startup will be blocked only up to the specified delay. If the delay expires, the Server may start with the module temporarily inactive; moreover, if the module startup eventually fails, the Server will keep running with an inactive module. completion
+Optional, but effective only if `mpn.enableActivationOnStartUp` is set to `true`. If not specified, or set to `-1`, the Server startup will be blocked until module startup completion; if the module startup fails, the Server startup will fail in turn. Otherwise, the Server startup will be blocked only up to the specified delay. If the delay expires, the Server may start with the module temporarily inactive; moreover, if the module startup eventually fails, the Server will keep running with an inactive module.
 
-**Default:**
-
-```
-the Server startup will be blocked until module startup
-```
-#### [mpn.appleNotifierConfig](./values.yaml#L2608)
+**Default:** `nil`
+#### [mpn.appleNotifierConfig](./values.yaml#L2606)
 
      
 Optional. Apple platforms notifier configuration.
@@ -1101,7 +1097,7 @@ Optional. Apple platforms notifier configuration.
 ```
 {"apps":{"myApp":{"enabled":null,"id":null,"keystoreRef":null,"pushPackageFileRef":null,"serviceLevel":null,"triggerExpressions":[]}},"connectionTimeout":null,"keyStores":{"myAppKeystore":{"keystoreFileSecretRef":null,"keystorePasswordSecretRef":null}},"maxConcurrentConnections":null,"minSendDelayMillis":null}
 ```
-#### [mpn.appleNotifierConfig.apps](./values.yaml#L2634)
+#### [mpn.appleNotifierConfig.apps](./values.yaml#L2632)
 
      
 Optional. List of apps that should receive mobile push notifications.
@@ -1111,7 +1107,7 @@ Optional. List of apps that should receive mobile push notifications.
 ```
 {"myApp":{"enabled":null,"id":null,"keystoreRef":null,"pushPackageFileRef":null,"serviceLevel":null,"triggerExpressions":[]}}
 ```
-#### [mpn.appleNotifierConfig.apps.myApp](./values.yaml#L2636)
+#### [mpn.appleNotifierConfig.apps.myApp](./values.yaml#L2634)
 
      
 An application configuration.
@@ -1121,49 +1117,49 @@ An application configuration.
 ```
 {"enabled":null,"id":null,"keystoreRef":null,"pushPackageFileRef":null,"serviceLevel":null,"triggerExpressions":[]}
 ```
-#### [mpn.appleNotifierConfig.apps.myApp.enabled](./values.yaml#L2639)
+#### [mpn.appleNotifierConfig.apps.myApp.enabled](./values.yaml#L2637)
 
      
 Optional. Enablement of the application configuration.
 
 **Default:** `false`
-#### [mpn.appleNotifierConfig.apps.myApp.id](./values.yaml#L2644)
+#### [mpn.appleNotifierConfig.apps.myApp.id](./values.yaml#L2642)
 
      
 Mandatory if `enabled` is set to `true`. The app ID, which corresponds to the bundle ID of the app's binary. Note that for web apps (i.e. targeting Safari push notification) the ID must begin with `web`", e.g.: `web.com.mydomain.myapp`.
 
 **Default:** `nil`
-#### [mpn.appleNotifierConfig.apps.myApp.keystoreRef](./values.yaml#L2664)
+#### [mpn.appleNotifierConfig.apps.myApp.keystoreRef](./values.yaml#L2662)
 
      
 Mandatory if `serviceLevel` is set to `development` or `production`. The reference to the keystore (defined in `mpn.appleNotifierConfig.keyStores`) where Apple's certificate for the app ID is stored.
 
 **Default:** `nil`
-#### [mpn.appleNotifierConfig.apps.myApp.pushPackageFileRef](./values.yaml#L2670)
+#### [mpn.appleNotifierConfig.apps.myApp.pushPackageFileRef](./values.yaml#L2668)
 
      
 Optional. The configmap name and the key where the push package zip file is stored. This file contains a descriptor of the web app (i.e. targeting Safari push notification), and is mandatory only for web apps (ignore in other cases). See the General Concepts document for more information on how to produce this file. -->
 
 **Default:** `nil`
-#### [mpn.appleNotifierConfig.apps.myApp.serviceLevel](./values.yaml#L2658)
+#### [mpn.appleNotifierConfig.apps.myApp.serviceLevel](./values.yaml#L2656)
 
      
 Mandatory if `enabled` is set to `true`. Specifies the intended service level for the current app ID, must be one of: `test`, `development`, `production`. If set to `test`, notification will be logged only and no connection will be established with Apple's servers. The corresponding logger is `lightstreamerLogger.mpn.apple`, notifications are logged at `INFO` level (see logging.loggers.lightstreamerLogger.subLoggers.lightstreamerLogger.mpn.apple). If set to `development` or `production`, notifications will be sent to, respectively, Apple's development or production servers. Note that for web apps (i.e. targeting Safari push notification) the `development` service level should not be used, as there is no corresponding `development` client environment that can receive notifications. Use either `production` or `test`.
 
 **Default:** `nil`
-#### [mpn.appleNotifierConfig.apps.myApp.triggerExpressions](./values.yaml#L2696)
+#### [mpn.appleNotifierConfig.apps.myApp.triggerExpressions](./values.yaml#L2694)
 
      
 Optional. List of trigger expressions that will be accepted. Each each item is a Java-compatible regular expression (see java.util.regex.Pattern): triggers requested via client APIs will be compared with each regular expression, and accepted only if there is at least one match. Remember that the MPN Module supports, as trigger, any Java boolean expression, including use of JDK classes and methods, with the addition of field references syntax (see the iOS Client SDK for more information). Hence, this check is a safety measure required to avoid that clients can request triggers potentially dangerous for the Server, as each trigger may contain arbitrary Java code. If left commented out or empty, no triggers will be accepted. Please note that using an "accept all" regular expression like `.*` is possible, but still leaves the Server exposed to the danger of maliciously crafted triggers. Anyway, the Metadata Adapter has a second chance to check for trigger allowance. The example shown below is for a typical notification on threshold, where a field is compared against a numeric constant. Note: submitted trigger expressions are compared with this list of regular expressions after their named-arguments have been converted to indexed-arguments. Always specify fields with the `$[digits]` format, not the `${name}` format.
 
 **Default:** `[]`
-#### [mpn.appleNotifierConfig.connectionTimeout](./values.yaml#L2632)
+#### [mpn.appleNotifierConfig.connectionTimeout](./values.yaml#L2630)
 
      
 Optional. Timeout for connecting to APNS services. In case of slow outgoing connectivity, increasing the timeout may be beneficial.
 
 **Default:** `30000 (30 sec)`
-#### [mpn.appleNotifierConfig.keyStores](./values.yaml#L2699)
+#### [mpn.appleNotifierConfig.keyStores](./values.yaml#L2697)
 
      
 Optional. Keystores definition.
@@ -1173,7 +1169,7 @@ Optional. Keystores definition.
 ```
 {"myAppKeystore":{"keystoreFileSecretRef":null,"keystorePasswordSecretRef":null}}
 ```
-#### [mpn.appleNotifierConfig.keyStores.myAppKeystore](./values.yaml#L2701)
+#### [mpn.appleNotifierConfig.keyStores.myAppKeystore](./values.yaml#L2699)
 
      
 Keystore configuration for the app.
@@ -1183,25 +1179,25 @@ Keystore configuration for the app.
 ```
 {"keystoreFileSecretRef":null,"keystorePasswordSecretRef":null}
 ```
-#### [mpn.appleNotifierConfig.keyStores.myAppKeystore.keystoreFileSecretRef](./values.yaml#L2704)
+#### [mpn.appleNotifierConfig.keyStores.myAppKeystore.keystoreFileSecretRef](./values.yaml#L2702)
 
      
 Mandatory. The secret name and the key where the keystore file is stored.
 
 **Default:** `nil`
-#### [mpn.appleNotifierConfig.keyStores.myAppKeystore.keystorePasswordSecretRef](./values.yaml#L2709)
+#### [mpn.appleNotifierConfig.keyStores.myAppKeystore.keystorePasswordSecretRef](./values.yaml#L2707)
 
      
 Mandatory. The secret name and the key where the keystore password is stored.
 
 **Default:** `nil`
-#### [mpn.appleNotifierConfig.maxConcurrentConnections](./values.yaml#L2628)
+#### [mpn.appleNotifierConfig.maxConcurrentConnections](./values.yaml#L2626)
 
      
 Optional. Maximum number of concurrent connections to APNS services. The connection pool starts with 1 connection and grows automatically as the load increases. In case the expected load is very high, increasing the pool maximum size my be beneficial. For apps with development service level, this parameter is ignored.
 
 **Default:** `1`
-#### [mpn.appleNotifierConfig.minSendDelayMillis](./values.yaml#L2621)
+#### [mpn.appleNotifierConfig.minSendDelayMillis](./values.yaml#L2619)
 
      
 Optional. Minimum delay between successive mobile push notifications for the same app/device pair. Each app/device pair is subject to constraints on the pace mobile push notifications may be sent to it. For this reason, a minimum delay is set and may be altered with this parameter. Lowering it too much, and subsequently sending notifications with a high frequency, may cause Apple's Push Notification Service ("APNs") to close the connection and ban (temporarily or permanently) any successive notification. Mobile push notifications fired by a trigger are not subject to this limit and may be sent at higher pace.
@@ -1213,19 +1209,19 @@ Optional. Minimum delay between successive mobile push notifications for the sam
 Optional. Specifies the root path of the web service URL to be invoked by the client application on a Safari browser to enable Web Push Notifications. Currently, the latter is achieved by invoking the `window.safari.pushNotification.requestPermission` method. Only when the MPN module is enabled, the specified path is reserved and the Server identifies these special requests and processes them as required. Enabling the internal web server (`webServer.enabled` set to `true`) is not needed for this; note that if the internal web server is enabled, the processing of this path is different from the processing of the other URLs.
 
 **Default:** `/apple_web_service`
-#### [mpn.collectorPeriodMinutes](./values.yaml#L2532)
+#### [mpn.collectorPeriodMinutes](./values.yaml#L2530)
 
      
 Optional. Periodicity of the device garbage collector. Once every this number of minutes, devices that have been inactive for more than `deviceInactivityTimeoutMinutes` are permanently deleted.
 
 **Default:** `60 (1 hour)`
-#### [mpn.deviceHandlerPool](./values.yaml#L2556)
+#### [mpn.deviceHandlerPool](./values.yaml#L2554)
 
      
 Optional. Requests the creation of a specific thread pool, `MPN DEVICE HANDLER`, specifically dedicated to the handling of the internal sessions that are used to receive subscription updates to be sent to the devices. In particular, during the startup phase, all the subscriptions needed to handle all the active push notifications are performed in a burst. If defined, the pool should be sized wide enough to support this burst of activity. If the pool is not defined, each "subscribe" call will be managed by the thread pool associated with the involved Data Adapter, similarly to ordinary sessions.
 
 **Default:** `{"maxFree":null,"maxSize":null}`
-#### [mpn.deviceHandlerPool.maxFree](./values.yaml#L2564)
+#### [mpn.deviceHandlerPool.maxFree](./values.yaml#L2562)
 
      
 Optional. Specifies the the maximum number of idle threads the pool may have.
@@ -1235,19 +1231,19 @@ Optional. Specifies the the maximum number of idle threads the pool may have.
 ```
 0, meaning the pool will not consume resources when idle
 ```
-#### [mpn.deviceHandlerPool.maxSize](./values.yaml#L2560)
+#### [mpn.deviceHandlerPool.maxSize](./values.yaml#L2558)
 
      
 Optional. Specifies the maximum number of threads the pool may use.
 
 **Default:** `100`
-#### [mpn.deviceInactivityTimeoutMinutes](./values.yaml#L2527)
+#### [mpn.deviceInactivityTimeoutMinutes](./values.yaml#L2525)
 
      
 Optional. Timeout after which an inactive device is considered abandoned and is permanently deleted. A device is considered inactive if it is suspended (i.e. its device token has been rejected by the MPN service) or it has no active subscriptions. A suspended device may be resumed with a token change (typically, client libraries handle this situation automatically).
 
 **Default:** `10080 (7 days)`
-#### [mpn.enableModuleRecovery](./values.yaml#L2519)
+#### [mpn.enableModuleRecovery](./values.yaml#L2517)
 
      
 Optional. Enabling of the automatic initialization of a new module upon upon health check failure. If set to `true`, upon health check failure, the failed module will become inactive and the initialization of a new module will be started; if unsuccessful, the Server will keep running with an inactive module. If set to `false`, upon health check failure, the failed module will become inactive and the Server will keep running with an inactive module. See `mpn.activationOnStartUp` for notes on inactive modules.
@@ -1259,13 +1255,13 @@ Optional. Enabling of the automatic initialization of a new module upon upon hea
 Optional. MPN module master switch. If N, the MPN module will not start in any case, and all requests related to mobile push Note that, by enabling the module, the handling of the special  URL configured by `appleWebServicePath` is also enabled.
 
 **Default:** `false`
-#### [mpn.executorPool](./values.yaml#L2538)
+#### [mpn.executorPool](./values.yaml#L2536)
 
      
 Optional. Sizes of request processor's ("MPN EXECUTOR") thread pool. The request processor is devoted to process incoming MPN requests, such as subscription activations and deactivations. These requests access the database and may be subject to blocking in case of database disconnection.
 
 **Default:** `all settings at their defaults`
-#### [mpn.executorPool.maxFree](./values.yaml#L2546)
+#### [mpn.executorPool.maxFree](./values.yaml#L2544)
 
      
 Optional. Specifies the the maximum number of idle threads the pool may have.
@@ -1275,13 +1271,13 @@ Optional. Specifies the the maximum number of idle threads the pool may have.
 ```
 0, meaning the pool will not consume resources when idle
 ```
-#### [mpn.executorPool.maxSize](./values.yaml#L2542)
+#### [mpn.executorPool.maxSize](./values.yaml#L2540)
 
      
 Optional. Specifies the maximum number of threads the pool may use.
 
 **Default:** `10`
-#### [mpn.googleNotifierConfig](./values.yaml#L2713)
+#### [mpn.googleNotifierConfig](./values.yaml#L2711)
 
      
 Optional. Google platforms notifier configuration.
@@ -1291,7 +1287,7 @@ Optional. Google platforms notifier configuration.
 ```
 {"apps":{"myApp":{"enabled":null,"packageName":null,"serviceJsonFileRef":null,"serviceLevel":null,"triggerExpressions":[]}},"messagingPoolSize":null,"minSendDelayMillis":null}
 ```
-#### [mpn.googleNotifierConfig.apps](./values.yaml#L2733)
+#### [mpn.googleNotifierConfig.apps](./values.yaml#L2731)
 
      
 Optional. List of apps that should receive mobile push notifications.
@@ -1301,7 +1297,7 @@ Optional. List of apps that should receive mobile push notifications.
 ```
 {"myApp":{"enabled":null,"packageName":null,"serviceJsonFileRef":null,"serviceLevel":null,"triggerExpressions":[]}}
 ```
-#### [mpn.googleNotifierConfig.apps.myApp](./values.yaml#L2735)
+#### [mpn.googleNotifierConfig.apps.myApp](./values.yaml#L2733)
 
      
 An application configuration.
@@ -1311,37 +1307,37 @@ An application configuration.
 ```
 {"enabled":null,"packageName":null,"serviceJsonFileRef":null,"serviceLevel":null,"triggerExpressions":[]}
 ```
-#### [mpn.googleNotifierConfig.apps.myApp.enabled](./values.yaml#L2738)
+#### [mpn.googleNotifierConfig.apps.myApp.enabled](./values.yaml#L2736)
 
      
 Optional. Enablement of the application configuration.
 
 **Default:** `false`
-#### [mpn.googleNotifierConfig.apps.myApp.packageName](./values.yaml#L2741)
+#### [mpn.googleNotifierConfig.apps.myApp.packageName](./values.yaml#L2739)
 
      
 Mandatory if `enabled` is set to `true`. The package name of the app.
 
 **Default:** `nil`
-#### [mpn.googleNotifierConfig.apps.myApp.serviceJsonFileRef](./values.yaml#L2759)
+#### [mpn.googleNotifierConfig.apps.myApp.serviceJsonFileRef](./values.yaml#L2757)
 
      
 Mandatory if `serviceLevel` is set to `dry_run` or `production`. The configmap name and the key where the JSON descriptor for the service account credentials of this project on Firebase console is stored. See the General Concepts document for more information on how to obtain this file.
 
 **Default:** `nil`
-#### [mpn.googleNotifierConfig.apps.myApp.serviceLevel](./values.yaml#L2753)
+#### [mpn.googleNotifierConfig.apps.myApp.serviceLevel](./values.yaml#L2751)
 
      
 Mandatory if `enabled` is set to `true`. Specifies the intended service level for the current app, must be one of: `test`, `dry_run`,`production`. If set to `test`, notification will be logged only and no connection will be established with Google's servers. The corresponding logger is `lightstreamerLogger.mpn.google`, notifications are logged at `INFO` level (see `logging.loggers.lightstreamerLogger.subLoggers.lightstreamerLogger.mpn.google`). If set to `dry_run` or `production`, notifications will be sent to Google's servers. If set to `dry_run`, notifications will be accepted by Google's servers but not delivered to the user's device.
 
 **Default:** `nil`
-#### [mpn.googleNotifierConfig.apps.myApp.triggerExpressions](./values.yaml#L2785)
+#### [mpn.googleNotifierConfig.apps.myApp.triggerExpressions](./values.yaml#L2783)
 
      
 Optional. List of trigger expressions that will be accepted. Each each item is a Java-compatible regular expression (see java.util.regex.Pattern): triggers requested via client APIs will be compared with each regular expression, and accepted only if there is at least one match. Remember that the MPN Module supports, as trigger, any Java boolean expression, including use of JDK classes and methods, with the addition of field references syntax (see the iOS Client SDK for more information). Hence, this check is a safety measure required to avoid that clients can request triggers potentially dangerous for the Server, as each trigger may contain arbitrary Java code. If left commented out or empty, no triggers will be accepted. Please note that using an "accept all" regular expression like `.*` is possible, but still leaves the Server exposed to the danger of maliciously crafted triggers. Anyway, the Metadata Adapter has a second chance to check for trigger allowance. The example shown below is for a typical notification on threshold, where a field is compared against a numeric constant. Note: submitted trigger expressions are compared with this list of regular expressions after their named-arguments have been converted to indexed-arguments. Always specify fields with the `$[digits]` format, not the `${name}` format.
 
 **Default:** `[]`
-#### [mpn.googleNotifierConfig.messagingPoolSize](./values.yaml#L2731)
+#### [mpn.googleNotifierConfig.messagingPoolSize](./values.yaml#L2729)
 
      
 Optional. Size of the notifier's `MPN XXX MESSAGING` internal thread pool, which is devoted to sending the notifications payload. Each app has a separate thread pool. On multiprocessor machines, allocating multiple threads for this task may be beneficial.
@@ -1351,7 +1347,7 @@ Optional. Size of the notifier's `MPN XXX MESSAGING` internal thread pool, which
 ```
 the number of available total cores, as detected by the JVM
 ```
-#### [mpn.googleNotifierConfig.minSendDelayMillis](./values.yaml#L2725)
+#### [mpn.googleNotifierConfig.minSendDelayMillis](./values.yaml#L2723)
 
      
 Optional. Minimum delay between successive mobile push notifications for the same app/device pair. Each app/device pair is subject to constraints on the pace mobile push notifications may be sent to it. For this reason, a minimum delay is set and may be altered with this parameter. Lowering it too much, and subsequently sending notifications with a high frequency, may cause Google's Firebase Cloud Messaging service ("FCM") to close the connection and ban (temporarily or permanently) any successive notification. Mobile push notifications fired by a trigger are not subject to this limit and may be sent at higher pace.
@@ -1457,7 +1453,7 @@ Optional. Specifies the name of the built-in data adapter that client SDKs may s
 Optional. Timeout for a health check of other modules. If a module fails to do its health check for this period of time, other module instances may consider it dead and takeover its devices and subscriptions. Hence, it must be longer than `moduleCheckPeriodMillis` and it should be long enough to avoid false positives. In case a cluster is in place, the timeout should be longer than all values of `moduleCheckPeriodMillis` configured for the various instances in the cluster.
 
 **Default:** `30000`
-#### [mpn.mpnPumpPoolSize](./values.yaml#L2579)
+#### [mpn.mpnPumpPoolSize](./values.yaml#L2577)
 
      
 Optional. Size of the `MPN PUMP` internal thread pool, which is devoted to integrating the update events pertaining to each MPN device and to creating the update commands that become push notifications, whenever needed. This task does not include blocking operations; however, on multiprocessor machines, allocating multiple threads for this task may be beneficial.
@@ -1467,13 +1463,13 @@ Optional. Size of the `MPN PUMP` internal thread pool, which is devoted to integ
 ```
 the number of available total cores, as detected by the JVM
 ```
-#### [mpn.mpnTimerPoolSize](./values.yaml#L2586)
+#### [mpn.mpnTimerPoolSize](./values.yaml#L2584)
 
      
 Optional. Number of threads used to parallelize the implementation of the internal MPN timers. This task does not include blocking operations, but its computation may be heavy under high update activity; hence, on multiprocessor machines, allocating multiple threads for this task may be beneficial.
 
 **Default:** `1`
-#### [mpn.notifierPoolSize](./values.yaml#L2571)
+#### [mpn.notifierPoolSize](./values.yaml#L2569)
 
      
 Optional. Size of the notifiers' `MPN XXX NOTIFIER` internal thread pool, which is devoted to composing the notifications payload, sending them to the notification service and processing the response. This task does not include blocking operations; however, on multiprocessor machines, allocating multiple threads for this task may be beneficial.
@@ -1483,7 +1479,7 @@ Optional. Size of the notifiers' `MPN XXX NOTIFIER` internal thread pool, which 
 ```
 the number of available total cores, as detected by the JVM
 ```
-#### [mpn.reactionOnDatabaseFailure](./values.yaml#L2606)
+#### [mpn.reactionOnDatabaseFailure](./values.yaml#L2604)
 
      
 Mandatory. Specifies what to do in case of database failure. A number of internal operations are bound to the success of a database update. In those (hopefully) rare situations when the database is not available, the MPN module must know what to do: if it is better to abort the operation entirely (thus risking to lose the event) or better to continue anyway (thus risking to duplicate the event). A typical situation is the triggering of a subscription, e.g.: when the price of a stock raises above a threshold, the MPN module must both send the mobile push notification and mark the subscription as triggered on the database. If the database is not available, the MPN module may react by aborting the operation, i.e. no mobile push notification is sent, another one will be sent only when (and if) the price drops and then raises above the threshold again. Alternatively, it may react by continuing with the operation, i.e. the mobile push notification is sent anyway, but (since the database has not been updated) if the price drops and then raises again it may get sent twice. Set to `abort_operation` to abort the ongoing operation. Set to `continue_operation` to continue the ongoing operation.
@@ -1551,7 +1547,7 @@ Optional. The keystore type. The currently supported types are: - `JKS`, which i
 **Default:** `JKS`
 ### WebServer configuration
  
-#### [webServer](./values.yaml#L2795)
+#### [webServer](./values.yaml#L2793)
 
      
 Optional. Internal web server configuration. Note that some of the included settings may also apply to the Monitoring Dashboard pages, which are supplied through the internal web server. In particular, this holds for the `webServer.compressionThreshold` settings. Anyway, this does not hold for the `webServer.enabled` setting, as the Monitoring Dashboard accessibility is only configured through `management.dashboard`.
@@ -1561,67 +1557,67 @@ Optional. Internal web server configuration. Note that some of the included sett
 ```
 {"compressionThreshold":null,"enableFlexCrossdomain":null,"enableSilverlightAccessPolicy":null,"enabled":true,"errorPageRef":null,"flexCrossdomainPath":null,"mimeTypesConfig":null,"notFoundPage":null,"pagesDir":null,"persistencyMinutes":null,"silverlightAccessPolicyPath":null}
 ```
-#### [webServer.compressionThreshold](./values.yaml#L2844)
+#### [webServer.compressionThreshold](./values.yaml#L2842)
 
      
 Optional. Size of the resource contents below which compression is not applied, regardless of the `webServer.compression.default` setting, as we guess that no overall benefit would be reached.
 
 **Default:** `8192`
-#### [webServer.enableFlexCrossdomain](./values.yaml#L2866)
+#### [webServer.enableFlexCrossdomain](./values.yaml#L2864)
 
      
 Optional. Enables the processing of the `/crossdomain.xml` URL, required by the Flash player in order to allow pages from a different host to request data to Lightstreamer Server host. See the "WebSite Controls" section on http://www.adobe.com/devnet/flashplayer/articles/flash_player_9_security.pdf for details on the contents of the document to be returned. If set to `true`, the Server accepts requests for `/crossdomain.xml`; the file configured through the `webServer.flexCrossdomainPath` setting is returned. Enabling internal web server (through `webServer.enabled`) is not needed; note that if the internal web server is enabled, the processing of the `/crossdomain.xml` URL is different than the processing of the other URLs. If set to `false`, no special processing for the `/crossdomain.xml` requests is performed. Note that if the internal web server is enabled, then the processing of the `/crossdomain.xml` URL is performed as for any other URL (i.e. a file named `crossdomain.xml` is looked for in the directory configured as the root for URL path mapping). Note that `/crossdomain.xml` is also used by the Silverlight runtime when `/clientaccesspolicy.xml` is not provided.
 
 **Default:** `false`
-#### [webServer.enableSilverlightAccessPolicy](./values.yaml#L2894)
+#### [webServer.enableSilverlightAccessPolicy](./values.yaml#L2892)
 
      
 Optional. Enables the processing of the `/clientaccesspolicy.xml" URL, required by the Silverlight runtime in order to allow pages from a different host to request data to Lightstreamer Server host. See http://msdn.microsoft.com/en-us/library/cc838250(VS.95).aspx#crossdomain_communication for details on the contents of the document to be returned. If set to `true`, the Server accepts requests for `/clientaccesspolicy.xml`; the file configured through the `webServer.silverlightAccessPolicyPath` setting is returned. Enabling internal web server (through `webServer.enabled`) is not needed; note that if the internal web server is enabled, the processing of the `/clientaccesspolicy.xml` URLis different than the processing of the other URLs. If set to `false`, no special processing for the `/clientaccesspolicy.xml` requests is performed. Note that if the internal web server is enabled, then the processing of the `/clientaccesspolicy.xml` URL is performed as for any other URL (i.e. a file named "clientaccesspolicy.xml" is looked for in the directory  configured as the root for URL path mapping). Note that `/crossdomain.xml` is also used by the Silverlight runtime when `/clientaccesspolicy.xml` is not provided.
 
 **Default:** `false`
-#### [webServer.enabled](./values.yaml#L2800)
+#### [webServer.enabled](./values.yaml#L2798)
 
      
 Optional. Enabling of the internal web server. If set to `true`, the Server accepts requests for file resources. If set  to `false`, the Server ignores requests for file resources.
 
 **Default:** `false`
-#### [webServer.errorPageRef](./values.yaml#L2810)
+#### [webServer.errorPageRef](./values.yaml#L2808)
 
      
 Optional. The configmap name and the key where an HTML page to be returned upon unexpected request URLs is stored. This applies to URLs in reserved ranges that have no meaning. If the Internal web server is not enabled (`webServer.enabled` set to `false`), this also applies to all non-reserved URLs; otherwise, nonexisting non-reserved URLs will get the HTTP 404 error as usual. The file content should be encoded with the iso-8859-1 charset. The file path is relative to the conf directory.
 
 **Default:** `the proper page is provided by the Server`
-#### [webServer.flexCrossdomainPath](./values.yaml#L2872)
+#### [webServer.flexCrossdomainPath](./values.yaml#L2870)
 
      
 Mandatory when `webServer.enableFlexCrossdomain` is true. Path of the file to be returned upon requests for the `/crossdomain.xml` URL. It is ignored when `webServer.enableFlexCrossdomain` is false. The file content should be encoded with the iso-8859-1 charset. The file path is relative to the conf directory.
 
 **Default:** `nil`
-#### [webServer.mimeTypesConfig](./values.yaml#L2833)
+#### [webServer.mimeTypesConfig](./values.yaml#L2831)
 
      
 Optional. Path of the MIME types configuration property file. The file path is relative to the conf directory.
 
 **Default:** ` ./mime_types.properties`
-#### [webServer.notFoundPage](./values.yaml#L2839)
+#### [webServer.notFoundPage](./values.yaml#L2837)
 
      
 Optional. Path of an HTML page to be returned as the body upon a "404 Not Found" answer caused by the request of a nonexistent URL. The file content should be encoded with the iso-8859-1 charset. The file path is relative to the conf directory.
 
 **Default:** `the proper page is provided by the Server`
-#### [webServer.pagesDir](./values.yaml#L2823)
+#### [webServer.pagesDir](./values.yaml#L2821)
 
      
 Optional. Path of the file system directory to be used by the internal web server as the root for URL path mapping. The path is relative to the conf directory. Note that the /lightstreamer URL path (as any alternative paths defined through `pushSession.serviceUrlPrefix`) is reserved, as well as the base URL path of the Monitoring Dashboard(see `management.dashboard.urlPath`); hence, subdirectories of the pages directory with conflicting names would be ignored.
 
 **Default:** `../pages`
-#### [webServer.persistencyMinutes](./values.yaml#L2829)
+#### [webServer.persistencyMinutes](./values.yaml#L2827)
 
      
 Optional. Caching time, in minutes, to be allowed to the browser (through the "expires" HTTP header) for all the resources supplied by the internal web server. A zero value disables caching by the browser.
 
 **Default:** `0`
-#### [webServer.silverlightAccessPolicyPath](./values.yaml#L2901)
+#### [webServer.silverlightAccessPolicyPath](./values.yaml#L2899)
 
      
 Mandatory when `web.enableSilverlightAccessPolicy` is `true`. Path of the file to be returned upon requests for the `/clientaccesspolicy.xml` URL. It is ignored when `web.enableSilverlightAccessPolicy` is false. The file content should be encoded with the iso-8859-1 charset. The file path is relative to the conf directory.
@@ -1629,7 +1625,7 @@ Mandatory when `web.enableSilverlightAccessPolicy` is `true`. Path of the file t
 **Default:** `nil`
 ### Cluster configuration
  
-#### [cluster](./values.yaml#L2904)
+#### [cluster](./values.yaml#L2902)
 
      
 Optional. Clustering configuration.
@@ -1639,7 +1635,7 @@ Optional. Clustering configuration.
 ```
 {"controlLinkAddress":null,"controlLinkMachineName":null,"maxSessionDurationMinutes":null}
 ```
-#### [cluster.maxSessionDurationMinutes](./values.yaml#L2963)
+#### [cluster.maxSessionDurationMinutes](./values.yaml#L2961)
 
      
 Optional. If set and positive, specifies a maximum duration to be enforced on each session. If the limit expires, the session is closed and the client can only establish a new session. This is useful when a cluster of Server instances is in place, as it leaves the Load Balancer the opportunity to migrate the new session to a different instance. See the Clustering document for details on this mechanism and on how rebalancing can be pursued.
@@ -1647,7 +1643,7 @@ Optional. If set and positive, specifies a maximum duration to be enforced on ea
 **Default:** `unlimited`
 ### Load configuration
  
-#### [load](./values.yaml#L2966)
+#### [load](./values.yaml#L2964)
 
      
 Optional. Load configuration.
@@ -1657,7 +1653,7 @@ Optional. Load configuration.
 ```
 {"acceptPoolMaxQueue":null,"acceptPoolMaxSize":null,"eventsPoolSize":null,"forceEarlyConversions":null,"handshakePoolMaxQueue":null,"handshakePoolSize":null,"httpsAuthPoolMaxFree":null,"httpsAuthPoolMaxQueue":null,"httpsAuthPoolMaxSize":null,"maxCommonNioBufferAllocation":null,"maxCommonPumpBufferAllocation":null,"maxMpnDevices":null,"maxSessions":null,"prestartedMaxQueue":null,"pumpPoolMaxQueue":null,"pumpPoolSize":null,"selectorMaxLoad":null,"selectorPoolSize":null,"serverPoolMaxFree":null,"serverPoolMaxQueue":null,"serverPoolMaxSize":null,"snapshotPoolSize":null,"timerPoolSize":null}
 ```
-#### [load.acceptPoolMaxSize](./values.yaml#L3119)
+#### [load.acceptPoolMaxSize](./values.yaml#L3117)
 
      
 Optional. Maximum number of threads allowed for the "ACCEPT" internal pool, which is devoted to the parsing of the client requests. This task does not include blocking operations; however, on multiprocessor machines, allocating multiple threads for this task may be beneficial. Only in corner cases, it is possible that some operations turn out to be blocking; in particular: - getHostName, only if banned hostnames are configured; - socket close, only if banned hostnames are configured; - read from the "proxy protocol", only if configured; - service of requests on a "priority port", only available for internal use. A zero value means a potentially unlimited number of threads. which is also the minimum number of threads left in the pool
@@ -1667,7 +1663,7 @@ Optional. Maximum number of threads allowed for the "ACCEPT" internal pool, whic
 ```
 the number of available total cores, as detected by the JVM,
 ```
-#### [load.eventsPoolSize](./values.yaml#L3030)
+#### [load.eventsPoolSize](./values.yaml#L3028)
 
      
 Optional. Size of the "EVENTS" internal thread pool, which is devoted to dispatching the update events received from a Data Adapter to the proper client sessions, according with each session subscriptions. This task does not include blocking operations; however, on multiprocessor machines, allocating multiple threads for this task may be beneficial.
@@ -1677,19 +1673,19 @@ Optional. Size of the "EVENTS" internal thread pool, which is devoted to dispatc
 ```
 the number of available total cores, as detected by the JVM
 ```
-#### [load.forceEarlyConversions](./values.yaml#L3227)
+#### [load.forceEarlyConversions](./values.yaml#L3225)
 
      
 Optional. Policy to be adopted in order to manage the extraction of the field values from the item events and their conversion to If set to `true`, causes field conversion to be performed before the events are dispatched to the various sessions; this may lead to some wasted conversions, in case an event is filtered out later by all interested clients or in case a field is not subscribed to by any client. Note that events which don't provide an iterator (see the Data Adapter interface documentation) cannot be managed in this way. If set to `false`, causes field conversion to be performed only as soon as it is needed; in this case, as the same event object may be shared by many sessions, some synchronization logic is needed and this may lead to poor scaling in case many clients subscribe to the same item.
 
 **Default:** `true`
-#### [load.handshakePoolMaxQueue](./values.yaml#L3172)
+#### [load.handshakePoolMaxQueue](./values.yaml#L3170)
 
      
 Optional. Maximum number of tasks allowed to be queued to enter the "TLS-SSL HANDSHAKE" thread pool before undertaking backpressure actions. The setting only regards the listening sockets specified through the `servers.{}` configurations (with `enableHttps` set to `true`) that are not configured to request the client certificate. More precisely: - If there are https sockets with `servers.{}.portType` configured as   CREATE_ONLY, then, as long as the number is exceeded, the accept loops of   these sockets will be kept waiting.   By suspending the accept loop, some SYN packets from the clients may be   discarded; the effect may vary depending on the backlog settings. - Otherwise, if there are https sockets configured as CONTROL_ONLY and none   is configured as the default GENERAL_PURPOSE, then, as long as the number   is exceeded, the accept loops of these sockets will be kept waiting   instead.   Additionally, the same action on the accept loops associated to the   `load.acceptPoolMaxQueue` check will be performed (regardless that   `load.acceptPoolMaxQueue` itself is set). Note that the latter action may    affect both http and https sockets. Note that, in the absence of sockets configured as specified above, no backpressure action will take place. A negative value disables the check.
 
 **Default:** `100`
-#### [load.handshakePoolSize](./values.yaml#L3147)
+#### [load.handshakePoolSize](./values.yaml#L3145)
 
      
 Optional. Size of the "TLS-SSL HANDSHAKE" internal pool, which is devoted to the management of operations needed to accomplish TLS/SSL handshakes on the listening sockets specified through the `servers.{}` configuration with `enableHttps` set to `true`. In particular, this pool is only used when the socket is not configured to request the client certificate (see servers.{}.sslConfig.enableClientAuth` and `servers.{}.security.enableMandatoryClientAuth`); in this case, the tasks are not expected to be blocking. Note that the operation may be CPU-intensive; hence, it is advisable to set a value smaller than the number of available cores. (obviously, if there is only one core, the default will be 1)
@@ -1699,7 +1695,7 @@ Optional. Size of the "TLS-SSL HANDSHAKE" internal pool, which is devoted to the
 ```
 half the number of available total cores, as detected by the JVM
 ```
-#### [load.httpsAuthPoolMaxFree](./values.yaml#L3183)
+#### [load.httpsAuthPoolMaxFree](./values.yaml#L3181)
 
      
 Optional. Maximum number of idle threads allowed for the "TLS-SSL AUTHENTICATION" internal pool. It behaves in the same way as the `load.serverPoolMaxFree` setting.
@@ -1709,13 +1705,13 @@ Optional. Maximum number of idle threads allowed for the "TLS-SSL AUTHENTICATION
 ```
 the same as configured for the SERVER thread pool
 ```
-#### [load.httpsAuthPoolMaxQueue](./values.yaml#L3193)
+#### [load.httpsAuthPoolMaxQueue](./values.yaml#L3191)
 
      
 Optional. Maximum number of tasks allowed to be queued to enter the "TLS-SSL AUTHENTICATION" thread pool before undertaking backpressure actions. The effect is similar to the more common `load.handShakePoolMaxQueue`, with the difference that it regards listening sockets specified through `server.httpsServer` that are configured to request the client certificate (see `useClientAuth` and `forceClientAuth`). A negative value disables the check.
 
 **Default:** `100`
-#### [load.httpsAuthPoolMaxSize](./values.yaml#L3178)
+#### [load.httpsAuthPoolMaxSize](./values.yaml#L3176)
 
      
 Optional. Size of the "TLS-SSL AUTHENTICATION" internal pool, which is used instead of the "TLS-SSL HANDSHAKE" pool for listening sockets that are configured to request the client certificate. This kind of task may exhibit a blocking behavior in some cases.
@@ -1725,13 +1721,13 @@ Optional. Size of the "TLS-SSL AUTHENTICATION" internal pool, which is used inst
 ```
 the same as configured for the SERVER thread pool
 ```
-#### [load.maxCommonNioBufferAllocation](./values.yaml#L2992)
+#### [load.maxCommonNioBufferAllocation](./values.yaml#L2990)
 
      
 Optional. Limit to the overall size, in bytes, of the buffers devoted to I/O operations that can be kept allocated for reuse. If 0, removes any limit to the allocation (which should remain limited, based on the maximum concurrent buffer needs). If -1, disables buffer reuse at all and causes all allocated buffers to be released immediately.
 
 **Default:** `200000000`
-#### [load.maxCommonPumpBufferAllocation](./values.yaml#L3000)
+#### [load.maxCommonPumpBufferAllocation](./values.yaml#L2998)
 
      
 Optional. Number of distinct NIO selectors (each one with its own thread) that will share the same operation. Different pools will be prepared for different I/O operations and server sockets, which may give rise to a significant overall number of selectors. Further selectors may be created because of the `load.selectorMaxLoad` setting.
@@ -1741,7 +1737,7 @@ Optional. Number of distinct NIO selectors (each one with its own thread) that w
 ```
 the number of available total cores, as detected by the JVM
 ```
-#### [load.maxMpnDevices](./values.yaml#L2984)
+#### [load.maxMpnDevices](./values.yaml#L2982)
 
      
 Optional. Maximum number of concurrent MPN devices sessions allowed. Once this number of devices has been reached, requests to active mobile push notifications will be refused. The limit can be set as a simple, heuristic protection from Server overload from MPN subscriptions.
@@ -1751,7 +1747,7 @@ Optional. Maximum number of concurrent MPN devices sessions allowed. Once this n
 ```
 unlimited number of concurrent MPN devices sessions
 ```
-#### [load.maxSessions](./values.yaml#L2976)
+#### [load.maxSessions](./values.yaml#L2974)
 
      
 Optional. Maximum number of concurrent client sessions allowed. Requests for new sessions received when this limit is currently exceeded will be refused; on the other hand, operation on sessions already established is not limited in any way. Note that closing and reopening a session on a client when this limit is currently met may cause the new session request to be refused. The limit can be set as a simple, heuristic protection from Server overload.
@@ -1761,19 +1757,19 @@ Optional. Maximum number of concurrent client sessions allowed. Requests for new
 ```
 unlimited number of concurrent client sessions
 ```
-#### [load.prestartedMaxQueue](./values.yaml#L3213)
+#### [load.prestartedMaxQueue](./values.yaml#L3211)
 
      
 Optional. Maximum number of sessions that can be left in "prestarted" state, that is, waiting for the first bind or control operation, before undertaking backpressure actions. In particular, the same restrictive actions associated to the `load.serverPoolMaxQueue` check will be performed (regardless that `load.serverPoolMaxQueue` itself is set). The setting is meant to be used in configurations which define a CREATE_ONLY port in http and a CONTROL_ONLY port in https. In these cases, and when a massive client reconnection is occurring, the number of pending bind operations can grow so much that the needed TLS handshakes can take arbitrarily long and cause the clients to time-out and restart session establishment from scratch. However, consider that the presence of many clients that don't perform their bind in due time could keep other clients blocked. Note that, if defined, the setting will also inhibit `load.handshakePoolMaxQueue` and `load.httpsAuthPoolMaxQueue` from affecting the accept loop of CONTROL_ONLY ports in https. A negative value disables the check.
 
 **Default:** `-1`
-#### [load.pumpPoolMaxQueue](./values.yaml#L3055)
+#### [load.pumpPoolMaxQueue](./values.yaml#L3053)
 
      
 Optional. Maximum number of tasks allowed to be queued to enter the "PUMP" thread pool before undertaking backpressure actions. In particular, the same restrictive actions associated to the `load.serverPoolMaxQueue` check will be performed (regardless that `load.serverPoolMaxQueue` itself is set). A steadily long queue on the PUMP pool may be the consequence of a CPU shortage due to a huge streaming activity. A negative value disables the check.
 
 **Default:** `-1`
-#### [load.pumpPoolSize](./values.yaml#L3045)
+#### [load.pumpPoolSize](./values.yaml#L3043)
 
      
 Optional. Size of the "PUMP" internal thread pool, which is devoted to integrating the update events pertaining to each session and to creating the update commands for the client, whenever needed. This task does not include blocking operations; however, on multiprocessor machines, allocating multiple threads for this task may be beneficial.
@@ -1783,13 +1779,13 @@ Optional. Size of the "PUMP" internal thread pool, which is devoted to integrati
 ```
 the number of available total cores, as detected by the JVM
 ```
-#### [load.selectorMaxLoad](./values.yaml#L3016)
+#### [load.selectorMaxLoad](./values.yaml#L3014)
 
      
 Optional. Maximum number of keys allowed for a single NIO selector. If more keys have to be processed, new temporary selectors will be created. If the value is 0, then no limitations are applied and extra selectors will never be created. The base number of selectors is determined by the `load.selectorPoolSize` setting.
 
 **Default:** `0`
-#### [load.selectorPoolSize](./values.yaml#L3008)
+#### [load.selectorPoolSize](./values.yaml#L3006)
 
      
 Optional. Number of distinct NIO selectors (each one with its own thread) that will share the same operation. Different pools will be prepared for different I/O operations and server sockets, which may give rise to a significant overall number of selectors. Further selectors may be created because of the `load.selectorMaxLoad` setting.
@@ -1799,7 +1795,7 @@ Optional. Number of distinct NIO selectors (each one with its own thread) that w
 ```
 the number of available total cores, as detected by the JVM
 ```
-#### [load.serverPoolMaxFree](./values.yaml#L3092)
+#### [load.serverPoolMaxFree](./values.yaml#L3090)
 
      
 Optional, but mandatory if `load.serverPoolMaxSize`is set to `0`. Maximum number of idle threads allowed for the "SERVER" internal pool, which is devoted to the management of the client requests. Put in a different way, it is the minimum number of threads that can be present in the pool. To accomplish this setting, at pool initialization, suitable idle threads are created; then, each time a thread becomes idle, it is discarded only if enough threads are already in the pool. It must not be greater than `load.serverPoolMaxSize` (unless the latter is set to `0`, i.e. `unlimited`); however, it may be lower, in case `load.serverPoolMaxSize` is kept high in order to face request bursts; a zero value means no idle threads allowed in the pool, though this is not recommended for performance reasons. same as `load.serverPoolMaxSize`, unless the latter is set to `0`, i.e. `unlimited`, in which case this setting is mandatory
@@ -1809,19 +1805,19 @@ Optional, but mandatory if `load.serverPoolMaxSize`is set to `0`. Maximum number
 ```
 10, if load.serverPoolMaxSize is not defined; otherwise, the
 ```
-#### [load.serverPoolMaxQueue](./values.yaml#L3105)
+#### [load.serverPoolMaxQueue](./values.yaml#L3103)
 
      
 Optional. Maximum number of tasks allowed to be queued to enter the "SERVER" thread pool before undertaking backpressure actions. In particular, as long as the number is exceeded, the creation of new sessions will be refused and made to fail; additionally, the same r restrictive action on the accept loops associated to the `load.acceptPoolMaxQueue` check will be performed (regardless that `load.acceptPoolMaxQueue` itself is set). On the other hand, if the MPN DEVICE HANDLER pool is defined in `mpn` it  also overrides the SERVER or dedicated pools, but its queue is not included in the check. A negative value disables the check.
 
 **Default:** `100`
-#### [load.serverPoolMaxSize](./values.yaml#L3076)
+#### [load.serverPoolMaxSize](./values.yaml#L3074)
 
      
 Optional. Maximum number of threads allowed for the "SERVER" internal pool, which is devoted to the management of the client requests. This kind of tasks includes operations that are potentially blocking: - `getHostName`; - socket close; - calls to a Metadata Adapter that may need to access to some external   resource (i.e. mainly `notifyUser`, `getItems`, `getSchema`; other    methods should be implemented as nonblocking, by leaning on data cached    by `notifyUser`); - calls to a Data Adapter that may need to access to some external resource   (i.e. subscribe and unsubscribe, though it should always be possible to   implement such calls asynchronously); - file access by the internal web server, though it should be used  only in   demo and test scenarios. Note that specific thread pools can optionally be defined in order to handle some of the tasks that, by default, are handled by the SERVER thread pool. They are defined in "adapters.xml"; see the templates provided in the In-Process Adapter SDK for details. A zero value means a potentially unlimited number of threads.
 
 **Default:** `1000`
-#### [load.snapshotPoolSize](./values.yaml#L3038)
+#### [load.snapshotPoolSize](./values.yaml#L3036)
 
      
 Optional. Size of the "SNAPSHOT" internal thread pool, which is devoted to dispatching the snapshot events upon new subscriptions from client sessions. This task does not include blocking operations; however, on multiprocessor machines, allocating multiple threads for this task may be beneficial. `10`, if the number of cores is less
@@ -1831,7 +1827,7 @@ Optional. Size of the "SNAPSHOT" internal thread pool, which is devoted to dispa
 ```
 the number of available total cores, as detected by the JVM, or
 ```
-#### [load.timerPoolSize](./values.yaml#L3023)
+#### [load.timerPoolSize](./values.yaml#L3021)
 
      
 Optional. Number of threads used to parallelize the implementation of the internal timers. This task does not include blocking operations, but its computation may be heavy under high update activity; hence, on multiprocessor machines, allocating multiple threads for this task may be beneficial.
@@ -2613,7 +2609,7 @@ Optional. The level of the logger.
 **Default:** `DEBUG`
 ### Connectors configuration
  
-#### [connectors](./values.yaml#L3230)
+#### [connectors](./values.yaml#L3228)
 
      
 Optional. Connectors configuration.
@@ -2623,7 +2619,7 @@ Optional. Connectors configuration.
 ```
 {"kafkaConnector":{"adapterClassName":"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter","adapterSetId":"KafkaConnector","connections":{"quickStart":{"authentication":{"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}},"bootstrapServers":"broker:9092","enabled":true,"fields":{"enableSkipFailedMapping":null,"mappings":{"ask":"#{VALUE.ask}","ask_quantity":"#{VALUE.ask_quantity}","bid":"#{VALUE.bid}","bid_quantity":"#{VALUE.bid_quantity}","item_status":"#{VALUE.item_status}","last_price":"#{VALUE.last_price}","max":"#{VALUE.max}","min":"#{VALUE.min}","offset":"#{OFFSET}","open_price":"#{VALUE.open_price}","partition":"#{PARTITION}","pct_change":"#{VALUE.pct_change}","ref_price":"#{VALUE.ref_price}","stock_name":"#{VALUE.name}","time":"#{VALUE.time}","timestamp":"#{VALUE.timestamp}","topic":"#{TOPIC}","ts":"#{TIMESTAMP}"}},"groupId":"quickstart","logger":{"appenders":["stdout"],"level":"INFO"},"name":"K8S-QuickStart","record":{"consumeFrom":"EARLIEST","consumeWithOrderStrategy":null,"consumeWithThreadNumber":null,"extractionErrorStrategy":null,"keyEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"INTEGER"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"JSON"}},"routing":{"enableTopicRegEx":null,"itemTemplates":{"stockTemplate":"stock-#{index=KEY}"},"topicMappings":{"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}},"sslConfig":{"allowedCipherSuites":[],"allowedProtocols":[],"enableHostnameVerification":null,"enabled":true,"keyStoreRef":null,"protocol":null,"trustStoreRef":null}}},"enabled":false,"localSchemaFiles":{"myKeySchema":null,"myValueSchema":null},"logging":{"appenders":{"stdout":{"pattern":"[%d] [%-10c{1}] %-5p %m%n","type":"Console"}},"loggers":{"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter":{"appenders":["stdout"],"level":"INFO"},"org.apache.kafka":{"appenders":["stdout"],"level":"WARN"}}},"schemaRegistry":{"mySchemaRegistry":{"basicAuthentication":{"credentialsSecretRef":null,"enabled":null},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":null,"keyStoreRef":null,"trustStoreRef":null},"url":"https://schema-registry:8084"}},"version":"1.2.0"}}
 ```
-#### [connectors.kafkaConnector](./values.yaml#L3232)
+#### [connectors.kafkaConnector](./values.yaml#L3230)
 
      
 Optional. Lightstreamer Kafka Connector configuration.
@@ -2633,7 +2629,7 @@ Optional. Lightstreamer Kafka Connector configuration.
 ```
 {"adapterClassName":"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter","adapterSetId":"KafkaConnector","connections":{"quickStart":{"authentication":{"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}},"bootstrapServers":"broker:9092","enabled":true,"fields":{"enableSkipFailedMapping":null,"mappings":{"ask":"#{VALUE.ask}","ask_quantity":"#{VALUE.ask_quantity}","bid":"#{VALUE.bid}","bid_quantity":"#{VALUE.bid_quantity}","item_status":"#{VALUE.item_status}","last_price":"#{VALUE.last_price}","max":"#{VALUE.max}","min":"#{VALUE.min}","offset":"#{OFFSET}","open_price":"#{VALUE.open_price}","partition":"#{PARTITION}","pct_change":"#{VALUE.pct_change}","ref_price":"#{VALUE.ref_price}","stock_name":"#{VALUE.name}","time":"#{VALUE.time}","timestamp":"#{VALUE.timestamp}","topic":"#{TOPIC}","ts":"#{TIMESTAMP}"}},"groupId":"quickstart","logger":{"appenders":["stdout"],"level":"INFO"},"name":"K8S-QuickStart","record":{"consumeFrom":"EARLIEST","consumeWithOrderStrategy":null,"consumeWithThreadNumber":null,"extractionErrorStrategy":null,"keyEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"INTEGER"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"JSON"}},"routing":{"enableTopicRegEx":null,"itemTemplates":{"stockTemplate":"stock-#{index=KEY}"},"topicMappings":{"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}},"sslConfig":{"allowedCipherSuites":[],"allowedProtocols":[],"enableHostnameVerification":null,"enabled":true,"keyStoreRef":null,"protocol":null,"trustStoreRef":null}}},"enabled":false,"localSchemaFiles":{"myKeySchema":null,"myValueSchema":null},"logging":{"appenders":{"stdout":{"pattern":"[%d] [%-10c{1}] %-5p %m%n","type":"Console"}},"loggers":{"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter":{"appenders":["stdout"],"level":"INFO"},"org.apache.kafka":{"appenders":["stdout"],"level":"WARN"}}},"schemaRegistry":{"mySchemaRegistry":{"basicAuthentication":{"credentialsSecretRef":null,"enabled":null},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":null,"keyStoreRef":null,"trustStoreRef":null},"url":"https://schema-registry:8084"}},"version":"1.2.0"}
 ```
-#### [connectors.kafkaConnector.adapterClassName](./values.yaml#L3244)
+#### [connectors.kafkaConnector.adapterClassName](./values.yaml#L3242)
 
      
 Mandatory. Java class name of the Kafka Connector Metadata Adapter. It is possible to provide a custom implementation by extending the factory class. See https://github.com/Lightstreamer/Lightstreamer-kafka-connector/tree/main?tab=readme-ov-file#customize-the-kafkaconnector-metadata-adapter-class
@@ -2643,13 +2639,13 @@ Mandatory. Java class name of the Kafka Connector Metadata Adapter. It is possib
 ```
 "com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter"
 ```
-#### [connectors.kafkaConnector.adapterSetId](./values.yaml#L3239)
+#### [connectors.kafkaConnector.adapterSetId](./values.yaml#L3237)
 
      
 Mandatory. Define the Kafka Connector Adapter Set and its unique ID.
 
 **Default:** `"KafkaConnector"`
-#### [connectors.kafkaConnector.connections](./values.yaml#L3279)
+#### [connectors.kafkaConnector.connections](./values.yaml#L3277)
 
      
 Mandatory. Connection configurations.
@@ -2659,7 +2655,7 @@ Mandatory. Connection configurations.
 ```
 {"quickStart":{"authentication":{"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}},"bootstrapServers":"broker:9092","enabled":true,"fields":{"enableSkipFailedMapping":null,"mappings":{"ask":"#{VALUE.ask}","ask_quantity":"#{VALUE.ask_quantity}","bid":"#{VALUE.bid}","bid_quantity":"#{VALUE.bid_quantity}","item_status":"#{VALUE.item_status}","last_price":"#{VALUE.last_price}","max":"#{VALUE.max}","min":"#{VALUE.min}","offset":"#{OFFSET}","open_price":"#{VALUE.open_price}","partition":"#{PARTITION}","pct_change":"#{VALUE.pct_change}","ref_price":"#{VALUE.ref_price}","stock_name":"#{VALUE.name}","time":"#{VALUE.time}","timestamp":"#{VALUE.timestamp}","topic":"#{TOPIC}","ts":"#{TIMESTAMP}"}},"groupId":"quickstart","logger":{"appenders":["stdout"],"level":"INFO"},"name":"K8S-QuickStart","record":{"consumeFrom":"EARLIEST","consumeWithOrderStrategy":null,"consumeWithThreadNumber":null,"extractionErrorStrategy":null,"keyEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"INTEGER"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"JSON"}},"routing":{"enableTopicRegEx":null,"itemTemplates":{"stockTemplate":"stock-#{index=KEY}"},"topicMappings":{"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}},"sslConfig":{"allowedCipherSuites":[],"allowedProtocols":[],"enableHostnameVerification":null,"enabled":true,"keyStoreRef":null,"protocol":null,"trustStoreRef":null}}}
 ```
-#### [connectors.kafkaConnector.connections.quickStart](./values.yaml#L3286)
+#### [connectors.kafkaConnector.connections.quickStart](./values.yaml#L3284)
 
      
 At least one must be provided. Connection configuration. The Kafka Connector allows the configuration of different independent connections to different Kafka broker/clusters. Since the Kafka Connector manages the physical connection to Kafka by wrapping an internal Kafka Consumer, several configuration settings are identical to those required by the usual Kafka Consumer configuration.
@@ -2669,7 +2665,7 @@ At least one must be provided. Connection configuration. The Kafka Connector all
 ```
 {"authentication":{"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}},"bootstrapServers":"broker:9092","enabled":true,"fields":{"enableSkipFailedMapping":null,"mappings":{"ask":"#{VALUE.ask}","ask_quantity":"#{VALUE.ask_quantity}","bid":"#{VALUE.bid}","bid_quantity":"#{VALUE.bid_quantity}","item_status":"#{VALUE.item_status}","last_price":"#{VALUE.last_price}","max":"#{VALUE.max}","min":"#{VALUE.min}","offset":"#{OFFSET}","open_price":"#{VALUE.open_price}","partition":"#{PARTITION}","pct_change":"#{VALUE.pct_change}","ref_price":"#{VALUE.ref_price}","stock_name":"#{VALUE.name}","time":"#{VALUE.time}","timestamp":"#{VALUE.timestamp}","topic":"#{TOPIC}","ts":"#{TIMESTAMP}"}},"groupId":"quickstart","logger":{"appenders":["stdout"],"level":"INFO"},"name":"K8S-QuickStart","record":{"consumeFrom":"EARLIEST","consumeWithOrderStrategy":null,"consumeWithThreadNumber":null,"extractionErrorStrategy":null,"keyEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"INTEGER"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"JSON"}},"routing":{"enableTopicRegEx":null,"itemTemplates":{"stockTemplate":"stock-#{index=KEY}"},"topicMappings":{"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}},"sslConfig":{"allowedCipherSuites":[],"allowedProtocols":[],"enableHostnameVerification":null,"enabled":true,"keyStoreRef":null,"protocol":null,"trustStoreRef":null}}
 ```
-#### [connectors.kafkaConnector.connections.quickStart.authentication](./values.yaml#L3344)
+#### [connectors.kafkaConnector.connections.quickStart.authentication](./values.yaml#L3342)
 
      
 Optional. Authentication settings for the connection.
@@ -2679,19 +2675,19 @@ Optional. Authentication settings for the connection.
 ```
 {"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}}
 ```
-#### [connectors.kafkaConnector.connections.quickStart.authentication.credentialsSecretRef](./values.yaml#L3362)
+#### [connectors.kafkaConnector.connections.quickStart.authentication.credentialsSecretRef](./values.yaml#L3360)
 
      
 Mandatory if `mechanism` is set to `PLAIN`, `SCRAM-SHA-256`, `SCRAM-SHA-512`. The name of the secret containing the credentials. The secret must contain the keys `user` and `password`.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.connections.quickStart.authentication.enabled](./values.yaml#L3348)
+#### [connectors.kafkaConnector.connections.quickStart.authentication.enabled](./values.yaml#L3346)
 
      
 Optional. Enablement of the authentication of the connection against the Kafka Cluster.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi](./values.yaml#L3365)
+#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi](./values.yaml#L3363)
 
      
 Mandatory if `mechanism` is set to `GSSAPI`. The GSSAPI authentication settings.
@@ -2701,55 +2697,55 @@ Mandatory if `mechanism` is set to `GSSAPI`. The GSSAPI authentication settings.
 ```
 {"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}
 ```
-#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.enableKeytab](./values.yaml#L3368)
+#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.enableKeytab](./values.yaml#L3366)
 
      
 Optional. Enablement of the use of a keytab.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.enableStoreKey](./values.yaml#L3376)
+#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.enableStoreKey](./values.yaml#L3374)
 
      
 Optional. Enablement of the storage of the principal key.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.enableTicketCache](./values.yaml#L3384)
+#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.enableTicketCache](./values.yaml#L3382)
 
      
 Optional. Enablement of the use of a ticket cache.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.kerberosServiceName](./values.yaml#L3378)
+#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.kerberosServiceName](./values.yaml#L3376)
 
      
 Mandatory. The name of the Kerberos service.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.keytabFilePathRef](./values.yaml#L3371)
+#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.keytabFilePathRef](./values.yaml#L3369)
 
      
 Mandatory if `enableKeytab` is set to `true`. The configmap name and key where the the keytab file is stored
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.principal](./values.yaml#L3381)
+#### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.principal](./values.yaml#L3379)
 
      
 Mandatory if enableTicketCache is set to `true`. The name of the principal to be used.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.connections.quickStart.bootstrapServers](./values.yaml#L3302)
+#### [connectors.kafkaConnector.connections.quickStart.bootstrapServers](./values.yaml#L3300)
 
      
 Mandatory. The Kafka Cluster bootstrap server endpoint expressed as the list of host/port pairs used to establish the initial connect.
 
 **Default:** `"broker:9092"`
-#### [connectors.kafkaConnector.connections.quickStart.enabled](./values.yaml#L3298)
+#### [connectors.kafkaConnector.connections.quickStart.enabled](./values.yaml#L3296)
 
      
 Enablement of the connection. If set to `false`, the Lightstreamer Server will automatically deny every subscription made to the connection.
 
 **Default:** `true`
-#### [connectors.kafkaConnector.connections.quickStart.fields](./values.yaml#L3544)
+#### [connectors.kafkaConnector.connections.quickStart.fields](./values.yaml#L3542)
 
      
 Mandatory. Record mappings configuration.
@@ -2759,19 +2755,19 @@ Mandatory. Record mappings configuration.
 ```
 {"enableSkipFailedMapping":null,"mappings":{"ask":"#{VALUE.ask}","ask_quantity":"#{VALUE.ask_quantity}","bid":"#{VALUE.bid}","bid_quantity":"#{VALUE.bid_quantity}","item_status":"#{VALUE.item_status}","last_price":"#{VALUE.last_price}","max":"#{VALUE.max}","min":"#{VALUE.min}","offset":"#{OFFSET}","open_price":"#{VALUE.open_price}","partition":"#{PARTITION}","pct_change":"#{VALUE.pct_change}","ref_price":"#{VALUE.ref_price}","stock_name":"#{VALUE.name}","time":"#{VALUE.time}","timestamp":"#{VALUE.timestamp}","topic":"#{TOPIC}","ts":"#{TIMESTAMP}"}}
 ```
-#### [connectors.kafkaConnector.connections.quickStart.fields.enableSkipFailedMapping](./values.yaml#L3576)
+#### [connectors.kafkaConnector.connections.quickStart.fields.enableSkipFailedMapping](./values.yaml#L3574)
 
      
 Optional. If set to `true`, if a field mapping fails, that specific field's value will simply be omitted from the update sent to the Lightstreamer clients, while other successfully mapped fields from the same record will still be delivered. Can be one of the
 
 **Default:** `false`
-#### [connectors.kafkaConnector.connections.quickStart.fields.mappings.timestamp](./values.yaml#L3553)
+#### [connectors.kafkaConnector.connections.quickStart.fields.mappings.timestamp](./values.yaml#L3551)
 
      
 At least one must be provided. A field mapping. Map the value extracted through the "#{extraction_expression}" to the Lightstreamer field name specified by key. The expression is written in the Data Extraction Language. See documentation at: https://github.com/lightstreamer/Lightstreamer-kafka-connector?tab=readme-ov-file#record-mapping-fieldfield_name
 
 **Default:** `"#{VALUE.timestamp}"`
-#### [connectors.kafkaConnector.connections.quickStart.groupId](./values.yaml#L3311)
+#### [connectors.kafkaConnector.connections.quickStart.groupId](./values.yaml#L3309)
 
      
 Optional. The name of the consumer group this connection belongs to. Sets the value for the "group.id" key used to configure the internal Kafka Consumer. See https://kafka.apache.org/documentation/#consumerconfigs_group.id for details. suffix.
@@ -2781,115 +2777,115 @@ Optional. The name of the consumer group this connection belongs to. Sets the va
 ```
 kafkaConnector.adapterSetId + name + randomly generated
 ```
-#### [connectors.kafkaConnector.connections.quickStart.logger](./values.yaml#L3578)
+#### [connectors.kafkaConnector.connections.quickStart.logger](./values.yaml#L3576)
 
      
 Optional. Logger configuration for the connection.
 
 **Default:** `{"appenders":["stdout"],"level":"INFO"}`
-#### [connectors.kafkaConnector.connections.quickStart.logger.appenders](./values.yaml#L3581)
+#### [connectors.kafkaConnector.connections.quickStart.logger.appenders](./values.yaml#L3579)
 
      
 Mandatory. List of references to the appenders defined in `kafkaConnector.logging.appenders`.
 
 **Default:** `["stdout"]`
-#### [connectors.kafkaConnector.connections.quickStart.logger.level](./values.yaml#L3584)
+#### [connectors.kafkaConnector.connections.quickStart.logger.level](./values.yaml#L3582)
 
      
 Mandatory. The logger level.
 
 **Default:** `"INFO"`
-#### [connectors.kafkaConnector.connections.quickStart.name](./values.yaml#L3293)
+#### [connectors.kafkaConnector.connections.quickStart.name](./values.yaml#L3291)
 
      
 Mandatory and unique across all configurations. The connection name. This value will be used by the Clients to request real-time data from this specific Kafka connection through a Subscription object. The connection name is also used to group all logging messages belonging to the same connection.
 
 **Default:** `"K8S-QuickStart"`
-#### [connectors.kafkaConnector.connections.quickStart.record](./values.yaml#L3387)
+#### [connectors.kafkaConnector.connections.quickStart.record](./values.yaml#L3385)
 
      
 Optional. Record evaluation settings.
 
 **Default:** `all settings at their defaults`
-#### [connectors.kafkaConnector.connections.quickStart.record.consumeFrom](./values.yaml#L3395)
+#### [connectors.kafkaConnector.connections.quickStart.record.consumeFrom](./values.yaml#L3393)
 
      
 Optional. Specifies where to start consuming events from: - `LATEST`: start consuming events from the end of the topic partition - `EARLIEST`: start consuming events from the beginning of the topic partition Sets the value of the `auto.offset.reset` key to configure the internal Kafka Consumer.
 
 **Default:** `LATEST`
-#### [connectors.kafkaConnector.connections.quickStart.record.consumeWithOrderStrategy](./values.yaml#L3412)
+#### [connectors.kafkaConnector.connections.quickStart.record.consumeWithOrderStrategy](./values.yaml#L3410)
 
      
 Optional, but effective only if `consumeWithThreadNumber` is set to a value greater than 1 (which includes the default value). The order strategy to be used for concurrent processing of the incoming deserialized records. If set to `ORDER_BY_PARTITION`, maintain the order of records within each partition. If set to `ORDER_BY_KEY`, maintain the order among the records sharing the same key. If set to `UNORDERED`, provide no ordering guarantees.
 
 **Default:** `ORDER_BY_PARTITION`
-#### [connectors.kafkaConnector.connections.quickStart.record.consumeWithThreadNumber](./values.yaml#L3401)
+#### [connectors.kafkaConnector.connections.quickStart.record.consumeWithThreadNumber](./values.yaml#L3399)
 
      
 Optional. The number of threads to be used for concurrent processing of the incoming deserialized records. If set to `-1`, the number of threads will be automatically determined based on the number of available CPU cores.
 
 **Default:** `1`
-#### [connectors.kafkaConnector.connections.quickStart.record.extractionErrorStrategy](./values.yaml#L3473)
+#### [connectors.kafkaConnector.connections.quickStart.record.extractionErrorStrategy](./values.yaml#L3471)
 
      
 Optional. The error handling strategy to be used if an error occurs while extracting data from incoming deserialized records. If set to `IGNORE_AND_CONTINUE`, the error is ignored and the processing of the record continues. If set to `FORCE_UNSUBSCRIPTION`, the processing of the record is stopped and the unsubscription of the items requested by all the Lightstreamer clients subscribed to this connection is forced.
 
 **Default:** `IGNORE_AND_CONTINUE`
-#### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator](./values.yaml#L3415)
+#### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator](./values.yaml#L3413)
 
      
 Optional. Key evaluator configuration.
 
 **Default:** `all settings at their defaults`
-#### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator.enableSchemaRegistry](./values.yaml#L3444)
+#### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator.enableSchemaRegistry](./values.yaml#L3442)
 
      
 Enablement of the Confluent Schema Registry for  validation of the key. Must be set to `true` when `keyEvaluator.type` is set to `AVRO` and no local schema are specified.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator.localSchemaFilePathRef](./values.yaml#L3438)
+#### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator.localSchemaFilePathRef](./values.yaml#L3436)
 
      
 Mandatory if `type` is set to `AVRO` and `enableSchemaRegistry` is set to `false`. The configmap name and key where the local schema for message validation of the key is stored. The setting takes precedence over `enableSchemaRegistry` if the latter is set to `true`.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator.type](./values.yaml#L3432)
+#### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator.type](./values.yaml#L3430)
 
      
 Optional. The format to be used to deserialize the key of a Kafka record. Can be one of the following: - AVRO - JSON - STRING - INTEGER - BOOLEAN - BYTE_ARRAY - BYTE_BUFFER - BYTES - DOUBLE - FLOAT - LONG - SHORT - UUID
 
 **Default:** `STRING`
-#### [connectors.kafkaConnector.connections.quickStart.record.schemaRegistryRef](./values.yaml#L3476)
+#### [connectors.kafkaConnector.connections.quickStart.record.schemaRegistryRef](./values.yaml#L3474)
 
      
 Optional. The reference to Schema Registry configuration defined in `connectors.kafkaConnector.schemaRegistry`.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator](./values.yaml#L3447)
+#### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator](./values.yaml#L3445)
 
      
 Optional. Value evaluator configuration.
 
 **Default:** `all settings at their defaults`
-#### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator.enableSchemaRegistry](./values.yaml#L3464)
+#### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator.enableSchemaRegistry](./values.yaml#L3462)
 
      
 Enablement of the Confluent Schema Registry for validation of the value. Must be set to `true` when `valueEvaluator.type` is set to `AVRO` and no local schema are specified.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator.localSchemaFilePathRef](./values.yaml#L3458)
+#### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator.localSchemaFilePathRef](./values.yaml#L3456)
 
      
 Mandatory if `type` is set to `AVRO` and `enableSchemaRegistry` is set to `false`. The configmap name and key where the local schema for message validation of the value is stored. The setting takes precedence over `enableSchemaRegistry` if the latter is set to `true`.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator.type](./values.yaml#L3452)
+#### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator.type](./values.yaml#L3450)
 
      
 Optional. The format to be used to deserialize the value of a Kafka record. See `record.keyEvaluator.type` for the list of supported formats.
 
 **Default:** `STRING`
-#### [connectors.kafkaConnector.connections.quickStart.routing](./values.yaml#L3478)
+#### [connectors.kafkaConnector.connections.quickStart.routing](./values.yaml#L3476)
 
      
 Mandatory. Record routings configuration.
@@ -2899,19 +2895,19 @@ Mandatory. Record routings configuration.
 ```
 {"enableTopicRegEx":null,"itemTemplates":{"stockTemplate":"stock-#{index=KEY}"},"topicMappings":{"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}}
 ```
-#### [connectors.kafkaConnector.connections.quickStart.routing.enableTopicRegEx](./values.yaml#L3542)
+#### [connectors.kafkaConnector.connections.quickStart.routing.enableTopicRegEx](./values.yaml#L3540)
 
      
 Optional. Enable `connectors.kafkaConnector.routing.topicMappings.{}.topic` to be treated as a regular expression rather than of a literal topic name.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.connections.quickStart.routing.itemTemplates](./values.yaml#L3485)
+#### [connectors.kafkaConnector.connections.quickStart.routing.itemTemplates](./values.yaml#L3483)
 
      
 Optional. Maps of item template expressions. An expressions is made of: - ITEM_PREFIX: the prefix of the item name - BINDABLE_EXPRESSIONS: a sequence of bindable extraction expressions. See https://lightstreamer.com/api/ls-kafka-connector/latest/ls-kafka-connector/record-extraction.html
 
 **Default:** `{}`
-#### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings](./values.yaml#L3488)
+#### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings](./values.yaml#L3486)
 
      
 Mandatory. Kafka topic mappings.
@@ -2921,7 +2917,7 @@ Mandatory. Kafka topic mappings.
 ```
 {"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}
 ```
-#### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock](./values.yaml#L3521)
+#### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock](./values.yaml#L3519)
 
      
 At least one must be provided. A Kafka topic mappings. Map a Kafka topic to: - one or more simple items - one or more item templates - any combination of the above  Examples:  topicMappingSample1:   topic: "aTopicName"   items:     - "item1"     - "item2"     - "itemN"  topicMappingSample2:   topic: "anotherTopicName"   itemTemplateRefs:     - "itemTemplate1"     - "itemTemplate2"     - "itemTemplateN"  topicMappingSample3   topic: "yetAnotherTopicName"   items:     - "item1"     - "item2"     - "itemN"   itemTemplateRefs:     - "itemTemplate1"     - "itemTemplate2"     - "itemTemplateN"
@@ -2931,31 +2927,31 @@ At least one must be provided. A Kafka topic mappings. Map a Kafka topic to: - o
 ```
 {"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}
 ```
-#### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock.itemTemplateRefs](./values.yaml#L3535)
+#### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock.itemTemplateRefs](./values.yaml#L3533)
 
      
 Mandatory if `items` is empty. List of item template to which the topic must be mapped.
 
 **Default:** `[]`
-#### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock.items](./values.yaml#L3528)
+#### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock.items](./values.yaml#L3526)
 
      
 Mandatory if `itemTemplateRefs` is empty. List of simple items to which the topic must be mapped.
 
 **Default:** `[]`
-#### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock.topic](./values.yaml#L3524)
+#### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock.topic](./values.yaml#L3522)
 
      
 Mandatory and unique across all topic mappings. The Kafka topic name.
 
 **Default:** `"stock"`
-#### [connectors.kafkaConnector.connections.quickStart.sslConfig](./values.yaml#L3314)
+#### [connectors.kafkaConnector.connections.quickStart.sslConfig](./values.yaml#L3312)
 
      
 Optional. TLS/SSL settings for the connection.
 
 **Default:** `all settings at their defaults`
-#### [connectors.kafkaConnector.connections.quickStart.sslConfig.allowedCipherSuites](./values.yaml#L3329)
+#### [connectors.kafkaConnector.connections.quickStart.sslConfig.allowedCipherSuites](./values.yaml#L3327)
 
      
 Optional. List of enabled secure cipher suites.
@@ -2965,7 +2961,7 @@ Optional. List of enabled secure cipher suites.
 ```
 all the available cipher suites in the running JVM
 ```
-#### [connectors.kafkaConnector.connections.quickStart.sslConfig.allowedProtocols](./values.yaml#L3326)
+#### [connectors.kafkaConnector.connections.quickStart.sslConfig.allowedProtocols](./values.yaml#L3324)
 
      
 Optional. List of enabled secure communication protocols TLSv1.2 otherwise.
@@ -2975,25 +2971,25 @@ Optional. List of enabled secure communication protocols TLSv1.2 otherwise.
 ```
 [TLSv1.2, TLSv1.3] when running on Java 11 or newer,
 ```
-#### [connectors.kafkaConnector.connections.quickStart.sslConfig.enableHostnameVerification](./values.yaml#L3332)
+#### [connectors.kafkaConnector.connections.quickStart.sslConfig.enableHostnameVerification](./values.yaml#L3330)
 
      
 Optional. Enablement of the hostname verification.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.connections.quickStart.sslConfig.enabled](./values.yaml#L3317)
+#### [connectors.kafkaConnector.connections.quickStart.sslConfig.enabled](./values.yaml#L3315)
 
      
 Optional. Enablement of the encryption.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.connections.quickStart.sslConfig.keyStoreRef](./values.yaml#L3342)
+#### [connectors.kafkaConnector.connections.quickStart.sslConfig.keyStoreRef](./values.yaml#L3340)
 
      
 Optional. The reference to a keystore used if mutual TLS is enabled on Kafka brokers. See the `keyStores.myKafkaConnectorKeystore` settings for general details on keystore configuration for the Kafka Connector.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.connections.quickStart.sslConfig.protocol](./values.yaml#L3322)
+#### [connectors.kafkaConnector.connections.quickStart.sslConfig.protocol](./values.yaml#L3320)
 
      
 Optional. The SSL protocol to be used. Can be one of the following: `TLSv1.2`,  `TLSv1.3`. otherwise
@@ -3003,31 +2999,31 @@ Optional. The SSL protocol to be used. Can be one of the following: `TLSv1.2`,  
 ```
 TLSv1.3 when running on Java 11 or newer, TLSv1.2
 ```
-#### [connectors.kafkaConnector.connections.quickStart.sslConfig.trustStoreRef](./values.yaml#L3337)
+#### [connectors.kafkaConnector.connections.quickStart.sslConfig.trustStoreRef](./values.yaml#L3335)
 
      
 Optional. The reference to a keystore used to validate the certificates provided by the Kafka brokers. See the `keyStores.myKafkaConnectorKeystore` settings for general details on keystore configuration for the Kafka Connector.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.enabled](./values.yaml#L3235)
+#### [connectors.kafkaConnector.enabled](./values.yaml#L3233)
 
      
 Optional. Enablement of the Lightstreamer Kafka Connector.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.localSchemaFiles](./values.yaml#L3586)
+#### [connectors.kafkaConnector.localSchemaFiles](./values.yaml#L3584)
 
      
 Optional. Local schema files used for message validation.
 
 **Default:** `{"myKeySchema":null,"myValueSchema":null}`
-#### [connectors.kafkaConnector.localSchemaFiles.myKeySchema](./values.yaml#L3589)
+#### [connectors.kafkaConnector.localSchemaFiles.myKeySchema](./values.yaml#L3587)
 
      
 Optional. The configmap name and key where the local schema file is stored.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.logging](./values.yaml#L3246)
+#### [connectors.kafkaConnector.logging](./values.yaml#L3244)
 
      
 Mandatory. Kafka Connector global Logging configuration.
@@ -3037,7 +3033,7 @@ Mandatory. Kafka Connector global Logging configuration.
 ```
 {"appenders":{"stdout":{"pattern":"[%d] [%-10c{1}] %-5p %m%n","type":"Console"}},"loggers":{"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter":{"appenders":["stdout"],"level":"INFO"},"org.apache.kafka":{"appenders":["stdout"],"level":"WARN"}}}
 ```
-#### [connectors.kafkaConnector.logging.appenders](./values.yaml#L3249)
+#### [connectors.kafkaConnector.logging.appenders](./values.yaml#L3247)
 
      
 Mandatory. Appenders configuration. Every logger must refer to one or more appenders defined here.
@@ -3047,7 +3043,7 @@ Mandatory. Appenders configuration. Every logger must refer to one or more appen
 ```
 {"stdout":{"pattern":"[%d] [%-10c{1}] %-5p %m%n","type":"Console"}}
 ```
-#### [connectors.kafkaConnector.logging.appenders.stdout](./values.yaml#L3251)
+#### [connectors.kafkaConnector.logging.appenders.stdout](./values.yaml#L3249)
 
      
 At least one must be provided. An appender configuration.
@@ -3057,19 +3053,19 @@ At least one must be provided. An appender configuration.
 ```
 {"pattern":"[%d] [%-10c{1}] %-5p %m%n","type":"Console"}
 ```
-#### [connectors.kafkaConnector.logging.appenders.stdout.pattern](./values.yaml#L3256)
+#### [connectors.kafkaConnector.logging.appenders.stdout.pattern](./values.yaml#L3254)
 
      
 Mandatory. The appender layout.
 
 **Default:** `"[%d] [%-10c{1}] %-5p %m%n"`
-#### [connectors.kafkaConnector.logging.appenders.stdout.type](./values.yaml#L3254)
+#### [connectors.kafkaConnector.logging.appenders.stdout.type](./values.yaml#L3252)
 
      
 Mandatory. The appender type. Currently, only the `Console` type is supported.
 
 **Default:** `"Console"`
-#### [connectors.kafkaConnector.logging.loggers](./values.yaml#L3258)
+#### [connectors.kafkaConnector.logging.loggers](./values.yaml#L3256)
 
      
 Optional. Global loggers configuration.
@@ -3079,31 +3075,31 @@ Optional. Global loggers configuration.
 ```
 {"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter":{"appenders":["stdout"],"level":"INFO"},"org.apache.kafka":{"appenders":["stdout"],"level":"WARN"}}
 ```
-#### [connectors.kafkaConnector.logging.loggers."com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter"](./values.yaml#L3269)
+#### [connectors.kafkaConnector.logging.loggers."com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter"](./values.yaml#L3267)
 
      
 Logger for the Kafka Connector Metadata Adapter. Replace the name with the one of the custom Metadata Adapter class.
 
 **Default:** `{"appenders":["stdout"],"level":"INFO"}`
-#### [connectors.kafkaConnector.logging.loggers."org.apache.kafka"](./values.yaml#L3260)
+#### [connectors.kafkaConnector.logging.loggers."org.apache.kafka"](./values.yaml#L3258)
 
      
 The logger name
 
 **Default:** `{"appenders":["stdout"],"level":"WARN"}`
-#### [connectors.kafkaConnector.logging.loggers."org.apache.kafka".appenders](./values.yaml#L3263)
+#### [connectors.kafkaConnector.logging.loggers."org.apache.kafka".appenders](./values.yaml#L3261)
 
      
 Mandatory. List of references to the appenders to be used by the logger.
 
 **Default:** `["stdout"]`
-#### [connectors.kafkaConnector.logging.loggers."org.apache.kafka".level](./values.yaml#L3266)
+#### [connectors.kafkaConnector.logging.loggers."org.apache.kafka".level](./values.yaml#L3264)
 
      
 Mandatory. The logger level.
 
 **Default:** `"WARN"`
-#### [connectors.kafkaConnector.schemaRegistry](./values.yaml#L3597)
+#### [connectors.kafkaConnector.schemaRegistry](./values.yaml#L3595)
 
      
 Optional. Set of Schema Registry configurations.
@@ -3113,7 +3109,7 @@ Optional. Set of Schema Registry configurations.
 ```
 {"mySchemaRegistry":{"basicAuthentication":{"credentialsSecretRef":null,"enabled":null},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":null,"keyStoreRef":null,"trustStoreRef":null},"url":"https://schema-registry:8084"}}
 ```
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry](./values.yaml#L3601)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry](./values.yaml#L3599)
 
      
 Mandatory if either `connections.{}.keyEvaluator.type` or is `connections.{}.valueEvaluator.type` set to `AVRO` and no local schema paths are specified. Schema Registry configuration.
@@ -3123,7 +3119,7 @@ Mandatory if either `connections.{}.keyEvaluator.type` or is `connections.{}.val
 ```
 {"basicAuthentication":{"credentialsSecretRef":null,"enabled":null},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":null,"keyStoreRef":null,"trustStoreRef":null},"url":"https://schema-registry:8084"}
 ```
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.basicAuthentication](./values.yaml#L3607)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.basicAuthentication](./values.yaml#L3605)
 
      
 Optional. Basic HTTP authentication of a connection against the Schema Registry.
@@ -3133,19 +3129,19 @@ Optional. Basic HTTP authentication of a connection against the Schema Registry.
 ```
 {"credentialsSecretRef":null,"enabled":null}
 ```
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.basicAuthentication.credentialsSecretRef](./values.yaml#L3614)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.basicAuthentication.credentialsSecretRef](./values.yaml#L3612)
 
      
 Mandatory if `enable` is set to `true`. The name of the secret containing the credentials. The secret must contain the keys `user` and `password`.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.basicAuthentication.enabled](./values.yaml#L3610)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.basicAuthentication.enabled](./values.yaml#L3608)
 
      
 Optional. Enablement of the Basic HTTP authentication.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig](./values.yaml#L3617)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig](./values.yaml#L3615)
 
      
 Mandatory if the https protocol is specified in `url`. TLS/SSL settings.
@@ -3155,7 +3151,7 @@ Mandatory if the https protocol is specified in `url`. TLS/SSL settings.
 ```
 {"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":null,"keyStoreRef":null,"trustStoreRef":null}
 ```
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.allowCipherSuites](./values.yaml#L3626)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.allowCipherSuites](./values.yaml#L3624)
 
      
 Optional. List of enabled secure cipher suites.
@@ -3165,7 +3161,7 @@ Optional. List of enabled secure cipher suites.
 ```
 all the available cipher suites in the running JVM
 ```
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.allowProtocols](./values.yaml#L3621)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.allowProtocols](./values.yaml#L3619)
 
      
 Optional. List of enabled secure communication protocols TLSv1.2 otherwise.
@@ -3175,31 +3171,31 @@ Optional. List of enabled secure communication protocols TLSv1.2 otherwise.
 ```
 [TLSv1.2, TLSv1.3] when running on Java 11 or newer,
 ```
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.enableHostnameVerification](./values.yaml#L3630)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.enableHostnameVerification](./values.yaml#L3628)
 
      
 Optional. Enablement of the hostname verification.
 
 **Default:** `false`
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.keyStoreRef](./values.yaml#L3640)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.keyStoreRef](./values.yaml#L3638)
 
      
 Optional. The reference to a keystore used if mutual TLS is enabled on the Schema Registry. See the `keyStores.myKafkaConnectorKeystore` settings for general details on keystore configuration for the Kafka Connector.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.trustStoreRef](./values.yaml#L3635)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.trustStoreRef](./values.yaml#L3633)
 
      
 Optional. The reference to a keystore used to validate the certificates provided by the Schema Registry. See the `keyStores.myKafkaConnectorKeystore` settings for general details on keystore configuration for the Kafka Connector.
 
 **Default:** `nil`
-#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.url](./values.yaml#L3604)
+#### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.url](./values.yaml#L3602)
 
      
 Mandatory. The URL of the Confluent Schema Registry. An encrypted connection is enabled by specifying the "https" protocol.
 
 **Default:** `"https://schema-registry:8084"`
-#### [connectors.kafkaConnector.version](./values.yaml#L3237)
+#### [connectors.kafkaConnector.version](./values.yaml#L3235)
 
      
 Mandatory. The Lightstreamer Kafka Connector version to install.

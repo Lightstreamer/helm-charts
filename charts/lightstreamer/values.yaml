@@ -1229,7 +1229,7 @@ servers:
       # `jdk.tls.server.enableSessionTicketExtension` JVM property.
       # If not specified, the type of resumption will be decided by the 
       # underlying Security Provider, based on its own configuration.
-      # @default -- the underlying Security Provider's configuration.
+      # @default -- the underlying Security Provider's configuration
       enableStatelessTlsSessionResumption:
       # -- Optional. Size of the cache used by the TLS implementation to handle
       # TLS session resumptions when stateful resumption is configured (see
@@ -2504,8 +2504,6 @@ mpn:
     # delay. If the delay expires, the Server may start with the module
     # temporarily inactive; moreover, if the module startup eventually fails,
     # the Server will keep running with an inactive module.
-    # @default -- the Server startup will be blocked until module startup
-    # completion
     maxDelayMillis:
   # -- Optional. Enabling of the automatic initialization of a new module upon
   # upon health check failure.
