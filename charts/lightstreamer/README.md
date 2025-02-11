@@ -1665,13 +1665,13 @@ Optional. Load configuration.
 ```
 {"acceptPoolMaxQueue":null,"acceptPoolMaxSize":null,"eventsPoolSize":null,"forceEarlyConversions":null,"handshakePoolMaxQueue":null,"handshakePoolSize":null,"httpsAuthPoolMaxFree":null,"httpsAuthPoolMaxQueue":null,"httpsAuthPoolMaxSize":null,"maxCommonNioBufferAllocation":null,"maxCommonPumpBufferAllocation":null,"maxMpnDevices":null,"maxSessions":null,"prestartedMaxQueue":null,"pumpPoolMaxQueue":null,"pumpPoolSize":null,"selectorMaxLoad":null,"selectorPoolSize":null,"serverPoolMaxFree":null,"serverPoolMaxQueue":null,"serverPoolMaxSize":null,"snapshotPoolSize":null,"timerPoolSize":null}
 ```
-#### [load.acceptPoolMaxQueue](./values.yaml#L3131)
+#### [load.acceptPoolMaxQueue](./values.yaml#L3132)
 
      
 Optional. Maximum number of tasks allowed to be queued to enter the `ACCEPT` thread pool before undertaking backpressure actions. The setting only affects the listening sockets with `servers.{}.portType` configured as `CREATE_ONLY`. As long as the number is exceeded, the accept loops of these sockets will be kept waiting. By suspending the accept loop, some SYN packets from the clients may be discarded; the effect may vary depending on the backlog settings. Note that, in the absence of sockets configured as `CREATE_ONLY`, no backpressure action will take place. A long queue on the `ACCEPT` pool may be the consequence of a CPU shortage during (or caused by) a high client connection activity. A negative value disables the check.
 
 **Default:** `-1`
-#### [load.acceptPoolMaxSize](./values.yaml#L3116)
+#### [load.acceptPoolMaxSize](./values.yaml#L3117)
 
      
 Optional. Maximum number of threads allowed for the `ACCEPT` internal pool, which is devoted to the parsing of the client requests. This task does not include blocking operations; however, on multiprocessor machines, allocating multiple threads for this task may be beneficial. Only in corner cases, it is possible that some operations turn out to be blocking; in particular: - `getHostName`, only if banned hostnames are configured; - socket close, only if banned hostnames are configured; - read from the "proxy protocol", only if configured; - service of requests on a "priority port", only available for internal use. A zero value means a potentially unlimited number of threads.
@@ -1706,12 +1706,12 @@ Optional. Maximum number of tasks allowed to be queued to enter the `TLS-SSL HAN
 #### [load.handshakePoolSize](./values.yaml#L3144)
 
      
-Optional. Size of the `TLS-SSL HANDSHAKE` internal pool, which is devoted to the management of operations needed to accomplish TLS/SSL handshakes on the listening sockets specified through the `servers.{}` configuration with `enableHttps` set to `true`. In particular, this pool is only used when the socket is not configured to request the client certificate (see `servers.{}.sslConfig.enableClientAuth` and `servers.{}.security.enableMandatoryClientAuth`); in this case, the tasks are not expected to be blocking. Note that the operation may be CPU-intensive; hence, it is advisable to set a value smaller than the number of available cores. JVM
+Optional. Size of the `TLS-SSL HANDSHAKE` internal pool, which is devoted to the management of operations needed to accomplish TLS/SSL handshakes on the listening sockets specified through the `servers.{}` configuration with `enableHttps` set to `true`. In particular, this pool is only used when the socket is not configured to request the client certificate (see `servers.{}.sslConfig.enableClientAuth` and `servers.{}.security.enableMandatoryClientAuth`); in this case, the tasks are not expected to be blocking. Note that the operation may be CPU-intensive; hence, it is advisable to set a value smaller than the number of available cores.
 
 **Default:**
 
 ```
-half the number of available total cores, as detected by the
+half the number of total cores, as detected by the JVM
 ```
 #### [load.httpsAuthPoolMaxFree](./values.yaml#L3180)
 
@@ -1742,7 +1742,7 @@ the same as configured for the SERVER thread pool
 #### [load.maxCommonNioBufferAllocation](./values.yaml#L2990)
 
      
-Optional. Limit to the overall size, in bytes, of the buffers devoted to I/O operations that can be kept allocated for reuse. If 0, removes any limit to the allocation (which should remain limited, based on the maximum concurrent buffer needs). If -1, disables buffer reuse at all and causes all allocated buffers to be released immediately.
+Optional. Limit to the overall size, in bytes, of the buffers devoted to I/O operations that can be kept allocated for reuse. If `0`, removes any limit to the allocation (which should remain limited, based on the maximum concurrent buffer needs). If `-1`, disables buffer reuse at all and causes all allocated buffers to be released immediately.
 
 **Default:** `200000000`
 #### [load.maxCommonPumpBufferAllocation](./values.yaml#L2998)
@@ -1800,7 +1800,7 @@ the number of available total cores, as detected by the JVM
 #### [load.selectorMaxLoad](./values.yaml#L3014)
 
      
-Optional. Maximum number of keys allowed for a single NIO selector. If more keys have to be processed, new temporary selectors will be created. If the value is 0, then no limitations are applied and extra selectors will never be created. The base number of selectors is determined by the `load.selectorPoolSize` setting.
+Optional. Maximum number of keys allowed for a single NIO selector. If more keys have to be processed, new temporary selectors will be created. If the value is `0`, then no limitations are applied and extra selectors will never be created. The base number of selectors is determined by the `load.selectorPoolSize` setting.
 
 **Default:** `0`
 #### [load.selectorPoolSize](./values.yaml#L3006)
@@ -1813,17 +1813,13 @@ Optional. Number of distinct NIO selectors (each one with its own thread) that w
 ```
 the number of available total cores, as detected by the JVM
 ```
-#### [load.serverPoolMaxFree](./values.yaml#L3090)
+#### [load.serverPoolMaxFree](./values.yaml#L3091)
 
      
-Optional, but mandatory if `load.serverPoolMaxSize`is set to `0`. Maximum number of idle threads allowed for the `SERVER` internal pool, which is devoted to the management of the client requests. Put in a different way, it is the minimum number of threads that can be present in the pool. To accomplish this setting, at pool initialization, suitable idle threads are created; then, each time a thread becomes idle, it is discarded only if enough threads are already in the pool. It must not be greater than `load.serverPoolMaxSize` (unless the latter is set to `0`, i.e. `unlimited`); however, it may be lower, in case `load.serverPoolMaxSize` is kept high in order to face request bursts; a zero value means no idle threads allowed in the pool, though this is not recommended for performance reasons. same as `load.serverPoolMaxSize`, unless the latter is set to `0`, i.e. `unlimited`, in which case this setting is mandatory
+Optional, but mandatory if `load.serverPoolMaxSize`is set to `0`. Maximum number of idle threads allowed for the `SERVER` internal pool, which is devoted to the management of the client requests. Put in a different way, it is the minimum number of threads that can be present in the pool. To accomplish this setting, at pool initialization, suitable idle threads are created; then, each time a thread becomes idle, it is discarded only if enough threads are already in the pool. It must not be greater than `load.serverPoolMaxSize` (unless the latter is set to `0`, i.e. `unlimited`); however, it may be lower, in case `load.serverPoolMaxSize` is kept high in order to face request bursts; a zero value means no idle threads allowed in the pool, though this is not recommended for performance reasons. The default value is `10`, if `load.serverPoolMaxSize` is not defined;  otherwise, the same as `load.serverPoolMaxSize`, unless the latter is set  to `0`, i.e. `unlimited`, in which case this setting is mandatory
 
-**Default:**
-
-```
-10, if load.serverPoolMaxSize is not defined; otherwise, the
-```
-#### [load.serverPoolMaxQueue](./values.yaml#L3103)
+**Default:** `see description`
+#### [load.serverPoolMaxQueue](./values.yaml#L3104)
 
      
 Optional. Maximum number of tasks allowed to be queued to enter the `SERVER` thread pool before undertaking backpressure actions. In particular, as long as the number is exceeded, the creation of new sessions will be refused and made to fail; additionally, the same restrictive action on the accept loops associated to the `load.acceptPoolMaxQueue` check will be performed (regardless that `load.acceptPoolMaxQueue` itself is set). On the other hand, if the `MPN DEVICE HANDLER` pool is defined in `mpn` it  also overrides the SERVER or dedicated pools, but its queue is not included in the check. A negative value disables the check.

@@ -2982,9 +2982,9 @@ load:
   maxMpnDevices:
   # -- (int) Optional. Limit to the overall size, in bytes, of the buffers
   # devoted to I/O operations that can be kept allocated for reuse.
-  # If 0, removes any limit to the allocation (which should remain limited,
+  # If `0`, removes any limit to the allocation (which should remain limited,
   # based on the maximum concurrent buffer needs).
-  # If -1, disables buffer reuse at all and causes all allocated buffers to be
+  # If `-1`, disables buffer reuse at all and causes all allocated buffers to be
   # released immediately.
   # @default -- 200000000
   maxCommonNioBufferAllocation:
@@ -3006,7 +3006,7 @@ load:
   selectorPoolSize:
   # -- (int) Optional. Maximum number of keys allowed for a single NIO selector.
   # If more keys have to be processed, new temporary selectors will be created.
-  # If the value is 0, then no limitations are applied and extra selectors will
+  # If the value is `0`, then no limitations are applied and extra selectors will
   # never be created.
   # The base number of selectors is determined by the `load.selectorPoolSize`
   # setting.
@@ -3084,9 +3084,10 @@ load:
   # `load.serverPoolMaxSize` is kept high in order to face request bursts; a
   # zero value means no idle threads allowed in the pool, though this is not
   # recommended for performance reasons.
-  # @default -- 10, if `load.serverPoolMaxSize` is not defined; otherwise, the
-  # same as `load.serverPoolMaxSize`, unless the latter is set to `0`, i.e.
-  # `unlimited`, in which case this setting is mandatory
+  # The default value is `10`, if `load.serverPoolMaxSize` is not defined; 
+  # otherwise, the same as `load.serverPoolMaxSize`, unless the latter is set 
+  # to `0`, i.e. `unlimited`, in which case this setting is mandatory
+  # @default -- see description
   serverPoolMaxFree:
   # -- (int) Optional. Maximum number of tasks allowed to be queued to enter
   # the `SERVER` thread pool before undertaking backpressure actions.
@@ -3139,8 +3140,7 @@ load:
   # tasks are not expected to be blocking. Note that the operation may be
   # CPU-intensive; hence, it is advisable to set a value smaller than the
   # number of available cores.
-  # @default -- half the number of available total cores, as detected by the 
-  # JVM
+  # @default -- half the number of total cores, as detected by the JVM
   handshakePoolSize:
   # -- (int) Optional. Maximum number of tasks allowed to be queued to enter
   # the `TLS-SSL HANDSHAKE` thread pool before undertaking backpressure
