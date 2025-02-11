@@ -2470,19 +2470,19 @@ Optional. Logging of issues related with the special adapters handled by the MPN
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.preprocessor"](./values.yaml#L697)
 
      
-Optional. Logging of events preprocessing stage. At `DEBUG` level, events dispatched to ItemEventBuffers are dumped.
+Optional. Logging of events preprocessing stage. At `DEBUG` level, events dispatched to `ItemEventBuffers` are dumped.
 
 **Default:** `inherited from lightstreamerLogger`
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.pump"](./values.yaml#L706)
 
      
-Optional. Logging of InfoPump and ItemEventBuffers internal activity. At `DEBUG` level, updates to be sent to the clients are dumped.
+Optional. Logging of `InfoPump` and `ItemEventBuffers` internal  activity. At `DEBUG` level, updates to be sent to the clients are dumped.
 
 **Default:** `inherited from lightstreamerLogger`
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.pump.messages"](./values.yaml#L712)
 
      
-Optional. Logging of management of messages received from the clients. At `DEBUG` level, details of message processing are logged. All log from this logger reports the IP and port of the involved connection.
+Optional. Logging of management of messages received from the  clients. At `DEBUG` level, details of message processing are logged. All log from this logger reports the IP and port of the involved connection.
 
 **Default:** `inherited from lightstreamerLogger.pump`
 #### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.push"](./values.yaml#L717)

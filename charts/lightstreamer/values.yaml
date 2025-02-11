@@ -692,19 +692,19 @@ logging:
         # @default -- inherited from `lightstreamerLogger.subscriptions`
         lightstreamerLogger.subscriptions.upd: DEBUG
         # -- Optional. Logging of events preprocessing stage.
-        # At `DEBUG` level, events dispatched to ItemEventBuffers are dumped.
+        # At `DEBUG` level, events dispatched to `ItemEventBuffers` are dumped.
         # @default -- inherited from lightstreamerLogger
         lightstreamerLogger.preprocessor: INFO
         # -- Optional. Logging of internal thread management and events
         # dispatching.
         # @default -- inherited from lightstreamerLogger
         lightstreamerLogger.scheduler: INFO
-        # -- Optional. Logging of InfoPump and ItemEventBuffers internal
+        # -- Optional. Logging of `InfoPump` and `ItemEventBuffers` internal 
         # activity.
         # At `DEBUG` level, updates to be sent to the clients are dumped.
         # @default -- inherited from lightstreamerLogger
         lightstreamerLogger.pump: INFO
-        # -- Optional. Logging of management of messages received from the
+        # -- Optional. Logging of management of messages received from the 
         # clients.
         # At `DEBUG` level, details of message processing are logged.
         # All log from this logger reports the IP and port of the involved connection.
