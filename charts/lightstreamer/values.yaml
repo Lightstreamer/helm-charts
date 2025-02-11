@@ -941,7 +941,7 @@ servers:
     # HTTPS service is an optional feature, available depending on Edition and
     # License Type. To know what features are enabled by your license, please
     # see the License tab of the Monitoring Dashboard (by default, available at
-    # /dashboard).
+    # `/dashboard`).
     # See `sslConfig` for general details on TLS/SSL configuration.
     # @default -- false
     enableHttps: false
@@ -1651,7 +1651,7 @@ management:
   # and License Type; if not available, only the Server shutdown operation via
   # JMX is allowed. To know what features are enabled by your license, please
   # see the License tab of the Monitoring Dashboard (by default, available at
-  # /dashboard).
+  # `/dashboard`).
   jmx:
     # -- Mandatory (if you wish to use the provided "stop" script).
     # Enables the standard RMI connector.
@@ -1663,11 +1663,11 @@ management:
     # through the url: `service:jmx:rmi:///jndi/rmi://<host>:<port>/jmxrmi`.
     # Note that the configuration of the connector applies to both cases;
     # hence, access to the JVM platform MBean server from this connector is not
-    # configured through the "com.sun.management.jmxremote" JVM properties.
+    # configured through the `com.sun.management.jmxremote` JVM properties.
     # Also note that TLS/SSL is an optional feature, available depending on
     # Edition and License Type. To know what features are enabled by your
     # license, please see the License tab of the Monitoring Dashboard (by
-    # default, available at /dashboard).
+    # default, available at `/dashboard`).
     rmiConnector:
       # -- Mandatory. TCP port on which the RMI connector will be available.
       # This is the port that has to be specified in the client access url.
@@ -2390,7 +2390,7 @@ pushSession:
 # Mobile Push Notification support is an optional feature, available depending
 # on Edition and License Type. To know what features are enabled by your
 # license, please see the License tab of the Monitoring Dashboard (by default,
-# available at /dashboard).
+# available at `/dashboard`).
 mpn:
   # -- Optional. MPN module master switch. If N, the MPN module will
   # not start in any case, and all requests related to mobile push
