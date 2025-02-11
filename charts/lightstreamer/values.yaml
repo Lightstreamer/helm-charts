@@ -1840,10 +1840,10 @@ management:
     # For all these properties, corresponding operations are also provided.
     # If set to `true`, all list properties are enabled; in some cases, their
     # value may be an extremely long list; consider, for instance,
-    # 'CurrentSessionList' in the ResourceMBean.
+    # `CurrentSessionList` in the ResourceMBean.
     # If set to `false`, properties that can, potentially, return extremely long
     # lists won't yield the correct value, but just a reminder text; for
-    # instance, this applies to 'CurrentSessionList' in the ResourceMBean.
+    # instance, this applies to `CurrentSessionList` in the ResourceMBean.
     # @default -- true
     enableLongListProperties: false
   # -- Optional. Startup check that the conditions for the correct working of
