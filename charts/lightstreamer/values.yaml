@@ -319,8 +319,9 @@ license:
     # -- (string) Optional. Choose between online (cloud-based) and file-based
     # license validation.
     # If set to `ONLINE`, the following host names below must be reachable on
-    # port 443: `https://clm1.lightstreamer.com/`,
-    # `https://clm2.lightstreamer.com/`.
+    # port 443: 
+    # - `https://clm1.lightstreamer.com/`
+    # - `https://clm2.lightstreamer.com/`.
     # If set to `FILE`, based on `licenseType`, one or both the values are possible.
     # For EVALUATION and STARTUP: ONLINE is mandatory.
     # For PRODUCTION, HOT-STANDBY, NON-PRODUCTION-FULL, and NON-PRODUCTION-LIMITED:
@@ -339,14 +340,14 @@ license:
     filePathSecretRef:
       name:
       key:
-    # -- In case of file-based license validation, this element allows to
-    # activate periodic automatic upload. This makes it much easier for
-    # the systems admins to deliver the logs, as contractually agreed.
+    # -- In case of file-based license validation, allows to activate periodic
+    # automatic upload. This makes it much easier for the systems admins to
+    # deliver the logs, as contractually agreed.
     # In case of online license validation, the audit logs are always
     # automatically uploaded to the Online License Manager, irrespective
-    # of this element.
-    # If enabled, the th following host name must be reachable on port 443:
-    #      - https://service.lightstreamer.com/
+    # of this setting.
+    # If enabled, the host `https://service.lightstreamer.com` must be 
+    # reachable on port 443
     # If not enabled, audit logs must be delivered manually if required by
     # license terms.
     # @default -- true
@@ -1021,7 +1022,7 @@ servers:
     #   intermediate HTTP proxies and level-7 Load Balancers usually set to
     #   supply connection routing information in an incremental way (this is
     #   done through the `skipLocalForwards` setting);
-
+    #
     # - by receiving the routed address directly from a TCP reverse proxy or
     #   level-4 Load Balancer through the Proxy Protocol, when the proxy is
     #   configured to do so (this is done through the `enableProxyProtocol` 
@@ -2389,10 +2390,11 @@ pushSession:
 # license, please see the License tab of the Monitoring Dashboard (by default,
 # available at `/dashboard`).
 mpn:
-  # -- Optional. MPN module master switch. If N, the MPN module will
-  # not start in any case, and all requests related to mobile push
-  # Note that, by enabling the module, the handling of the special
-  #  URL configured by `appleWebServicePath` is also enabled.
+  # -- Optional. MPN module master switch. If set to `false`, the MPN module 
+  # will not start in any case, and all requests related to mobile push
+  # notifications will be rejected.
+  # Note that, by enabling the module, the handling of the special URL 
+  # configured by `appleWebServicePath` is also enabled.
   # @default -- false
   enabled:
   # -- (string) Optional. Specifies the root path of the web service URL to be
@@ -2900,55 +2902,55 @@ webServer:
 
 # -- Optional. Clustering configuration.
 cluster:
-  #  -- Optional. Host address to be used for control/poll/rebind connections.
-  #  A numeric IP address can be specified as well. The use of non standard,
-  #  unicode names may not be supported yet by some Client SDKs.
-  #  This setting can be used in case a cluster of Server instances is in
-  #  place, to ensure that all client requests pertaining to the same session
-  #  are issued against the same Server instance. If the Load Balancer can
-  #  ensure that all requests coming from the same client are always routed to
-  #  the same Server instance, then this setting is not needed.
-  #  See the Clustering.pdf document for details.
-  #  Note: When this setting is used, clients based on any Unified Client SDK
-  #  that supports the optional `setEarlyWSOpenEnabled` method in the
-  #  `ConnectionOptions` class should invoke this method with false, to improve
-  #  startup performances.
-  #  In case a request comes from a web client and
-  #  `cluster.controlLinkMachineName` is also specified, the latter setting may
-  #  be applied instead; see the comment for `cluster.controlLinkMachineName`
-  #  for details.
-  #  Support for clustering is an optional feature, available depending on
-  #  Edition and License Type. When not available, this setting is ignored.
+  # -- Optional. Host address to be used for control/poll/rebind connections.
+  # A numeric IP address can be specified as well. The use of non standard,
+  # unicode names may not be supported yet by some Client SDKs.
+  # This setting can be used in case a cluster of Server instances is in
+  # place, to ensure that all client requests pertaining to the same session
+  # are issued against the same Server instance. If the Load Balancer can
+  # ensure that all requests coming from the same client are always routed to
+  # the same Server instance, then this setting is not needed.
+  # See the Clustering.pdf document for details.
+  # Note: When this setting is used, clients based on any Unified Client SDK
+  # that supports the optional `setEarlyWSOpenEnabled` method in the
+  # `ConnectionOptions` class should invoke this method with false, to improve
+  # startup performances.
+  # In case a request comes from a web client and
+  # `cluster.controlLinkMachineName` is also specified, the latter setting may
+  # be applied instead; see the comment for `cluster.controlLinkMachineName`
+  # for details.
+  # Support for clustering is an optional feature, available depending on
+  # Edition and License Type. When not available, this setting is ignored.
   controlLinkAddress:
-  #  -- Optional. Host name to be used, in addition to the domain name
-  #  specified on the front-end pages, for control/poll/rebind connections
-  #  coming from web clients. This only regards clients based on old versions
-  #  of the Web (Unified API) Client SDK (earlier than 8.0.0). The use of non
-  #  standard, unicode names may not be supported by old versions of the Web
-  #  Client SDK.
-  #  This setting will override the `cluster.controlLinkAddress` setting when
-  #  the request comes from such Web Client SDKs and the access to Server data
-  #  pages requires that the latter share a common subdomain with application
-  #  pages.
-  #  This was one of the ways used by these SDKs to request streaming data; see
-  #  the Client Guide in the Web (Unified API) Client SDK for these versions
-  #  for details on the cases in which this setting will be preferred; note
-  #  that, in this regard, the behavior will be slightly different when the
-  #  older HTML Client Library is in use, so as to ensure backward
-  #  compatibility.
-  #  This option is useful if the subdomain-name part of the hostname is
-  #  subject to changes or if the same machine needs to be addressed through
-  #  multiple subdomain names (e.g. for multihosting purpose).
-  #  The configured name should contain all the portions of the address except
-  #  for the subdomain name. For example, assuming the "mycompany.com"
-  #  subdomain is declared in the front-end pages:
-  #  - If the full address is "push1.mycompany.com", the name should be
-  #  "push1";
-  #  - If the full address is "push.int2.cnt3.mycompany.com", the name
-  #    should be "push.int2.cnt3".
-  #  Refer to `cluster.controlLinkAddress` for other remarks.
-  #  Support for clustering is an optional feature, available depending on
-  #  Edition and License Type. When not available, this setting is ignored.
+  # -- Optional. Host name to be used, in addition to the domain name
+  # specified on the front-end pages, for control/poll/rebind connections
+  # coming from web clients. This only regards clients based on old versions
+  # of the Web (Unified API) Client SDK (earlier than 8.0.0). The use of non
+  # standard, unicode names may not be supported by old versions of the Web
+  # Client SDK.
+  # This setting will override the `cluster.controlLinkAddress` setting when
+  # the request comes from such Web Client SDKs and the access to Server data
+  # pages requires that the latter share a common subdomain with application
+  # pages.
+  # This was one of the ways used by these SDKs to request streaming data; see
+  # the Client Guide in the Web (Unified API) Client SDK for these versions
+  # for details on the cases in which this setting will be preferred; note
+  # that, in this regard, the behavior will be slightly different when the
+  # older HTML Client Library is in use, so as to ensure backward
+  # compatibility.
+  # This option is useful if the subdomain-name part of the hostname is
+  # subject to changes or if the same machine needs to be addressed through
+  # multiple subdomain names (e.g. for multihosting purpose).
+  # The configured name should contain all the portions of the address except
+  # for the subdomain name. For example, assuming the `mycompany.com`
+  # subdomain is declared in the front-end pages:
+  # - If the full address is `push1.mycompany.com`, the name should be
+  # `push`;
+  # - If the full address is `push.int2.cnt3.mycompany.com`, the name
+  #   should be `push.int2.cnt3`.
+  # Refer to `cluster.controlLinkAddress` for other remarks.
+  # Support for clustering is an optional feature, available depending on
+  # Edition and License Type. When not available, this setting is ignored.
   controlLinkMachineName:
   # -- (int) Optional. If set and positive, specifies a maximum duration to be
   # enforced on each session. If the limit expires, the session is closed and
@@ -3115,20 +3117,20 @@ load:
   # @default -- the number of available total cores, as detected by the JVM,
   # which is also the minimum number of threads left in the pool
   acceptPoolMaxSize:
-  #  -- (int) Optional. Maximum number of tasks allowed to be queued to enter
-  #  the `ACCEPT` thread pool before undertaking backpressure actions.
-  #  The setting only affects the listening sockets with
-  #  `servers.{}.portType` configured as CREATE_ONLY. As long as the
-  #  number is exceeded, the accept loops of these sockets will be kept
-  #  waiting.
-  #  By suspending the accept loop, some SYN packets from the clients may be
-  #  discarded; the effect may vary depending on the backlog settings.
-  #  Note that, in the absence of sockets configured as CREATE_ONLY, no
-  #  backpressure action will take place.
-  #  A long queue on the `ACCEPT` pool may be the consequence of a CPU shortage
-  #  during (or caused by) a high client connection activity.
-  #  A negative value disables the check.
-  #  @default -- `-1`
+  # -- (int) Optional. Maximum number of tasks allowed to be queued to enter
+  # the `ACCEPT` thread pool before undertaking backpressure actions.
+  # The setting only affects the listening sockets with
+  # `servers.{}.portType` configured as CREATE_ONLY. As long as the
+  # number is exceeded, the accept loops of these sockets will be kept
+  # waiting.
+  # By suspending the accept loop, some SYN packets from the clients may be
+  # discarded; the effect may vary depending on the backlog settings.
+  # Note that, in the absence of sockets configured as CREATE_ONLY, no
+  # backpressure action will take place.
+  # A long queue on the `ACCEPT` pool may be the consequence of a CPU shortage
+  # during (or caused by) a high client connection activity.
+  # A negative value disables the check.
+  # @default -- -1
   acceptPoolMaxQueue:
   # -- (int) Optional. Size of the `TLS-SSL HANDSHAKE` internal pool, which is
   # devoted to the management of operations needed to accomplish TLS/SSL
@@ -3140,8 +3142,8 @@ load:
   # tasks are not expected to be blocking. Note that the operation may be
   # CPU-intensive; hence, it is advisable to set a value smaller than the
   # number of available cores.
-  # @default -- half the number of available total cores, as detected by the JVM
-  # (obviously, if there is only one core, the default will be 1)
+  # @default -- half the number of available total cores, as detected by the 
+  # JVM (obviously, if there is only one core, the default will be 1)
   handshakePoolSize:
   # -- (int) Optional. Maximum number of tasks allowed to be queued to enter
   # the `TLS-SSL HANDSHAKE` thread pool before undertaking backpressure
@@ -3151,14 +3153,14 @@ load:
   # not configured to request the client certificate.
   # More precisely:
   # - If there are https sockets with `servers.{}.portType` configured as
-  #   CREATE_ONLY, then, as long as the number is exceeded, the accept loops of
-  #   these sockets will be kept waiting.
+  #   `CREATE_ONLY`, then, as long as the number is exceeded, the accept loops 
+  #   of these sockets will be kept waiting.
   #   By suspending the accept loop, some SYN packets from the clients may be
   #   discarded; the effect may vary depending on the backlog settings.
-  # - Otherwise, if there are https sockets configured as CONTROL_ONLY and none
-  #   is configured as the default GENERAL_PURPOSE, then, as long as the number
-  #   is exceeded, the accept loops of these sockets will be kept waiting
-  #   instead.
+  # - Otherwise, if there are https sockets configured as `CONTROL_ONLY`and 
+  #   none is configured as the default `GENERAL_PURPOSE`, then, as long as the 
+  #   number is exceeded, the accept loops of these sockets will be kept 
+  #   waiting instead.
   #   Additionally, the same action on the accept loops associated to the
   #   `load.acceptPoolMaxQueue` check will be performed (regardless that
   #   `load.acceptPoolMaxQueue` itself is set). Note that the latter action may
@@ -3353,9 +3355,9 @@ connectors:
             #  - SCRAM-SHA-512
             #  - GSSAPI
             # @default -- PLAIN
-
+            authentication:
             # -- Mandatory if `mechanism` is set to `PLAIN`, `SCRAM-SHA-256`,
-            # `SCRAM-SHA-512`. The name of the secret containing the
+            # `SCRAM-SHA-512`. The name of the secret containing the 
             # credentials. The secret must contain the keys `user` and `password`.
             credentialsSecretRef:
             # -- Mandatory if `mechanism` is set to `GSSAPI`. The GSSAPI
