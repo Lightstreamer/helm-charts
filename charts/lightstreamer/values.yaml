@@ -1173,7 +1173,7 @@ servers:
         # @default -- false
         enabled: true
         # -- (string) Optional. Preference order for choosing the cipher suite.
-        # If set to `JVM`  ordering is demanded to the underlying Security
+        # If set to `JVM`, ordering is demanded to the underlying Security
         # Provider, which, usually, privileges the strongest suites.
         # If set to `config` (which is allowed only if `allowCipherSuites` is
         # used), the order in which the `allowCipherSuites` elements are

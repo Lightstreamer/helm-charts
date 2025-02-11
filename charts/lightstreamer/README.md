@@ -266,7 +266,7 @@ Optional. If set to `true`, the Server will choose the cipher suite based on its
 #### [servers.defaultServer.sslConfig.enforceServerCipherSuitePreference.order](./values.yaml#L1182)
 
      
-Optional. Preference order for choosing the cipher suite. If set to `JVM`  ordering is demanded to the underlying Security Provider, which, usually, privileges the strongest suites. If set to `config` (which is allowed only if `allowCipherSuites` is used), the order in which the `allowCipherSuites` elements are specified determines the preference order.
+Optional. Preference order for choosing the cipher suite. If set to `JVM`, ordering is demanded to the underlying Security Provider, which, usually, privileges the strongest suites. If set to `config` (which is allowed only if `allowCipherSuites` is used), the order in which the `allowCipherSuites` elements are specified determines the preference order.
 
 **Default:** `JVM`
 #### [servers.defaultServer.sslConfig.keyStoreRef](./values.yaml#L1130)
