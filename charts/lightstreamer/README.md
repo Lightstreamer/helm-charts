@@ -886,7 +886,7 @@ Mandatory. Default keep-alive configuration.
 #### [pushSession.defaultKeepaliveMillis.randomize](./values.yaml#L2332)
 
      
-Optional. If set to `true`, causes keepalives immediately following a data event to be sent after a random, shorter interval (possibly even shorter than the "min_keepalive_millis" setting). This can be useful if many sessions subscribe to the same items and updates for these items are rare, to avoid that also the keepalives for these sessions occur at the same times.
+Optional. If set to `true`, causes keepalives immediately following a data event to be sent after a random, shorter interval (possibly even shorter than the `minKeepaliveMillis` setting). This can be useful if many sessions subscribe to the same items and updates for these items are rare, to avoid that also the keepalives for these sessions occur at the same times.
 
 **Default:** `false`
 #### [pushSession.defaultKeepaliveMillis.value](./values.yaml#L2324)
