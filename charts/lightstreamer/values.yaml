@@ -3024,7 +3024,7 @@ load:
   # the proper client sessions, according with each session subscriptions.
   # This task does not include blocking operations; however, on multiprocessor
   # machines, allocating multiple threads for this task may be beneficial.
-  # @default -- the number of total cores, as detected by the JVM
+  # @default -- the number of available total cores, as detected by the JVM
   eventsPoolSize:
   # -- (int) Optional. Size of the `SNAPSHOT` internal thread pool, which is
   # devoted to dispatching the snapshot events upon new subscriptions from

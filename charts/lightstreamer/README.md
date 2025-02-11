@@ -1689,7 +1689,7 @@ Optional. Size of the `EVENTS` internal thread pool, which is devoted to dispatc
 **Default:**
 
 ```
-the number of total cores, as detected by the JVM
+the number of available total cores, as detected by the JVM
 ```
 #### [load.forceEarlyConversions](./values.yaml#L3223)
 
