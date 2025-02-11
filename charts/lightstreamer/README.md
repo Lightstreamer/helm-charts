@@ -378,7 +378,7 @@ Optional. The keystore type. The currently supported types are: - `JKS`, which i
 #### [globalSocket](./values.yaml#L1359)
 
      
-Mandatory. Global socket configuration
+Mandatory. Global socket configuration.
 
 **Default:**
 
@@ -412,7 +412,7 @@ Optional. Enabling the use of the full HTTP 1.1 syntax for all the responses, up
 #### [globalSocket.webSocket](./values.yaml#L1405)
 
      
-Optional. WebSocket support configuration
+Optional. WebSocket support configuration.
 
 **Default:**
 
@@ -458,7 +458,7 @@ Optional. Longest operation time accepted while writing data on a socket. If thi
 #### [security](./values.yaml#L1438)
 
      
-Security configuration
+Optional. Security configuration.
 
 **Default:**
 
@@ -550,7 +550,7 @@ Optional. Server identification policy to be used for all server responses. Upon
 #### [management](./values.yaml#L1600)
 
      
-Mandatory. Logging and management configuration
+Mandatory. Logging and management configuration.
 
 **Default:**
 
@@ -844,7 +844,7 @@ Optional. Threshold time for long Adapter call alerts. All Data and Metadata Ada
 #### [pushSession](./values.yaml#L1993)
 
      
-Mandatory. Push session configuration
+Mandatory. Push session configuration.
 
 **Default:**
 

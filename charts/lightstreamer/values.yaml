@@ -1401,7 +1401,7 @@ globalSocket:
   # support specific response features.
   # @default -- 1.1
   useHttpVersion:
-  # -- Optional. WebSocket support configuration
+  # -- Optional. WebSocket support configuration.
   webSocket:
     # -- Optional. Enabling of the WebSocket support.
     # If set to `true`, the Server accepts requests for initiating a WebSocket
