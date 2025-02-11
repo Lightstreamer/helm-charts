@@ -59,8 +59,8 @@ limitations under the License.
    <!-- Optional. Timeout for connecting to APNS services. In case of slow
         outgoing connectivity, increasing the timeout may be beneficial.
         Default: 30000 (30 sec) -->
-  {{- if not (quote .connectionTimeout) | empty }}
-   <connection_timeout>{{ int .connectionTimeout }}</connection_timeout>
+  {{- if not (quote .connectionTimeoutMillis) | empty }}
+   <connection_timeout>{{ int .connectionTimeoutMillis }}</connection_timeout>
   {{- else }}
    <!--
    <connection_timeout>30000</connection_timeout>
