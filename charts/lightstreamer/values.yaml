@@ -601,25 +601,25 @@ logging:
         # -- Optional. Logging of system components initialization.
         # At `DEBUG` level, initialization details, error details and all
         # configuration settings are reported.
-        # @default -- inherited from `lightstreamerLogger`
+        # @default -- inherited from lightstreamerLogger
         lightstreamerLogger.init: INFO
         # -- Optional. Logging of license check phase.
         # At `DEBUG` level, check details and error details can be found in case
         # of license check failure.
-        # @default -- inherited from `lightstreamerLogger`
+        # @default -- inherited from lightstreamerLogger
         lightstreamerLogger.license: INFO
         # -- Optional. Logging of background activities and related
         # configuration and issues.
-        # @default -- inherited from `lightstreamerLogger`
+        # @default -- inherited from lightstreamerLogger
         lightstreamerLogger.kernel: INFO
         # -- Optional. Logging of external services activity.
         # At `DEBUG` level, details on external services activities and
         # configuration, as well as details on connectivity issues, are
         # reported.
-        # @default -- inherited from `lightstreamerLogger`
+        # @default -- inherited from lightstreamerLogger
         lightstreamerLogger.external: INFO
         # -- Optional. Logging of activity and issues in connection management.
-        # @default -- inherited from `lightstreamerLogger`
+        # @default -- inherited from lightstreamerLogger
         lightstreamerLogger.io: WARN
         # -- Optional. Logging of activity and issues in TLS configuration.
         # At `DEBUG` level, details on the protocol and cipher suite configuration are reported
@@ -658,7 +658,7 @@ logging:
         # At `DEBUG` level, error details are reported.
         # All log from this logger and its subloggers reports the IP and port
         # of the involved connection.
-        # @default -- inherited from `lightstreamerLogger`
+        # @default -- inherited from lightstreamerLogger
         lightstreamerLogger.webServer: WARN
         # -- Optional. Logging of request management related to the JMX Tree
         # feature.
@@ -674,7 +674,7 @@ logging:
         # At `DEBUG` level, client request details are reported.
         # All log from this logger and its subloggers reports the IP and port
         # of the involved connection.
-        # @default -- inherited from `lightstreamerLogger`
+        # @default -- inherited from lightstreamerLogger
         lightstreamerLogger.requests: INFO
         # -- Optional. Logging of elaboration of client polling requests.
         # @default -- inherited from `lightstreamerLogger.requests`
@@ -685,7 +685,7 @@ logging:
         lightstreamerLogger.requests.messages: INFO
         # -- Optional. Logging of Data Adapters interactions.
         # At `DEBUG` level, details on subscription operations are reported.
-        # @default -- inherited from `lightstreamerLogger`
+        # @default -- inherited from lightstreamerLogger
         lightstreamerLogger.subscriptions: DEBUG
         # -- Optional. Logging of events coming from the Data Adapters.
         # At `DEBUG` level, all update events are dumped.
@@ -693,42 +693,42 @@ logging:
         lightstreamerLogger.subscriptions.upd: DEBUG
         # -- Optional. Logging of events preprocessing stage.
         # At `DEBUG` level, events dispatched to ItemEventBuffers are dumped.
-        # @default -- inherited from `lightstreamerLogger`
+        # @default -- inherited from lightstreamerLogger
         lightstreamerLogger.preprocessor: INFO
         # -- Optional. Logging of internal thread management and events
         # dispatching.
-        # @default -- inherited from `lightstreamerLogger`
+        # @default -- inherited from lightstreamerLogger
         lightstreamerLogger.scheduler: INFO
         # -- Optional. Logging of InfoPump and ItemEventBuffers internal
         # activity.
         # At `DEBUG` level, updates to be sent to the clients are dumped.
-        # @default -- inherited from `lightstreamerLogger`
+        # @default -- inherited from lightstreamerLogger
         lightstreamerLogger.pump: INFO
         # -- Optional. Logging of management of messages received from the
         # clients.
         # At `DEBUG` level, details of message processing are logged.
         # All log from this logger reports the IP and port of the involved connection.
-        # @default -- inherited from `lightstreamerLogger.pump`
+        # @default -- inherited from lightstreamerLogger.pump
         lightstreamerLogger.pump.messages: INFO
         # -- Optional. Logging of socket write activity.
         # At `DEBUG` level, all socket writes are dumped.
         # All log from this logger reports the IP and port of the involved connection.
-        # @default -- inherited from `lightstreamerLogger`
+        # @default -- inherited from lightstreamerLogger
         lightstreamerLogger.push: INFO
         # -- Optional. Logging of mobile push notifications activity, done
         # through the various subloggers.
-        # @default -- inherited from `lightstreamerLogger`
+        # @default -- inherited from lightstreamerLogger
         lightstreamerLogger.mpn: INFO
         # -- Optional. Logging of MPN Module recurrent activity.
         # At `INFO` level, main operation exit points and outcomes are dumped.
         # At `DEBUG` level, the various operation entry entry and exit points are logged.
-        # @default -- inherited from `lightstreamerLogger.mpn`
+        # @default -- inherited from lightstreamerLogger.mpn
         lightstreamerLogger.mpn.lifecycle: INFO
         # -- Optional,. Logging of mobile push notifications activity.
         # At `INFO` level, main operation exit points and outcomes are dumped.
         # At `DEBUG` level, the various operation entry entry and exit points are
         # logged.
-        # @default -- inherited from `lightstreamerLogger.mpn`
+        # @default -- inherited from lightstreamerLogger.mpn
         lightstreamerLogger.mpn.operations: INFO
         # -- Optional. Logging of mobile push notifications request processing;
         # requests include those from clients (through the "client" sublogger)
@@ -738,43 +738,43 @@ logging:
         # At `DEBUG` level, all request processing entry points are logged.
         # All log related with client requests reports the IP and port of the
         # involved connection.
-        # @default -- inherited from `lightstreamerLogger.mpn`
+        # @default -- inherited from lightstreamerLogger.mpn
         lightstreamerLogger.mpn.requests: WARN
         # -- Optional. Logging of mobile push notifications activity related to
         # notification gathering.
         # At `INFO` level, all push notifications ready to be sent are dumped.
-        # @default -- inherited from `lightstreamerLogger.mpn`
+        # @default -- inherited from lightstreamerLogger.mpn
         lightstreamerLogger.mpn.pump: WARN
         # -- Optional. Logging of mobile push notifications activity related to
         # database.
         # At `DEBUG` level, all database operation entry and exit points are
         # logged.
-        # @default -- inherited from `lightstreamerLogger.mpn`
+        # @default -- inherited from lightstreamerLogger.mpn
         lightstreamerLogger.mpn.database: WARN
         # -- Optional. Logging of mobile push notifications activity related to
         # database transactions.
         # At `INFO` level, statistics on the database transactions are logged.
         # At `DEBUG` level, all database transaction entry and exit points are
         # logged.
-        # @default -- inherited from `lightstreamerLogger.mpn.database`
+        # @default -- inherited from lightstreamerLogger.mpn.database
         lightstreamerLogger.mpn.database.transactions: WARN
         # -- Optional. Logging of mobile push notifications activity related to
         #  Apple platforms; for activity related with notification submission,
         # specific subloggers are present for each application, e.g.:
         # `lightstreamerLogger.mpn.apple.com.mydomain.myapp`.
         # At `INFO` level, all push notification payloads are dumped.
-        # @default -- inherited from `lightstreamerLogger.mpn`
+        # @default -- inherited from lightstreamerLogger.mpn
         lightstreamerLogger.mpn.apple: WARN
         # -- Optional. Logging of mobile push notifications activity related to
         # Google platforms; for activity related with notification submission,
         # specific subloggers are present for each application, e.g.:
         # `lightstreamerLogger.mpn.google.com.mydomain.myapp`.
         # At `INFO` level, all push notification payloads are dumped.
-        # @default -- inherited from `lightstreamerLogger.mpn`
+        # @default -- inherited from lightstreamerLogger.mpn
         lightstreamerLogger.mpn.google: WARN
         # -- Optional. Logging of issues related with the special adapters
         # handled by the MPN Module.
-        # @default -- inherited from `lightstreamerLogger.mpn`
+        # @default -- inherited from lightstreamerLogger.mpn
         lightstreamerLogger.mpn.status_adapters: WARN
         # -- Optional. Logging of JavaScript client messages.
         # A at `DEBUG` level, log messages sent by the Web and Node.js (Unified
@@ -782,12 +782,12 @@ logging:
         # the client side.
         # All log from this logger reports the IP and port of the involved
         # connection.
-        # @default -- inherited from `lightstreamerLogger`
+        # @default -- inherited from lightstreamerLogger
         lightstreamerLogger.webclient: DEBUG
         # -- Optional. Logging of JMX setup issues; note that full JMX features
         # could be restricted depending on Edition and License Type.
         # At `DEBUG` level, JMX connectors initialization details are logged.
-        # @default -- inherited from `lightstreamerLogger`
+        # @default -- inherited from lightstreamerLogger
         lightstreamerLogger.monitoring: INFO
     # -- Optional. Logging healthcheck request processing at `INFO` level.
     # The logger does not inherit from `lightstreamerLogger` in order to
