@@ -340,7 +340,7 @@ Example of Keystore definition used by Kafka connector configurations.
 #### [keyStores.myServerKeystore](./values.yaml#L1309)
 
      
-Keystore definition used by HTTPS server socket configurations. The default values used here reference the JKS keystore file "myserver.keystore", which is provided out of the box (and stored in the `myserver-keystore-secret` secret, along with the password stored in the `myserver-keypass-secret` secret), and obviously contains an invalid certificate. In order to use it for your experiments, remember to add a security exception to your browser.
+Keystore definition used by HTTPS server socket configurations. The default values used here reference the JKS keystore file `myserver.keystore`, which is provided out of the box (and stored in the `myserver-keystore-secret` secret, along with the password stored in the `myserver-keypass-secret` secret), and obviously contains an invalid certificate. In order to use it for your experiments, remember to add a security exception to your browser.
 
 **Default:**
 
@@ -1512,7 +1512,7 @@ Example of Keystore definition used by Kafka connector configurations.
 #### [keyStores.myServerKeystore](./values.yaml#L1309)
 
      
-Keystore definition used by HTTPS server socket configurations. The default values used here reference the JKS keystore file "myserver.keystore", which is provided out of the box (and stored in the `myserver-keystore-secret` secret, along with the password stored in the `myserver-keypass-secret` secret), and obviously contains an invalid certificate. In order to use it for your experiments, remember to add a security exception to your browser.
+Keystore definition used by HTTPS server socket configurations. The default values used here reference the JKS keystore file `myserver.keystore`, which is provided out of the box (and stored in the `myserver-keystore-secret` secret, along with the password stored in the `myserver-keypass-secret` secret), and obviously contains an invalid certificate. In order to use it for your experiments, remember to add a security exception to your browser.
 
 **Default:**
 

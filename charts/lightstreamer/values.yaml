@@ -1301,7 +1301,7 @@ servers:
 keyStores:
   # -- Keystore definition used by HTTPS server socket configurations.
   # The default values used here reference the JKS keystore file
-  # "myserver.keystore", which is provided out of the box (and stored in the
+  # `myserver.keystore`, which is provided out of the box (and stored in the
   # `myserver-keystore-secret` secret, along with the password stored in the
   # `myserver-keypass-secret` secret), and obviously contains an invalid
   # certificate. In order to use it for your experiments, remember to add a
