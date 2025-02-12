@@ -3252,7 +3252,8 @@ connectors:
     # Adapter. It is possible to provide a custom implementation by extending
     # the factory class.
     # See the [dedicated section](https://github.com/Lightstreamer/Lightstreamer-kafka-connector/tree/main?tab=readme-ov-file#customizing-the-kafka-connector-metadata-adapter-class)
-    # in the README.md file of the Lightstreamer Kafka Connector project GitHub.
+    # in the _README.md_ file of the _Lightstreamer Kafka Connector_ project on 
+    # GitHub.
     adapterClassName: "com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter"
     # -- Mandatory. Kafka Connector global logging configuration.
     logging:
