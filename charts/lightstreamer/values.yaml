@@ -1135,8 +1135,8 @@ servers:
       # @default -- the default JVM's Security Provider
       tlsProvider:
       # -- Mandatory. The reference to a keystore configuration (defined in
-      # `keyStores`).
-      # See the `keyStores.myServerKeystore` settings for general details on
+      # `keystores`).
+      # See the `keystores.myServerKeystore` settings for general details on
       # keystore configuration.
       keyStoreRef: myServerKeystore
       # -- Optional, but forbidden if `removeCipherSuites` is used.
@@ -1304,7 +1304,7 @@ servers:
       # It can be used to supply client certificates that should be accepted,
       # in addition to those with a valid certificate chain, for instance while
       # testing with self-signed certificates.
-      # See the `keyStores.myServerKeystore` settings for general details on
+      # See the `keystores.myServerKeystore` settings for general details on
       # keystore configuration.
       # Note that the further constraints reported there with regard to
       # accessing the certificates in a JKS keystore don't hold in this
@@ -1313,7 +1313,7 @@ servers:
       trustStoreRef:
 
 # -- Keystores definition.
-keyStores:
+keystores:
   # -- Keystore definition used by HTTPS server socket configurations.
   # The default values used here reference the JKS keystore file
   # `myserver.keystore`, which is provided out of the box (and stored in the
@@ -2672,7 +2672,7 @@ mpn:
         # -- Mandatory if `serviceLevel` is set to `development` or
         # `production`.
         # The reference to the keystore (defined in
-        # `mpn.appleNotifierConfig.keyStores`) where Apple's certificate for
+        # `mpn.appleNotifierConfig.keystores`) where Apple's certificate for
         # the app ID is stored.
         keystoreRef:
         # -- Optional. The configmap name and the key where the push package
@@ -2710,7 +2710,7 @@ mpn:
         triggerExpressions: []
           # - Double\.parseDouble\(\$\[\d+\]\) [<>] [+-]?(\d*\.)?\d+
     # -- Optional. Keystores definition.
-    keyStores:
+    keystores:
       # -- Keystore configuration for the app.
       myAppKeystore:
         # -- Mandatory. The secret name and the key where the keystore file is
@@ -3251,7 +3251,7 @@ connectors:
     # -- (string) Mandatory. Java class name of the Kafka Connector Metadata
     # Adapter. It is possible to provide a custom implementation by extending
     # the factory class.
-    # See https://github.com/Lightstreamer/Lightstreamer-kafka-connector/tree/main?tab=readme-ov-file#customize-the-kafkaconnector-metadata-adapter-class.
+    # See https://github.com/Lightstreamer/Lightstreamer-kafka-connector/tree/main?tab=readme-ov-file#customize-the-kafka-connector-metadata-adapter-class.
     adapterClassName: "com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter"
     # -- Mandatory. Kafka Connector global logging configuration.
     logging:
@@ -3340,12 +3340,12 @@ connectors:
           enableHostnameVerification:
           # -- Optional. The reference to a keystore used to validate the
           # certificates provided by the Kafka brokers.
-          # See the `keyStores.myKafkaConnectorKeystore` settings for general
+          # See the `keystores.myKafkaConnectorKeystore` settings for general
           # details on keystore configuration for the Kafka Connector.
           trustStoreRef:
           # -- Optional. The reference to a keystore used if mutual TLS is 
           # enabled on Kafka brokers.
-          # See the `keyStores.myKafkaConnectorKeystore` settings for general
+          # See the `keystores.myKafkaConnectorKeystore` settings for general
           # details on keystore configuration for the Kafka Connector.
           keyStoreRef:
         # -- Optional. Authentication settings for the connection.
@@ -3640,11 +3640,11 @@ connectors:
           enableHostnameVerification:
           # -- Optional. The reference to a keystore used to validate the
           # certificates provided by the Schema Registry.
-          # See the `keyStores.myKafkaConnectorKeystore` settings for general
+          # See the `keystores.myKafkaConnectorKeystore` settings for general
           # details on keystore configuration for the Kafka Connector.
           trustStoreRef:
           # -- Optional. The reference to a keystore used if mutual TLS is 
           # enabled on the Schema Registry.
-          # See the `keyStores.myKafkaConnectorKeystore` settings for general
+          # See the `keystores.myKafkaConnectorKeystore` settings for general
           # details on keystore configuration for the Kafka Connector.
           keyStoreRef:
