@@ -15,6 +15,11 @@
 {{- end }}
 
 {{ define "chart.valuesTable" }}
+{{- $sections := list "common" "servers" "keyStores" "globalSocket" "security" "management" "pushSession" "mpn" "keyStores" "webServer" "cluster" "load" "license" "logging" "connectors" }}
+
+{{- range $section := $sections }}
+- [{{ . | title }}]({{ printf "#%s-settings" (. | lower)}})
+{{- end }}
 
 ## Settings
 
@@ -28,9 +33,9 @@
     {{- end }}
 {{- end }}
 
-{{- $sections := list "servers" "keyStores" "globalSocket" "security" "management" "pushSession" "mpn" "keyStores" "webServer" "cluster" "load" "license" "logging" "connectors" }}
-{{- range $section := $sections }}
-### {{ printf "%s configuration " ($section | title) }}
+
+{{- range $section := without $sections "common" }}
+### {{ printf "%s settings " ($section | title) }}
   {{ range $.Values }}
 
     {{- if hasPrefix $section .Key }}
