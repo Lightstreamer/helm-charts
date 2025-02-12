@@ -42,7 +42,6 @@ each focusing on a specific aspect of the Helm chart:
 - [{{ . | kebabcase | replace "-" " " | title }}]({{ printf "#%s-settings" (. | kebabcase )}})
 {{- end }}
 
-{{- /* Render the common settings */ -}}
 ## Common settings
 {{- $commons := list "nameOverride" "fullnameOverride" "commonLabels" "image" "image.repository" "image.pullRepository" "image.tag"}}
 {{ range $.Values }}

@@ -43,7 +43,9 @@ each focusing on a specific aspect of the Helm chart:
 - [Load](#load-settings)
 - [License](#license-settings)
 - [Logging](#logging-settings)
-- [Connectors](#connectors-settings)## Common settings
+- [Connectors](#connectors-settings)
+
+## Common settings
 
 ### [commonLabels](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L28)
      
