@@ -95,7 +95,7 @@ Render the Lightstreamer logging configuration file
   {{- range $key, $val := required "logging.appenders must be set" .appenders }}
     {{- $name := printf "%s%s" "LS" (title $key) }}
     {{- if not (has $val.type (list "DailyRollingFile" "Console")) }}
-      {{- fail (printf "logging.appenders.%s.type must be set to DailyRollingFile or Console" $key) }}
+      {{- fail (printf "logging.appenders.%s.type must be one of: \"DailyRollingFile\", \"Console\"" $key) }}
     {{- end }}
     {{- if eq $val.type "DailyRollingFile" }}
   <appender name={{ $name | quote }} class="com.lightstreamer.logback.RelativeFileAppenders$RollingFileAppender">
@@ -132,7 +132,7 @@ Render the Lightstreamer logging configuration file
     -->
     {{- end }}
     <encoder>
-      <pattern>{{ $val.pattern | replace "<" "&lt;" | replace ">" "&gt;" }}</pattern>
+      <pattern>{{ required (printf "logging.appenders.%s.pattern must be set" $key) $val.pattern | replace "<" "&lt;" | replace ">" "&gt;" }}</pattern>
     </encoder>
   </appender>
   {{- end }}
