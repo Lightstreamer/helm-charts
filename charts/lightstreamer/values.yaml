@@ -538,7 +538,6 @@ logging:
     #   volumeRef: custom-logs
     console:
       type: Console
-      pattern: "%d{\"dd.MMM.yy HH:mm:ss,SSS\"} <%5.5(%p%marker)> %m%n"
   # -- Optional. Loggers configuration.
   loggers:
     # -- Optional. Logger used by the internal monitoring system to log load
