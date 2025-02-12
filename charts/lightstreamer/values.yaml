@@ -98,7 +98,6 @@ deployment:
   
   # -- The security context for the Pods.
   #  See https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod.
-
   podSecurityContext: {}
     # fsGroup: 2000
 
@@ -205,7 +204,6 @@ deployment:
       # -- Mandatory if enabled is set to `true` and `startup.default` is not
       # specified. Startup probe configuration based on the default 
       # Lightstreamer healthcheck.
-
       healthCheck:
 
         # -- Mandatory. The reference to a server socket configuration (see
@@ -1028,14 +1026,17 @@ logging:
       appenders:
         - console
       level: WARN
+
     java.sql:
       appenders:
         - console
       level: WARN
+
     org.jboss.logging:
       appenders:
         - console
       level: WARN
+
     com.zaxxer.hikari:
       appenders:
         - console
@@ -1043,50 +1044,62 @@ logging:
 
     # These loggers are related to other third-party libraries used internally
     # by the Server.
+
     org.apache.http:
       appenders:
         - console
       level: ERROR
+
     com.github.markusbernhardt.proxy:
       appenders:
         - console
       level: WARN
+
     org.restlet:
       appenders:
         - console
       level: ERROR
+
     org.jminix:
       appenders:
         - console
       level: ERROR
+
     common.jmx.velocity:
       appenders:
         - console
       level: ERROR
+
     com.turo:
       appenders:
         - console
       level: ERROR
+
     com.google:
       appenders:
         - console
       level: ERROR
+
     io.netty:
       appenders:
         - console
       level: ERROR
+
     org.codehaus.janino:
       appenders:
         - console
       level: WARN
+
     io.grpc:
       appenders:
         - console
       level: WARN
+
     io.opencensus:
       appenders:
         - console
       level: WARN
+
     org.conscrypt:
       appenders:
         - console
@@ -1097,10 +1110,12 @@ logging:
       appenders:
         - console
       level: ERROR
+
     javax.management.mbeanserver:
       appenders:
         - console
       level: ERROR
+
     com.sun.jmx.remote:
       appenders:
         - console
@@ -1158,6 +1173,7 @@ servers:
     # @default -- false
 
     enableHttps: false
+
     # -- (int) Optional. Size of the system buffer for incoming TCP connections
     # Overrides the default system setting.
     # @default -- the system setting
@@ -1539,6 +1555,7 @@ servers:
 
 # -- Keystores definition.
 keystores:
+
   # -- Keystore definition used by HTTPS server socket configurations.
   # The default values used here reference the JKS keystore file
   # `myserver.keystore`, which is provided out of the box (and stored in the
@@ -1573,6 +1590,7 @@ keystores:
 
   # -- Example of Keystore definition used by Kafka connector configurations.
   myKafkaConnectorKeystore:
+
     # -- (string) Optional. The keystore type.
     # The currently supported types are:
     # - JKS, which is the Sun/Oracle's custom keystore type, whose support is
@@ -4015,6 +4033,7 @@ connectors:
             #     - "itemTemplate1"
             #     - "itemTemplate2"
             #     - "itemTemplateN"
+            
             stock:
 
               # -- Mandatory and unique across all topic mappings. The Kafka
