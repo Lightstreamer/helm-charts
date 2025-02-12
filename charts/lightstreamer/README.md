@@ -31,13 +31,13 @@ Explore the setting sections:
 
 - [Common](#common-settings)
 - [Servers](#servers-settings)
-- [Global Socket](#globalsocket-settings)
+- [Global Socket](#global-socket-settings)
 - [Security](#security-settings)
 - [Management](#management-settings)
-- [Push Session](#pushsession-settings)
+- [Push Session](#push-session-settings)
 - [Mpn](#mpn-settings)
 - [Keystores](#keystores-settings)
-- [Web Server](#webserver-settings)
+- [Web Server](#web-server-settings)
 - [Cluster](#cluster-settings)
 - [Load](#load-settings)
 - [License](#license-settings)
@@ -336,7 +336,7 @@ decided by the underlying Security Provider's configuration
 Mandatory if at least one of `enableClientAuth` and `enableMandatoryClientAuth` is set to `true`. The reference to a keystore to be used by the HTTPS service to accept client certificates. It can be used to supply client certificates that should be accepted, in addition to those with a valid certificate chain, for instance while testing with self-signed certificates. See the `keystores.myServerKeystore` settings for general details on keystore configuration. Note that the further constraints reported there with regard to accessing the certificates in a JKS keystore don't hold in this case, where the latter is used as a truststore. Moreover, the handling of keystore replacement doesn't apply here.
 
 **Default:** `nil`
-### GlobalSocket settings
+### Global Socket settings
  
 #### [globalSocket](./values.yaml#L1371)
 
@@ -798,7 +798,7 @@ Optional. A set of Clients whose activity is not to be logged.
 Optional. Threshold time for long Adapter call alerts. All Data and Metadata Adapter calls should perform as fast as possible, to ensure that client requests are accomplished quickly. Slow methods may also require that proper thread pools are configured. Hence, all invocations to the Adapters (but for the initialization phase) are monitored and a warning is logged whenever their execution takes more than this time. A `0` value disables the check.
 
 **Default:** `1000`
-### PushSession settings
+### Push Session settings
  
 #### [pushSession](./values.yaml#L2001)
 
@@ -1504,7 +1504,7 @@ Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key where keystor
 Optional. The keystore type. The currently supported types are: - `JKS`, which is the Sun/Oracle's custom keystore type, whose support is   made available by every Java installation; - `PKCS12`, which is supported by all recent Java installations; - `PKCS11`, which as a bridge to an external PKCS11 implementation;   this is an experimental extension; contact Lightstreamer Support for   details.
 
 **Default:** `JKS`
-### WebServer settings
+### Web Server settings
  
 #### [webServer](./values.yaml#L2810)
 
