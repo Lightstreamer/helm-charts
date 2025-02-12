@@ -22,7 +22,7 @@
 {{- $commons := list "nameOverride" "fullnameOverride" "commonLabels" "image" "image.repository" "image.pullRepository" "image.tag"}}
 {{ range $.Values }}
   {{- if has .Key $commons }}
-#### [{{ .Key }}](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/.values.yaml#L{{ .LineNumber }})
+#### [{{ .Key }}](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L{{ .LineNumber }})
 
       {{ template "chart.extractValues" . }}
     {{- end }}
