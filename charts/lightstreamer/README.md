@@ -25,23 +25,24 @@ $ helm repo add lightstreamer https://lightstreamer.github.io/helm-charts
 $ helm install lightstreamer-app lightstreamer/lightstreamer -n lightstreamer --create-namespace
 ```
 
+## Settings
+
+Explore the setting sections:
+
 - [Common](#common-settings)
 - [Servers](#servers-settings)
-- [KeyStores](#keystores-settings)
-- [GlobalSocket](#globalsocket-settings)
+- [Global Socket](#globalsocket-settings)
 - [Security](#security-settings)
 - [Management](#management-settings)
-- [PushSession](#pushsession-settings)
+- [Push Session](#pushsession-settings)
 - [Mpn](#mpn-settings)
-- [KeyStores](#keystores-settings)
-- [WebServer](#webserver-settings)
+- [Keystores](#keystores-settings)
+- [Web Server](#webserver-settings)
 - [Cluster](#cluster-settings)
 - [Load](#load-settings)
 - [License](#license-settings)
 - [Logging](#logging-settings)
 - [Connectors](#connectors-settings)
-
-## Settings
 
 ### Common settings
 
@@ -288,7 +289,7 @@ Optional. Preference order for choosing the cipher suite. If set to `JVM`, order
 #### [servers.defaultServer.sslConfig.keyStoreRef](./values.yaml#L1141)
 
      
-Mandatory. The reference to a keystore configuration (defined in `keyStores`). See the `keyStores.myServerKeystore` settings for general details on keystore configuration.
+Mandatory. The reference to a keystore configuration (defined in `keystores`). See the `keystores.myServerKeystore` settings for general details on keystore configuration.
 
 **Default:** `"myServerKeystore"`
 #### [servers.defaultServer.sslConfig.removeCipherSuites](./values.yaml#L1172)
@@ -332,63 +333,9 @@ decided by the underlying Security Provider's configuration
 #### [servers.defaultServer.sslConfig.trustStoreRef](./values.yaml#L1313)
 
      
-Mandatory if at least one of `enableClientAuth` and `enableMandatoryClientAuth` is set to `true`. The reference to a keystore to be used by the HTTPS service to accept client certificates. It can be used to supply client certificates that should be accepted, in addition to those with a valid certificate chain, for instance while testing with self-signed certificates. See the `keyStores.myServerKeystore` settings for general details on keystore configuration. Note that the further constraints reported there with regard to accessing the certificates in a JKS keystore don't hold in this case, where the latter is used as a truststore. Moreover, the handling of keystore replacement doesn't apply here.
+Mandatory if at least one of `enableClientAuth` and `enableMandatoryClientAuth` is set to `true`. The reference to a keystore to be used by the HTTPS service to accept client certificates. It can be used to supply client certificates that should be accepted, in addition to those with a valid certificate chain, for instance while testing with self-signed certificates. See the `keystores.myServerKeystore` settings for general details on keystore configuration. Note that the further constraints reported there with regard to accessing the certificates in a JKS keystore don't hold in this case, where the latter is used as a truststore. Moreover, the handling of keystore replacement doesn't apply here.
 
 **Default:** `nil`
-### KeyStores settings
- 
-#### [keyStores](./values.yaml#L1316)
-
-     
-Keystores definition.
-
-**Default:**
-
-```
-{"myKafkaConnectorKeystore":null,"myServerKeystore":{"keystoreFileSecretRef":{"key":"myserver.keystore","name":"myserver-keystore-secret"},"keystorePasswordSecretRef":{"key":"myserver.keypass","name":"myserver-keypass-secret"},"type":"JKS"}}
-```
-#### [keyStores.myKafkaConnectorKeystore](./values.yaml#L1346)
-
-     
-Example of Keystore definition used by Kafka connector configurations.
-
-**Default:** `nil`
-#### [keyStores.myServerKeystore](./values.yaml#L1324)
-
-     
-Keystore definition used by HTTPS server socket configurations. The default values used here reference the JKS keystore file `myserver.keystore`, which is provided out of the box (and stored in the `myserver-keystore-secret` secret, along with the password stored in the `myserver-keypass-secret` secret), and obviously contains an invalid certificate. In order to use it for your experiments, remember to add a security exception to your browser.
-
-**Default:**
-
-```
-{"keystoreFileSecretRef":{"key":"myserver.keystore","name":"myserver-keystore-secret"},"keystorePasswordSecretRef":{"key":"myserver.keypass","name":"myserver-keypass-secret"},"type":"JKS"}
-```
-#### [keyStores.myServerKeystore.keystoreFileSecretRef](./values.yaml#L1337)
-
-     
-Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key where the keystore file is stored.
-
-**Default:**
-
-```
-{"key":"myserver.keystore","name":"myserver-keystore-secret"}
-```
-#### [keyStores.myServerKeystore.keystorePasswordSecretRef](./values.yaml#L1342)
-
-     
-Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key where keystore password is stored.
-
-**Default:**
-
-```
-{"key":"myserver.keypass","name":"myserver-keypass-secret"}
-```
-#### [keyStores.myServerKeystore.type](./values.yaml#L1334)
-
-     
-Optional. The keystore type. The currently supported types are: - `JKS`, which is the Sun/Oracle's custom keystore type, whose support is   made available by every Java installation; - `PKCS12`, which is supported by all recent Java installations; - `PKCS11`, which as a bridge to an external PKCS11 implementation;   this is an experimental extension; contact Lightstreamer Support for   details.
-
-**Default:** `JKS`
 ### GlobalSocket settings
  
 #### [globalSocket](./values.yaml#L1371)
@@ -1079,7 +1026,7 @@ Optional. Mobile Push Notification (MPN) module configuration. This module is ab
 **Default:**
 
 ```
-{"activationOnStartUp":{"enabled":null,"maxDelayMillis":null},"appleNotifierConfig":{"apps":{"myApp":{"enabled":null,"id":null,"keystoreRef":null,"pushPackageFileRef":null,"serviceLevel":null,"triggerExpressions":[]}},"connectionTimeoutMillis":null,"keyStores":{"myAppKeystore":{"keystoreFileSecretRef":null,"keystorePasswordSecretRef":null}},"maxConcurrentConnections":null,"minSendDelayMillis":null},"appleWebServicePath":null,"collectorPeriodMinutes":null,"deviceHandlerPool":{"maxFree":null,"maxSize":null},"deviceInactivityTimeoutMinutes":null,"enableModuleRecovery":null,"enabled":null,"executorPool":{"maxFree":null,"maxSize":null},"googleNotifierConfig":{"apps":{"myApp":{"enabled":null,"packageName":null,"serviceJsonFileRef":null,"serviceLevel":null,"triggerExpressions":[]}},"messagingPoolSize":null,"minSendDelayMillis":null},"hibernateConfig":{"connection":{"credentialsSecretRef":"hsql-factory-secret","dialect":"org.hibernate.dialect.HSQLDialect","jdbcDriverClass":"org.hsqldb.jdbcDriver","jdbcUrl":"jdbc:hsqldb:hsql://localhost:9001"},"optionalConfiguration":{"cache.provider_class":"org.hibernate.cache.internal.NoCacheProvider","current_session_context_class":"thread","hbm2ddl.auto":"update","hikari.connectionTimeout":"5000","show_sql":"false"}},"internalDataAdapter":null,"moduleCheckPeriodMillis":null,"moduleTimeoutMillis":null,"mpnPumpPoolSize":null,"mpnTimerPoolSize":null,"notifierPoolSize":null,"reactionOnDatabaseFailure":"continue_operation","requestTimeoutMillis":null}
+{"activationOnStartUp":{"enabled":null,"maxDelayMillis":null},"appleNotifierConfig":{"apps":{"myApp":{"enabled":null,"id":null,"keystoreRef":null,"pushPackageFileRef":null,"serviceLevel":null,"triggerExpressions":[]}},"connectionTimeoutMillis":null,"keystores":{"myAppKeystore":{"keystoreFileSecretRef":null,"keystorePasswordSecretRef":null}},"maxConcurrentConnections":null,"minSendDelayMillis":null},"appleWebServicePath":null,"collectorPeriodMinutes":null,"deviceHandlerPool":{"maxFree":null,"maxSize":null},"deviceInactivityTimeoutMinutes":null,"enableModuleRecovery":null,"enabled":null,"executorPool":{"maxFree":null,"maxSize":null},"googleNotifierConfig":{"apps":{"myApp":{"enabled":null,"packageName":null,"serviceJsonFileRef":null,"serviceLevel":null,"triggerExpressions":[]}},"messagingPoolSize":null,"minSendDelayMillis":null},"hibernateConfig":{"connection":{"credentialsSecretRef":"hsql-factory-secret","dialect":"org.hibernate.dialect.HSQLDialect","jdbcDriverClass":"org.hsqldb.jdbcDriver","jdbcUrl":"jdbc:hsqldb:hsql://localhost:9001"},"optionalConfiguration":{"cache.provider_class":"org.hibernate.cache.internal.NoCacheProvider","current_session_context_class":"thread","hbm2ddl.auto":"update","hikari.connectionTimeout":"5000","show_sql":"false"}},"internalDataAdapter":null,"moduleCheckPeriodMillis":null,"moduleTimeoutMillis":null,"mpnPumpPoolSize":null,"mpnTimerPoolSize":null,"notifierPoolSize":null,"reactionOnDatabaseFailure":"continue_operation","requestTimeoutMillis":null}
 ```
 #### [mpn.activationOnStartUp](./values.yaml#L2503)
 
@@ -1107,7 +1054,7 @@ Optional. Apple platforms notifier configuration.
 **Default:**
 
 ```
-{"apps":{"myApp":{"enabled":null,"id":null,"keystoreRef":null,"pushPackageFileRef":null,"serviceLevel":null,"triggerExpressions":[]}},"connectionTimeoutMillis":null,"keyStores":{"myAppKeystore":{"keystoreFileSecretRef":null,"keystorePasswordSecretRef":null}},"maxConcurrentConnections":null,"minSendDelayMillis":null}
+{"apps":{"myApp":{"enabled":null,"id":null,"keystoreRef":null,"pushPackageFileRef":null,"serviceLevel":null,"triggerExpressions":[]}},"connectionTimeoutMillis":null,"keystores":{"myAppKeystore":{"keystoreFileSecretRef":null,"keystorePasswordSecretRef":null}},"maxConcurrentConnections":null,"minSendDelayMillis":null}
 ```
 #### [mpn.appleNotifierConfig.apps](./values.yaml#L2647)
 
@@ -1144,7 +1091,7 @@ Mandatory if `enabled` is set to `true`. The app ID, which corresponds to the bu
 #### [mpn.appleNotifierConfig.apps.myApp.keystoreRef](./values.yaml#L2677)
 
      
-Mandatory if `serviceLevel` is set to `development` or `production`. The reference to the keystore (defined in `mpn.appleNotifierConfig.keyStores`) where Apple's certificate for the app ID is stored.
+Mandatory if `serviceLevel` is set to `development` or `production`. The reference to the keystore (defined in `mpn.appleNotifierConfig.keystores`) where Apple's certificate for the app ID is stored.
 
 **Default:** `nil`
 #### [mpn.appleNotifierConfig.apps.myApp.pushPackageFileRef](./values.yaml#L2683)
@@ -1171,7 +1118,7 @@ Optional. List of trigger expressions that will be accepted. Each each item is a
 Optional. Timeout for connecting to APNS services. In case of slow outgoing connectivity, increasing the timeout may be beneficial.
 
 **Default:** `30000`
-#### [mpn.appleNotifierConfig.keyStores](./values.yaml#L2713)
+#### [mpn.appleNotifierConfig.keystores](./values.yaml#L2713)
 
      
 Optional. Keystores definition.
@@ -1181,7 +1128,7 @@ Optional. Keystores definition.
 ```
 {"myAppKeystore":{"keystoreFileSecretRef":null,"keystorePasswordSecretRef":null}}
 ```
-#### [mpn.appleNotifierConfig.keyStores.myAppKeystore](./values.yaml#L2715)
+#### [mpn.appleNotifierConfig.keystores.myAppKeystore](./values.yaml#L2715)
 
      
 Keystore configuration for the app.
@@ -1191,13 +1138,13 @@ Keystore configuration for the app.
 ```
 {"keystoreFileSecretRef":null,"keystorePasswordSecretRef":null}
 ```
-#### [mpn.appleNotifierConfig.keyStores.myAppKeystore.keystoreFileSecretRef](./values.yaml#L2718)
+#### [mpn.appleNotifierConfig.keystores.myAppKeystore.keystoreFileSecretRef](./values.yaml#L2718)
 
      
 Mandatory. The secret name and the key where the keystore file is stored.
 
 **Default:** `nil`
-#### [mpn.appleNotifierConfig.keyStores.myAppKeystore.keystorePasswordSecretRef](./values.yaml#L2723)
+#### [mpn.appleNotifierConfig.keystores.myAppKeystore.keystorePasswordSecretRef](./values.yaml#L2723)
 
      
 Mandatory. The secret name and the key where the keystore password is stored.
@@ -1503,9 +1450,9 @@ Mandatory. Specifies what to do in case of database failure. A number of interna
 Optional. Timeout for MPN request processing. As each MPN request interacts with the database, a timeout is applied so that a disconnected database will not result in a hang client. If a timeout occurs during a request processing, the client receives a specific error.
 
 **Default:** `15000`
-### KeyStores settings
+### Keystores settings
  
-#### [keyStores](./values.yaml#L1316)
+#### [keystores](./values.yaml#L1316)
 
      
 Keystores definition.
@@ -1515,13 +1462,13 @@ Keystores definition.
 ```
 {"myKafkaConnectorKeystore":null,"myServerKeystore":{"keystoreFileSecretRef":{"key":"myserver.keystore","name":"myserver-keystore-secret"},"keystorePasswordSecretRef":{"key":"myserver.keypass","name":"myserver-keypass-secret"},"type":"JKS"}}
 ```
-#### [keyStores.myKafkaConnectorKeystore](./values.yaml#L1346)
+#### [keystores.myKafkaConnectorKeystore](./values.yaml#L1346)
 
      
 Example of Keystore definition used by Kafka connector configurations.
 
 **Default:** `nil`
-#### [keyStores.myServerKeystore](./values.yaml#L1324)
+#### [keystores.myServerKeystore](./values.yaml#L1324)
 
      
 Keystore definition used by HTTPS server socket configurations. The default values used here reference the JKS keystore file `myserver.keystore`, which is provided out of the box (and stored in the `myserver-keystore-secret` secret, along with the password stored in the `myserver-keypass-secret` secret), and obviously contains an invalid certificate. In order to use it for your experiments, remember to add a security exception to your browser.
@@ -1531,7 +1478,7 @@ Keystore definition used by HTTPS server socket configurations. The default valu
 ```
 {"keystoreFileSecretRef":{"key":"myserver.keystore","name":"myserver-keystore-secret"},"keystorePasswordSecretRef":{"key":"myserver.keypass","name":"myserver-keypass-secret"},"type":"JKS"}
 ```
-#### [keyStores.myServerKeystore.keystoreFileSecretRef](./values.yaml#L1337)
+#### [keystores.myServerKeystore.keystoreFileSecretRef](./values.yaml#L1337)
 
      
 Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key where the keystore file is stored.
@@ -1541,7 +1488,7 @@ Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key where the key
 ```
 {"key":"myserver.keystore","name":"myserver-keystore-secret"}
 ```
-#### [keyStores.myServerKeystore.keystorePasswordSecretRef](./values.yaml#L1342)
+#### [keystores.myServerKeystore.keystorePasswordSecretRef](./values.yaml#L1342)
 
      
 Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key where keystore password is stored.
@@ -1551,7 +1498,7 @@ Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key where keystor
 ```
 {"key":"myserver.keypass","name":"myserver-keypass-secret"}
 ```
-#### [keyStores.myServerKeystore.type](./values.yaml#L1334)
+#### [keystores.myServerKeystore.type](./values.yaml#L1334)
 
      
 Optional. The keystore type. The currently supported types are: - `JKS`, which is the Sun/Oracle's custom keystore type, whose support is   made available by every Java installation; - `PKCS12`, which is supported by all recent Java installations; - `PKCS11`, which as a bridge to an external PKCS11 implementation;   this is an experimental extension; contact Lightstreamer Support for   details.
@@ -3016,7 +2963,7 @@ Optional. Enablement of the encryption.
 #### [connectors.kafkaConnector.connections.quickStart.sslConfig.keyStoreRef](./values.yaml#L3350)
 
      
-Optional. The reference to a keystore used if mutual TLS is  enabled on Kafka brokers. See the `keyStores.myKafkaConnectorKeystore` settings for general details on keystore configuration for the Kafka Connector.
+Optional. The reference to a keystore used if mutual TLS is  enabled on Kafka brokers. See the `keystores.myKafkaConnectorKeystore` settings for general details on keystore configuration for the Kafka Connector.
 
 **Default:** `nil`
 #### [connectors.kafkaConnector.connections.quickStart.sslConfig.protocol](./values.yaml#L3331)
@@ -3032,7 +2979,7 @@ TLSv1.3 when running on Java 11 or newer, TLSv1.2 otherwise
 #### [connectors.kafkaConnector.connections.quickStart.sslConfig.trustStoreRef](./values.yaml#L3345)
 
      
-Optional. The reference to a keystore used to validate the certificates provided by the Kafka brokers. See the `keyStores.myKafkaConnectorKeystore` settings for general details on keystore configuration for the Kafka Connector.
+Optional. The reference to a keystore used to validate the certificates provided by the Kafka brokers. See the `keystores.myKafkaConnectorKeystore` settings for general details on keystore configuration for the Kafka Connector.
 
 **Default:** `nil`
 #### [connectors.kafkaConnector.enabled](./values.yaml#L3246)
@@ -3210,13 +3157,13 @@ Optional. Enablement of the hostname verification.
 #### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.keyStoreRef](./values.yaml#L3650)
 
      
-Optional. The reference to a keystore used if mutual TLS is  enabled on the Schema Registry. See the `keyStores.myKafkaConnectorKeystore` settings for general details on keystore configuration for the Kafka Connector.
+Optional. The reference to a keystore used if mutual TLS is  enabled on the Schema Registry. See the `keystores.myKafkaConnectorKeystore` settings for general details on keystore configuration for the Kafka Connector.
 
 **Default:** `nil`
 #### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.trustStoreRef](./values.yaml#L3645)
 
      
-Optional. The reference to a keystore used to validate the certificates provided by the Schema Registry. See the `keyStores.myKafkaConnectorKeystore` settings for general details on keystore configuration for the Kafka Connector.
+Optional. The reference to a keystore used to validate the certificates provided by the Schema Registry. See the `keystores.myKafkaConnectorKeystore` settings for general details on keystore configuration for the Kafka Connector.
 
 **Default:** `nil`
 #### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.url](./values.yaml#L3615)
