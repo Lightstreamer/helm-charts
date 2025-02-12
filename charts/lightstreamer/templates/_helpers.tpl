@@ -203,7 +203,7 @@ Validate a server configuration reference, ensuring that the server exists and i
   Render the server name when used as port reference.
 */}}
 {{- define "lightstreamer.configuration.serverPortName" -}}
-{{ . | lower | replace "_" "- " }}
+{{ . | kebabcase }}
 {{- end }}
 
 {{/*
