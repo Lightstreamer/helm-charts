@@ -29,19 +29,19 @@ $ helm install lightstreamer-app lightstreamer/lightstreamer -n lightstreamer --
 
 ### Common settings
 
-#### [commonLabels](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/.values.yaml#L28)
+#### [commonLabels](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L28)
 
      
 Common labels to apply to all resources
 
 **Default:** `{}`
-#### [fullnameOverride](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/.values.yaml#L26)
+#### [fullnameOverride](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L26)
 
      
 Replace the chart's default resource naming convention
 
 **Default:** `""`
-#### [image](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/.values.yaml#L31)
+#### [image](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L31)
 
      
 Lightstreamer Docker Image settings
@@ -51,19 +51,19 @@ Lightstreamer Docker Image settings
 ```
 {"pullPolicy":"IfNotPresent","repository":"lightstreamer","tag":"latest"}
 ```
-#### [image.repository](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/.values.yaml#L33)
+#### [image.repository](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L33)
 
      
 Remote registry from which to pull the Lightstreamer Docker image
 
 **Default:** `"lightstreamer"`
-#### [image.tag](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/.values.yaml#L38)
+#### [image.tag](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L38)
 
      
 The tag of the image to pull
 
 **Default:** `.Chart.appVersion`
-#### [nameOverride](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/.values.yaml#L24)
+#### [nameOverride](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L24)
 
      
 Override the default name of the chart
