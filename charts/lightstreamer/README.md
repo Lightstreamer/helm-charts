@@ -25,6 +25,22 @@ $ helm repo add lightstreamer https://lightstreamer.github.io/helm-charts
 $ helm install lightstreamer-app lightstreamer/lightstreamer -n lightstreamer --create-namespace
 ```
 
+- [Common](#common-settings)
+- [Servers](#servers-settings)
+- [KeyStores](#keystores-settings)
+- [GlobalSocket](#globalsocket-settings)
+- [Security](#security-settings)
+- [Management](#management-settings)
+- [PushSession](#pushsession-settings)
+- [Mpn](#mpn-settings)
+- [KeyStores](#keystores-settings)
+- [WebServer](#webserver-settings)
+- [Cluster](#cluster-settings)
+- [Load](#load-settings)
+- [License](#license-settings)
+- [Logging](#logging-settings)
+- [Connectors](#connectors-settings)
+
 ## Settings
 
 ### Common settings
@@ -69,7 +85,7 @@ The tag of the image to pull
 Override the default name of the chart
 
 **Default:** `""`
-### Servers configuration
+### Servers settings
  
 #### [servers](./values.yaml#L941)
 
@@ -319,7 +335,7 @@ decided by the underlying Security Provider's configuration
 Mandatory if at least one of `enableClientAuth` and `enableMandatoryClientAuth` is set to `true`. The reference to a keystore to be used by the HTTPS service to accept client certificates. It can be used to supply client certificates that should be accepted, in addition to those with a valid certificate chain, for instance while testing with self-signed certificates. See the `keyStores.myServerKeystore` settings for general details on keystore configuration. Note that the further constraints reported there with regard to accessing the certificates in a JKS keystore don't hold in this case, where the latter is used as a truststore. Moreover, the handling of keystore replacement doesn't apply here.
 
 **Default:** `nil`
-### KeyStores configuration
+### KeyStores settings
  
 #### [keyStores](./values.yaml#L1316)
 
@@ -373,7 +389,7 @@ Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key where keystor
 Optional. The keystore type. The currently supported types are: - `JKS`, which is the Sun/Oracle's custom keystore type, whose support is   made available by every Java installation; - `PKCS12`, which is supported by all recent Java installations; - `PKCS11`, which as a bridge to an external PKCS11 implementation;   this is an experimental extension; contact Lightstreamer Support for   details.
 
 **Default:** `JKS`
-### GlobalSocket configuration
+### GlobalSocket settings
  
 #### [globalSocket](./values.yaml#L1371)
 
@@ -453,7 +469,7 @@ Optional. Maximum time the Server is allowed to wait before answering to a clien
 Optional. Longest operation time accepted while writing data on a socket. If this value is exceeded, the socket is closed. Note that this may also affect very slow clients. The time actually considered may be approximated and may be a few seconds higher, for internal performance reasons. If missing or `0`, the check is suppressed.
 
 **Default:** `the check is suppressed`
-### Security configuration
+### Security settings
  
 #### [security](./values.yaml#L1450)
 
@@ -545,7 +561,7 @@ Optional. Disabling of the protection for JavaScript pages, supplied by the Serv
 Optional. Server identification policy to be used for all server responses. Upon any HTTP request, the Server identifies itself through the  `Server` HTTP response header. However, omitting version information may  make external attacks more difficult. If set to `FULL`, the Server identifies itself as: `Lightstreamer Server/X.Y.Z build BBBB (Lightstreamer Push Server - www.lightstreamer.com) EEEEEE edition`. If set to `MINIMAL`, the Server identifies itself, depending on the Edition: for Enterprise edition, as `Lightstreamer Server`; for Community edition, as `Lightstreamer Server (Lightstreamer Push Server - www.lightstreamer.com) COMMUNITY edition`.
 
 **Default:** `FULL`
-### Management configuration
+### Management settings
  
 #### [management](./values.yaml#L1612)
 
@@ -835,7 +851,7 @@ Optional. A set of Clients whose activity is not to be logged.
 Optional. Threshold time for long Adapter call alerts. All Data and Metadata Adapter calls should perform as fast as possible, to ensure that client requests are accomplished quickly. Slow methods may also require that proper thread pools are configured. Hence, all invocations to the Adapters (but for the initialization phase) are monitored and a warning is logged whenever their execution takes more than this time. A `0` value disables the check.
 
 **Default:** `1000`
-### PushSession configuration
+### PushSession settings
  
 #### [pushSession](./values.yaml#L2001)
 
@@ -1053,7 +1069,7 @@ Optional. Enabling the use of the "chunked" transfer encoding, as defined by the
 Optional. Enabling the use of the "gzip" content encoding, as defined by the HTTP 1.1 specifications, for sending the resource contents on HTTP responses; compression is currently not supported for responses over WebSockets. If set to `Y`, Gzip compression will be used anytime an HTTP 1.1 response is allowed (for streaming responses, the "chunked" transfer encoding should also be allowed), provided that the client has declared to accept it through the proper http request headers. If set to `N`, causes no specific content encoding to be applied for all kinds of contents. If set to `AUTO`, Gzip compression will not be used, unless using it is recommended in order to handle special cases (and provided that all the conditions for compression are met; see case `Y` above). Streaming responses are compressed incrementally. The use of compression may relieve the network level at the expense of the Server performance. Note that bandwidth control and output statistics are still based on the non-compressed content.
 
 **Default:** `AUTO`
-### Mpn configuration
+### Mpn settings
  
 #### [mpn](./values.yaml#L2405)
 
@@ -1487,7 +1503,7 @@ Mandatory. Specifies what to do in case of database failure. A number of interna
 Optional. Timeout for MPN request processing. As each MPN request interacts with the database, a timeout is applied so that a disconnected database will not result in a hang client. If a timeout occurs during a request processing, the client receives a specific error.
 
 **Default:** `15000`
-### KeyStores configuration
+### KeyStores settings
  
 #### [keyStores](./values.yaml#L1316)
 
@@ -1541,7 +1557,7 @@ Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key where keystor
 Optional. The keystore type. The currently supported types are: - `JKS`, which is the Sun/Oracle's custom keystore type, whose support is   made available by every Java installation; - `PKCS12`, which is supported by all recent Java installations; - `PKCS11`, which as a bridge to an external PKCS11 implementation;   this is an experimental extension; contact Lightstreamer Support for   details.
 
 **Default:** `JKS`
-### WebServer configuration
+### WebServer settings
  
 #### [webServer](./values.yaml#L2810)
 
@@ -1619,7 +1635,7 @@ Optional. Caching time, in minutes, to be allowed to the browser (through the `e
 Mandatory if `web.enableSilverlightAccessPolicy` is set to `true`. Path of the file to be returned upon requests for the `/clientaccesspolicy.xml` URL. It is ignored when `web.enableSilverlightAccessPolicy` is false. The file content should be encoded with the iso-8859-1 charset. The file path is relative to the conf directory.
 
 **Default:** `nil`
-### Cluster configuration
+### Cluster settings
  
 #### [cluster](./values.yaml#L2917)
 
@@ -1649,7 +1665,7 @@ Optional. Host name to be used, in addition to the domain name specified on the 
 Optional. If set and positive, specifies a maximum duration to be enforced on each session. If the limit expires, the session is closed and the client can only establish a new session. This is useful when a cluster of Server instances is in place, as it leaves the Load Balancer the opportunity to migrate the new session to a different instance. See the Clustering document for details on this mechanism and on how rebalancing can be pursued.
 
 **Default:** `unlimited maximum session duration`
-### Load configuration
+### Load settings
  
 #### [load](./values.yaml#L2979)
 
@@ -1843,7 +1859,7 @@ min(10, the number of total cores, as detected by the JVM)
 Optional. Number of threads used to parallelize the implementation of the internal timers. This task does not include blocking operations, but its computation may be heavy under high update activity; hence, on multiprocessor machines, allocating multiple threads for this task may be beneficial.
 
 **Default:** `1`
-### License configuration
+### License settings
  
 #### [license](./values.yaml#L295)
 
@@ -2185,7 +2201,7 @@ Optional. Port number of the SOCKS server.
 Optional. Protocol version to use. Possible values: `SOCKS4`, `SOCKS4a`, `SOCKS5`.
 
 **Default:** `nil`
-### Logging configuration
+### Logging settings
  
 #### [logging](./values.yaml#L512)
 
@@ -2621,7 +2637,7 @@ Optional. List of references to the appenders defined in `.logging.appenders`.
 Optional. The level of the logger.
 
 **Default:** `DEBUG`
-### Connectors configuration
+### Connectors settings
  
 #### [connectors](./values.yaml#L3241)
 
