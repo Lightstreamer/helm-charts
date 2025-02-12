@@ -42,22 +42,25 @@ image:
 # @default -- []
 imagePullSecrets: []
 
-# -- Service Account settings (https://kubernetes.io/docs/concepts/security/service-accounts/)
+# -- Service Account settings.
+# See https://kubernetes.io/docs/concepts/security/service-accounts/.
 serviceAccount:
   # -- Specifies whether a service account should be created
   create: false
-  # -- Specifies whether a service account should automatically mount a ServiceAccount's API credentials
+  # -- Specifies whether a service account should automatically mount a 
+  # ServiceAccount's API credentials
   automount: true
   # -- Annotations to add to the service account
   annotations: {}
   # -- The name of the service account to use.
-  # If not set and `create` is `true`, a name is generated using the fullname template.
+  # If not set and `create` is `true`, a name is generated using the fullname 
+  # template.
   name: ""
 
 # -- Mandatory. Lightstreamer Deployment configuration.
 deployment:
-  # -- Number of replicas
-  # (https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/).
+  # -- Number of replicas.
+  # See https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/.
   # Used only if `autoscaling.enabled` is set to `false`.
   # @default -- 1
   replicas:
@@ -65,22 +68,25 @@ deployment:
   annotations: []
   # -- Additional Deployment labels
   labels: {}
-  # -- The strategy used to replace old Pods by new one (see https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy)
+  # -- The strategy used to replace old Pods by new one.
+  # See https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy.
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 1
-  # -- The Pod annotations
-  # (https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/)
+  # -- The Pod annotations. 
+  # See https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/.
   podAnnotations: {}
-  # -- Additional Pod labels
-  # (https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)
+  # -- Additional Pod labels.
+  # See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/.
   podLabels: {}
-  # -- The security context for the Pods (https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)
+  # -- The security context for the Pods.
+  #  See https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod.
   podSecurityContext: {}
     # fsGroup: 2000
-  # -- The security context for the container (https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)
+  # -- The security context for the container.
+  # See https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container.
   securityContext: {}
     # capabilities:
     #   drop:
@@ -88,13 +94,13 @@ deployment:
     # readOnlyRootFilesystem: true
     # runAsNonRoot: true
     # runAsUser: 1000
-  # -- The hostname for the Pods
-  # (https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-hostname-and-subdomain-fields)
+  # -- The hostname for the Pods.
+  # See https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-hostname-and-subdomain-fields.
   hostname:
   # -- Host networking setting for the Pods
   hostNetwork:
-  # -- The DNS policy for the Pods
-  # (https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-dns-policy)
+  # -- The DNS policy for the Pods.
+  # See https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-dns-policy.
   dnsPolicy:
   # -- The name of the PriorityClass for the Pods
   priorityClassName:
@@ -113,7 +119,7 @@ deployment:
         # `servers` section below).
         serverRef:
         # Optional fields to be used to control the liveness probe behavior.
-        # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
+        # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
         initialDelaySeconds:
         periodSeconds:
         failureThreshold:
@@ -122,7 +128,7 @@ deployment:
       # -- Mandatory if enabled is set to `true and `liveness.healthCheck` is
       # not specified. Default startup probe configuration to be used if no
       # `probes.liveness.healthCheck` is specified.
-      # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+      # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
       default:
         # httpGet:
         #   path:
@@ -140,7 +146,7 @@ deployment:
         # `servers` section below).
         serverRef:
         # Optional fields to be used to control the readiness probe behavior.
-        # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
+        # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
         initialDelaySeconds:
         periodSeconds:
         failureThreshold:
@@ -149,7 +155,7 @@ deployment:
       # -- Mandatory if enabled is set to `true and `readiness.healthCheck` is
       # not specified. Default startup probe configuration to be used if no
       # `probes.readiness.healthCheck` is specified.
-      # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+      # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
       default:
         # httpGet:
         #   path:
@@ -160,32 +166,30 @@ deployment:
       # @default -- false
       enabled:
       # -- Mandatory if enabled is set to `true` and `startup.default` is not
-      # specified. Startup probe configuration based on the default Lightstreamer
-      # healthcheck.
+      # specified. Startup probe configuration based on the default 
+      # Lightstreamer healthcheck.
       healthCheck:
         # -- Mandatory. The reference to a server socket configuration (see
         # `servers` section below).
         serverRef:
         # Optional fields to be used to control the startup probe behavior.
-        # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
+        # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
         initialDelaySeconds:
         periodSeconds:
         failureThreshold:
         timeoutSeconds:
         terminationGracePeriodSeconds:
-      # -- Mandatory if enabled is set to `true and `startup.healthCheck` is
-      # not specified. Default startup probe configuration to be used if no
+      # -- Mandatory if enabled is set to `true and `startup.healthCheck` is not
+      # specified. Default startup probe configuration to be used if no
       # `probes.startup.healthCheck` is specified.
-      # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+      # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
       default:
         # httpGet:
         #   path:
         #   port:
-  # -- Resource management for Pod and the container
-  # (https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)
+  # -- Resource management for Pod and the container.
+  # See https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/.
   resources: {}
-  # -- Pod lifecyle configuration
-  # (https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/)
   # -- Additional selectors
   additionalSelectors: {}
   # -- Additional volumes
@@ -196,29 +200,30 @@ deployment:
   extraEnv: []
     # - name: JAVA_OPTS
     #   value: "-server -Xms1g -Xmx4g"
-  # -- Extra containers configuration
-  # (https://kubernetes.io/docs/concepts/workloads/pods/init-containers/)
+  # -- Extra containers configuration.
+  # See https://kubernetes.io/docs/concepts/workloads/pods/init-containers/.
   extraContainers: []
   # -- Extra init containers configuration
-  # (https://kubernetes.io/docs/concepts/workloads/pods/init-containers/)
+  # See https://kubernetes.io/docs/concepts/workloads/pods/init-containers/.
   extraInitContainers: []
-  # -- Node selector setting for the Pod
-  # (https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector)
+  # -- Node selector setting for the Pod.
+  # See https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector.
   nodeSelector: {}
-  # -- Affinity settings for the Pod
-  # (https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity)
+  # -- Affinity settings for the Pod.
+  # See https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity.
   affinity: {}
-  # -- Tolerations settings for the Pod
-  # (https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/)
+  # -- Tolerations settings for the Pod.
+  # See https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/.
   tolerations: []
-  # -- Termination grace period configuration for Pod
-  # (https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#hook-handler-execution)
+  # -- Termination grace period configuration for Pod.
+  # See https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#hook-handler-execution.
   terminationGracePeriodSeconds:
-  # -- Topology spread constraints configuration for the Pod
-  # (https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/)
+  # -- Topology spread constraints configuration for the Pod.
+  # See https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/.
   topologySpreadConstraints: {}
 
-# -- Mandatory. Lightstreamer Service configuration (https://kubernetes.io/docs/concepts/services-networking/service/).
+# -- Mandatory. Lightstreamer Service configuration.
+# See https://kubernetes.io/docs/concepts/services-networking/service/.
 service:
   # -- Additional Service annotations
   annotations: {}
@@ -227,25 +232,26 @@ service:
   # -- Additional selectors
   additionalSelectors:
     mode: "active"
-  # -- The service type
-  # (https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types)
+  # -- The service type.
+  # See https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types.
   type:
-  # -- Mandatory. The port exposed by the service
-  # (https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports)
+  # -- Mandatory. The port exposed by the service.
+  # See https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports.
   port: 8080
-  # -- The node port when the `type` is set to `NodePort` or 'LoadBalancer'
-  # (https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport)
+  # -- The node port when the `type` is set to `NodePort` or 'LoadBalancer'.
+  # See https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport.
   nodePort:
   # -- The reference to a server socket configuration (defined in the 
   # `servers.{}` section below)
   targetPort: defaultServer
   # -- The name of the service port
   name: lightstreamer-service
-  # -- The load balancer implementation when the `type` is set to `LoadBalancer`
-  # (https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-class)
+  # -- The load balancer implementation when the `type` is set to `LoadBalancer`.
+  # See https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-class.
   loadBalancerClass:
 
-# -- Optional. Lightstreamer Ingress configuration (https://kubernetes.io/docs/concepts/services-networking/ingress/)
+# -- Optional. Lightstreamer Ingress configuration.
+# See https://kubernetes.io/docs/concepts/services-networking/ingress/.
 ingress:
   # -- Enablement of the Ingress
   enabled: 
@@ -262,11 +268,12 @@ ingress:
     #   paths:
     #     - path: /
     #       pathType: Prefix
-  # -- TLS configuration for the Ingress
-  # (https://kubernetes.io/docs/concepts/services-networking/ingress/#tls)
+  # -- TLS configuration for the Ingress.
+  # See https://kubernetes.io/docs/concepts/services-networking/ingress/#tls.
   tls: []
 
-# -- Optional. Lightstreamer Autoscaling configuration (https://kubernetes.io/docs/concepts/workloads/autoscaling/#scaling-workloads-horizontally-based)
+# -- Optional. Lightstreamer Autoscaling configuration.
+# See https://kubernetes.io/docs/concepts/workloads/autoscaling/#scaling-workloads-horizontally-based.
 autoscaling:
   # -- Enablement of the Horizontal Pod Autoscaler
   enabled: false
@@ -310,8 +317,9 @@ license:
   # edition.
   enterprise:
     # -- (string) Mandatory. The type of the ENTERPRISE edition.
-    # Possible values: `DEMO`, `EVALUATION`, `STARTUP`, `NON-PRODUCTION-LIMITED`,
-    # `NON-PRODUCTION-FULL`, `PRODUCTION`, `HOT-STANDBY`.
+    # Possible values: `DEMO`, `EVALUATION`, `STARTUP`, 
+    # `NON-PRODUCTION-LIMITED`, `NON-PRODUCTION-FULL`, `PRODUCTION`, 
+    # `HOT-STANDBY`.
     licenseType: DEMO
     # -- (string) Mandatory. Identifier of the contract in place. Use `DEMO` to
     # run with the embedded Demo license.
@@ -322,7 +330,8 @@ license:
     # port 443: 
     # - `https://clm1.lightstreamer.com/`
     # - `https://clm2.lightstreamer.com/`.
-    # If set to `FILE`, based on `licenseType`, one or both the values are possible.
+    # If set to `FILE`, based on `licenseType`, one or both the values are 
+    # possible.
     # For `EVALUATION` and `STARTUP`: `ONLINE` is mandatory.
     # For `PRODUCTION`, `HOT-STANDBY`, `NON-PRODUCTION-FULL`, and 
     # `NON-PRODUCTION-LIMITED`: you can choose between `ONLINE` and `FILE`.
@@ -330,7 +339,8 @@ license:
     licenseValidation: ONLINE
     # -- Mandatory if `licenseValidation` is set to `ONLINE`. Secret name and 
     # key where the password used for validation of online licenses is stored.
-    # Leave blank if `licenseType` is set to `DEMO` or `licenseValidation` set to `FILE`.
+    # Leave blank if `licenseType` is set to `DEMO` or `licenseValidation` set 
+    # to `FILE`.
     onlinePasswordSecretRef:
       name:
       key:
@@ -622,12 +632,14 @@ logging:
         # @default -- inherited from lightstreamerLogger
         lightstreamerLogger.io: WARN
         # -- Optional. Logging of activity and issues in TLS configuration.
-        # At `DEBUG` level, details on the protocol and cipher suite configuration are reported
+        # At `DEBUG` level, details on the protocol and cipher suite 
+        # configuration are reported.
         # @default -- inherited from `lightstreamerLogger.io`
         lightstreamerLogger.io.ssl: WARN
         # -- Optional. Logging of client request dispatching.
         # At `DEBUG` level, request processing details are reported.
-        # All log from this logger and its subloggers reports the IP and port of the involved connection
+        # All logs from this logger and its subloggers report the IP and port 
+        # of the involved connection.
         # @default -- inherited from lightstreamerLogger
         lightstreamerLogger.connections: WARN
         # -- Optional. Logging of issues related to TLS/SSL configuration and
@@ -636,9 +648,9 @@ logging:
         # @default -- inherited from lightstreamerLogger.connections
         lightstreamerLogger.connections.ssl: WARN
         # -- Optional. Logging of client request interpretation issues.
-        # At `WARN` level, each time a request contains an unexpected HTTP header,
-        # which the Server refuses or ignores, a notification is reported
-        # that an interpretation error is possible.
+        # At `WARN` level, each time a request contains an unexpected HTTP 
+        # header, which the Server refuses or ignores, a notification is 
+        # reported that an interpretation error is possible.
         # At `INFO` level, details upon request refusals are reported.
         # At `DEBUG` level, details for all requests and responses are reported.
         # @default -- inherited from lightstreamerLogger.connections
@@ -656,7 +668,7 @@ logging:
         # -- Optional. Logging of internal web server activity; it also logs
         # requests of static resources related to push request.
         # At `DEBUG` level, error details are reported.
-        # All log from this logger and its subloggers reports the IP and port
+        # All logs from this logger and its subloggers report the IP and port
         # of the involved connection.
         # @default -- inherited from lightstreamerLogger
         lightstreamerLogger.webServer: WARN
@@ -672,7 +684,7 @@ logging:
         lightstreamerLogger.webServer.appleWebService: WARN
         # -- Optional. Logging of parsing and elaboration of client requests
         # At `DEBUG` level, client request details are reported.
-        # All log from this logger and its subloggers reports the IP and port
+        # All logs from this logger and its subloggers report the IP and port
         # of the involved connection.
         # @default -- inherited from lightstreamerLogger
         lightstreamerLogger.requests: INFO
@@ -707,12 +719,14 @@ logging:
         # -- Optional. Logging of management of messages received from the 
         # clients.
         # At `DEBUG` level, details of message processing are logged.
-        # All log from this logger reports the IP and port of the involved connection.
+        # All logs from this logger report the IP and port of the involved 
+        # connection.
         # @default -- inherited from lightstreamerLogger.pump
         lightstreamerLogger.pump.messages: INFO
         # -- Optional. Logging of socket write activity.
         # At `DEBUG` level, all socket writes are dumped.
-        # All log from this logger reports the IP and port of the involved connection.
+        # All logs from this logger report the IP and port of the involved 
+        # connection.
         # @default -- inherited from lightstreamerLogger
         lightstreamerLogger.push: INFO
         # -- Optional. Logging of mobile push notifications activity, done
@@ -721,22 +735,24 @@ logging:
         lightstreamerLogger.mpn: INFO
         # -- Optional. Logging of MPN Module recurrent activity.
         # At `INFO` level, main operation exit points and outcomes are dumped.
-        # At `DEBUG` level, the various operation entry entry and exit points are logged.
+        # At `DEBUG` level, the various operation entry and exit points are 
+        # logged.
         # @default -- inherited from lightstreamerLogger.mpn
         lightstreamerLogger.mpn.lifecycle: INFO
-        # -- Optional,. Logging of mobile push notifications activity.
+        # -- Optional. Logging of mobile push notifications activity.
         # At `INFO` level, main operation exit points and outcomes are dumped.
-        # At `DEBUG` level, the various operation entry entry and exit points are
+        # At `DEBUG` level, the various operation entry and exit points are
         # logged.
         # @default -- inherited from lightstreamerLogger.mpn
         lightstreamerLogger.mpn.operations: INFO
         # -- Optional. Logging of mobile push notifications request processing;
-        # requests include those from clients (through the "client" sublogger)
-        # and those related with internal operations.
+        # requests include those from clients (through the 
+        # `lightstreamerLogger.mpn.requests.client` sublogger) and those 
+        # related to internal operations.
         # At `INFO` level, all request processing exit points and outcomes are
         # dumped.
         # At `DEBUG` level, all request processing entry points are logged.
-        # All log related with client requests reports the IP and port of the
+        # All logs related to client requests reports the IP and port of the
         # involved connection.
         # @default -- inherited from lightstreamerLogger.mpn
         lightstreamerLogger.mpn.requests: WARN
@@ -759,28 +775,28 @@ logging:
         # @default -- inherited from lightstreamerLogger.mpn.database
         lightstreamerLogger.mpn.database.transactions: WARN
         # -- Optional. Logging of mobile push notifications activity related to
-        #  Apple platforms; for activity related with notification submission,
+        # Apple platforms; for activity related to notification submission,
         # specific subloggers are present for each application, e.g.:
         # `lightstreamerLogger.mpn.apple.com.mydomain.myapp`.
         # At `INFO` level, all push notification payloads are dumped.
         # @default -- inherited from lightstreamerLogger.mpn
         lightstreamerLogger.mpn.apple: WARN
         # -- Optional. Logging of mobile push notifications activity related to
-        # Google platforms; for activity related with notification submission,
+        # Google platforms; for activity related to notification submission,
         # specific subloggers are present for each application, e.g.:
         # `lightstreamerLogger.mpn.google.com.mydomain.myapp`.
         # At `INFO` level, all push notification payloads are dumped.
         # @default -- inherited from lightstreamerLogger.mpn
         lightstreamerLogger.mpn.google: WARN
-        # -- Optional. Logging of issues related with the special adapters
+        # -- Optional. Logging of issues related to the special adapters
         # handled by the MPN Module.
         # @default -- inherited from lightstreamerLogger.mpn
         lightstreamerLogger.mpn.status_adapters: WARN
         # -- Optional. Logging of JavaScript client messages.
-        # A at `DEBUG` level, log messages sent by the Web and Node.js (Unified
+        # At `DEBUG` level, log messages sent by the Web and Node.js (Unified
         # API) Client Libraries are logged. Remote logging must be enabled on
         # the client side.
-        # All log from this logger reports the IP and port of the involved
+        # All logs from this logger report the IP and port of the involved
         # connection.
         # @default -- inherited from lightstreamerLogger
         lightstreamerLogger.webclient: DEBUG
@@ -792,7 +808,7 @@ logging:
     # -- Optional. Logging healthcheck request processing at `INFO` level.
     # The logger does not inherit from `lightstreamerLogger` in order to
     # simplify sending the log to a dedicated appender.
-    # All log from this logger reports the IP and port of the involved
+    # All logs from this logger report the IP and port of the involved
     # connection.
     lightstreamerHealthCheck:
       # -- Optional. List of references to the appenders defined in
@@ -1526,10 +1542,10 @@ security:
         # -- Mandatory. A valid host name, IPv4 or IPv6 representing, an
         # authorized Origin. Also a `*` is accepted with the meaning of
         # "any host or IP".
-        # If a host name is specified it can be prefixed with a wildcard as
-        # long as at least the second level domain is explicitly specified
-        # (i.e.: `*.my-domain.com` and `*.sites.my-domain.com` are valid 
-        # entries while `*.com` is not).
+        # If a host name is specified it can be prefixed with a wildcard as long
+        # as at least the second level domain is explicitly specified (i.e.: 
+        # `*.my-domain.com` and `*.sites.my-domain.com` are valid entries while
+        # `*.com` is not).
         host: "*"
         # -- Mandatory. A a valid port or `*` to specify any port.
         port: "*"
@@ -1578,10 +1594,10 @@ security:
   allowedDomains: []
     # - "my-domain.com"
     # - "my-alt-domain.com"
-  # -- (string) Optional. Server identification policy to be used for all
-  # server responses. Upon any HTTP request, the Server identifies itself
-  # through the `Server` HTTP response header. However, omitting version
-  # information may make external attacks more difficult.
+  # -- (string) Optional. Server identification policy to be used for all server
+  # responses. Upon any HTTP request, the Server identifies itself through the 
+  # `Server` HTTP response header. However, omitting version information may 
+  # make external attacks more difficult.
   # If set to `FULL`, the Server identifies itself as:
   # `Lightstreamer Server/X.Y.Z build BBBB (Lightstreamer Push Server -
   # www.lightstreamer.com) EEEEEE edition`.
@@ -1772,11 +1788,10 @@ management:
       allowProtocols: []
         # - TLSv1.2
         # - TLSv1.3
-      # -- (list) Optional, but forbidden if `allowProtocols` is used.
-      # Pattern to be matched against the names of the enabled TLS/SSL
-      # protocols in order to remove the matching ones from the enabled
-      # protocols set to be used in case TLS/SSL is enabled for part or all the
-      # communication.
+      # -- (list) Optional, but forbidden if `allowProtocols` is used. Pattern 
+      # to be matched against the names of the enabled TLS/SSL protocols in 
+      # order to remove the matching ones from the enabled protocols set to be
+      # used in case TLS/SSL is enabled for part or all the communication.
       # See notes for `servers.{}.sslConfig.removeProtocols`.
       removeProtocols:
         - SSL
@@ -1801,7 +1816,7 @@ management:
       credentialsSecrets:
     # -- Optional. JMXMP connector configuration.
     # The connector is supported by the Server only if Sun/Oracle's JMXMP
-    # implementation library is added to the Server classpath; see README.TXT
+    # implementation library is added to the Server classpath; see `README.TXT`
     # in the JMX SDK for details.
     # The remote server will be accessible through the url:
     # `service:jmx:jmxmp://<host>:<jmxmpConnector.port>`.
@@ -2037,11 +2052,10 @@ pushSession:
   # case any user agent or intermediary node turned out to be causing issues on
   # very long-lasting HTTP responses.
   # The setting is not applied to polling responses and to streaming responses
-  # over WebSockets.
-  # If not specified,
-  # @default -- no limit is set; the streaming session duration will be limited
-  # only by the `pushSession.contentLength` setting and, at least, by the
-  # keep-alive message activity
+  # over WebSockets. If not specified, no limit is set; the streaming session 
+  # duration will be limited only by the `pushSession.contentLength` setting 
+  # and, at least, by the keep-alive message activity
+  # @default -- see description
   maxStreamingMillis:
   # -- (string) Optional. Enabling the use of the "chunked" transfer encoding,
   # as defined by the HTTP 1.1 specifications, for sending the response body on
@@ -2078,10 +2092,10 @@ pushSession:
   # still based on the non-compressed content.
   # @default -- AUTO
   useCompression:
-  # -- (int) Optional. Size in bytes of the response body below which compression
-  # is not applied, regardless of the `useCompression` setting, as we guess
-  # that no benefit would come. It is not applied to streaming responses,
-  # which are compressed incrementally.
+  # -- (int) Optional. Size in bytes of the response body below which 
+  # compression is not applied, regardless of the `useCompression` setting, as 
+  # we guess that no benefit would come. It is not applied to streaming 
+  # responses, which are compressed incrementally.
   # @default -- 1024
   compressionThreshold:
   # -- Optional. Configuration of the content-type to be specified in the
@@ -2108,8 +2122,8 @@ pushSession:
   # that can be kept in the buffer, hence the consequent memory usage also
   # depends on the size of the values carried by the enqueued updates.
   # As lost updates for unfiltered subscriptions are logged on the
-  # `lightstreamerLogger.pump` logger at `INFO` level, if a low buffer size limit
-  # is set, it is advisable also setting this logger at `WARN` level.
+  # `lightstreamerLogger.pump` logger at `INFO` level, if a low buffer size 
+  # limit is set, it is advisable also setting this logger at `WARN` level.
   # Aggregate statistics on lost updates are also provided by the JMX interface
   # (if available) and by the Internal Monitor.
   # @default -- unlimited size
@@ -2370,8 +2384,8 @@ pushSession:
   # connection is kept waiting until this time has elapsed.
   # In fact, neither a `pushSession.minPollingMillis` nor a
   # `pushSession.maxPollingMillis` setting are provided, hence a client is
-  # allowed to request `0` for both, so that the real polling frequency will only
-  # be determined by roundtrip times.
+  # allowed to request `0` for both, so that the real polling frequency will 
+  # only be determined by roundtrip times.
   # However, in order to avoid that a similar case causes too much load on the
   # Server, this setting can be used as a protection, to limit the polling
   # frequency.
@@ -2447,7 +2461,7 @@ mpn:
     #   "dialect": "org.hibernate.dialect.Oracle10gDialect"
 
     # -- Optional. The Hibernate optional configuration properties.
-    # See https://docs.jboss.org/hibernate/orm/3.3/reference/en/html/session-configuration.html#configuration-optional
+    # See https://docs.jboss.org/hibernate/orm/3.3/reference/en/html/session-configuration.html#configuration-optional.
     optionalConfiguration:
       # -- HikariCP database connection pool configuration.
       "hikari.connectionTimeout": "5000"
@@ -2647,7 +2661,7 @@ mpn:
         # logged only and no connection will be established with Apple's
         # servers. The corresponding logger is `lightstreamerLogger.mpn.apple`,
         # notifications are logged at `INFO` level
-        # (see `logging.loggers.lightstreamerLogger.subLoggers.lightstreamerLogger.mpn.apple`).
+        # (see `logging.{...}.lightstreamerLogger.mpn.apple`).
         # If set to `development` or `production`, notifications will be sent
         # to, respectively, Apple's development or production servers.
         # Note that for web apps (i.e. targeting Safari push notification) the
@@ -2675,22 +2689,23 @@ mpn:
         # will be compared with each regular expression, and accepted only if
         # there is at least one match.
         # Remember that the MPN Module supports, as trigger, any Java boolean
-        # expression, including use of JDK classes and methods, with the addition
-        # of field references syntax (see the iOS Client SDK for more information).
+        # expression, including use of JDK classes and methods, with the 
+        # addition of field references syntax (see the iOS Client SDK for more 
+        # information).
         # Hence, this check is a safety measure required to avoid that clients
         # can request triggers potentially dangerous for the Server, as each
         # trigger may contain arbitrary Java code.
         # If left commented out or empty, no triggers will be accepted.
         # Please note that using an "accept all" regular expression like `.*`
         # is possible, but still leaves the Server exposed to the danger of
-        # maliciously crafted triggers. Anyway, the Metadata Adapter has a second
-        # chance to check for trigger allowance.
+        # maliciously crafted triggers. Anyway, the Metadata Adapter has a 
+        # second chance to check for trigger allowance.
         # The example shown below is for a typical notification on threshold,
         # where a field is compared against a numeric constant.
         # Note: submitted trigger expressions are compared with this list of
         # regular expressions after their named-arguments have been converted
-        # to indexed-arguments. Always specify fields with the `$[digits]` format,
-        # not the `${name}` format.
+        # to indexed-arguments. Always specify fields with the `$[digits]` 
+        # format, not the `${name}` format.
         # @default -- []
         triggerExpressions: []
           # - Double\.parseDouble\(\$\[\d+\]\) [<>] [+-]?(\d*\.)?\d+
@@ -2745,7 +2760,7 @@ mpn:
         # will be established with Google's servers.
         # The corresponding logger is `lightstreamerLogger.mpn.google`,
         # notifications are logged at `INFO` level (see
-        # `logging.loggers.lightstreamerLogger.subLoggers.lightstreamerLogger.mpn.google`).
+        # `logging.{...}.subLoggers.lightstreamerLogger.mpn.google`).
         # If set to `dry_run` or `production`, notifications will be sent to
         # Google's servers. If set to `dry_run`, notifications will be accepted
         # by Google's servers but not delivered to the user's device.
@@ -2764,22 +2779,23 @@ mpn:
         # will be compared with each regular expression, and accepted only if
         # there is at least one match.
         # Remember that the MPN Module supports, as trigger, any Java boolean
-        # expression, including use of JDK classes and methods, with the addition
-        # of field references syntax (see the iOS Client SDK for more information).
+        # expression, including use of JDK classes and methods, with the 
+        # addition of field references syntax (see the iOS Client SDK for more 
+        # information).
         # Hence, this check is a safety measure required to avoid that clients
         # can request triggers potentially dangerous for the Server, as each
         # trigger may contain arbitrary Java code.
         # If left commented out or empty, no triggers will be accepted.
         # Please note that using an "accept all" regular expression like `.*`
         # is possible, but still leaves the Server exposed to the danger of
-        # maliciously crafted triggers. Anyway, the Metadata Adapter has a second
-        # chance to check for trigger allowance.
+        # maliciously crafted triggers. Anyway, the Metadata Adapter has a 
+        # second chance to check for trigger allowance.
         # The example shown below is for a typical notification on threshold,
         # where a field is compared against a numeric constant.
         # Note: submitted trigger expressions are compared with this list of
         # regular expressions after their named-arguments have been converted
-        # to indexed-arguments. Always specify fields with the `$[digits]` format,
-        # not the `${name}` format.
+        # to indexed-arguments. Always specify fields with the `$[digits]` 
+        # format, not the `${name}` format.
         # @default -- []
         triggerExpressions: []
           # - Double\.parseDouble\(\$\[\d+\]\) [<>] [+-]?(\d*\.)?\d+
@@ -2797,11 +2813,11 @@ webServer:
   # If set  to `false`, the Server ignores requests for file resources.
   # @default -- false
   enabled: true
-  # -- Optional. The configmap name and the key where an HTML page to be returned
-  # upon unexpected request URLs is stored. This applies to URLs in reserved
-  # ranges that have no meaning.
+  # -- Optional. The configmap name and the key where an HTML page to be 
+  # returned upon unexpected request URLs is stored. This applies to URLs in 
+  # reserved ranges that have no meaning.
   # If the Internal web server is not enabled (`webServer.enabled` set to
-  # `false`), this also applies to all non-reserved URLs; otherwise,
+  # `false`), this also applies to all non-reserved URLs; otherwise, 
   # nonexisting non-reserved URLs will get the HTTP 404 error as usual.
   # The file content should be encoded with the iso-8859-1 charset.
   # @default -- the proper page is provided by the Server
@@ -2872,7 +2888,7 @@ webServer:
   # different host to request data to Lightstreamer Server host.
   # See http://msdn.microsoft.com/en-us/library/cc838250(VS.95).aspx#crossdomain_communication
   # for details on the contents of the document to be returned.
-  # If set to `true`, the Server accepts requests for
+  # If set to `true`, the Server accepts requests for 
   # `/clientaccesspolicy.xml`; the file configured through the
   # `webServer.silverlightAccessPolicyPath` setting is returned.
   # Enabling internal web server (through `webServer.enabled`) is not needed;
@@ -3005,8 +3021,8 @@ load:
   selectorPoolSize:
   # -- (int) Optional. Maximum number of keys allowed for a single NIO selector.
   # If more keys have to be processed, new temporary selectors will be created.
-  # If the value is `0`, then no limitations are applied and extra selectors will
-  # never be created.
+  # If the value is `0`, then no limitations are applied and extra selectors 
+  # will never be created.
   # The base number of selectors is determined by the `load.selectorPoolSize`
   # setting.
   # @default -- 0
@@ -3235,7 +3251,7 @@ connectors:
     # -- (string) Mandatory. Java class name of the Kafka Connector Metadata
     # Adapter. It is possible to provide a custom implementation by extending
     # the factory class.
-    # See https://github.com/Lightstreamer/Lightstreamer-kafka-connector/tree/main?tab=readme-ov-file#customize-the-kafkaconnector-metadata-adapter-class
+    # See https://github.com/Lightstreamer/Lightstreamer-kafka-connector/tree/main?tab=readme-ov-file#customize-the-kafkaconnector-metadata-adapter-class.
     adapterClassName: "com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter"
     # -- Mandatory. Kafka Connector global logging configuration.
     logging:
@@ -3313,7 +3329,7 @@ connectors:
           # `TLSv1.2`,  `TLSv1.3`.
           # @default -- TLSv1.3 when running on Java 11 or newer, TLSv1.2 otherwise
           protocol:
-          # -- Optional. List of enabled secure communication protocols
+          # -- Optional. List of enabled secure communication protocols.
           # @default -- [TLSv1.2, TLSv1.3] when running on Java 11 or newer TLSv1.2 otherwise
           allowedProtocols: []
           # -- Optional. List of enabled secure cipher suites.
@@ -3327,8 +3343,8 @@ connectors:
           # See the `keyStores.myKafkaConnectorKeystore` settings for general
           # details on keystore configuration for the Kafka Connector.
           trustStoreRef:
-          # -- Optional. The reference to a keystore used if mutual TLS is enabled
-          # on Kafka brokers.
+          # -- Optional. The reference to a keystore used if mutual TLS is 
+          # enabled on Kafka brokers.
           # See the `keyStores.myKafkaConnectorKeystore` settings for general
           # details on keystore configuration for the Kafka Connector.
           keyStoreRef:
@@ -3350,7 +3366,8 @@ connectors:
             authentication:
             # -- Mandatory if `mechanism` is set to `PLAIN`, `SCRAM-SHA-256`,
             # `SCRAM-SHA-512`. The name of the secret containing the 
-            # credentials. The secret must contain the keys `user` and `password`.
+            # credentials. The secret must contain the keys `user` and 
+            # `password`.
             credentialsSecretRef:
             # -- Mandatory if `mechanism` is set to `GSSAPI`. The GSSAPI
             # authentication settings.
@@ -3379,8 +3396,10 @@ connectors:
         record:
           # -- (string) Optional. Specifies where to start consuming events
           # from:
-          # - `LATEST`: start consuming events from the end of the topic partition
-          # - `EARLIEST`: start consuming events from the beginning of the topic partition
+          # - `LATEST`: start consuming events from the end of the topic 
+          # partition
+          # - `EARLIEST`: start consuming events from the beginning of the topic 
+          # partition
           # Sets the value of the `auto.offset.reset` key to configure the
           # internal Kafka Consumer.
           # @default -- LATEST
@@ -3472,7 +3491,7 @@ connectors:
           # An expressions is made of:
           # - ITEM_PREFIX: the prefix of the item name
           # - BINDABLE_EXPRESSIONS: a sequence of bindable extraction expressions.
-          # See https://lightstreamer.com/api/ls-kafka-connector/latest/ls-kafka-connector/record-extraction.html
+          # See https://lightstreamer.com/api/ls-kafka-connector/latest/ls-kafka-connector/record-extraction.html.
           # @default -- {}
           itemTemplates:
             stockTemplate: stock-#{index=KEY}
@@ -3541,7 +3560,7 @@ connectors:
             # the Lightstreamer field name specified by key.
             # The expression is written in the Data Extraction Language. See
             # documentation at:
-            # https://github.com/lightstreamer/Lightstreamer-kafka-connector?tab=readme-ov-file#record-mapping-fieldfield_name
+            # https://github.com/lightstreamer/Lightstreamer-kafka-connector?tab=readme-ov-file#record-mapping-fieldfield_name.
             timestamp: "#{VALUE.timestamp}"
             time: "#{VALUE.time}"
             stock_name: "#{VALUE.name}"
@@ -3592,7 +3611,7 @@ connectors:
       # paths are specified. Schema Registry configuration.
       mySchemaRegistry:
         # -- Mandatory. The URL of the Confluent Schema Registry. An encrypted
-        # connection is enabled by specifying the "https" protocol.
+        # connection is enabled by specifying the `https` protocol.
         url: https://schema-registry:8084
         # -- Optional. Basic HTTP authentication of a connection against the
         # Schema Registry.
@@ -3624,8 +3643,8 @@ connectors:
           # See the `keyStores.myKafkaConnectorKeystore` settings for general
           # details on keystore configuration for the Kafka Connector.
           trustStoreRef:
-          # -- Optional. The reference to a keystore used if mutual TLS is enabled
-          # on the Schema Registry.
+          # -- Optional. The reference to a keystore used if mutual TLS is 
+          # enabled on the Schema Registry.
           # See the `keyStores.myKafkaConnectorKeystore` settings for general
           # details on keystore configuration for the Kafka Connector.
           keyStoreRef:
