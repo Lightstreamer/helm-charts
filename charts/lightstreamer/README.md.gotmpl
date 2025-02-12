@@ -1,30 +1,70 @@
-{{ define "chart.valuesTableHtml" }}
+{{- define "chart.header" -}}
+# Lightstreamer Helm Chart
+{{- end -}}
 
-{{- $sections := list "license" "servers" "globalSocket" "security" "management" "pushSession" "keyStores" "webServer" "cluster" "load" "connectors" }}
-{{- range $section := $sections }}
-## {{ printf "%s configuration " ($section | title) }}
-{{ range $.Values }}
+{{- define "chart.description" -}}
 
-{{- if hasPrefix $section .Key }}
-### [{{ .Key }}](./values.yaml#L{{ .LineNumber }})
+This Helm chart specification provides a structured and efficient way to deploy and manage Lightstreamer on Kubernetes. 
 
+By leveraging Helm's templating capabilities, this chart simplifies the configuration and deployment process, 
+ensuring that Lightstreamer can be easily integrated into your Kubernetes environment.
+
+This page covers installation instructions, settings, and default values, making it easier for developers and operators 
+to understand and configure Lightstreamer.
+
+{{- end -}}
+
+{{- define "chart.extractValues" }}
 {{ if .Description }}{{ .Description }}{{ else }}{{ .AutoDescription }}{{ end }}
-{{ $defaultValue := (default .Default .AutoDefault) }}
-{{ if gt (len $defaultValue) 30 -}}
+{{ $defaultValue := (.AutoDefault | empty) | ternary .Default (printf "`%s`" .AutoDefault) }}
+{{ if gt (len $defaultValue) 45 -}}
 **Default:**
 
 ```
-    {{ $defaultValue | replace "`" "" | toPrettyJson }}
+{{ $defaultValue | replace "`" "" }}
 ```
-  {{- else -}}
+
+{{- else -}}
 **Default:** {{ $defaultValue }}
 
-  {{- end }}
+{{- end }}
+{{- end }}
 
+{{- define "chart.valuesTable" }}
+{{- $sections := list "common" "servers" "globalSocket" "security" "management" "pushSession" "mpn" "keystores" "webServer" "cluster" "load" "license" "logging" "connectors" }}
+
+## Settings
+
+To improve readability and navigation, the documentation has been divided into smaller sections, 
+each focusing on a specific aspect of the Helm chart:
+
+{{ range $section := $sections }}
+- [{{ . | kebabcase | replace "-" " " | title }}]({{ printf "#%s-settings" (. | kebabcase )}})
 {{- end }}
+
+## Common settings
+{{- $commons := list "nameOverride" "fullnameOverride" "commonLabels" "image" "image.repository" "image.pullRepository" "image.tag"}}
+{{ range $.Values }}
+  {{- if has .Key $commons }}
+### [{{ .Key }}](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L{{ .LineNumber }})
+      {{ template "chart.extractValues" . }}
+    {{- end }}
 {{- end }}
+
+{{- /* Render all the remaining sections */ -}}
+{{- range $section := without $sections "common" }}
+## {{ printf "%s settings " ($section | kebabcase | replace "-" " " | title) }}
+  {{ range $.Values }}
+    {{- if hasPrefix $section .Key }}
+### [{{ .Key }}](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L{{ .LineNumber }})
+      {{ template "chart.extractValues" . }}
+    {{- end }}
+  {{- end }}
 {{- end }}
+
 {{ end }}
+
+{{- template "chart.header" . -}}
 
 {{ template "chart.deprecationWarning" . }}
 
@@ -33,8 +73,6 @@
 {{ template "chart.description" . }}
 
 {{ template "chart.homepageLine" . }}
-
-{{ template "chart.maintainersSection" . }}
 
 {{ template "chart.sourcesSection" . }}
 
@@ -49,6 +87,6 @@ $ helm install lightstreamer-app lightstreamer/lightstreamer -n lightstreamer --
 
 {{ template "chart.requirementsSection" . }}
 
-{{ template "chart.valuesSectionHtml" . }}
+{{ template "chart.valuesTable" . }}
 
 {{ template "helm-docs.versionFooter" . }}

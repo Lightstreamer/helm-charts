@@ -1,47 +1,21 @@
 {{/*
-Create the <appender-ref> element
+Copyright (C) 2025 Lightstreamer Srl
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 */}}
-{{- define "lightstreamer.configuration.log.appender_ref" -}}
-{{- $top := index . 0 -}}
-{{- $logger := index . 1 -}}
-{{- range $appenderName := $logger.appenders }}
-  {{- if not (hasKey $top $appenderName) }}
-    {{- fail (printf "loggers.appenders.%s not defined" $appenderName) }}
-  {{- end }}
-<appender-ref ref={{ printf "%s%s" "LS" (title $appenderName) | quote }}/>
-{{- end }}
-{{- end }}
 
 {{/*
-Create the level attribute
-*/}}
-{{- define "lightstreamer.configuration.log.level" -}}
-{{- $loggerLevel := .level | default "DEBUG" }}
-{{- $admittedLevels := list "INFO" "DEBUG" "WARN" "ERROR" "FATAL" "TRACE" "OFF" -}}
-  {{- if not (has $loggerLevel $admittedLevels) }}
-    {{- fail (printf "logging.loggers.<logger name>.level must be set to one of %s" $admittedLevels) }}
-  {{- end }}
-{{- $loggerLevel -}}
-{{- end }}
-
-{{/*
-Create the level attribute for subloggers
-*/}}
-{{- define "lightstreamer.configuration.log.subloggers.level" -}}
-{{- $subloggers := index . 0 -}}
-{{- $loggerName := index . 1 -}}
-{{- $loggerLevel := (get $subloggers $loggerName) }}
-{{- if $loggerLevel }}
-  {{- $admittedLevels := list "INFO" "DEBUG" "WARN" "ERROR" "FATAL" "TRACE" "OFF" -}}
-    {{- if not (has $loggerLevel $admittedLevels) }}
-      {{- fail (printf "logging.loggers.lightstreamerLogger.subLoggers.%s.level must be set to one of %s" $loggerName $admittedLevels) }}
-    {{- end }}
-{{- printf " level=%s" ($loggerLevel | quote) }} 
-{{- end }}
-{{- end }}
-
-{{/*
-Create the Lightstreamer logging configuration file
+Render the Lightstreamer logging configuration file
 */}}
 {{- define "lightstreamer.configuration.log" -}}
 <?xml version="1.0" encoding="UTF-8"?>

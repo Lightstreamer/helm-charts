@@ -1,31 +1,18 @@
 {{/*
-Create a probe
+Copyright (C) 2025 Lightstreamer Srl
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 */}}
-{{- define "lightstreamer.deployment.probe" -}}
-{{- $probe := index . 0}}
-{{- $probeName := index . 1}}
-{{- $servers := index . 2}}
-{{- if ($probe).enabled }}
-{{ printf "%sProbe:" $probeName }}
-  {{- with $probe.healthCheck }}
-  httpGet:
-    path: /lightstreamer/healthcheck
-      {{- $serverRef := required (printf "deployment.probes.%s.healthCheck.serverRef must be set" $probeName) .serverRef }}
-      {{- $server := required (printf "servers.%s not defined" $serverRef) (get $servers $serverRef) }}
-      {{- if not $server.enabled }}
-        {{- fail (printf "deployment.probes.%s.healthCheck.serverRef must be set to an enabled server" $probeName) }}
-      {{- end }}
-    port: {{ $serverRef }}
-    scheme: {{ $server.enableHttps | default false | ternary "HTTPS" "HTTP" }}
-  initialDelaySeconds: {{ .initialDelaySeconds }}
-  periodSeconds: {{ .periodSeconds }}
-  failureThreshold:  {{ .failureThreshold }}
-  timeoutSeconds: {{ .timeoutSeconds }}
-  {{- else }}
-    {{- toYaml (required (printf "either specify %s.healthCheck or %s.default" $probeName $probeName) $probe.default) | nindent 2 }}
-  {{- end }}
-{{- end }}
-{{- end -}}
 
 apiVersion: apps/v1
 kind: Deployment
@@ -79,33 +66,44 @@ spec:
             {{- toYaml .Values.deployment.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- with .Values.lifecycle }}
+          {{- if .Values.management.jmx  }}
           lifecycle:
-            {{- toYaml . | nindent 12 }}
+            preStop:
+              exec:
+                command: ["/lightstreamer/bin/unix-like/LS.sh", "stop"]
           {{- end }}
           ports:
-          {{- range $key, $value := .Values.servers }}
-          {{- if $value.enabled }}
-            - name: {{ $key }}
-              containerPort: {{ $value.port }}
+          {{- /* START CONTAINER PORTS */ -}}
+          {{- range $serverKey, $server := .Values.servers }}
+            {{- if $server.enabled }}
+            - name: {{ include "lightstreamer.configuration.serverPortName" $serverKey }}
+              containerPort: {{ $server.port }}
               protocol: TCP
+            {{- end }}
           {{- end }}
-          {{- end }}
-          {{- with .Values.management.jmx.rmiConnector.port}}
+            {{- /* START RMI CONNECTOR PORTS */ -}}
+          {{- with (.Values.management.jmx).rmiConnector }}
             - name: jmx-port
+              containerPort: {{ .port.value }}
+              protocol: TCP
+            {{- with .dataPort }}
+            - name: jmx-data-port
               containerPort: {{ .value }}
               protocol: TCP
+            {{- end }}
           {{- end }}
-          {{- with .Values.management.jmx.rmiConnector.dataPort}}
-            - name: jmxDataPort
-              containerPort: {{ .value }}
+            {{- /* END RMI CONNECTOR PORTS */ -}}
+            {{- /* START JMXMP CONNECTOR PORT */ -}}
+          {{- with (.Values.management.jmx).jmxmpConnector }}
+            {{- if .enabled }}
+            - name: jmxmp-port
+              containerPort: {{ .port }}
               protocol: TCP
+              {{- end }}
           {{- end }}
-          {{- with .Values.deployment.probes }}
-            {{- include "lightstreamer.deployment.probe" (list .liveness "liveness" $.Values.servers) | indent 10 -}}                        
-            {{- include "lightstreamer.deployment.probe" (list .readiness "readiness" $.Values.servers) | indent 10 -}}            
-            {{- include "lightstreamer.deployment.probe" (list .startup "startup" $.Values.servers) | indent 10 -}}
-          {{- end }}
+            {{- /* END JMXMP CONNECTOR PORT */ -}}
+          {{- /* END CONTAINER PORTS */ -}}
+          {{- include "lightstreamer.deployment.all-probes" . | indent 10 }}
           resources:
             {{- toYaml .Values.deployment.resources | nindent 12 }}
           env:
@@ -158,17 +156,39 @@ spec:
           {{- end}}
           {{- /* END VARIABLES FOR LIGHTSTREAMER LICENSE */ -}}
           {{- /* START ENV VARIABLES FOR LIGHTSTREAMER MANAGEMENT */ -}}
-          {{- range $value := .Values.management.jmx.rmiConnector.credentialsSecrets }}
-            - name: LS_RMI_CREDENTIAL{{ $value | upper | replace "-" "_" }}_USER
+          {{- with (.Values.management.jmx).rmiConnector }}
+            {{- if not .enablePublicAccess }}
+              {{- range .credentialsSecrets }}
+            - name: LS_RMI_CREDENTIAL_{{ . | upper | replace "-" "_" }}_USER
               valueFrom:
                 secretKeyRef:
                   name: {{ . }}
                   key: user
-            - name: LS_RMI_CREDENTIAL{{ $value | upper | replace "-" "_" }}_PASSWORD
+            - name: LS_RMI_CREDENTIAL_{{ . | upper | replace "-" "_" }}_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ . }}
                   key: password
+              {{- end }}
+            {{- end }}
+          {{- end }}
+          {{- with (.Values.management).dashboard }}
+            {{- if not .enablePublicAccess }}
+              {{- range .credentials }}
+              {{- if .secretRef}}
+            - name: LS_DASHBOARD_CREDENTIAL_{{ .secretRef | upper | replace "-" "_" }}_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .secretRef }}
+                  key: user
+            - name: LS_DASHBOARD_CREDENTIAL_{{ .secretRef | upper | replace "-" "_" }}_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .secretRef }}
+                  key: password
+              {{- end }}
+              {{- end }}
+            {{- end }}
           {{- end }}
           {{- /* END ENV VARIABLES FOR LIGHTSTREAMER MANAGEMENT */ -}}
           {{- /* START ENV VARIABLES FOR MPN */ -}}
@@ -185,7 +205,7 @@ spec:
                   name: {{ .Values.mpn.hibernateConfig.connection.credentialsSecretRef }}
                   key: password
             - name: LS_HIBERNATE_SYSTEM_PROPERTIES
-              value: "-Dls_hibernate_connection_username=$(LS_HIBERNATE_CONNECTION_USERNAME) -Dls_hibernate_connection_password=$(LS_HIBERNATE_CONNECTION_PASSWORD)" 
+              value: "-Dls_hibernate_connection_username=$(LS_HIBERNATE_CONNECTION_USERNAME) -Dls_hibernate_connection_password=$(LS_HIBERNATE_CONNECTION_PASSWORD)"
             {{/* END ENV VARIABLES FOR HIBERNATE CONNECTION */}}
             {{- /* START ENV VARIABLES FOR APPLE KEYSTORES */ -}}
             {{- range $keyStoreName, $keyStore := (.Values.mpn.appleNotifierConfig).keyStores }}
@@ -249,8 +269,7 @@ spec:
           {{- end }}
           volumeMounts:
             - name: lightstreamer-start-script
-              mountPath: /lightstreamer/bin/unix-like/LS.sh
-              subPath: LS.sh
+              mountPath: /lightstreamer/bin/unix-like
             - name: lightstreamer-configuration
               mountPath: /lightstreamer/conf
           {{- /* START VOLUME MOUNTS FOR MPN */ -}}
@@ -268,7 +287,7 @@ spec:
               mountPath: /lightstreamer/conf/mpn/apple/keystores/{{ $keyStoreName }}
               {{- end }}
             {{- end }}
-            {{- /* END VOLUME MOUNTS FOR APPLE KEYSTORES */ -}}              
+            {{- /* END VOLUME MOUNTS FOR APPLE KEYSTORES */ -}}
             {{- /* START VOLUME MOUNTS FOR APPLE PUSH PACKAGES */ -}}
             {{- range $appName, $app := ((.Values.mpn).appleNotifierConfig).apps }}
               {{- if and $app.enabled (hasPrefix "web." $app.id )}}
@@ -309,7 +328,7 @@ spec:
           {{- end }}
           {{- /* END VOLUME MOUNTS FOR LICENSE FILE */ -}}
           {{- /* START VOLUME MOUNTS FOR PAC FILES */ -}}
-          {{- $configMaps := list }}      
+          {{- $configMaps := list }}
           {{- range $index, $filePath := (((.Values.license).proxy).pacFiles).filePaths }}
             {{- $configMaps = append $configMaps (required (printf "license.proxy.pacFiles.filePaths[%d].name must be set" $index) $filePath.name) }}
           {{- end }}
@@ -353,7 +372,7 @@ spec:
         {{- end}}
       {{- with .Values.deployment.hostname }}
       hostname: {{ . }}
-      {{- end }}          
+      {{- end }}
       {{- with .Values.deployment.hostNetwork }}
       hostNetwork: {{ . }}
       {{- end }}
@@ -367,13 +386,13 @@ spec:
         - name: change-ownership
           image: busybox
           command: ["/bin/sh"]
-          args: ["-c", "cp /tmp/LS.sh /lightstreamer/bin/unix-like/LS.sh && chown -R 10000:10000 /lightstreamer/bin/unix-like/LS.sh && chmod 0777 /lightstreamer/bin/unix-like/LS.sh"] 
+          args: ["-c", "cp /tmp/*.sh /lightstreamer/bin/unix-like/ && chown -R 10000:10000 /lightstreamer/bin/unix-like && chmod 0777 /lightstreamer/bin/unix-like/*.sh"]
           volumeMounts:
             - name: lightstreamer-start-script-source
               mountPath: /tmp
             - name: lightstreamer-start-script
               mountPath: /lightstreamer/bin/unix-like
-        {{- with .Values.deployment.extraInitContainers }} 
+        {{- with .Values.deployment.extraInitContainers }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
         {{- if ((.Values.connectors).kafkaConnector).enabled }}
@@ -417,7 +436,7 @@ spec:
         {{- end }}
       {{- end }}
       {{- /* START VOLUMES FOR PAC FILES */ -}}
-      {{- $configMaps := list }}      
+      {{- $configMaps := list }}
       {{- range $index, $filePath := (((.Values.license).proxy).pacFiles).filePaths }}
         {{- $configMaps = append $configMaps $filePath.name }}
       {{- end }}
@@ -447,16 +466,16 @@ spec:
             secretName: {{ required (printf "mpn.appleNotifierConfig.keyStores.%s.keystoreFileSecretRef.name must be set" $keyStoreName) $keyStore.keystoreFileSecretRef.name }}
           {{- end }}
         {{- end }}
-        {{- /* END VOLUMES FOR APPLE KEYSTORES */ -}}            
-          {{- /* START VOLUMES FOR APPLE PUSH PACKAGES */ -}}            
+        {{- /* END VOLUMES FOR APPLE KEYSTORES */ -}}
+        {{- /* START VOLUMES FOR APPLE PUSH PACKAGES */ -}}
         {{- range $appName, $app := ((.Values.mpn).appleNotifierConfig).apps }}
           {{- if and $app.enabled (hasPrefix "web." $app.id )}}
         - name: lightstreamer-mpn-push-package-{{ $appName | lower | replace "_" "-" }}
-          configMap: 
+          configMap:
             name: {{ ($app.pushPackageFileRef).name }}
           {{- end }}
-        {{- end }}          
-        {{- /* END VOLUMES FOR APPLE PUSH PACKAGES */ -}}        
+        {{- end }}
+        {{- /* END VOLUMES FOR APPLE PUSH PACKAGES */ -}}
         {{- /* START VOLUMES FOR GOOGLE SERVICE JSON FILES */ -}}
         {{- range $appName, $app := ((.Values.mpn).googleNotifierConfig).apps }}
           {{- if .enabled }}
@@ -465,7 +484,7 @@ spec:
             name: {{ $app.serviceJsonFileRef.name }}
           {{- end }}
         {{- end }}
-        {{- /* END VOLUMES FOR GOOGLE SERVICE JSON FILES */ -}}        
+        {{- /* END VOLUMES FOR GOOGLE SERVICE JSON FILES */ -}}
       {{- end }}
       {{- /* END VOLUMES FOR MPN */ -}}
       {{- /* VOLUME FOR KAFKA CONNECTOR */ -}}
@@ -508,4 +527,3 @@ spec:
       {{- if .Values.deployment.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ int .Values.deployment.terminationGracePeriodSeconds }}
       {{- end }}
-

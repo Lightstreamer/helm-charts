@@ -1,4 +1,22 @@
-{{/* Create the Lightstreamer edition configuration file */}}
+{{/*
+Copyright (C) 2025 Lightstreamer Srl
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/}}
+
+{{/*
+Render the Lightstreamer edition configuration file 
+*/}}
 {{- define "lightstreamer.configuration.edition" -}}
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Do not remove this line. File tag: edition_conf-APV-7.4.2. -->
@@ -34,9 +52,9 @@
            - COMMUNITY
            - ENTERPRISE -->
   {{- if not (mustHas .edition (list "COMMUNITY" "ENTERPRISE") )}}
-    {{- fail "license.edition must be one of \"COMMUNITY\", \"ENTERPRISE\"" -}}
+    {{- fail "license.edition must be one of: \"COMMUNITY\", \"ENTERPRISE\"" -}}
   {{- else }}
-      <edition>{{ required "license.edition must be one of \"COMMUNITY\", \"ENTERPRISE\"" .edition }}</edition>
+      <edition>{{ .edition }}</edition>
   {{- end }}
 
       <!-- ###############################
@@ -65,7 +83,7 @@
          -->
   {{- $allowedClientApis := list "javascript_client" "nodejs_client" "android_client" "ios_client" "flex_client" "silverlight_client" "javase_client" "python_client" "dotnet_standard_client" "macos_client" "tvos_client" "watchos_client" "blackberry_client" "javame_client" "flash_client" "generic_client" }}
   {{- if not (mustHas .enabledCommunityEditionClientApi $allowedClientApis)}}    
-    {{- fail (printf "license.enabledCommunityEditionClientApi must be one of %s" $allowedClientApis) -}}
+    {{- fail (printf "license.enabledCommunityEditionClientApi must be one of: %s" $allowedClientApis) -}}
   {{- else }}
          <enabled_client_api>{{ .enabledCommunityEditionClientApi }}</enabled_client_api>
   {{- end }}
@@ -88,7 +106,7 @@
               - PRODUCTION
               - HOT-STANDBY -->
       {{- if not (mustHas .licenseType (list "DEMO" "EVALUATION" "STARTUP" "NON-PRODUCTION-LIMITED" "NON-PRODUCTION-FULL" "PRODUCTION" "HOT-STANDBY")) }}
-        {{- fail "license.enterprise.licenseType must be one of \"DEMO\", \"EVALUATION\", \"STARTUP\", \"NON-PRODUCTION-LIMITED\", \"NON-PRODUCTION-FULL\", \"PRODUCTION\", \"HOT-STANDBY\"" -}}
+        {{- fail "license.enterprise.licenseType must be one of: \"DEMO\", \"EVALUATION\", \"STARTUP\", \"NON-PRODUCTION-LIMITED\", \"NON-PRODUCTION-FULL\", \"PRODUCTION\", \"HOT-STANDBY\"" -}}
       {{- else }}
          <license_type>{{ .licenseType }}</license_type>
       {{- end }}
@@ -115,7 +133,7 @@
          -->
        {{- else }}
          {{- if not (mustHas .licenseValidation (list "ONLINE" "FILE")) }}
-           {{- fail "license.enterprise.licenseValidation must be one of \"ONLINE\", \"FILE\"" -}}
+           {{- fail "license.enterprise.licenseValidation must be one: of \"ONLINE\", \"FILE\"" -}}
          {{- end }}
          {{- if and (has .licenseType (list "EVALUATION" "STARTUP")) (ne .licenseValidation "ONLINE") }}
            {{- fail "license.enterprise.licenseValidation must be \"ONLINE\" for EVALUATION and STARTUP license types" -}}
@@ -213,7 +231,7 @@
          {{- if not (.enableMpn | quote | empty) }}
          <feature id="mpn">{{ .enableMpn | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableMpn must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableMpn must be explicitly set" }}
          {{- end }}
 
          <!-- Max message rate (downstream).
@@ -222,7 +240,7 @@
               - 3: max 3 updates/sec for each item
               - unlimited: unlimited updates/sec for each item -->
          {{- if not (mustHas .maxDownstreamRate (list "1" "3" "unlimited") ) }} 
-           {{- fail "license.enterprise.optionalFeatures.maxDownstreamRate must be one of \"1\", \"3\", \"unlimited\"" }}
+           {{- fail "license.enterprise.optionalFeatures.maxDownstreamRate must be one of: \"1\", \"3\", \"unlimited\"" }}
          {{- else }}
          <feature id="max_downstream_rate">{{ .maxDownstreamRate  }}</feature>
          {{- end }}    
@@ -234,7 +252,7 @@
          {{- if not (.enableBandwidthControl | quote | empty) }}
          <feature id="bandwidth_control">{{ .enableBandwidthControl | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableBandwidthControl must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableBandwidthControl must be explicitly set" }}
          {{- end }}
 
          <!-- TLS/SSL Support.
@@ -244,7 +262,7 @@
          {{- if not (.enableTlsSsl | quote | empty) }}
          <feature id="tls_ssl">{{ .enableTlsSsl | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableTlsSsl must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableTlsSsl must be explicitly set" }}
          {{- end }}
 
          <!-- JMX Management API.
@@ -254,7 +272,7 @@
          {{- if not (.enableJmx | quote | empty) }}
          <feature id="jmx">{{ .enableJmx | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableJmx must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableJmx must be explicitly set" }}
          {{- end }}          
 
          <!-- JavaScript Client API.
@@ -264,7 +282,7 @@
          {{- if not (.enableJavascriptClient | quote | empty) }}
          <feature id="javascript_client">{{ .enableJavascriptClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableJavascriptClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableJavascriptClient must be explicitly set" }}
          {{- end }}
 
          <!-- Node.js Client API.
@@ -274,7 +292,7 @@
          {{- if not (.enableNodeJsClient | quote | empty) }}
          <feature id="nodejs_client">{{ .enableNodeJsClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableNodeJsClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableNodeJsClient must be explicitly set" }}
          {{- end }}
 
          <!-- Android Client API.
@@ -284,7 +302,7 @@
          {{- if not (.enableAndroidClient | quote | empty) }}
          <feature id="android_client">{{ .enableAndroidClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableAndroidClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableAndroidClient must be explicitly set" }}
          {{- end }}              
 
          <!-- iOS Client API.
@@ -294,7 +312,7 @@
          {{- if not (.enableIOSClient | quote | empty) }}
          <feature id="ios_client">{{ .enableIOSClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableIOSClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableIOSClient must be explicitly set" }}
          {{- end }}                                
 
          <!-- Flex and AIR Client API.
@@ -304,7 +322,7 @@
          {{- if not (.enableFlexClient | quote | empty) }}
          <feature id="flex_client">{{ .enableFlexClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableFlexClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableFlexClient must be explicitly set" }}
          {{- end }}              
 
          <!-- Silverlight Client API.
@@ -314,7 +332,7 @@
          {{- if not (.enableSilverlightClient | quote | empty) }}
          <feature id="silverlight_client">{{ .enableSilverlightClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableSilverlightClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableSilverlightClient must be explicitly set" }}
          {{- end }}              
 
          <!-- Java SE Client API.
@@ -324,7 +342,7 @@
          {{- if not (.enableJavaSEClient | quote | empty) }}
          <feature id="javase_client">{{ .enableJavaSEClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableJavaSEClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableJavaSEClient must be explicitly set" }}
          {{- end }}
 
          <!-- Python Client API.
@@ -334,7 +352,7 @@
          {{- if not (.enablePythonClient | quote | empty) }}
          <feature id="python_client">{{ .enablePythonClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enablePythonClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enablePythonClient must be explicitly set" }}
          {{- end }}              
 
          <!-- .NET Standard Client API.
@@ -346,7 +364,7 @@
          {{- if not (.enableDotNETStandardClient | quote | empty) }}
          <feature id="dotnet_standard_client">{{ .enableDotNETStandardClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableDotNETStandardClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableDotNETStandardClient must be explicitly set" }}
          {{- end }}
 
          <!-- macOS Client API.
@@ -356,7 +374,7 @@
          {{- if not (.enableMacOSClient | quote | empty) }}
          <feature id="macos_client">{{ .enableMacOSClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableMacOSClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableMacOSClient must be explicitly set" }}
          {{- end }}              
 
          <!-- tvOS Client API.
@@ -366,7 +384,7 @@
          {{- if not (.enableTvOSClient | quote | empty) }}
          <feature id="tvos_client">{{ .enableTvOSClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableTvOSClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableTvOSClient must be explicitly set" }}
          {{- end }}              
 
          <!-- watchOS Client API.
@@ -376,7 +394,7 @@
          {{- if not (.enableWatchOSClient | quote | empty) }}
          <feature id="watchos_client">{{ .enableWatchOSClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableWatchOSClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableWatchOSClient must be explicitly set" }}
          {{- end }}              
          
          <!-- visionOS Client API.
@@ -386,7 +404,7 @@
          {{- if not (.enableVisionOSClient | quote | empty) }}
          <feature id="visionos_client">{{ .enableVisionOSClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableVisionOSClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableVisionOSClient must be explicitly set" }}
          {{- end }}              
          
          <!-- BlackBerry Client API.
@@ -396,7 +414,7 @@
          {{- if not (.enableBlackBerryClient | quote | empty) }}
          <feature id="blackberry_client">{{ .enableBlackBerryClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableBlackBerryClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableBlackBerryClient must be explicitly set" }}
          {{- end }}              
 
          <!-- Java ME Client API.
@@ -406,7 +424,7 @@
          {{- if not (.enableJavaMEClient | quote | empty) }}
          <feature id="javame_client">{{ .enableJavaMEClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableJavaMEClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableJavaMEClient must be explicitly set" }}
          {{- end }}              
 
          <!-- Flash Client API.
@@ -416,7 +434,7 @@
          {{- if not (.enableFlashClient | quote | empty) }}
          <feature id="flash_client">{{ .enableFlashClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableFlashClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableFlashClient must be explicitly set" }}
          {{- end }}
 
          <!-- Generic Client API.
@@ -426,7 +444,7 @@
          {{- if not (.enableGenericClient | quote | empty) }}
          <feature id="generic_client">{{ .enableGenericClient | ternary "Y" "N" }}</feature>
          {{- else}}
-           {{- fail  "license.enterprise.optionalFeatures.enableGenericClient must be explicitly set" }}
+           {{- fail "license.enterprise.optionalFeatures.enableGenericClient must be explicitly set" }}
          {{- end }}
     {{- end }} {{/* with .enterprise.features */}}
   {{- end }} {{/* with .enterprise.optionalFeatures */}}

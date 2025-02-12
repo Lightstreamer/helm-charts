@@ -1,68 +1,22 @@
-{{/* Render the truststore settings for the Lightstreamer Kafka Connector configuration file */}}
-{{- define "lightstreamer.kafka-connector.configuration.truststore" -}}
-{{- $prefix := index . 0 -}}
-{{- $top := index . 1 -}}
-{{- $key := index . 2 -}}
-{{- $keyStore := required (printf "keystores.%s not defined" $key) (get $top $key) -}}
+{{/*
+Copyright (C) 2025 Lightstreamer Srl
 
-<param name="{{ $prefix }}.path">../../conf/keystores/{{ $key }}/{{ required (printf "keystores.%s.keystoreFileSecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</param>
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-<!-- Optional. The password of the trust store.
+      http://www.apache.org/licenses/LICENSE-2.0
 
-      If not set, checking the integrity of the trust store file configured will not
-      be possible. -->
-<param name="{{ $prefix }}.password">$env.LS_KEYSTORE_{{ $key | upper |replace "-" "_" }}_PASSWORD</param>
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/}}
 
-{{- if not (quote $keyStore.type | empty) }}
-<param name="{{ $prefix }}.type">{{ $keyStore.type }}</param>
-{{- end -}}
-{{- end -}}
-
-{{/* Render the keystore settings for the Lightstreamer Kafka Connector configuration file */}}
-{{- define "lightstreamer.kafka-connector.configuration.keystore" -}}
-{{- $prefix := index . 0 -}}
-{{- $top := index . 1 -}}
-{{- $key := index . 2 -}}
-{{- $keyStore := required (printf "keystores.%s not defined" $key) (get $top $key) -}}
-<!-- Optional. Enable a key store. Can be one of the following:
-      - true
-      - false
-
-     A key store is required if the mutual TLS is enabled on Kafka.
-
-     If enabled, the following parameters configure the key store settings:
-     - encryption.keystore.path
-     - encryption.keystore.password
-     - encryption.keystore.key.password
-
-     Default value: false. -->
-<param name="{{ $prefix }}.enable">true</param>
-
-<!-- Mandatory if key store is enabled. The path of the key store file, relative to
-     the deployment folder (LS_HOME/adapters/lightstreamer-kafka-connector-<version>). -->
-<param name="{{ $prefix }}.path">../../conf/keystores/{{ $key }}/{{ required (printf "keystores.%s.keystoreFilesecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</param>
-
-<!-- Optional. The password of the key store.
-
-     If not set, checking the integrity of the key store file configured
-     will not be possible. -->
-<param name="{{ $prefix }}.password">$env.LS_KEYSTORE_{{ $key | upper |replace "-" "_" }}_PASSWORD</param>
-
-<!-- Optional. The password of the private key in the key store file. -->
-{{- if $keyStore.keyPasswordSecretRef }}
-<param name="{{ $prefix }}.key.password">$env.LS_KEYSTORE_{{ $key | upper |replace "-" "_" }}_KEY_PASSWORD</param>
-{{- else }}
-<!--
-<param name="{{ $prefix }}.key.password">kafka-connector-private-key-password</param>
--->
-{{- end }}
-
-{{- if not (quote $keyStore.type | empty) }}
-<param name="{{ $prefix }}.keystore.type">{{ $keyStore.type }}</param>
-{{- end -}}
-{{- end -}}
-
-{{/* Create the Lightstreamer Kafka Connector configuration file */}}
+{{/*
+Render the Lightstreamer Kafka Connector configuration file 
+*/}}
 {{- define "lightstreamer.kafka-connector.configuration" -}}
 <?xml version="1.0"?>
 
@@ -172,7 +126,7 @@
              Default value: TLSv1.3 when running on Java 11 or newer, TLSv1.2 otherwise. -->
         {{- if .protocol }}
           {{- if not (mustHas .protocol (list "TLSv1.2" "TLSv1.3")) }}
-            {{- fail (printf "connectors.kafkaConnector.connections.%s.sslConfig.protocol must be one of \"TLSv1.2\", \"TLSv1.3\"" $key) }}
+            {{- fail (printf "connectors.kafkaConnector.connections.%s.sslConfig.protocol must be one of: \"TLSv1.2\", \"TLSv1.3\"" $key) }}
           {{- end }}
         <param name="encryption.protocol">{{ .protocol }}</param>
         {{- else }}
@@ -310,7 +264,7 @@
              Default value: PLAIN.-->
           {{- if not (quote .mechanism | empty )}}
             {{- if not (mustHas .mechanism (list "PLAIN" "SCRAM-SHA-256" "SCRAM-SHA-512" "GSSAPI")) }}
-              {{- fail (printf "connectors.kafkaConnector.connections.%s.authentication.mechanism must be one of \"PLAIN\", \"SCRAM-SHA-256\", \"SCRAM-SHA-512\", \"GSSAPI\"" $key) }}
+              {{- fail (printf "connectors.kafkaConnector.connections.%s.authentication.mechanism must be one of: \"PLAIN\", \"SCRAM-SHA-256\", \"SCRAM-SHA-512\", \"GSSAPI\"" $key) }}
             {{- end }}
         <param name="authentication.mechanism">{{ .mechanism }}</param>
           {{- else }}
@@ -422,7 +376,7 @@
              Default value: LATEST. -->
         {{- if .consumeFrom }}
           {{- if not (mustHas .consumeFrom (list "EARLIEST" "LATEST")) }}
-             {{- fail (printf "connectors.kafkaConnector.connections.%s.record.consumeFrom must be one of \"EARLIEST\", \"LATEST\"" $key) }}
+             {{- fail (printf "connectors.kafkaConnector.connections.%s.record.consumeFrom must be one of: \"EARLIEST\", \"LATEST\"" $key) }}
           {{- end }}
         <param name="record.consume.from">{{ .consumeFrom }}</param>
         {{- else }}
@@ -459,7 +413,7 @@
              Default value: ORDER_BY_PARTITION. -->
         {{- if .consumeWithOrderStrategy }}
           {{- if not (mustHas .consumeWithOrderStrategy (list "ORDER_BY_PARTITION" "ORDER_BY_KEY" "UNORDERED")) }}
-            {{- fail (printf "connectors.kafkaConnector.connections.%s.record.consumeWithOrderStrategy must be one of \"ORDER_BY_PARTITION\", \"ORDER_BY_KEY\", \"UNORDERED\"" $key) }}
+            {{- fail (printf "connectors.kafkaConnector.connections.%s.record.consumeWithOrderStrategy must be one of: \"ORDER_BY_PARTITION\", \"ORDER_BY_KEY\", \"UNORDERED\"" $key) }}
           {{- else }}
         <param name="record.consume.with.order.strategy">{{ .consumeWithOrderStrategy }}</param>
           {{- end }}
@@ -489,7 +443,7 @@
         {{- with .keyEvaluator }}
           {{- if .type }}
             {{- if not (mustHas .type (list "AVRO" "JSON" "STRING" "INTEGER" "BOOLEAN" "BYTE_ARRAY" "BYTE_BUFFER" "BYTES" "DOUBLE" "FLOAT" "LONG" "SHORT" "UUID")) }}
-              {{- fail (printf "connectors.kafkaConnector.connections.%s.record.keyEvaluator.type must be one of \"AVRO\", \"JSON\", \"STRING\", \"INTEGER\", \"BOOLEAN\", \"BYTE_ARRAY\", \"BYTE_BUFFER\", \"BYTES\", \"DOUBLE\", \"FLOAT\", \"LONG\", \"SHORT\", \"UUID\"" $key) }}
+              {{- fail (printf "connectors.kafkaConnector.connections.%s.record.keyEvaluator.type must be one of: \"AVRO\", \"JSON\", \"STRING\", \"INTEGER\", \"BOOLEAN\", \"BYTE_ARRAY\", \"BYTE_BUFFER\", \"BYTES\", \"DOUBLE\", \"FLOAT\", \"LONG\", \"SHORT\", \"UUID\"" $key) }}
             {{- else }}
         <param name="record.key.evaluator.type">{{ .type }}</param>
             {{- end }}
@@ -550,7 +504,7 @@
         {{- with .valueEvaluator }}
           {{- if .type }}
             {{- if not (mustHas .type (list "AVRO" "JSON" "STRING" "INTEGER" "BOOLEAN" "BYTE_ARRAY" "BYTE_BUFFER" "BYTES" "DOUBLE" "FLOAT" "LONG" "SHORT" "UUID")) }}
-              {{- fail (printf "connectors.kafkaConnector.connections.%s.record.valueEvaluator.type must be one of \"AVRO\", \"JSON\", \"STRING\", \"INTEGER\", \"BOOLEAN\", \"BYTE_ARRAY\", \"BYTE_BUFFER\", \"BYTES\", \"DOUBLE\", \"FLOAT\", \"LONG\", \"SHORT\", \"UUID\"" $key) }}
+              {{- fail (printf "connectors.kafkaConnector.connections.%s.record.valueEvaluator.type must be one of: \"AVRO\", \"JSON\", \"STRING\", \"INTEGER\", \"BOOLEAN\", \"BYTE_ARRAY\", \"BYTE_BUFFER\", \"BYTES\", \"DOUBLE\", \"FLOAT\", \"LONG\", \"SHORT\", \"UUID\"" $key) }}
             {{- else }}
         <param name="record.value.evaluator.type">{{ .type }}</param>
             {{- end }}
@@ -601,7 +555,7 @@
              Default: "IGNORE_AND_CONTINUE". -->
         {{- if .extractionErrorStrategy }}
           {{- if not (mustHas .extractionErrorStrategy (list "IGNORE_AND_CONTINUE" "FORCE_UNSUBSCRIPTION")) }}
-            {{- fail (printf "connectors.kafkaConnector.connections.%s.record.extractionErrorStrategy must be one of \"IGNORE_AND_CONTINUE\", \"FORCE_UNSUBSCRIPTION\"" $key) }}
+            {{- fail (printf "connectors.kafkaConnector.connections.%s.record.extractionErrorStrategy must be one of: \"IGNORE_AND_CONTINUE\", \"FORCE_UNSUBSCRIPTION\"" $key) }}
           {{- end }}
         <param name="record.extraction.error.strategy">{{ .extractionErrorStrategy }}</param>
         {{- else }}

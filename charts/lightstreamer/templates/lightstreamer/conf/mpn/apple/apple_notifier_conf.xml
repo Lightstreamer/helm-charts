@@ -1,3 +1,19 @@
+{{/*
+Copyright (C) 2025 Lightstreamer Srl
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/}}
+
 {{- define "lightstreamer.configuration.mpn.apple_notifier" -}}
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Do not remove this line. File tag: apple_notif_conf-APV-20200124. -->
@@ -43,8 +59,8 @@
    <!-- Optional. Timeout for connecting to APNS services. In case of slow
         outgoing connectivity, increasing the timeout may be beneficial.
         Default: 30000 (30 sec) -->
-  {{- if not (quote .connectionTimeout) | empty }}
-   <connection_timeout>{{ int .connectionTimeout }}</connection_timeout>
+  {{- if not (quote .connectionTimeoutMillis) | empty }}
+   <connection_timeout>{{ int .connectionTimeoutMillis }}</connection_timeout>
   {{- else }}
    <!--
    <connection_timeout>30000</connection_timeout>
@@ -78,7 +94,7 @@
            corresponding "development" client environment that can receive
            notifications. Use either "production" or "test". -->
       {{- if not (has $app.serviceLevel (list "test" "development" "production" )) }}
-        {{- fail (printf "mpn.appleNotifierConfig.apps.%s.serviceLevel must be one of: test, development, production" $appName) }}
+        {{- fail (printf "mpn.appleNotifierConfig.apps.%s.serviceLevel must be one of: \"test\", \"development\", \"production\"" $appName) }}
       {{- else }}
       <service_level>{{ $app.serviceLevel }}</service_level>
       {{- end }}
