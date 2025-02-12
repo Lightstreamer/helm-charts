@@ -7,7 +7,7 @@ This Helm chart specification provides a structured and efficient way to deploy 
 By leveraging Helm's templating capabilities, this chart simplifies the configuration and deployment process,
 ensuring that Lightstreamer can be easily integrated into your Kubernetes environment.
 
-This page covers installation instructions, settings,and default values, making it easier for developers and operators
+This page covers installation instructions, settings, and default values, making it easier for developers and operators
 to understand and configure Lightstreamer.
 
 **Homepage:** <https://github.com/Lightstreamer/helm-charts>
@@ -27,11 +27,8 @@ $ helm install lightstreamer-app lightstreamer/lightstreamer -n lightstreamer --
 
 ## Settings
 
-To improve the readability and navigation, the documentation
-has been broken down into smaller sections, each one focused on a specific aspect of the
-Helm chart.
-
-Explore the setting sections:
+To improve readability and navigation, the documentation has been divided into smaller sections,
+each focusing on a specific aspect of the Helm chart:
 
 - [Common](#common-settings)
 - [Servers](#servers-settings)
