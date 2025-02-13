@@ -1,6 +1,6 @@
 # Lightstreamer Helm Chart
 
-![Version: 0.3.0](https://img.shields.io/badge/Version-0.3.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 7.4.5](https://img.shields.io/badge/AppVersion-7.4.5-informational?style=flat-square)
+![Version: 0.4.0](https://img.shields.io/badge/Version-0.4.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 7.4.5](https://img.shields.io/badge/AppVersion-7.4.5-informational?style=flat-square)
 
 This Helm chart specification provides a structured and efficient way to deploy and manage Lightstreamer on Kubernetes.
 
@@ -83,7 +83,7 @@ Override the default name of the chart
 **Default:** `""`
 ## Servers settings
  
-### [servers](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1147)
+### [servers](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1146)
      
 Mandatory. Map of HTTP/S server socket configurations. Every key in the map defines a specific listening socket configuration, which can then be referenced through the whole configuration. Defining multiple listening socket allows the coexistence of private and public ports. This allows the use of multiple address for accessing the Sever via TLS/SSL, because different HTTPS sockets can use different keystores. In particular this is the case when the Server is behind load balancer and the `cluster.controlLinkAddress` setting is leveraged to ensure that all requests issued by the same client are dispatched to the same Server instance.
 
@@ -92,7 +92,7 @@ Mandatory. Map of HTTP/S server socket configurations. Every key in the map defi
 ```
 {"defaultServer":{"backlog":null,"clientIdentification":{"enableForwardsLogging":null,"enablePrivate":null,"enableProxyProtocol":null,"proxyProtocolTimeoutMillis":null,"skipLocalForwards":null},"enableHttps":false,"enabled":true,"listeningInterface":null,"name":"Lightstreamer HTTP Server","port":8080,"portType":null,"responseHttpHeaders":{"add":[{"name":"X-Accel-Buffering","value":"no"}],"echo":null},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableClientAuth":null,"enableClientHintsForTlsSessionResumption":null,"enableMandatoryClientAuth":null,"enableStatelessTlsSessionResumption":null,"enableTlsRenegotiation":null,"enforceServerCipherSuitePreference":{"enabled":true,"order":"JVM"},"keyStoreRef":"myServerKeystore","removeCipherSuites":[],"removeProtocols":["SSL","TLSv1$","TLSv1.1"],"tlsProvider":null,"tlsSessionCacheSize":null,"tlsSessionTimeoutSeconds":null,"trustStoreRef":null}}}
 ```
-### [servers.defaultServer](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1150)
+### [servers.defaultServer](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1149)
      
 At least one must be provided. An HTTP server socket configuration.
 
@@ -101,52 +101,52 @@ At least one must be provided. An HTTP server socket configuration.
 ```
 {"backlog":null,"clientIdentification":{"enableForwardsLogging":null,"enablePrivate":null,"enableProxyProtocol":null,"proxyProtocolTimeoutMillis":null,"skipLocalForwards":null},"enableHttps":false,"enabled":true,"listeningInterface":null,"name":"Lightstreamer HTTP Server","port":8080,"portType":null,"responseHttpHeaders":{"add":[{"name":"X-Accel-Buffering","value":"no"}],"echo":null},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableClientAuth":null,"enableClientHintsForTlsSessionResumption":null,"enableMandatoryClientAuth":null,"enableStatelessTlsSessionResumption":null,"enableTlsRenegotiation":null,"enforceServerCipherSuitePreference":{"enabled":true,"order":"JVM"},"keyStoreRef":"myServerKeystore","removeCipherSuites":[],"removeProtocols":["SSL","TLSv1$","TLSv1.1"],"tlsProvider":null,"tlsSessionCacheSize":null,"tlsSessionTimeoutSeconds":null,"trustStoreRef":null}}
 ```
-### [servers.defaultServer.backlog](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1180)
+### [servers.defaultServer.backlog](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1179)
      
 Optional. Size of the system buffer for incoming TCP connections Overrides the default system setting.
 
 **Default:** `the system setting`
-### [servers.defaultServer.clientIdentification](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1276)
+### [servers.defaultServer.clientIdentification](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1275)
      
-Optional. Settings that allow for better recognition of the remote address of the connected clients. This can be done in two ways:  - by taking advantage of the `X-Forwarded-For` HTTP header, that   intermediate HTTP proxies and level-7 Load Balancers usually set to   supply connection routing information in an incremental way (this is   done through the `skipLocalForwards` setting);  - by receiving the routed address directly from a TCP reverse proxy or   level-4 Load Balancer through the Proxy Protocol, when the proxy is   configured to do so (this is done through the `enableProxyProtocol`    setting).  The two techniques can also coexist, but, in that case, the address through the proxy protocol would always be considered as the real client address and all addresses in the chain specified in `X-Forwarded-For`  would be considered as written by client-side proxies. The address determined in this way will be used in all cases in which the client address is reported or checked. For logging purposes, the connection endpoint will still be written, but the real remote address, if available and different, will be added. The determined address may also be sent to the clients, depending on the Client SDK in use.
+Optional. Settings that allow for better recognition of the remote address of the connected clients. This can be done in two ways:  - By taking advantage of the `X-Forwarded-For` HTTP header, that   intermediate HTTP proxies and level-7 Load Balancers usually set to   supply connection routing information in an incremental way (this is   done through the `skipLocalForwards` setting).  - By receiving the routed address directly from a TCP reverse proxy or   level-4 Load Balancer through the Proxy Protocol, when the proxy is   configured to do so (this is done through the `enableProxyProtocol`    setting).  The two techniques can also coexist, but, in that case, the address through the proxy protocol would always be considered as the real client address and all addresses in the chain specified in `X-Forwarded-For`  would be considered as written by client-side proxies. The address determined in this way will be used in all cases in which the client address is reported or checked. For logging purposes, the connection endpoint will still be written, but the real remote address, if available and different, will be added. The determined address may also be sent to the clients, depending on the Client SDK in use.
 
 **Default:** `all settings at their defaults`
-### [servers.defaultServer.clientIdentification.enableForwardsLogging](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1346)
+### [servers.defaultServer.clientIdentification.enableForwardsLogging](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1345)
      
 Optional. If set to `true`, causes the list of entries of the `X-Forwarded-For` header, when available, to be added to log lines related to the involved HTTP request or Websocket. If `skipLocalForwards` is nonzero, only the entries farther than the determined "real" remote address are included. These entries are expected to be written by client-side proxies.
 
 **Default:** `false`
-### [servers.defaultServer.clientIdentification.enablePrivate](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1287)
+### [servers.defaultServer.clientIdentification.enablePrivate](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1286)
      
-Optional.  If set to `true`, prevents the determined address from being sent to the clients. In fact, the address is notified to the client upon connection and it is made available to application code by the most recent Unified Client SDKs through the `clientIp` property in the `ConnectionDetails` class. For instance, the flag can and should be set to `true` in case the identification of the remote address is not properly tuned and the determined address may be a local one.
+Optional. If set to `true`, prevents the determined address from being sent to the clients. In fact, the address is notified to the client upon connection and it is made available to application code by the most recent Unified Client SDKs through the `clientIp` property in the `ConnectionDetails` class. For instance, the flag can and should be set to `true` in case the identification of the remote address is not properly tuned and the determined address may be a local one.
 
 **Default:** `false`
-### [servers.defaultServer.clientIdentification.enableProxyProtocol](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1305)
+### [servers.defaultServer.clientIdentification.enableProxyProtocol](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1304)
      
 Optional. If set to `true`, instructs the Server that the connection endpoint is a reverse proxy or load balancer that sends client address information through the Proxy Protocol. The received address and port will be used as the real client address and port. In particular, they will appear in all log lines for this client (but for the `lightstreamerLogger.connections` logger). On the other hand, the reported protocol will always refer to the actual connection. There is no dynamic detection of the proxy protocol; hence, if enabled, all connections to this port must speak the proxy protocol (for instance, any healthcheck requests should be configured properly on the proxy) and, if not, no connection can speak the proxy protocol, otherwise the outcome would be unspecified. On the other hand, if enabled, both proxy protocol version 1 and 2 are handled; only information for normal TCP connections is considered.
 
 **Default:** `false`
-### [servers.defaultServer.clientIdentification.proxyProtocolTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1316)
+### [servers.defaultServer.clientIdentification.proxyProtocolTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1315)
      
 Optional. Timeout applied while reading for information  through the proxy protocol, when enabled. Note that a reverse proxy or load balancer speaking the proxy protocol is bound to send information immediately after connection start; so the timeout can only apply to  cases of wrong configuration, local network issues or illegal access to  this port. For this reason, the read is performed directly in the `ACCEPT` thread pool and this setting protects that pool against such unlikely events.
 
 **Default:** `1000`
-### [servers.defaultServer.clientIdentification.skipLocalForwards](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1337)
+### [servers.defaultServer.clientIdentification.skipLocalForwards](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1336)
      
 Optional, but nonzero values forbidden if  `enableProxyProtocol` is set to `true`. Number of entries in the  `X-Forwarded-For` header that are expected to be supplied on each HTTP  request (including Websocket handshake) by the intermediate nodes (e.g. reverse proxies, load balancers) that stand in the local environment. If N entries are expected from local nodes, this means that the Nth-nearest entry corresponds to the node connected to the farthest local intermediate node, hence to the client. So, that entry will be used as the real client address. In particular, it will appear in all log lines that refer to the involved HTTP request or Websocket. If set to `0` or left at the default, all entries in `X-Forwarded-For` will be considered as written by client-side proxies, hence the connection endpoint address will be used (unless, of course, `enableProxyProtocol` is set to `true`, which overrides the behavior). Note that a similar correction for port and protocol is not applied; hence, when an address corrected through a nonzero setting is reported, any port and protocol associated will still refer to the actual connection.
 
 **Default:** `0`
-### [servers.defaultServer.enableHttps](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1175)
+### [servers.defaultServer.enableHttps](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1174)
      
 Optional. Enabling of the https protocol. HTTPS service is an optional feature, available depending on Edition and License Type. To know what features are enabled by your license, please see the License tab of the Monitoring Dashboard (by default, available at `/dashboard`). See `sslConfig` for general details on TLS/SSL configuration.
 
 **Default:** `false`
-### [servers.defaultServer.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1154)
+### [servers.defaultServer.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1153)
      
 Optional. Enable this socket configuration.
 
 **Default:** `false`
-### [servers.defaultServer.listeningInterface](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1250)
+### [servers.defaultServer.listeningInterface](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1249)
      
 Optional. Can be used on a multihomed host to specify the IP address to bind the server socket to.
 
@@ -155,22 +155,22 @@ Optional. Can be used on a multihomed host to specify the IP address to bind the
 ```
 accept connections on any/all local addresses
 ```
-### [servers.defaultServer.name](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1162)
+### [servers.defaultServer.name](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1161)
      
 Mandatory. The name of the HTTP/S server. Note that it is notified to the client upon connection and it is made available to application code by the Unified Client SDKs through the `serverSocketName` property in the `ConnectionDetails` class. It must be an ASCII string with no control characters and it must be unique among all server configurations. The name must be unique among all server configurations.
 
 **Default:** `"Lightstreamer HTTP Server"`
-### [servers.defaultServer.port](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1165)
+### [servers.defaultServer.port](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1164)
      
 Mandatory. Listening TCP port.
 
 **Default:** `8080`
-### [servers.defaultServer.portType](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1216)
+### [servers.defaultServer.portType](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1215)
      
 Optional. Provides meta-information on how this listening socket will be used, according with the deployment configuration. This can inform the Server of a restricted set of requests expected on the port, which may improve the internal backpressure mechanisms.  If set to `CREATE_ONLY`, declares that the port is only devoted to `S` connections, according with the provided Clustering.pdf document.  If set to `CONTROL_ONLY`, declares that the port is only devoted to `CR` connections,according with the provided Clustering.pdf document. The Server will enforce the restriction.  If set to `PRIORITY`, requests issued to this port will follow a fast track. In particular, they will be never enqueued to the SERVER thread pool, but only the `ACCEPT` pool; and they will not be subject to any backpressure-related limitation (like `load.acceptPoolMaxQueue`). This should ensure that the requests will be fulfilled as soon as possible, even when the Server is overloaded. Such priority port is, therefore, ideal for opening the Monitoring Dashboard to inspect overload issues in place. It can also be used to open sessions on a custom Adapter Set, but, in that case, any thread pool specifically defined for the Adapters will be entered, with possible enqueueing. Anyway, such port is only meant for internal use and it is recommended not to leave it publicly accessible. Furthermore, in case of HTTPS server socket (`enableHttps` set to `true`) TLS-handshake-related tasks will not be enqueued to the  `TLS-SSL HANDSHAKE` or `TLS-SSL AUTHENTICATION` thread pool, but only to  a dedicated pool. If set to `GENERAL_PURPOSE`, the port can be used for any kind of request. It can always be set in case of doubts. Note that ports can be `CREATE_ONLY` or `CONTROL_ONLY` only depending on client behavior. For  clients based on LS SDK libraries, this is related to the use of the `cluster.controlLinkAddress` setting. Usage examples are provided in the Clustering.pdf document.
 
 **Default:** `"GENERAL_PURPOSE"`
-### [servers.defaultServer.responseHttpHeaders](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1228)
+### [servers.defaultServer.responseHttpHeaders](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1227)
      
 Optional. Settings that allow some control over the HTTP headers of the provided responses. Header lines can only be added to those used by the Server, either by specifying their value or by copying them from the request. Multiple rules can be defined; their order is ignored. In any case of replicated header fields, multiple lines will be inserted; it is assumed that multiple occurrences are allowed for those fields. No syntax and consistency checks are performed on the resulting HTTP headers; only custom or non-critical fields should be used. The header names involved are always converted to lower case.
 
@@ -179,17 +179,17 @@ Optional. Settings that allow some control over the HTTP headers of the provided
 ```
 {"add":[{"name":"X-Accel-Buffering","value":"no"}],"echo":null}
 ```
-### [servers.defaultServer.responseHttpHeaders.add](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1241)
+### [servers.defaultServer.responseHttpHeaders.add](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1240)
      
 Optional. Requests to add to the HTTP response header a line with the specified `name` (mandatory) and `value` (optional). The suggested setting for _X-Accel-Buffering_ may help to enable streaming support when proxies of several types are involved.
 
 **Default:** `[{"name":"X-Accel-Buffering","value":"no"}]`
-### [servers.defaultServer.responseHttpHeaders.echo](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1234)
+### [servers.defaultServer.responseHttpHeaders.echo](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1233)
      
-Optional. Requests to look for any header lines for  the specified field name on the HTTP request header and to copy them to the HTTP response header.
+Optional. Requests to look for any header lines for the specified field name on the HTTP request header and to copy them to the HTTP response header.
 
 **Default:** `[]`
-### [servers.defaultServer.sslConfig](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1350)
+### [servers.defaultServer.sslConfig](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1349)
      
 Mandatory if `enableHttps` is `true`. TLS/SSL settings for this socket configuration.
 
@@ -198,32 +198,32 @@ Mandatory if `enableHttps` is `true`. TLS/SSL settings for this socket configura
 ```
 {"allowCipherSuites":[],"allowProtocols":[],"enableClientAuth":null,"enableClientHintsForTlsSessionResumption":null,"enableMandatoryClientAuth":null,"enableStatelessTlsSessionResumption":null,"enableTlsRenegotiation":null,"enforceServerCipherSuitePreference":{"enabled":true,"order":"JVM"},"keyStoreRef":"myServerKeystore","removeCipherSuites":[],"removeProtocols":["SSL","TLSv1$","TLSv1.1"],"tlsProvider":null,"tlsSessionCacheSize":null,"tlsSessionTimeoutSeconds":null,"trustStoreRef":null}
 ```
-### [servers.defaultServer.sslConfig.allowCipherSuites](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1382)
+### [servers.defaultServer.sslConfig.allowCipherSuites](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1381)
      
 Optional, but forbidden if `removeCipherSuites` is used. Specifies all the cipher suites allowed for the TLS/SSL interaction, provided that they are included, with the specified name, in the set of of "supported" cipher suites of the underlying Security Provider. The default set of the "supported" cipher suites is logged at startup by the `lightstreamerLogger.io.ssl` logger at `DEBUG` level. If not used, the `removeCipherSuites` setting is considered; hence, if `removeCipherSuites` is also not used, all cipher suites enabled by the Security Provider will be available. The order in which the cipher suites are specified can be enforced as the server-side preference order (see `enforceServerCipherSuitePreference`).
 
 **Default:** `[]`
-### [servers.defaultServer.sslConfig.allowProtocols](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1446)
+### [servers.defaultServer.sslConfig.allowProtocols](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1445)
      
 Optional, but forbidden if `removeProtocols` is used. Specifies one or more protocols allowed for the TLS/SSL interaction, among the ones supported by the underlying Security Provider. For Oracle JVMs, the available names are the "SSLContext Algorithms" listed here: https://docs.oracle.com/en/java/javase/17/docs/specs/security/standard-names.html#sslcontext-algorithms If not specified, the `removeProtocols` setting is considered; hence,  if `removeProtocols` is also not used, all protocols enabled by the  Security Provider will be available.
 
 **Default:** `[]`
-### [servers.defaultServer.sslConfig.enableClientAuth](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1529)
+### [servers.defaultServer.sslConfig.enableClientAuth](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1528)
      
 Optional. Request to provide the Metadata Adapter with the "principal" included in the client TLS/SSL certificate, when available. If set to `true`, upon each client connection, the availability of a client TLS/SSL certificate is checked. If available, the included identification data will be supplied upon calls to notifyUser. If set to `false`, no certificate information is supplied to notifyUser and no check is done on the client certificate. Note that a check on the client certificate can also be requested through `enableMandatoryClientAuth`.
 
 **Default:** `false`
-### [servers.defaultServer.sslConfig.enableClientHintsForTlsSessionResumption](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1517)
+### [servers.defaultServer.sslConfig.enableClientHintsForTlsSessionResumption](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1516)
      
 Optional. If set to `true`, tries to improve the TLS session resumption feature by providing the underlying Security Provider with information on the client IPs and ports. This makes sense only if client IPs can be determined (see `servers.{}.clientIdentification`).
 
 **Default:** `false`
-### [servers.defaultServer.sslConfig.enableMandatoryClientAuth](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1540)
+### [servers.defaultServer.sslConfig.enableMandatoryClientAuth](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1539)
      
 Optional. Request to only allow clients provided with a valid TLS/SSL certificate. If set to `true`, upon each client connection, a valid TLS/SSL certificate is requested to the client in order to accept the connection. If set to `false`, no check is done on the client certificate. Note that a certificate can also be requested to the client as a consequence of `enableClientAuth`.
 
 **Default:** `false`
-### [servers.defaultServer.sslConfig.enableStatelessTlsSessionResumption](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1484)
+### [servers.defaultServer.sslConfig.enableStatelessTlsSessionResumption](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1483)
      
 Optional. Instructs the underlying Security Provider on whether to use stateless (when `true`) or stateful (when `false`) session resumption on this port, if supported (possibly depending on the protocol version in use). Note that stateful resumption implies the management of a TLS session cache, whereas stateless resumption is slightly more demanding in terms of CPU and bandwidth. Note, however, that this setting is currently supported only if the Conscrypt Security Provider is used. For instance, with the default SunJSSE Security Provider, the use of stateful or stateless resumption can only be configured at global JVM level, through the `jdk.tls.server.enableSessionTicketExtension` JVM property. If not specified, the type of resumption will be decided by the  underlying Security Provider, based on its own configuration.
 
@@ -232,47 +232,47 @@ Optional. Instructs the underlying Security Provider on whether to use stateless
 ```
 the underlying Security Provider's configuration
 ```
-### [servers.defaultServer.sslConfig.enableTlsRenegotiation](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1434)
+### [servers.defaultServer.sslConfig.enableTlsRenegotiation](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1433)
      
 Optional. If set to `false`, causes any client-initiated TLS renegotiation request to be refused by closing the connection. This policy may be evaluated in a trade-off between encryption strength and performance risks. Note that, with the default SunJSSE Security Provider, a better way to achieve the same at a global JVM level is by setting the dedicated `jdk.tls.rejectClientInitiatedRenegotiation` JVM property to `true`.
 
 **Default:** `true`
-### [servers.defaultServer.sslConfig.enforceServerCipherSuitePreference](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1407)
+### [servers.defaultServer.sslConfig.enforceServerCipherSuitePreference](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1406)
      
 Optional. Determines which side should express the preference when multiple cipher suites are in common between server and client. Note, however, that the underlying Security Provider may ignore this setting. This is the case, for instance, of the Conscrypt provider.
 
 **Default:** `{"enabled":true,"order":"JVM"}`
-### [servers.defaultServer.sslConfig.enforceServerCipherSuitePreference.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1415)
+### [servers.defaultServer.sslConfig.enforceServerCipherSuitePreference.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1414)
      
 Optional. If set to `true`, the Server will choose the cipher suite based on its preference order, specified through `order`. If set to `false`, the Server will get a cipher suite based on the preference order specified by the client. For instance, the client might privilege faster, but weaker, suites.
 
 **Default:** `false`
-### [servers.defaultServer.sslConfig.enforceServerCipherSuitePreference.order](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1424)
+### [servers.defaultServer.sslConfig.enforceServerCipherSuitePreference.order](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1423)
      
 Optional. Preference order for choosing the cipher suite. If set to `JVM`, ordering is demanded to the underlying Security Provider, which, usually, privileges the strongest suites. If set to `config` (which is allowed only if `allowCipherSuites` is used), the order in which the `allowCipherSuites` elements are specified determines the preference order.
 
 **Default:** `JVM`
-### [servers.defaultServer.sslConfig.keyStoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1367)
+### [servers.defaultServer.sslConfig.keyStoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1366)
      
 Mandatory. The reference to a keystore configuration (defined in `keystores`). See the `keystores.myServerKeystore` settings for general details on keystore configuration.
 
 **Default:** `"myServerKeystore"`
-### [servers.defaultServer.sslConfig.removeCipherSuites](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1400)
+### [servers.defaultServer.sslConfig.removeCipherSuites](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1399)
      
 Optional, but forbidden if `allowCipherSuites` is used. Pattern to be matched against the names of the enabled cipher suites in order to remove the matching ones from the enabled cipher suites set. Any pattern in java.util.regex.Pattern format can be specified. This allows for customization of the choice of the cipher suites to be used for incoming https connections (note that reducing the set of available cipher suites may cause some client requests to be refused). When this setting is used, the server-side preference order of the cipher suites is determined by the underlying Security Provider. Note that the selection is operated on the default set of the cipher suites "enabled" by the Security Provider, not on the wider set of the "supported" cipher suites. The default set of the "enabled" cipher suites is logged at startup by the `lightstreamerLogger.io.ssl` logger at `DEBUG` level.
 
 **Default:** `[]`
-### [servers.defaultServer.sslConfig.removeProtocols](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1464)
+### [servers.defaultServer.sslConfig.removeProtocols](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1463)
      
 Optional, but forbidden if `allowProtocols` is used. Pattern to be matched against the names of the enabled TLS/SSL  protocols in order to remove the matching ones from the enabled  protocols set. Any pattern in java.util.regex.Pattern format can be specified. This allows for customization of the choice of the TLS/SSL protocols to be used for an incoming https connection (note that reducing the set of available protocols may cause some client requests to be refused). Note that the selection is operated on the default set of the protocols "enabled" by the Security Provider, not on the wider set of the "supported" protocols. The default set of the "enabled" protocols is logged at startup by the `lightstreamerLogger.io.ssl` logger at DEBUG level.
 
 **Default:** `[]`
-### [servers.defaultServer.sslConfig.tlsProvider](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1361)
+### [servers.defaultServer.sslConfig.tlsProvider](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1360)
      
 Optional. If defined, overrides the default JVM's Security Provider configured in the java.security file of the JDK installation. This allows the use of different Security Providers dedicated to single listening ports. When configuring a Security Provider, the related libraries should be added to the Server classpath. This is not needed for the Conscrypt provider, which is already available in the Server distribution (but note that the library includes native code that only targets the main platforms).
 
 **Default:** `the default JVM's Security Provider`
-### [servers.defaultServer.sslConfig.tlsSessionCacheSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1496)
+### [servers.defaultServer.sslConfig.tlsSessionCacheSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1495)
      
 Optional. Size of the cache used by the TLS implementation to handle TLS session resumptions when stateful resumption is configured (see `enableStatelessTlsSessionResumption`).  A value of `0` poses no size limit. Note, however, that the underlying Security Provider may ignore this setting (possibly depending on the protocol version in use). If not specified, the cache size is decided by the underlying Security  Provider. For the default SunJSSE, it is `20480` TLS sessions, unless configured through the `javax.net.ssl.sessionCacheSize` JVM property.
 
@@ -281,7 +281,7 @@ Optional. Size of the cache used by the TLS implementation to handle TLS session
 ```
 decided by the underlying Security Provider's configuration
 ```
-### [servers.defaultServer.sslConfig.tlsSessionTimeoutSeconds](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1510)
+### [servers.defaultServer.sslConfig.tlsSessionTimeoutSeconds](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1509)
      
 Optional. Maximum time in which a TLS session is kept available to the client for resumption. This holds for both stateless and stateful TLS resumption (see `enableStatelessTlsSessionResumption`). In the latter case, the session also has to be kept in a cache. A value of `0` poses no time limit. Note, however, that the underlying Security Provider may ignore this setting (possibly depending of the protocol version in use). If not specified, the maximum time is decided by the underlying  Security Provider. For the default SunJSSE, it is `86400` seconds,  unless configured through the `jdk.tls.server.sessionTicketTimeout` JVM property.
 
@@ -290,14 +290,14 @@ Optional. Maximum time in which a TLS session is kept available to the client fo
 ```
 decided by the underlying Security Provider's configuration
 ```
-### [servers.defaultServer.sslConfig.trustStoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1554)
+### [servers.defaultServer.sslConfig.trustStoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1553)
      
 Mandatory if at least one of `enableClientAuth` and `enableMandatoryClientAuth` is set to `true`. The reference to a keystore to be used by the HTTPS service to accept client certificates. It can be used to supply client certificates that should be accepted, in addition to those with a valid certificate chain, for instance while testing with self-signed certificates. See the `keystores.myServerKeystore` settings for general details on keystore configuration. Note that the further constraints reported there with regard to accessing the certificates in a JKS keystore don't hold in this case, where the latter is used as a truststore. Moreover, the handling of keystore replacement doesn't apply here.
 
 **Default:** `nil`
 ## Global Socket settings
  
-### [globalSocket](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1618)
+### [globalSocket](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1617)
      
 Mandatory. Global socket configuration.
 
@@ -306,27 +306,27 @@ Mandatory. Global socket configuration.
 ```
 {"handshakeTimeoutMillis":null,"readTimeoutMillis":20000,"requestLimit":50000,"useHttpVersion":null,"webSocket":{"enabled":null,"maxClosingWaitMillis":null,"maxOutboundFrameSize":null,"maxPongDelayMillis":null},"writeTimeoutMillis":120000}
 ```
-### [globalSocket.handshakeTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1638)
+### [globalSocket.handshakeTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1637)
      
 Optional. Longest inactivity time accepted while waiting for a slow operation during a TLS/SSL handshake. This involves both reads, writes, and encryption tasks managed by the `TLS-SSL HANDSHAKE` or `TLS-SSL AUTHENTICATION` internal pools. If this value is exceeded, the socket is closed. The time actually considered may be approximated and may be a few seconds higher, for internal performance reasons. A `0` value suppresses the check.
 
 **Default:** `4000`
-### [globalSocket.readTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1627)
+### [globalSocket.readTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1626)
      
 Mandatory. Longest inactivity time accepted while waiting for a slow request to be received. If this value is exceeded, the socket is closed. Reusable HTTP connections are also closed if they are not reused for longer than this time. The time actually considered may be approximated and may be a few seconds higher, for internal performance reasons. A `0` value suppresses the check.
 
 **Default:** `20000`
-### [globalSocket.requestLimit](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1648)
+### [globalSocket.requestLimit](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1647)
      
 Optional. Maximum length in bytes accepted for a request. For an HTTP GET request, the limit applies to the whole request, including the headers. For an HTTP POST request, the limit applies to the header part and the body part separately. For a request over a WebSocket, the limit applies to the request message payload.
 
 **Default:** `unlimited length`
-### [globalSocket.useHttpVersion](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1667)
+### [globalSocket.useHttpVersion](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1666)
      
 Optional. Enabling the use of the full HTTP 1.1 syntax for all the responses, upon HTTP 1.1 requests. If set to `1.1`, HTTP 1.1 is always used, when possible. If set to `1.0`, HTTP 1.0 is always used; this is possible for all HTTP requests, but it will prevent WebSocket support. If set to `AUTO`, HTTP 1.0 is used, unless HTTP 1.1 is required in order to support specific response features.
 
 **Default:** `1.1`
-### [globalSocket.webSocket](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1670)
+### [globalSocket.webSocket](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1669)
      
 Optional. WebSocket support configuration.
 
@@ -335,31 +335,31 @@ Optional. WebSocket support configuration.
 ```
 {"enabled":null,"maxClosingWaitMillis":null,"maxOutboundFrameSize":null,"maxPongDelayMillis":null}
 ```
-### [globalSocket.webSocket.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1683)
+### [globalSocket.webSocket.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1682)
      
 Optional. Enabling of the WebSocket support. If set to `true`, the Server accepts requests for initiating a WebSocket interaction through a custom protocol. If set to `false`, the Server refuses requests for WebSocket interaction. Disabling WebSocket support may be needed when the local network infrastructure (for instance the Load Balancer) does not handle WebSocket communication correctly and the WebSocket transport is not already disabled on the client side through the Lightstreamer Client Library in use. The Client Library, upon the Server refusal, will resort to HTTP streaming without any additional delay to session establishment.
 
 **Default:** `true`
 ### [globalSocket.webSocket.maxClosingWaitMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1697)
      
-Optional. Maximum time the Server is allowed to wait for the client "close" frame, in case the Server is sending its own close" frame first, in order to try to close the connection in a clean way.
+Optional. Maximum time the Server is allowed to wait for the client "close" frame, in case the Server is sending its own close" frame first, in order to try to close the connection in a clean way. applies.
 
 **Default:**
 
 ```
-no timeout is set and the global global.readTimeoutMillis applies
+no timeout is set and the global global.readTimeoutMillis
 ```
 ### [globalSocket.webSocket.maxOutboundFrameSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1704)
      
-Optional.  Maximum payload size allowed for an outbound frame. When larger updates have to be sent, the related WebSocket messages will be split into multiple frames. A lower limit for the setting may be enforced by the Server.
+Optional. Maximum payload size allowed for an outbound frame. When larger updates have to be sent, the related WebSocket messages will be split into multiple frames. A lower limit for the setting may be enforced by the Server.
 
 **Default:** `16384`
-### [globalSocket.webSocket.maxPongDelayMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1691)
+### [globalSocket.webSocket.maxPongDelayMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1690)
      
 Optional. Maximum time the Server is allowed to wait before answering to a client "ping" request. In case a client sends very frequent "ping" requests, only the "pong" associated to the most recent request received is sent, while the previous requests will be ignored. Note that the above is possible also when `0` is specified.
 
 **Default:** `0`
-### [globalSocket.writeTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1657)
+### [globalSocket.writeTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1656)
      
 Optional. Longest operation time accepted while writing data on a socket. If this value is exceeded, the socket is closed. Note that this may also affect very slow clients. The time actually considered may be approximated and may be a few seconds higher, for internal performance reasons. If missing or `0`, the check is suppressed.
 
@@ -427,7 +427,7 @@ Mandatory. A valid scheme name (usually http or https) or `*`; the latter matche
      
 Optional. In case an HTTP OPTIONS request is sent to authorize future requests, the server allows the client to store the result of such OPTIONS for the specified number of seconds. Thus a previously authorized client may not give up its authorization, even if the related origin is removed from the list and the server is restarted, until its  authorization expires.
 
-**Default:** ``3600``
+**Default:** `3600`
 ### [security.enableCookiesForwarding](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1745)
      
 Optional. Use this setting to enable the forwarding of the cookies to the Metadata Adapter through the `httpHeaders` argument of the `notifyUser` method. Please note that in any case cookies should not be used to authenticate users, otherwise, having `enableProtectedJs` set to `false` and/or a too permissive policy in the `crossDomainPolicy` will expose the server to CSRF attacks. If set to `true`, cookies are forwarded to the Metadata Adapter. If set to `false`, cookies are hidden from the Metadata Adapter.
@@ -529,7 +529,7 @@ Optional. Enabling of the inclusion of the user password in the log of the clien
 **Default:** `false`
 ### [management.enableStoppingServiceCheck](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2172)
      
-Optional. Startup check that the conditions for the correct working of the provided "stop" script are met (see `jmx`). If set to `true`, the startup will wail if the JMX RMI connector is not configured or the `ServerMBean` cannot bet started. This also enforces the check of the JMX port reachability ( see `rmiConnector.enableTestPorts` and the remarks on the test effectiveness); if the test fails, the startup will also fail. If set to `false`, no check is made that the "stop" script should work. This may not be a problem, because the Server can be stopped in other ways. The provided installation scripts also close the Server without resorting to the "stop" script.
+Optional. Startup check that the conditions for the correct working of the provided "stop" script are met (see `jmx`). If set to `true`, the startup will wail if the JMX RMI connector is not configured or the `ServerMBean` cannot bet started. This also enforces the check of the JMX port reachability (see `rmiConnector.enableTestPorts` and the remarks on the test effectiveness); if the test fails, the startup will also fail. If set to `false`, no check is made that the "stop" script should work. This may not be a problem, because the Server can be stopped in other ways. The provided installation scripts also close the Server without resorting to the "stop" script.
 
 **Default:** `false`
 ### [management.healthCheck](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2296)
@@ -543,7 +543,7 @@ Optional. Configuration of the `/lightstreamer/healthcheck` request url, which a
 ```
 ### [management.healthCheck.availableOnServers](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2310)
      
-Optional, but ineffective if `enableAvailabilityOnAllServers` is set to `false`. List of server socket configurations (defined in  `servers.{}`) for which healthcheck requests can be issued.
+Optional, but ineffective if `enableAvailabilityOnAllServers` is set to `false`. List of server socket configurations (defined in `servers.{}`)  for which healthcheck requests can be issued.
 
 **Default:** `[]`
 ### [management.healthCheck.enableAvailabilityOnAllServers](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2304)
@@ -673,7 +673,7 @@ Optional. Timeout to be posed on the connection attempts  through the RMI Connec
 **Default:** `0`
 ### [management.jmx.sessionMbeanAvailability](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2142)
      
-Optional. Enabling of the availability of session-related mbeans, the  ones identified by `type="Session"`. If set to `active`, for each active session, a corresponding mbean of type `Session` is available with full functionality. If set to `sampled_statistics_only`, for each active session, a corresponding mbean of type `Session` is available, but all the statistics based on periodic sampling are disabled. If set to `inactive`, no mbeans of type `Session` are generated, but for a fake mbean which acts as a reminder that the option can be enabled. The support for session-related mbeans can pose a significant overload on the Server when many sessions are active and many of them are continuously created and closed. For this reason, the support is disabled by default.
+Optional. Enabling of the availability of session-related mbeans, the ones identified by `type="Session"`. If set to `active`, for each active session, a corresponding mbean of type `Session` is available with full functionality. If set to `sampled_statistics_only`, for each active session, a corresponding mbean of type `Session` is available, but all the statistics based on periodic sampling are disabled. If set to `inactive`, no mbeans of type `Session` are generated, but for a fake mbean which acts as a reminder that the option can be enabled. The support for session-related mbeans can pose a significant overload on the Server when many sessions are active and many of them are continuously created and closed. For this reason, the support is disabled by default.
 
 **Default:** `inactive`
 ### [management.maxTaskWaitMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1932)
@@ -700,7 +700,7 @@ Mandatory. Push session configuration.
 **Default:**
 
 ```
-{"compressionThreshold":null,"contentLength":{"default":4000000,"specialCases":null},"defaultDiffOrders":[],"defaultKeepaliveMillis":{"randomize":false,"value":5000},"enableDeltaDelivery":null,"enableEnrichedContentType":null,"jsonPatchMinLength":null,"maxBufferSize":"1000","maxDelayMillis":30,"maxIdleMillis":{"randomize":false,"value":30000},"maxKeepaliveMillis":30000,"maxPollingMillis":15000,"maxRecoveryLength":null,"maxRecoveryPollLength":null,"maxStreamingMillis":null,"minInterPollMillis":null,"minKeepaliveMillis":1000,"missingMessageTimeoutMillis":null,"preserveUnfilteredCommandOrdering":null,"reusePumpBuffers":null,"sendbuf":null,"serviceUrlPrefixes":[],"sessionRecoveryMillis":13000,"sessionTimeoutMillis":10000,"subscriptionTimeoutMillis":5000,"useChunkedEncoding":null,"useCompression":null}
+{"compressionThreshold":null,"contentLength":{"default":4000000,"specialCases":null},"defaultDiffOrders":[],"defaultKeepaliveMillis":{"randomize":false,"value":5000},"enableDeltaDelivery":null,"enableEnrichedContentType":null,"jsonPatchMinLength":null,"maxBufferSize":1000,"maxDelayMillis":30,"maxIdleMillis":{"randomize":false,"value":30000},"maxKeepaliveMillis":30000,"maxPollingMillis":15000,"maxRecoveryLength":null,"maxRecoveryPollLength":null,"maxStreamingMillis":null,"minInterPollMillis":null,"minKeepaliveMillis":1000,"missingMessageTimeoutMillis":null,"preserveUnfilteredCommandOrdering":null,"reusePumpBuffers":null,"sendbuf":null,"serviceUrlPrefixes":[],"sessionRecoveryMillis":13000,"sessionTimeoutMillis":10000,"subscriptionTimeoutMillis":5000,"useChunkedEncoding":null,"useCompression":null}
 ```
 ### [pushSession.compressionThreshold](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2420)
      
@@ -709,7 +709,7 @@ Optional. Size in bytes of the response body below which  compression is not app
 **Default:** `1024`
 ### [pushSession.contentLength](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2348)
      
-Mandatory. Maximum size of HTTP streaming responses; when the maximum size is reached, the connection is closed but the session remains active and the Client can continue listening to the item update events by binding the session to another connection. This setting is also used as the maximum length allowed for poll responses; if more data were available, they would be kept for the next poll request. The Setting is not used for streaming responses over WebSockets. The optimal content-length for web clients (i.e. browser user agents) should not be too high, in order to reduce the maximum allocated memory on the client side. Also note that some browsers, in case of a very high content-length, may reduce streaming capabilities (noticed with  IE8 and 4GB). This setting can be overridden by the Clients (some LS client libraries actually set their own default). The lowest possible value for the content-length is decided by the Server, so as to allow the connection to send a minimal amount of data.
+Mandatory. Maximum size of HTTP streaming responses; when the maximum size is reached, the connection is closed but the session remains active and the Client can continue listening to the item update events by binding the session to another connection. This setting is also used as the maximum length allowed for poll responses; if more data were available, they would be kept for the next poll request. The Setting is not used for streaming responses over WebSockets. The optimal content-length for web clients (i.e. browser user agents) should not be too high, in order to reduce the maximum allocated memory on the client side. Also note that some browsers, in case of a very high content-length, may reduce streaming capabilities (noticed with IE8 and 4GB). This setting can be overridden by the Clients (some LS client libraries actually set their own default). The lowest possible value for the content-length is decided by the Server, so as to allow the connection to send a minimal amount of data.
 
 **Default:** `{"default":4000000,"specialCases":null}`
 ### [pushSession.contentLength.default](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2352)
@@ -724,7 +724,7 @@ Optional. List of special cases for defining the HTTP content-length to be used 
 **Default:** `nil`
 ### [pushSession.defaultDiffOrders](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2586)
      
-Optional. List of algorithms to be tried by default to perform the "delta delivery" of changed fields in terms of difference between previous and new value. This list is applied only on fields of items for which no specific information is provided by the Data Adapter. For each value to be sent to some client, the algorithms are tried in the order specified by this list, until one is found which is compatible with both client capabilities and the involved values. Available names are: - `jsonpatch`: computes the difference in JSON Patch format, provided that the values are valid JSON representations; - `diff_match_patch`: computes the difference with Google's "diff-match-patch" algorithm ( the result is then serialized to the custom "TLCP-diff" format). Note that trying "diff" algorithms on unsuitable data may waste resources. For this reason, the default algorithm list is empty,which means that no algorithm is ever tried by default. The best way to enforce algorithms is to do that on a field-by-field basis through the Data Adapter interface.
+Optional. List of algorithms to be tried by default to perform the "delta delivery" of changed fields in terms of difference between previous and new value. This list is applied only on fields of items for which no specific information is provided by the Data Adapter. For each value to be sent to some client, the algorithms are tried in the order specified by this list, until one is found which is compatible with both client capabilities and the involved values. Available names are: - `jsonpatch`: computes the difference in JSON Patch format, provided that the values are valid JSON representations; - `diff_match_patch`: computes the difference with Google's "diff-match-patch" algorithm (the result is then serialized to the custom "TLCP-diff" format). Note that trying "diff" algorithms on unsuitable data may waste resources. For this reason, the default algorithm list is empty,which means that no algorithm is ever tried by default. The best way to enforce algorithms is to do that on a field-by-field basis through the Data Adapter interface.
 
 **Default:** `[]`
 ### [pushSession.defaultKeepaliveMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2667)
@@ -833,7 +833,7 @@ Optional. Configuration of the update management for items subscribed to in `COM
 **Default:** `false`
 ### [pushSession.reusePumpBuffers](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2633)
      
-Optional. Policy to be adopted for the handling of session-related data when a session is closed. If set to `Y`, internal buffers used for composing and sending updates are kept among session-related data throughout the life of each session; this speeds up update management. If set to `N`, internal buffers used for composing and sending updates are allocated and deallocated on demand; this minimizes the requirements in terms of permanent per-session memory and may be needed in order to handle a very high number of concurrent sessions, provided that the per-session update activity is low from memory when the session is closed. If set to `AUTO`, the current setting of `pushSession.enableDeltaDelivery` is used; in fact, setting `pushSession.enableDeltaDeliver` as `false` may denote  the need for reducing permanent per-session memory.
+Optional. Policy to be adopted for the handling of session-related data when a session is closed. If set to `Y`, internal buffers used for composing and sending updates are kept among session-related data throughout the life of each session; this speeds up update management. If set to `N`, internal buffers used for composing and sending updates are allocated and deallocated on demand; this minimizes the requirements in terms of permanent per-session memory and may be needed in order to handle a very high number of concurrent sessions, provided that the per-session update activity is low from memory when the session is closed. If set to `AUTO`, the current setting of `pushSession.enableDeltaDelivery` is used; in fact, setting `pushSession.enableDeltaDeliver` as `false` may denote the need for reducing permanent per-session memory.
 
 **Default:** `AUTO`
 ### [pushSession.sendbuf](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2656)
@@ -1251,7 +1251,7 @@ Optional. Timeout for MPN request processing. As each MPN request interacts with
 **Default:** `15000`
 ## Keystores settings
  
-### [keystores](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1557)
+### [keystores](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1556)
      
 Keystores definition.
 
@@ -1260,12 +1260,12 @@ Keystores definition.
 ```
 {"myKafkaConnectorKeystore":null,"myServerKeystore":{"keystoreFileSecretRef":{"key":"myserver.keystore","name":"myserver-keystore-secret"},"keystorePasswordSecretRef":{"key":"myserver.keypass","name":"myserver-keypass-secret"},"type":"JKS"}}
 ```
-### [keystores.myKafkaConnectorKeystore](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1592)
+### [keystores.myKafkaConnectorKeystore](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1591)
      
 Example of Keystore definition used by Kafka connector configurations.
 
 **Default:** `nil`
-### [keystores.myServerKeystore](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1566)
+### [keystores.myServerKeystore](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1565)
      
 Keystore definition used by HTTPS server socket configurations. The default values used here reference the JKS keystore file `myserver.keystore`, which is provided out of the box (and stored in the `myserver-keystore-secret` secret, along with the password stored in the `myserver-keypass-secret` secret), and obviously contains an invalid certificate. In order to use it for your experiments, remember to add a security exception to your browser.
 
@@ -1274,7 +1274,7 @@ Keystore definition used by HTTPS server socket configurations. The default valu
 ```
 {"keystoreFileSecretRef":{"key":"myserver.keystore","name":"myserver-keystore-secret"},"keystorePasswordSecretRef":{"key":"myserver.keypass","name":"myserver-keypass-secret"},"type":"JKS"}
 ```
-### [keystores.myServerKeystore.keystoreFileSecretRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1581)
+### [keystores.myServerKeystore.keystoreFileSecretRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1580)
      
 Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key where the keystore file is stored.
 
@@ -1283,7 +1283,7 @@ Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key where the key
 ```
 {"key":"myserver.keystore","name":"myserver-keystore-secret"}
 ```
-### [keystores.myServerKeystore.keystorePasswordSecretRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1587)
+### [keystores.myServerKeystore.keystorePasswordSecretRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1586)
      
 Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key where keystore password is stored.
 
@@ -1292,9 +1292,9 @@ Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key where keystor
 ```
 {"key":"myserver.keypass","name":"myserver-keypass-secret"}
 ```
-### [keystores.myServerKeystore.type](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1577)
+### [keystores.myServerKeystore.type](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1576)
      
-Optional. The keystore type. The currently supported types are: - `JKS`, which is the Sun/Oracle's custom keystore type, whose support is   made available by every Java installation; - `PKCS12`, which is supported by all recent Java installations; - `PKCS11`, which as a bridge to an external PKCS11 implementation;   this is an experimental extension; contact Lightstreamer Support for   details.
+Optional. The keystore type. The currently supported types are: - `JKS`, which is the Sun/Oracle's custom keystore type, whose support is    made available by every Java installation. - `PKCS12`, which is supported by all recent Java installations. - `PKCS11`, which as a bridge to an external PKCS11 implementation;   this is an experimental extension; contact Lightstreamer Support for   details.
 
 **Default:** `JKS`
 ## Web Server settings
@@ -1325,7 +1325,7 @@ Optional. Enables the processing of the `/clientaccesspolicy.xml` URL, required 
 **Default:** `false`
 ### [webServer.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3221)
      
-Optional. Enabling of the internal web server. If set to `true`, the Server accepts requests for file resources. If set  to `false`, the Server ignores requests for file resources.
+Optional. Enabling of the internal web server. If set to `true`, the Server accepts requests for file resources. If set to `false`, the Server ignores requests for file resources.
 
 **Default:** `false`
 ### [webServer.errorPageRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3231)
@@ -1342,7 +1342,7 @@ Mandatory if `webServer.enableFlexCrossdomain` is set to `true`. Path of the fil
      
 Optional. Path of the MIME types configuration property file. The file path is relative to the conf directory.
 
-**Default:** ` ./mime_types.properties`
+**Default:** `./mime_types.properties`
 ### [webServer.notFoundPage](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3263)
      
 Optional. Path of an HTML page to be returned as the body upon a "404 Not Found" answer caused by the request of a nonexistent URL. The file content should be encoded with the iso-8859-1 charset. The file path is relative to the conf directory.
@@ -1381,7 +1381,7 @@ Optional. Host address to be used for control/poll/rebind connections. A numeric
 **Default:** `nil`
 ### [cluster.controlLinkMachineName](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3385)
      
-Optional. Host name to be used, in addition to the domain name specified on the front-end pages, for control/poll/rebind connections coming from web clients. This only regards clients based on old versions of the Web (Unified API) Client SDK (earlier than 8.0.0). The use of non standard, unicode names may not be supported by old versions of the Web Client SDK. This setting will override the `cluster.controlLinkAddress` setting when the request comes from such Web Client SDKs and the access to Server data pages requires that the latter share a common subdomain with application pages. This was one of the ways used by these SDKs to request streaming data; see the Client Guide in the Web (Unified API) Client SDK for these versions for details on the cases in which this setting will be preferred; note that, in this regard, the behavior will be slightly different when the older HTML Client Library is in use, so as to ensure backward compatibility. This option is useful if the subdomain-name part of the hostname is subject to changes or if the same machine needs to be addressed through multiple subdomain names (e.g. for multihosting purpose). The configured name should contain all the portions of the address except for the subdomain name. For example, assuming the `mycompany.com` subdomain is declared in the front-end pages: - If the full address is `push1.mycompany.com`, the name should be `push`; - If the full address is `push.int2.cnt3.mycompany.com`, the name   should be `push.int2.cnt3`. Refer to `cluster.controlLinkAddress` for other remarks. Support for clustering is an optional feature, available depending on Edition and License Type. When not available, this setting is ignored.
+Optional. Host name to be used, in addition to the domain name specified on the front-end pages, for control/poll/rebind connections coming from web clients. This only regards clients based on old versions of the Web (Unified API) Client SDK (earlier than 8.0.0). The use of non standard, unicode names may not be supported by old versions of the Web Client SDK. This setting will override the `cluster.controlLinkAddress` setting when the request comes from such Web Client SDKs and the access to Server data pages requires that the latter share a common subdomain with application pages. This was one of the ways used by these SDKs to request streaming data; see the Client Guide in the Web (Unified API) Client SDK for these versions for details on the cases in which this setting will be preferred; note that, in this regard, the behavior will be slightly different when the older HTML Client Library is in use, so as to ensure backward compatibility. This option is useful if the subdomain-name part of the hostname is subject to changes or if the same machine needs to be addressed through multiple subdomain names (e.g. for multihosting purpose). The configured name should contain all the portions of the address except for the subdomain name. For example, assuming the `mycompany.com` subdomain is declared in the front-end pages: - If the full address is `push1.mycompany.com`, the name should be   `push`. - If the full address is `push.int2.cnt3.mycompany.com`, the name   should be `push.int2.cnt3`. Refer to `cluster.controlLinkAddress` for other remarks. Support for clustering is an optional feature, available depending on Edition and License Type. When not available, this setting is ignored.
 
 **Default:** `nil`
 ### [cluster.maxSessionDurationMinutes](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3395)
@@ -1407,7 +1407,7 @@ Optional. Maximum number of tasks allowed to be queued to enter the `ACCEPT` thr
 **Default:** `-1`
 ### [load.acceptPoolMaxSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3565)
      
-Optional. Maximum number of threads allowed for the `ACCEPT` internal pool, which is devoted to the parsing of the client requests. This task does not include blocking operations; however, on multiprocessor machines, allocating multiple threads for this task may be beneficial. Only in corner cases, it is possible that some operations turn out to be blocking; in particular: - `getHostName`, only if banned hostnames are configured; - socket close, only if banned hostnames are configured; - read from the "proxy protocol", only if configured; - service of requests on a "priority port", only available for internal use. A zero value means a potentially unlimited number of threads.
+Optional. Maximum number of threads allowed for the `ACCEPT` internal pool, which is devoted to the parsing of the client requests. This task does not include blocking operations; however, on multiprocessor machines, allocating multiple threads for this task may be beneficial. Only in corner cases, it is possible that some operations turn out to be blocking; in particular: - `getHostName`, only if banned hostnames are configured- - Socket close, only if banned hostnames are configured. - Read from the "proxy protocol", only if configured. - Service of requests on a "priority port", only available for internal use. A zero value means a potentially unlimited number of threads.
 
 **Default:**
 
@@ -1542,7 +1542,7 @@ Optional. Maximum number of tasks allowed to be queued to enter the `SERVER` thr
 **Default:** `100`
 ### [load.serverPoolMaxSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3519)
      
-Optional. Maximum number of threads allowed for the `SERVER` internal pool, which is devoted to the management of the client requests. This kind of tasks includes operations that are potentially blocking: - `getHostName`; - socket close; - calls to a Metadata Adapter that may need to access to some external   resource (i.e. mainly `notifyUser`, `getItems`, `getSchema`; other    methods should be implemented as nonblocking, by leaning on data cached    by `notifyUser`); - calls to a Data Adapter that may need to access to some external resource   (i.e. subscribe and unsubscribe, though it should always be possible to   implement such calls asynchronously); - file access by the internal web server, though it should be used  only in   demo and test scenarios. Note that specific thread pools can optionally be defined in order to handle some of the tasks that, by default, are handled by the `SERVER`  thread pool. They are defined in `adapters.xml`; see the templates provided in the In-Process Adapter SDK for details. A zero value means a potentially unlimited number of threads.
+Optional. Maximum number of threads allowed for the `SERVER` internal pool, which is devoted to the management of the client requests. This kind of tasks includes operations that are potentially blocking: - `getHostName`. - Socket close. - Calls to a Metadata Adapter that may need to access to some external   resource (i.e. mainly `notifyUser`, `getItems`, `getSchema`; other    methods should be implemented as nonblocking, by leaning on data cached    by `notifyUser`). - Calls to a Data Adapter that may need to access to some external resource   (i.e. subscribe and unsubscribe, though it should always be possible to   implement such calls asynchronously). - File access by the internal web server, though it should be used only in   demo and test scenarios. Note that specific thread pools can optionally be defined in order to handle some of the tasks that, by default, are handled by the `SERVER`  thread pool. They are defined in `adapters.xml`; see the templates provided in the In-Process Adapter SDK for details. A zero value means a potentially unlimited number of threads.
 
 **Default:** `1000`
 ### [load.snapshotPoolSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3478)
@@ -1561,7 +1561,7 @@ Optional. Number of threads used to parallelize the implementation of the intern
 **Default:** `1`
 ## License settings
  
-### [license](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L368)
+### [license](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L367)
      
 Mandatory. Configure the edition, the optional features, and the type of license that should be used to run Lightstreamer Server.
 
@@ -1570,61 +1570,61 @@ Mandatory. Configure the edition, the optional features, and the type of license
 ```
 {"edition":"ENTERPRISE","enableAutomaticUpdateCheck":null,"enabledCommunityEditionClientApi":"javascript_client","enterprise":{"contractId":"DEMO","enableAutomaticAuditLogUpload":true,"filePathSecretRef":{"key":null,"name":null},"licenseType":"DEMO","licenseValidation":"ONLINE","onlinePasswordSecretRef":{"key":null,"name":null},"optionalFeatures":{"enableRestrictedFeaturesSet":true,"features":{"enableAndroidClient":false,"enableBandwidthControl":false,"enableBlackBerryClient":false,"enableDotNETStandardClient":false,"enableFlashClient":false,"enableFlexClient":false,"enableGenericClient":false,"enableIOSClient":false,"enableJavaMEClient":false,"enableJavaSEClient":false,"enableJavascriptClient":false,"enableJmx":false,"enableMacOSClient":false,"enableMpn":true,"enableNodeJsClient":false,"enablePythonClient":false,"enableSilverlightClient":false,"enableTlsSsl":false,"enableTvOSClient":false,"enableVisionOSClient":false,"enableWatchOSClient":false,"maxDownstreamRate":"1"}}},"proxy":{"enableProxyAutodiscovery":null,"httpProxies":[{"credentialsSecretRef":null,"host":null,"port":null,"scheme":null}],"networkInterface":null,"pacFiles":{"filePaths":[],"fileUrls":[]},"socksProxies":[{"credentialsSecretRef":null,"host":null,"port":null,"version":null}]}}
 ```
-### [license.edition](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L374)
+### [license.edition](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L373)
      
 Mandatory. Lightstreamer edition to use. To know full details, open the Welcome Page or the Monitoring Dashboard (Edition tab) of your running Lightstreamer Server. Possible values: `COMMUNITY`, `ENTERPRISE`.
 
 **Default:** `"ENTERPRISE"`
-### [license.enableAutomaticUpdateCheck](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L540)
+### [license.enableAutomaticUpdateCheck](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L539)
      
 Optional. Periodically check whether any Lightstreamer Server update is available. In such case, a notification is written to the log file. If set to `true`, perform automatic update check. The following host name must be reachable on port 443: https://service.lightstreamer.com/. If set to `false`, do not perform automatic update check.
 
 **Default:** `true`
-### [license.enabledCommunityEditionClientApi](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L390)
+### [license.enabledCommunityEditionClientApi](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L389)
      
 Mandatory if edition is set to `COMMUNITY`. The Client API to use with your Lightstreamer free license. Possible values: `javascript_client` (for web browser clients), `nodejs_client` (for Node.js clients), `android_client` (for Android clients), `ios_client` (for iOS clients), `flex_client` (for Flex and AIR clients), `silverlight_client` (for Silverlight clients), `javase_client` (for Java SE clients), `python_client` (for Python clients), `dotnet_standard_client` (for .NET Standard clients), `macos_client` (for macOS clients), `tvos_client` (for tvOS clients), `watchos_client` (for watchOS clients), `visionos_client` (for visionOS clients), `blackberry_client` (for BlackBerry clients), `javame_client` (for Java ME clients), `flash_client` (for Flash clients), `generic_client` (for custom clients based on the Lightstreamer protocol).
 
 **Default:** `javascript_client`
-### [license.enterprise](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L394)
+### [license.enterprise](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L393)
      
-Mandatory if `edition` is set to `ENTERPRISE`. Configure the ENTERPRISE edition.
+Mandatory if `edition` is set to `ENTERPRISE`. Configure the `ENTERPRISE` edition.
 
 **Default:**
 
 ```
 {"contractId":"DEMO","enableAutomaticAuditLogUpload":true,"filePathSecretRef":{"key":null,"name":null},"licenseType":"DEMO","licenseValidation":"ONLINE","onlinePasswordSecretRef":{"key":null,"name":null},"optionalFeatures":{"enableRestrictedFeaturesSet":true,"features":{"enableAndroidClient":false,"enableBandwidthControl":false,"enableBlackBerryClient":false,"enableDotNETStandardClient":false,"enableFlashClient":false,"enableFlexClient":false,"enableGenericClient":false,"enableIOSClient":false,"enableJavaMEClient":false,"enableJavaSEClient":false,"enableJavascriptClient":false,"enableJmx":false,"enableMacOSClient":false,"enableMpn":true,"enableNodeJsClient":false,"enablePythonClient":false,"enableSilverlightClient":false,"enableTlsSsl":false,"enableTvOSClient":false,"enableVisionOSClient":false,"enableWatchOSClient":false,"maxDownstreamRate":"1"}}}
 ```
-### [license.enterprise.contractId](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L404)
+### [license.enterprise.contractId](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L403)
      
 Mandatory. Identifier of the contract in place. Use `DEMO` to run with the embedded Demo license.
 
 **Default:** `"DEMO"`
-### [license.enterprise.enableAutomaticAuditLogUpload](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L445)
+### [license.enterprise.enableAutomaticAuditLogUpload](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L444)
      
 In case of file-based license validation, allows to activate periodic automatic upload. This makes it much easier for the systems admins to deliver the logs, as contractually agreed. In case of online license validation, the audit logs are always automatically uploaded to the Online License Manager, irrespective of this setting. If enabled, the host `https://service.lightstreamer.com` must be  reachable on port 443. If not enabled, audit logs must be delivered manually if required by license terms.
 
 **Default:** `true`
-### [license.enterprise.filePathSecretRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L430)
+### [license.enterprise.filePathSecretRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L429)
      
 Mandatory if `licenseValidation` set to `FILE`. Secret name and key where the license file is stored.
 
 **Default:** `{"key":null,"name":null}`
-### [license.enterprise.licenseType](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L400)
+### [license.enterprise.licenseType](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L399)
      
-Mandatory. The type of the ENTERPRISE edition. Possible values: `DEMO`, `EVALUATION`, `STARTUP`,  `NON-PRODUCTION-LIMITED`, `NON-PRODUCTION-FULL`, `PRODUCTION`,  `HOT-STANDBY`.
+Mandatory. The type of the `ENTERPRISE` edition. Possible values: `DEMO`, `EVALUATION`, `STARTUP`,  `NON-PRODUCTION-LIMITED`, `NON-PRODUCTION-FULL`, `PRODUCTION`,  `HOT-STANDBY`.
 
 **Default:** `"DEMO"`
-### [license.enterprise.licenseValidation](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L418)
+### [license.enterprise.licenseValidation](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L417)
      
-Optional. Choose between online (cloud-based) and file-based license validation. If set to `ONLINE`, the following host names below must be reachable on port 443:  - `https://clm1.lightstreamer.com/` - `https://clm2.lightstreamer.com/`. If set to `FILE`, based on `licenseType`, one or both the values are  possible. For `EVALUATION` and `STARTUP`: `ONLINE` is mandatory. For `PRODUCTION`, `HOT-STANDBY`, `NON-PRODUCTION-FULL`, and  `NON-PRODUCTION-LIMITED`: you can choose between `ONLINE` and `FILE`. For `DEMO`: the value is ignored, as no validation is done.
+Optional. Choose between online (cloud-based) and file-based license validation. If set to `ONLINE`, the following host names below must be reachable on port 443:  - `https://clm1.lightstreamer.com/` - `https://clm2.lightstreamer.com/` If set to `FILE`, based on `licenseType`, one or both the values are  possible. For `EVALUATION` and `STARTUP`: `ONLINE` is mandatory. For `PRODUCTION`, `HOT-STANDBY`, `NON-PRODUCTION-FULL`, and  `NON-PRODUCTION-LIMITED`: you can choose between `ONLINE` and `FILE`. For `DEMO`: the value is ignored, as no validation is done.
 
 **Default:** `"ONLINE"`
-### [license.enterprise.onlinePasswordSecretRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L424)
+### [license.enterprise.onlinePasswordSecretRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L423)
      
 Mandatory if `licenseValidation` is set to `ONLINE`. Secret name and  key where the password used for validation of online licenses is stored. Leave blank if `licenseType` is set to `DEMO` or `licenseValidation` set  to `FILE`.
 
 **Default:** `{"key":null,"name":null}`
-### [license.enterprise.optionalFeatures](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L448)
+### [license.enterprise.optionalFeatures](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L447)
      
 Optional. Configure the optional features.
 
@@ -1633,12 +1633,12 @@ Optional. Configure the optional features.
 ```
 {"enableRestrictedFeaturesSet":true,"features":{"enableAndroidClient":false,"enableBandwidthControl":false,"enableBlackBerryClient":false,"enableDotNETStandardClient":false,"enableFlashClient":false,"enableFlexClient":false,"enableGenericClient":false,"enableIOSClient":false,"enableJavaMEClient":false,"enableJavaSEClient":false,"enableJavascriptClient":false,"enableJmx":false,"enableMacOSClient":false,"enableMpn":true,"enableNodeJsClient":false,"enablePythonClient":false,"enableSilverlightClient":false,"enableTlsSsl":false,"enableTvOSClient":false,"enableVisionOSClient":false,"enableWatchOSClient":false,"maxDownstreamRate":"1"}}
 ```
-### [license.enterprise.optionalFeatures.enableRestrictedFeaturesSet](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L457)
+### [license.enterprise.optionalFeatures.enableRestrictedFeaturesSet](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L456)
      
 Optional. Restrict the feature set with respect to the license in use. If set to `true`, use the feature set detailed in `features`. If a required feature is not allowed by the license in use, the server will not start. If set to `false`, use the feature set specified by the license in use.
 
 **Default:** `false`
-### [license.enterprise.optionalFeatures.features](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L462)
+### [license.enterprise.optionalFeatures.features](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L461)
      
 Mandatory if `enableRestrictedFeaturesSet` is set to `true`. Set of features to enable. If a required feature is not allowed by the license in use, the server will not start.
 
@@ -1647,131 +1647,131 @@ Mandatory if `enableRestrictedFeaturesSet` is set to `true`. Set of features to 
 ```
 {"enableAndroidClient":false,"enableBandwidthControl":false,"enableBlackBerryClient":false,"enableDotNETStandardClient":false,"enableFlashClient":false,"enableFlexClient":false,"enableGenericClient":false,"enableIOSClient":false,"enableJavaMEClient":false,"enableJavaSEClient":false,"enableJavascriptClient":false,"enableJmx":false,"enableMacOSClient":false,"enableMpn":true,"enableNodeJsClient":false,"enablePythonClient":false,"enableSilverlightClient":false,"enableTlsSsl":false,"enableTvOSClient":false,"enableVisionOSClient":false,"enableWatchOSClient":false,"maxDownstreamRate":"1"}
 ```
-### [license.enterprise.optionalFeatures.features.enableAndroidClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L487)
+### [license.enterprise.optionalFeatures.features.enableAndroidClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L486)
      
 Mandatory. Android Client API.
 
 **Default:** `false`
-### [license.enterprise.optionalFeatures.features.enableBandwidthControl](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L472)
+### [license.enterprise.optionalFeatures.features.enableBandwidthControl](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L471)
      
 Mandatory. Bandwidth control.
 
 **Default:** `false`
-### [license.enterprise.optionalFeatures.features.enableBlackBerryClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L523)
+### [license.enterprise.optionalFeatures.features.enableBlackBerryClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L522)
      
 Mandatory. BlackBerry Client API.
 
 **Default:** `false`
-### [license.enterprise.optionalFeatures.features.enableDotNETStandardClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L508)
+### [license.enterprise.optionalFeatures.features.enableDotNETStandardClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L507)
      
 Mandatory. .NET Standard Client API. Includes also the old Windows .NET libraries: .NET PCL Client API, Unity Client API, .NET Client API, WinRT Client API, and Windows Phone Client API.
 
 **Default:** `false`
-### [license.enterprise.optionalFeatures.features.enableFlashClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L529)
+### [license.enterprise.optionalFeatures.features.enableFlashClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L528)
      
 Mandatory. Flash Client API.
 
 **Default:** `false`
-### [license.enterprise.optionalFeatures.features.enableFlexClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L493)
+### [license.enterprise.optionalFeatures.features.enableFlexClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L492)
      
 Mandatory. Flex and AIR Client API.
 
 **Default:** `false`
-### [license.enterprise.optionalFeatures.features.enableGenericClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L532)
+### [license.enterprise.optionalFeatures.features.enableGenericClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L531)
      
 Mandatory. Generic Client API.
 
 **Default:** `false`
-### [license.enterprise.optionalFeatures.features.enableIOSClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L490)
+### [license.enterprise.optionalFeatures.features.enableIOSClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L489)
      
 Mandatory. iOS Client API.
 
 **Default:** `false`
-### [license.enterprise.optionalFeatures.features.enableJavaMEClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L526)
+### [license.enterprise.optionalFeatures.features.enableJavaMEClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L525)
      
 Mandatory. Java ME Client API.
 
 **Default:** `false`
-### [license.enterprise.optionalFeatures.features.enableJavaSEClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L499)
+### [license.enterprise.optionalFeatures.features.enableJavaSEClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L498)
      
 Mandatory. Java SE Client API.
 
 **Default:** `false`
-### [license.enterprise.optionalFeatures.features.enableJavascriptClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L481)
+### [license.enterprise.optionalFeatures.features.enableJavascriptClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L480)
      
 Mandatory. JavaScript Client API.
 
 **Default:** `false`
-### [license.enterprise.optionalFeatures.features.enableJmx](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L478)
+### [license.enterprise.optionalFeatures.features.enableJmx](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L477)
      
 Mandatory. JMX Management API.
 
 **Default:** `false`
-### [license.enterprise.optionalFeatures.features.enableMacOSClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L511)
+### [license.enterprise.optionalFeatures.features.enableMacOSClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L510)
      
 Mandatory. macOS Client API.
 
 **Default:** `false`
-### [license.enterprise.optionalFeatures.features.enableMpn](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L465)
+### [license.enterprise.optionalFeatures.features.enableMpn](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L464)
      
 Mandatory. Mobile Push Notifications.
 
 **Default:** `true`
-### [license.enterprise.optionalFeatures.features.enableNodeJsClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L484)
+### [license.enterprise.optionalFeatures.features.enableNodeJsClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L483)
      
 Mandatory. Node.js Client API.
 
 **Default:** `false`
-### [license.enterprise.optionalFeatures.features.enablePythonClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L502)
+### [license.enterprise.optionalFeatures.features.enablePythonClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L501)
      
 Mandatory. Python Client API.
 
 **Default:** `false`
-### [license.enterprise.optionalFeatures.features.enableSilverlightClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L496)
+### [license.enterprise.optionalFeatures.features.enableSilverlightClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L495)
      
 Mandatory. Silverlight Client API.
 
 **Default:** `false`
-### [license.enterprise.optionalFeatures.features.enableTlsSsl](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L475)
+### [license.enterprise.optionalFeatures.features.enableTlsSsl](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L474)
      
 Mandatory. TLS/SSL Support.
 
 **Default:** `false`
-### [license.enterprise.optionalFeatures.features.enableTvOSClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L514)
+### [license.enterprise.optionalFeatures.features.enableTvOSClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L513)
      
 Mandatory. tvOS Client API.
 
 **Default:** `false`
-### [license.enterprise.optionalFeatures.features.enableVisionOSClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L520)
+### [license.enterprise.optionalFeatures.features.enableVisionOSClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L519)
      
 Mandatory. visionOS Client API.
 
 **Default:** `false`
-### [license.enterprise.optionalFeatures.features.enableWatchOSClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L517)
+### [license.enterprise.optionalFeatures.features.enableWatchOSClient](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L516)
      
 Mandatory. watchOS Client API.
 
 **Default:** `false`
-### [license.enterprise.optionalFeatures.features.maxDownstreamRate](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L469)
+### [license.enterprise.optionalFeatures.features.maxDownstreamRate](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L468)
      
 Mandatory. Max message rate (downstream). Possible values: `1`, `3`, `unlimited`.
 
 **Default:** `"1"`
-### [license.proxy](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L553)
+### [license.proxy](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L552)
      
-Optional. Configure a proxy server for outbound Internet access, if necessary. Internet access is needed, depending on the above configuration, to reach the Online License Manager, to upload audit logs, and to check for software updates. The host names below must be reachable from the proxy on port 443: - https://clm1.lightstreamer.com/    (depending on the configuration) - https://clm2.lightstreamer.com/    (depending on the configuration) - https://service.lightstreamer.com/ (regardless of the configuration) Several methods are provided for the proxy configuration, including PAC files, auto-discovery, and direct HTTP and SOCKS configuration.
+Optional. Configure a proxy server for outbound Internet access, if necessary. Internet access is needed, depending on the above configuration, to reach the Online License Manager, to upload audit logs, and to check for software updates. The host names below must be reachable from the proxy on port 443: - https://clm1.lightstreamer.com/ (depending on the configuration) - https://clm2.lightstreamer.com/ (depending on the configuration) - https://service.lightstreamer.com/ (regardless of the configuration) Several methods are provided for the proxy configuration, including PAC files, auto-discovery, and direct HTTP and SOCKS configuration.
 
 **Default:**
 
 ```
 {"enableProxyAutodiscovery":null,"httpProxies":[{"credentialsSecretRef":null,"host":null,"port":null,"scheme":null}],"networkInterface":null,"pacFiles":{"filePaths":[],"fileUrls":[]},"socksProxies":[{"credentialsSecretRef":null,"host":null,"port":null,"version":null}]}
 ```
-### [license.proxy.enableProxyAutodiscovery](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L627)
+### [license.proxy.enableProxyAutodiscovery](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L626)
      
 Optional. In case no proxy configuration is provided or the provided configuration does not work, automatic proxy discovery is attempted (via system environment check and WPAD).
 
 **Default:** `false`
-### [license.proxy.httpProxies](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L559)
+### [license.proxy.httpProxies](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L558)
      
 Optional. List of HTTP Proxy Server configurations. The proxies all checked and the first acceptable one is used. If any SOCKS proxy in `socksProxies` is configured too, it is checked in parallel with the defined HTTP proxies.
 
@@ -1780,47 +1780,47 @@ Optional. List of HTTP Proxy Server configurations. The proxies all checked and 
 ```
 [{"credentialsSecretRef":null,"host":null,"port":null,"scheme":null}]
 ```
-### [license.proxy.httpProxies[0].credentialsSecretRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L576)
+### [license.proxy.httpProxies[0].credentialsSecretRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L575)
      
 Mandatory if proxy authentication is required. The name of the secret containing the credentials. The secret must contain the keys `user` and `password`.
 
 **Default:** `nil`
-### [license.proxy.httpProxies[0].host](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L564)
+### [license.proxy.httpProxies[0].host](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L563)
      
 Optional, but empty values are skipped. Host name or IP address of the proxy server. Examples: `proxy.mycompany.com`, `192.168.0.5`.
 
 **Default:** `nil`
-### [license.proxy.httpProxies[0].port](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L567)
+### [license.proxy.httpProxies[0].port](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L566)
      
 Optional. Port number of the proxy server.
 
 **Default:** `nil`
-### [license.proxy.httpProxies[0].scheme](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L571)
+### [license.proxy.httpProxies[0].scheme](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L570)
      
 Optional. Scheme of the proxy server. Possible values: `http`, `https`.
 
 **Default:** `nil`
-### [license.proxy.networkInterface](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L631)
+### [license.proxy.networkInterface](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L630)
      
 Optional. Specifies a NIC to use to access the external services, with or without a proxy.
 
 **Default:** `nil`
-### [license.proxy.pacFiles](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L604)
+### [license.proxy.pacFiles](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L603)
      
 Optional. Configure one or multiple proxy auto-configuration (PAC), files for simpler proxy configuration.
 
 **Default:** `[]`
-### [license.proxy.pacFiles.filePaths](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L615)
+### [license.proxy.pacFiles.filePaths](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L614)
      
 Optional. List of configmap names and keys where the PAC files are stored.
 
 **Default:** `[]`
-### [license.proxy.pacFiles.fileUrls](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L608)
+### [license.proxy.pacFiles.fileUrls](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L607)
      
 Optional. List of URLs of the PAC files.
 
 **Default:** `[]`
-### [license.proxy.socksProxies](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L582)
+### [license.proxy.socksProxies](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L581)
      
 Optional. List of SOCKS Proxy Server configurations. The proxies are all checked and the first acceptable one is used. If any HTTP proxy is configured in `httpProxies` too, it is checked in parallel with the defined SOCKS proxies.
 
@@ -1829,29 +1829,29 @@ Optional. List of SOCKS Proxy Server configurations. The proxies are all checked
 ```
 [{"credentialsSecretRef":null,"host":null,"port":null,"version":null}]
 ```
-### [license.proxy.socksProxies[0].credentialsSecretRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L599)
+### [license.proxy.socksProxies[0].credentialsSecretRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L598)
      
 Mandatory if proxy authentication is required. The name of the secret containing the credentials. The secret must contain the keys `user` and `password`.
 
 **Default:** `nil`
-### [license.proxy.socksProxies[0].host](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L587)
+### [license.proxy.socksProxies[0].host](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L586)
      
 Optional, but empty value are skipped. Host name or IP  address of the proxy server. Examples: `socks.mycompany.com`, `192.168.0.9`.
 
 **Default:** `nil`
-### [license.proxy.socksProxies[0].port](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L590)
+### [license.proxy.socksProxies[0].port](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L589)
      
 Optional. Port number of the SOCKS server.
 
 **Default:** `nil`
-### [license.proxy.socksProxies[0].version](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L594)
+### [license.proxy.socksProxies[0].version](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L593)
      
 Optional. Protocol version to use. Possible values: `SOCKS4`, `SOCKS4a`, `SOCKS5`.
 
 **Default:** `nil`
 ## Logging settings
  
-### [logging](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L634)
+### [logging](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L633)
      
 Mandatory. Logging configuration for Lightstreamer Server.
 
@@ -1860,7 +1860,7 @@ Mandatory. Logging configuration for Lightstreamer Server.
 ```
 {"appenders":{"console":{"pattern":"%d{\"yyyy-MM-dd HH:mm:ss,SSS\"}|%-5.5(%p%marker)|%m%n","type":"Console"},"dailyRolling":{"fileName":"lightstreamer.log","fileNamePattern":"lightstreamer-%d{yyyy-MM-dd}.log","pattern":"%d{\"dd-MMM-yy HH:mm:ss,SSS\"}|%-5.5(%p%marker)|%-19.19c{19}|%-27.27t|%m%n","type":"DailyRollingFile","volumeRef":null}},"extraLoggers":null,"loggers":{"com.github.markusbernhardt.proxy":{"appenders":["console"],"level":"WARN"},"com.google":{"appenders":["console"],"level":"ERROR"},"com.sun.jmx.remote":{"appenders":["console"],"level":"ERROR"},"com.turo":{"appenders":["console"],"level":"ERROR"},"com.zaxxer.hikari":{"appenders":["console"],"level":"INFO"},"common.jmx.velocity":{"appenders":["console"],"level":"ERROR"},"io.grpc":{"appenders":["console"],"level":"WARN"},"io.netty":{"appenders":["console"],"level":"ERROR"},"io.opencensus":{"appenders":["console"],"level":"WARN"},"java.sql":{"appenders":["console"],"level":"WARN"},"javax.management.mbeanserver":{"appenders":["console"],"level":"ERROR"},"javax.management.remote":{"appenders":["console"],"level":"ERROR"},"javax.net.ssl":{"appenders":["console"],"level":"OFF"},"lightstreamerHealthCheck":{"appenders":["console"],"level":"INFO"},"lightstreamerLogger":{"appenders":["console"],"level":"INFO","subLoggers":{"lightstreamerLogger.connections":"WARN","lightstreamerLogger.connections.WS":"WARN","lightstreamerLogger.connections.http":"ERROR","lightstreamerLogger.connections.proxy":"INFO","lightstreamerLogger.connections.ssl":"WARN","lightstreamerLogger.external":"INFO","lightstreamerLogger.init":"INFO","lightstreamerLogger.io":"WARN","lightstreamerLogger.io.ssl":"WARN","lightstreamerLogger.kernel":"INFO","lightstreamerLogger.license":"INFO","lightstreamerLogger.monitoring":"INFO","lightstreamerLogger.mpn":"INFO","lightstreamerLogger.mpn.apple":"WARN","lightstreamerLogger.mpn.database":"WARN","lightstreamerLogger.mpn.database.transactions":"WARN","lightstreamerLogger.mpn.google":"WARN","lightstreamerLogger.mpn.lifecycle":"INFO","lightstreamerLogger.mpn.operations":"INFO","lightstreamerLogger.mpn.pump":"WARN","lightstreamerLogger.mpn.requests":"WARN","lightstreamerLogger.mpn.status_adapters":"WARN","lightstreamerLogger.preprocessor":"INFO","lightstreamerLogger.pump":"INFO","lightstreamerLogger.pump.messages":"INFO","lightstreamerLogger.push":"INFO","lightstreamerLogger.requests":"INFO","lightstreamerLogger.requests.messages":"INFO","lightstreamerLogger.requests.polling":"WARN","lightstreamerLogger.scheduler":"INFO","lightstreamerLogger.subscriptions":"DEBUG","lightstreamerLogger.subscriptions.upd":"DEBUG","lightstreamerLogger.webServer":"WARN","lightstreamerLogger.webServer.appleWebService":"WARN","lightstreamerLogger.webServer.jmxTree":"WARN","lightstreamerLogger.webclient":"DEBUG"}},"lightstreamerMonitorTAB":{"appenders":["console"],"level":"ERROR"},"lightstreamerMonitorText":{"appenders":["console"],"level":"INFO"},"lightstreamerProxyAdapters":{"appenders":["console"],"level":"INFO"},"org.apache.http":{"appenders":["console"],"level":"ERROR"},"org.codehaus.janino":{"appenders":["console"],"level":"WARN"},"org.conscrypt":{"appenders":["console"],"level":"ERROR"},"org.hibernate":{"appenders":["console"],"level":"WARN"},"org.jboss.logging":{"appenders":["console"],"level":"WARN"},"org.jminix":{"appenders":["console"],"level":"ERROR"},"org.restlet":{"appenders":["console"],"level":"ERROR"}}}
 ```
-### [logging.appenders](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L638)
+### [logging.appenders](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L637)
      
 Mandatory. Appenders configuration. Every logger must refer to one or more appenders defined here.
 
@@ -1869,7 +1869,7 @@ Mandatory. Appenders configuration. Every logger must refer to one or more appen
 ```
 {"console":{"pattern":"%d{\"yyyy-MM-dd HH:mm:ss,SSS\"}|%-5.5(%p%marker)|%m%n","type":"Console"},"dailyRolling":{"fileName":"lightstreamer.log","fileNamePattern":"lightstreamer-%d{yyyy-MM-dd}.log","pattern":"%d{\"dd-MMM-yy HH:mm:ss,SSS\"}|%-5.5(%p%marker)|%-19.19c{19}|%-27.27t|%m%n","type":"DailyRollingFile","volumeRef":null}}
 ```
-### [logging.appenders.dailyRolling](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L642)
+### [logging.appenders.dailyRolling](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L641)
      
 At least one must be provided. An appender configuration. Choose whatever key you like, as long as it is unique.
 
@@ -1878,17 +1878,17 @@ At least one must be provided. An appender configuration. Choose whatever key yo
 ```
 {"fileName":"lightstreamer.log","fileNamePattern":"lightstreamer-%d{yyyy-MM-dd}.log","pattern":"%d{\"dd-MMM-yy HH:mm:ss,SSS\"}|%-5.5(%p%marker)|%-19.19c{19}|%-27.27t|%m%n","type":"DailyRollingFile","volumeRef":null}
 ```
-### [logging.appenders.dailyRolling.fileName](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L654)
+### [logging.appenders.dailyRolling.fileName](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L653)
      
 Mandatory if `type` is set to `DailyRollingFile`. The name of the log file.
 
 **Default:** `"lightstreamer.log"`
-### [logging.appenders.dailyRolling.fileNamePattern](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L658)
+### [logging.appenders.dailyRolling.fileNamePattern](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L657)
      
 Mandatory if `type` is set to `DailyRollingFile`. The pattern to use for the log file.
 
 **Default:** `"lightstreamer-%d{yyyy-MM-dd}.log"`
-### [logging.appenders.dailyRolling.pattern](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L650)
+### [logging.appenders.dailyRolling.pattern](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L649)
      
 Mandatory. The conversion pattern. See https://logback.qos.ch/index.html for details.
 
@@ -1897,17 +1897,17 @@ Mandatory. The conversion pattern. See https://logback.qos.ch/index.html for det
 ```
 "%d{\"dd-MMM-yy HH:mm:ss,SSS\"}|%-5.5(%p%marker)|%-19.19c{19}|%-27.27t|%m%n"
 ```
-### [logging.appenders.dailyRolling.type](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L646)
+### [logging.appenders.dailyRolling.type](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L645)
      
 Mandatory. The type of appender. Possible values: `DailyRollingFile`, `Console`.
 
 **Default:** `"DailyRollingFile"`
-### [logging.appenders.dailyRolling.volumeRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L661)
+### [logging.appenders.dailyRolling.volumeRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L660)
      
 Optional. The reference to a volume to use for the log file.
 
 **Default:** `nil`
-### [logging.loggers](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L675)
+### [logging.loggers](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L674)
      
 Optional. Loggers configuration.
 
@@ -1916,22 +1916,22 @@ Optional. Loggers configuration.
 ```
 {"com.github.markusbernhardt.proxy":{"appenders":["console"],"level":"WARN"},"com.google":{"appenders":["console"],"level":"ERROR"},"com.sun.jmx.remote":{"appenders":["console"],"level":"ERROR"},"com.turo":{"appenders":["console"],"level":"ERROR"},"com.zaxxer.hikari":{"appenders":["console"],"level":"INFO"},"common.jmx.velocity":{"appenders":["console"],"level":"ERROR"},"io.grpc":{"appenders":["console"],"level":"WARN"},"io.netty":{"appenders":["console"],"level":"ERROR"},"io.opencensus":{"appenders":["console"],"level":"WARN"},"java.sql":{"appenders":["console"],"level":"WARN"},"javax.management.mbeanserver":{"appenders":["console"],"level":"ERROR"},"javax.management.remote":{"appenders":["console"],"level":"ERROR"},"javax.net.ssl":{"appenders":["console"],"level":"OFF"},"lightstreamerHealthCheck":{"appenders":["console"],"level":"INFO"},"lightstreamerLogger":{"appenders":["console"],"level":"INFO","subLoggers":{"lightstreamerLogger.connections":"WARN","lightstreamerLogger.connections.WS":"WARN","lightstreamerLogger.connections.http":"ERROR","lightstreamerLogger.connections.proxy":"INFO","lightstreamerLogger.connections.ssl":"WARN","lightstreamerLogger.external":"INFO","lightstreamerLogger.init":"INFO","lightstreamerLogger.io":"WARN","lightstreamerLogger.io.ssl":"WARN","lightstreamerLogger.kernel":"INFO","lightstreamerLogger.license":"INFO","lightstreamerLogger.monitoring":"INFO","lightstreamerLogger.mpn":"INFO","lightstreamerLogger.mpn.apple":"WARN","lightstreamerLogger.mpn.database":"WARN","lightstreamerLogger.mpn.database.transactions":"WARN","lightstreamerLogger.mpn.google":"WARN","lightstreamerLogger.mpn.lifecycle":"INFO","lightstreamerLogger.mpn.operations":"INFO","lightstreamerLogger.mpn.pump":"WARN","lightstreamerLogger.mpn.requests":"WARN","lightstreamerLogger.mpn.status_adapters":"WARN","lightstreamerLogger.preprocessor":"INFO","lightstreamerLogger.pump":"INFO","lightstreamerLogger.pump.messages":"INFO","lightstreamerLogger.push":"INFO","lightstreamerLogger.requests":"INFO","lightstreamerLogger.requests.messages":"INFO","lightstreamerLogger.requests.polling":"WARN","lightstreamerLogger.scheduler":"INFO","lightstreamerLogger.subscriptions":"DEBUG","lightstreamerLogger.subscriptions.upd":"DEBUG","lightstreamerLogger.webServer":"WARN","lightstreamerLogger.webServer.appleWebService":"WARN","lightstreamerLogger.webServer.jmxTree":"WARN","lightstreamerLogger.webclient":"DEBUG"}},"lightstreamerMonitorTAB":{"appenders":["console"],"level":"ERROR"},"lightstreamerMonitorText":{"appenders":["console"],"level":"INFO"},"lightstreamerProxyAdapters":{"appenders":["console"],"level":"INFO"},"org.apache.http":{"appenders":["console"],"level":"ERROR"},"org.codehaus.janino":{"appenders":["console"],"level":"WARN"},"org.conscrypt":{"appenders":["console"],"level":"ERROR"},"org.hibernate":{"appenders":["console"],"level":"WARN"},"org.jboss.logging":{"appenders":["console"],"level":"WARN"},"org.jminix":{"appenders":["console"],"level":"ERROR"},"org.restlet":{"appenders":["console"],"level":"ERROR"}}
 ```
-### [logging.loggers.lightstreamerHealthCheck](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L992)
+### [logging.loggers.lightstreamerHealthCheck](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L991)
      
 Optional. Logging healthcheck request processing at `INFO` level. The logger does not inherit from `lightstreamerLogger` in order to simplify sending the log to a dedicated appender. All logs from this logger report the IP and port of the involved connection.
 
 **Default:** `{"appenders":["console"],"level":"INFO"}`
-### [logging.loggers.lightstreamerHealthCheck.appenders](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L996)
+### [logging.loggers.lightstreamerHealthCheck.appenders](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L995)
      
 Optional. List of references to the appenders defined in `.logging.appenders`.
 
 **Default:** `["console"]`
-### [logging.loggers.lightstreamerHealthCheck.level](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1001)
+### [logging.loggers.lightstreamerHealthCheck.level](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1000)
      
 Optional. The level of the logger.
 
 **Default:** `DEBUG`
-### [logging.loggers.lightstreamerLogger](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L739)
+### [logging.loggers.lightstreamerLogger](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L738)
      
 Optional. The following is the base logger of all logging messages printed by Lightstreamer Kernel (with a few exceptions). Messages logged at `INFO` level notify major server activities, like session starting and ending. If these messages are enabled, they are also supplied to the internal `MONITOR` data adapter, together with `WARN` and `ERROR` messages. Messages logged at `DEBUG` level notify minor operations and all data flow inside the Server. They should not be enabled with production load levels. No useful messages are logged at `TRACE` level. The level is reserved for `DEBUG` versions of the Server. Severe `ERROR` messages are logged with a `FATAL` marker; in fact, a `FATAL` level is not natively supported by logback. Thanks to the marker, these messages can be filtered through logback's MarkerFilter. By the factory pattern configuration, `FATAL` is logged instead of `ERROR` for these messages (note the tricky `%-5.5(%p%marker)` pattern).
 
@@ -1940,17 +1940,17 @@ Optional. The following is the base logger of all logging messages printed by Li
 ```
 {"appenders":["console"],"level":"INFO","subLoggers":{"lightstreamerLogger.connections":"WARN","lightstreamerLogger.connections.WS":"WARN","lightstreamerLogger.connections.http":"ERROR","lightstreamerLogger.connections.proxy":"INFO","lightstreamerLogger.connections.ssl":"WARN","lightstreamerLogger.external":"INFO","lightstreamerLogger.init":"INFO","lightstreamerLogger.io":"WARN","lightstreamerLogger.io.ssl":"WARN","lightstreamerLogger.kernel":"INFO","lightstreamerLogger.license":"INFO","lightstreamerLogger.monitoring":"INFO","lightstreamerLogger.mpn":"INFO","lightstreamerLogger.mpn.apple":"WARN","lightstreamerLogger.mpn.database":"WARN","lightstreamerLogger.mpn.database.transactions":"WARN","lightstreamerLogger.mpn.google":"WARN","lightstreamerLogger.mpn.lifecycle":"INFO","lightstreamerLogger.mpn.operations":"INFO","lightstreamerLogger.mpn.pump":"WARN","lightstreamerLogger.mpn.requests":"WARN","lightstreamerLogger.mpn.status_adapters":"WARN","lightstreamerLogger.preprocessor":"INFO","lightstreamerLogger.pump":"INFO","lightstreamerLogger.pump.messages":"INFO","lightstreamerLogger.push":"INFO","lightstreamerLogger.requests":"INFO","lightstreamerLogger.requests.messages":"INFO","lightstreamerLogger.requests.polling":"WARN","lightstreamerLogger.scheduler":"INFO","lightstreamerLogger.subscriptions":"DEBUG","lightstreamerLogger.subscriptions.upd":"DEBUG","lightstreamerLogger.webServer":"WARN","lightstreamerLogger.webServer.appleWebService":"WARN","lightstreamerLogger.webServer.jmxTree":"WARN","lightstreamerLogger.webclient":"DEBUG"}}
 ```
-### [logging.loggers.lightstreamerLogger.appenders](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L743)
+### [logging.loggers.lightstreamerLogger.appenders](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L742)
      
 Optional. List of references to the appenders defined in `.logging.appenders`.
 
 **Default:** `["console"]`
-### [logging.loggers.lightstreamerLogger.level](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L748)
+### [logging.loggers.lightstreamerLogger.level](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L747)
      
 Optional. The level of the logger.
 
 **Default:** `DEBUG`
-### [logging.loggers.lightstreamerLogger.subLoggers](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L752)
+### [logging.loggers.lightstreamerLogger.subLoggers](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L751)
      
 Optional. The levels of subloggers used to separate logging messages in families. The appenders are inherited from `lightstreamerLogger`.
 
@@ -1959,12 +1959,12 @@ Optional. The levels of subloggers used to separate logging messages in families
 ```
 {"lightstreamerLogger.connections":"WARN","lightstreamerLogger.connections.WS":"WARN","lightstreamerLogger.connections.http":"ERROR","lightstreamerLogger.connections.proxy":"INFO","lightstreamerLogger.connections.ssl":"WARN","lightstreamerLogger.external":"INFO","lightstreamerLogger.init":"INFO","lightstreamerLogger.io":"WARN","lightstreamerLogger.io.ssl":"WARN","lightstreamerLogger.kernel":"INFO","lightstreamerLogger.license":"INFO","lightstreamerLogger.monitoring":"INFO","lightstreamerLogger.mpn":"INFO","lightstreamerLogger.mpn.apple":"WARN","lightstreamerLogger.mpn.database":"WARN","lightstreamerLogger.mpn.database.transactions":"WARN","lightstreamerLogger.mpn.google":"WARN","lightstreamerLogger.mpn.lifecycle":"INFO","lightstreamerLogger.mpn.operations":"INFO","lightstreamerLogger.mpn.pump":"WARN","lightstreamerLogger.mpn.requests":"WARN","lightstreamerLogger.mpn.status_adapters":"WARN","lightstreamerLogger.preprocessor":"INFO","lightstreamerLogger.pump":"INFO","lightstreamerLogger.pump.messages":"INFO","lightstreamerLogger.push":"INFO","lightstreamerLogger.requests":"INFO","lightstreamerLogger.requests.messages":"INFO","lightstreamerLogger.requests.polling":"WARN","lightstreamerLogger.scheduler":"INFO","lightstreamerLogger.subscriptions":"DEBUG","lightstreamerLogger.subscriptions.upd":"DEBUG","lightstreamerLogger.webServer":"WARN","lightstreamerLogger.webServer.appleWebService":"WARN","lightstreamerLogger.webServer.jmxTree":"WARN","lightstreamerLogger.webclient":"DEBUG"}
 ```
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.connections"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L793)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.connections"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L792)
      
 Optional. Logging of client request dispatching. At `DEBUG` level, request processing details are reported. All logs from this logger and its subloggers report the IP and port  of the involved connection.
 
 **Default:** `inherited from lightstreamerLogger`
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.connections.WS"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L814)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.connections.WS"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L813)
      
 Optional. Logging of details for issues related to requests over WebSockets. At `DEBUG` level, details for all requests and responses are reported.
 
@@ -1973,7 +1973,7 @@ Optional. Logging of details for issues related to requests over WebSockets. At 
 ```
 inherited from lightstreamerLogger.connections
 ```
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.connections.http"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L808)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.connections.http"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L807)
      
 Optional. Logging of client request interpretation issues. At `WARN` level, each time a request contains an unexpected HTTP  header, which the Server refuses or ignores, a notification is  reported that an interpretation error is possible. At `INFO` level, details upon request refusals are reported. At `DEBUG` level, details for all requests and responses are reported.
 
@@ -1982,7 +1982,7 @@ Optional. Logging of client request interpretation issues. At `WARN` level, each
 ```
 inherited from lightstreamerLogger.connections
 ```
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.connections.proxy"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L820)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.connections.proxy"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L819)
      
 Optional. Logging of issues related to information received via the proxy protocol, when enabled. At `DEBUG` level, details of all information received are reported.
 
@@ -1991,7 +1991,7 @@ Optional. Logging of issues related to information received via the proxy protoc
 ```
 inherited from lightstreamerLogger.connections
 ```
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.connections.ssl"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L799)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.connections.ssl"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L798)
      
 Optional. Logging of issues related to TLS/SSL configuration and handshake management. At `DEBUG` level, details on the cipher suites are report.
 
@@ -2000,57 +2000,57 @@ Optional. Logging of issues related to TLS/SSL configuration and handshake manag
 ```
 inherited from lightstreamerLogger.connections
 ```
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.external"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L776)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.external"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L775)
      
 Optional. Logging of external services activity. At `DEBUG` level, details on external services activities and configuration, as well as details on connectivity issues, are reported.
 
 **Default:** `inherited from lightstreamerLogger`
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.init"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L758)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.init"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L757)
      
 Optional. Logging of system components initialization. At `DEBUG` level, initialization details, error details and all configuration settings are reported.
 
 **Default:** `inherited from lightstreamerLogger`
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.io"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L780)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.io"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L779)
      
 Optional. Logging of activity and issues in connection management.
 
 **Default:** `inherited from lightstreamerLogger`
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.io.ssl"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L786)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.io.ssl"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L785)
      
 Optional. Logging of activity and issues in TLS configuration. At `DEBUG` level, details on the protocol and cipher suite  configuration are reported.
 
 **Default:** `inherited from `lightstreamerLogger.io``
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.kernel"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L769)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.kernel"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L768)
      
 Optional. Logging of background activities and related configuration and issues.
 
 **Default:** `inherited from lightstreamerLogger`
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.license"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L764)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.license"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L763)
      
 Optional. Logging of license check phase. At `DEBUG` level, check details and error details can be found in case of license check failure.
 
 **Default:** `inherited from lightstreamerLogger`
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.monitoring"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L985)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.monitoring"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L984)
      
 Optional. Logging of JMX setup issues; note that full JMX features could be restricted depending on Edition and License Type. At `DEBUG` level, JMX connectors initialization details are logged.
 
 **Default:** `inherited from lightstreamerLogger`
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.mpn"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L902)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.mpn"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L901)
      
 Optional. Logging of mobile push notifications activity, done through the various subloggers.
 
 **Default:** `inherited from lightstreamerLogger`
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.mpn.apple"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L957)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.mpn.apple"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L956)
      
 Optional. Logging of mobile push notifications activity related to Apple platforms; for activity related to notification submission, specific subloggers are present for each application, e.g.: `lightstreamerLogger.mpn.apple.com.mydomain.myapp`. At `INFO` level, all push notification payloads are dumped.
 
 **Default:** `inherited from lightstreamerLogger.mpn`
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.mpn.database"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L941)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.mpn.database"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L940)
      
 Optional. Logging of mobile push notifications activity related to database. At `DEBUG` level, all database operation entry and exit points are logged.
 
 **Default:** `inherited from lightstreamerLogger.mpn`
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.mpn.database.transactions"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L949)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.mpn.database.transactions"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L948)
      
 Optional. Logging of mobile push notifications activity related to database transactions. At `INFO` level, statistics on the database transactions are logged. At `DEBUG` level, all database transaction entry and exit points are logged.
 
@@ -2059,62 +2059,62 @@ Optional. Logging of mobile push notifications activity related to database tran
 ```
 inherited from lightstreamerLogger.mpn.database
 ```
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.mpn.google"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L965)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.mpn.google"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L964)
      
 Optional. Logging of mobile push notifications activity related to Google platforms; for activity related to notification submission, specific subloggers are present for each application, e.g.: `lightstreamerLogger.mpn.google.com.mydomain.myapp`. At `INFO` level, all push notification payloads are dumped.
 
 **Default:** `inherited from lightstreamerLogger.mpn`
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.mpn.lifecycle"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L909)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.mpn.lifecycle"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L908)
      
 Optional. Logging of MPN Module recurrent activity. At `INFO` level, main operation exit points and outcomes are dumped. At `DEBUG` level, the various operation entry and exit points are  logged.
 
 **Default:** `inherited from lightstreamerLogger.mpn`
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.mpn.operations"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L916)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.mpn.operations"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L915)
      
 Optional. Logging of mobile push notifications activity. At `INFO` level, main operation exit points and outcomes are dumped. At `DEBUG` level, the various operation entry and exit points are logged.
 
 **Default:** `inherited from lightstreamerLogger.mpn`
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.mpn.pump"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L934)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.mpn.pump"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L933)
      
 Optional. Logging of mobile push notifications activity related to notification gathering. At `INFO` level, all push notifications ready to be sent are dumped.
 
 **Default:** `inherited from lightstreamerLogger.mpn`
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.mpn.requests"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L928)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.mpn.requests"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L927)
      
 Optional. Logging of mobile push notifications request processing; requests include those from clients (through the  `lightstreamerLogger.mpn.requests.client` sublogger) and those  related to internal operations. At `INFO` level, all request processing exit points and outcomes are dumped. At `DEBUG` level, all request processing entry points are logged. All logs related to client requests reports the IP and port of the involved connection.
 
 **Default:** `inherited from lightstreamerLogger.mpn`
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.mpn.status_adapters"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L970)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.mpn.status_adapters"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L969)
      
 Optional. Logging of issues related to the special adapters handled by the MPN Module.
 
 **Default:** `inherited from lightstreamerLogger.mpn`
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.preprocessor"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L871)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.preprocessor"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L870)
      
 Optional. Logging of events preprocessing stage. At `DEBUG` level, events dispatched to `ItemEventBuffers` are dumped.
 
 **Default:** `inherited from lightstreamerLogger`
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.pump"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L882)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.pump"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L881)
      
 Optional. Logging of `InfoPump` and `ItemEventBuffers` internal  activity. At `DEBUG` level, updates to be sent to the clients are dumped.
 
 **Default:** `inherited from lightstreamerLogger`
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.pump.messages"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L890)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.pump.messages"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L889)
      
 Optional. Logging of management of messages received from the clients. At `DEBUG` level, details of message processing are logged. All logs from this logger report the IP and port of the involved  connection.
 
 **Default:** `inherited from lightstreamerLogger.pump`
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.push"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L897)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.push"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L896)
      
 Optional. Logging of socket write activity. At `DEBUG` level, all socket writes are dumped. All logs from this logger report the IP and port of the involved  connection.
 
 **Default:** `inherited from lightstreamerLogger`
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.requests"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L847)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.requests"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L846)
      
 Optional. Logging of parsing and elaboration of client requests At `DEBUG` level, client request details are reported. All logs from this logger and its subloggers report the IP and port of the involved connection.
 
 **Default:** `inherited from lightstreamerLogger`
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.requests.messages"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L856)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.requests.messages"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L855)
      
 Optional. Logging of elaboration of client message requests. At `DEBUG` level, details on the message forwarding are reported.
 
@@ -2123,7 +2123,7 @@ Optional. Logging of elaboration of client message requests. At `DEBUG` level, d
 ```
 inherited from lightstreamerLogger.requests
 ```
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.requests.polling"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L851)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.requests.polling"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L850)
      
 Optional. Logging of elaboration of client polling requests.
 
@@ -2132,17 +2132,17 @@ Optional. Logging of elaboration of client polling requests.
 ```
 inherited from lightstreamerLogger.requests
 ```
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.scheduler"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L876)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.scheduler"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L875)
      
 Optional. Logging of internal thread management and events dispatching.
 
 **Default:** `inherited from lightstreamerLogger`
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.subscriptions"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L861)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.subscriptions"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L860)
      
 Optional. Logging of Data Adapters interactions. At `DEBUG` level, details on subscription operations are reported.
 
 **Default:** `inherited from lightstreamerLogger`
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.subscriptions.upd"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L866)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.subscriptions.upd"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L865)
      
 Optional. Logging of events coming from the Data Adapters. At `DEBUG` level, all update events are dumped.
 
@@ -2151,12 +2151,12 @@ Optional. Logging of events coming from the Data Adapters. At `DEBUG` level, all
 ```
 inherited from lightstreamerLogger.subscriptions
 ```
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.webServer"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L828)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.webServer"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L827)
      
 Optional. Logging of internal web server activity; it also logs requests of static resources related to push request. At `DEBUG` level, error details are reported. All logs from this logger and its subloggers report the IP and port of the involved connection.
 
 **Default:** `inherited from lightstreamerLogger`
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.webServer.appleWebService"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L840)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.webServer.appleWebService"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L839)
      
 Optional. Logging of handling of special requests from apple clients related to MPN. At `DEBUG` level, error details are reported.
 
@@ -2165,7 +2165,7 @@ Optional. Logging of handling of special requests from apple clients related to 
 ```
 inherited from lightstreamerLogger.webServer
 ```
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.webServer.jmxTree"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L834)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.webServer.jmxTree"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L833)
      
 Optional. Logging of request management related to the JMX Tree feature. At `DEBUG` level, error details are reported.
 
@@ -2174,52 +2174,52 @@ Optional. Logging of request management related to the JMX Tree feature. At `DEB
 ```
 inherited from lightstreamerLogger.webServer
 ```
-### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.webclient"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L979)
+### [logging.loggers.lightstreamerLogger.subLoggers."lightstreamerLogger.webclient"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L978)
      
 Optional. Logging of JavaScript client messages. At `DEBUG` level, log messages sent by the Web and Node.js (Unified API) Client Libraries are logged. Remote logging must be enabled on the client side. All logs from this logger report the IP and port of the involved connection.
 
 **Default:** `inherited from lightstreamerLogger`
-### [logging.loggers.lightstreamerMonitorTAB](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L711)
+### [logging.loggers.lightstreamerMonitorTAB](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L710)
      
 Optional. Logger used by the internal monitoring system to log load statistics at `INFO` level with a CSV syntax. See `lightstreamerMonitorText` for details.
 
 **Default:** `{"appenders":["console"],"level":"ERROR"}`
-### [logging.loggers.lightstreamerMonitorTAB.appenders](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L715)
+### [logging.loggers.lightstreamerMonitorTAB.appenders](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L714)
      
 Optional. List of references to the appenders defined in `.logging.appenders`.
 
 **Default:** `["console"]`
-### [logging.loggers.lightstreamerMonitorTAB.level](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L720)
+### [logging.loggers.lightstreamerMonitorTAB.level](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L719)
      
 Optional. The level of the logger.
 
 **Default:** `DEBUG`
-### [logging.loggers.lightstreamerMonitorText](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L697)
+### [logging.loggers.lightstreamerMonitorText](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L696)
      
-Optional. Logger used by the internal monitoring system to log load statistics at `INFO` level  with a human-readable syntax. The frequency of the samples produced by the internal monitoring system is governed by the `management.collectorMillis` setting. However, a resampling to lower frequencies can be performed, based on the level specified for each logger; in particular:   at `TRACE` level, all samples are logged;   at `DEBUG` level, one sample out of 10 is logged;   at `INFO` level, one sample out of 60 is logged;   at a higher level, no log is produced. The resampling behavior can be changed at runtime, by changing the level; however, if the level is set to `ERROR` on startup, the logger will be disabled throughout the life of the Server, regardless of further changes. When resampling is in place, note that, for each displayed sample, values that are supposed to be averaged over a timeframe still refer to the current sample's timeframe (based on  `management.collectorMillis`); however, values that are supposed to be the maximum over all timeframes refer also to the samples that were not displayed. On the other hand, delta statistics, like "new connections", are always collected starting from the previous logged sample.
+Optional. Logger used by the internal monitoring system to log load statistics at `INFO` level with a human-readable syntax. The frequency of the samples produced by the internal monitoring system is governed by the `management.collectorMillis` setting. However, a resampling to lower frequencies can be performed, based on the level specified for each logger; in particular: - At `TRACE` level, all samples are logged. - At `DEBUG` level, one sample out of 10 is logged. - At `INFO` level, one sample out of 60 is logged. - At a higher level, no log is produced. The resampling behavior can be changed at runtime, by changing the level; however, if the level is set to `ERROR` on startup, the logger will be disabled throughout the life of the Server, regardless of further changes. When resampling is in place, note that, for each displayed sample, values that are supposed to be averaged over a timeframe still refer to the current sample's timeframe (based on `management.collectorMillis`); however, values that are supposed to be the maximum over all timeframes refer also to the samples that were not displayed. On the other hand, delta statistics, like "new connections", are always collected starting from the previous logged sample.
 
 **Default:** `{"appenders":["console"],"level":"INFO"}`
-### [logging.loggers.lightstreamerMonitorText.appenders](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L701)
+### [logging.loggers.lightstreamerMonitorText.appenders](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L700)
      
 Optional. List of references to the appenders defined in `.logging.appenders`.
 
 **Default:** `["console"]`
-### [logging.loggers.lightstreamerMonitorText.level](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L706)
+### [logging.loggers.lightstreamerMonitorText.level](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L705)
      
 Optional. The level of the logger.
 
 **Default:** `DEBUG`
-### [logging.loggers.lightstreamerProxyAdapters](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1010)
+### [logging.loggers.lightstreamerProxyAdapters](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1009)
      
 Optional. Logger only used by the provided Proxy Data and Metadata Adapters, when used. It logs Adapter activity at `INFO`, `WARN`, `ERROR` and `FATAL` level (the latter through the `FATAL` marker). At `DEBUG` level, outcoming request and incoming response messages are also dumped. At `TRACE` level, incoming real-time update messages are also dumped.
 
 **Default:** `{"appenders":["console"],"level":"INFO"}`
-### [logging.loggers.lightstreamerProxyAdapters.appenders](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1014)
+### [logging.loggers.lightstreamerProxyAdapters.appenders](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1013)
      
 Optional. List of references to the appenders defined in `.logging.appenders`.
 
 **Default:** `["console"]`
-### [logging.loggers.lightstreamerProxyAdapters.level](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1019)
+### [logging.loggers.lightstreamerProxyAdapters.level](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1018)
      
 Optional. The level of the logger.
 
@@ -2258,7 +2258,7 @@ Mandatory. Java class name of the Kafka Connector Metadata Adapter. It is possib
 Mandatory. Define the Kafka Connector Adapter Set and its unique ID.
 
 **Default:** `"KafkaConnector"`
-### [connectors.kafkaConnector.connections](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3751)
+### [connectors.kafkaConnector.connections](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3752)
      
 Mandatory. Connection configurations.
 
@@ -2267,7 +2267,7 @@ Mandatory. Connection configurations.
 ```
 {"quickStart":{"authentication":{"authentication":null,"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}},"bootstrapServers":"broker:9092","enabled":true,"fields":{"enableSkipFailedMapping":null,"mappings":{"ask":"#{VALUE.ask}","ask_quantity":"#{VALUE.ask_quantity}","bid":"#{VALUE.bid}","bid_quantity":"#{VALUE.bid_quantity}","item_status":"#{VALUE.item_status}","last_price":"#{VALUE.last_price}","max":"#{VALUE.max}","min":"#{VALUE.min}","offset":"#{OFFSET}","open_price":"#{VALUE.open_price}","partition":"#{PARTITION}","pct_change":"#{VALUE.pct_change}","ref_price":"#{VALUE.ref_price}","stock_name":"#{VALUE.name}","time":"#{VALUE.time}","timestamp":"#{VALUE.timestamp}","topic":"#{TOPIC}","ts":"#{TIMESTAMP}"}},"groupId":"quickstart","logger":{"appenders":["stdout"],"level":"INFO"},"name":"K8S-QuickStart","record":{"consumeFrom":"EARLIEST","consumeWithOrderStrategy":null,"consumeWithThreadNumber":null,"extractionErrorStrategy":null,"keyEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"INTEGER"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"JSON"}},"routing":{"enableTopicRegEx":null,"itemTemplates":{"stockTemplate":"stock-#{index=KEY}"},"topicMappings":{"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}},"sslConfig":{"allowedCipherSuites":[],"allowedProtocols":[],"enableHostnameVerification":null,"enabled":true,"keyStoreRef":null,"protocol":null,"trustStoreRef":null}}}
 ```
-### [connectors.kafkaConnector.connections.quickStart](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3760)
+### [connectors.kafkaConnector.connections.quickStart](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3761)
      
 At least one must be provided. Connection configuration. The Kafka Connector allows the configuration of different independent connections to different Kafka broker/clusters. Every key in the map defines a connection configuration. Since the Kafka Connector manages the physical connection to Kafka by wrapping an internal Kafka Consumer, several configuration settings are identical to those required by the usual Kafka Consumer configuration.
 
@@ -2276,7 +2276,7 @@ At least one must be provided. Connection configuration. The Kafka Connector all
 ```
 {"authentication":{"authentication":null,"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}},"bootstrapServers":"broker:9092","enabled":true,"fields":{"enableSkipFailedMapping":null,"mappings":{"ask":"#{VALUE.ask}","ask_quantity":"#{VALUE.ask_quantity}","bid":"#{VALUE.bid}","bid_quantity":"#{VALUE.bid_quantity}","item_status":"#{VALUE.item_status}","last_price":"#{VALUE.last_price}","max":"#{VALUE.max}","min":"#{VALUE.min}","offset":"#{OFFSET}","open_price":"#{VALUE.open_price}","partition":"#{PARTITION}","pct_change":"#{VALUE.pct_change}","ref_price":"#{VALUE.ref_price}","stock_name":"#{VALUE.name}","time":"#{VALUE.time}","timestamp":"#{VALUE.timestamp}","topic":"#{TOPIC}","ts":"#{TIMESTAMP}"}},"groupId":"quickstart","logger":{"appenders":["stdout"],"level":"INFO"},"name":"K8S-QuickStart","record":{"consumeFrom":"EARLIEST","consumeWithOrderStrategy":null,"consumeWithThreadNumber":null,"extractionErrorStrategy":null,"keyEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"INTEGER"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":null,"localSchemaFilePathRef":null,"type":"JSON"}},"routing":{"enableTopicRegEx":null,"itemTemplates":{"stockTemplate":"stock-#{index=KEY}"},"topicMappings":{"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}},"sslConfig":{"allowedCipherSuites":[],"allowedProtocols":[],"enableHostnameVerification":null,"enabled":true,"keyStoreRef":null,"protocol":null,"trustStoreRef":null}}
 ```
-### [connectors.kafkaConnector.connections.quickStart.authentication](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3828)
+### [connectors.kafkaConnector.connections.quickStart.authentication](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3829)
      
 Optional. Authentication settings for the connection.
 
@@ -2285,17 +2285,17 @@ Optional. Authentication settings for the connection.
 ```
 {"authentication":null,"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}}
 ```
-### [connectors.kafkaConnector.connections.quickStart.authentication.credentialsSecretRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3850)
+### [connectors.kafkaConnector.connections.quickStart.authentication.credentialsSecretRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3851)
      
 Mandatory if `mechanism` is set to `PLAIN`, `SCRAM-SHA-256`, `SCRAM-SHA-512`. The name of the secret containing the  credentials. The secret must contain the keys `user` and  `password`.
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.quickStart.authentication.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3833)
+### [connectors.kafkaConnector.connections.quickStart.authentication.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3834)
      
 Optional. Enablement of the authentication of the connection against the Kafka Cluster.
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3854)
+### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3855)
      
 Mandatory if `mechanism` is set to `GSSAPI`. The GSSAPI authentication settings.
 
@@ -2304,47 +2304,47 @@ Mandatory if `mechanism` is set to `GSSAPI`. The GSSAPI authentication settings.
 ```
 {"enableKeytab":null,"enableStoreKey":null,"enableTicketCache":null,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}
 ```
-### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.enableKeytab](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3858)
+### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.enableKeytab](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3859)
      
 Optional. Enablement of the use of a keytab.
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.enableStoreKey](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3868)
+### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.enableStoreKey](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3869)
      
 Optional. Enablement of the storage of the principal key.
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.enableTicketCache](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3879)
+### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.enableTicketCache](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3880)
      
 Optional. Enablement of the use of a ticket cache.
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.kerberosServiceName](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3871)
+### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.kerberosServiceName](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3872)
      
 Mandatory. The name of the Kerberos service.
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.keytabFilePathRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3862)
+### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.keytabFilePathRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3863)
      
 Mandatory if `enableKeytab` is set to `true`. The configmap name and key where the the keytab file is stored
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.principal](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3875)
+### [connectors.kafkaConnector.connections.quickStart.authentication.gssapi.principal](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3876)
      
 Mandatory if `enableTicketCache` is set to `true`. The name of the principal to be used.
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.quickStart.bootstrapServers](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3779)
+### [connectors.kafkaConnector.connections.quickStart.bootstrapServers](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3780)
      
 Mandatory. The Kafka Cluster bootstrap server endpoint expressed as the list of host/port pairs used to establish the initial connect.
 
 **Default:** `"broker:9092"`
-### [connectors.kafkaConnector.connections.quickStart.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3774)
+### [connectors.kafkaConnector.connections.quickStart.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3775)
      
 Enablement of the connection. If set to `false`, the Lightstreamer Server will automatically deny every subscription made to the connection.
 
 **Default:** `true`
-### [connectors.kafkaConnector.connections.quickStart.fields](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4065)
+### [connectors.kafkaConnector.connections.quickStart.fields](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4067)
      
 Mandatory. Record mappings configuration.
 
@@ -2353,17 +2353,17 @@ Mandatory. Record mappings configuration.
 ```
 {"enableSkipFailedMapping":null,"mappings":{"ask":"#{VALUE.ask}","ask_quantity":"#{VALUE.ask_quantity}","bid":"#{VALUE.bid}","bid_quantity":"#{VALUE.bid_quantity}","item_status":"#{VALUE.item_status}","last_price":"#{VALUE.last_price}","max":"#{VALUE.max}","min":"#{VALUE.min}","offset":"#{OFFSET}","open_price":"#{VALUE.open_price}","partition":"#{PARTITION}","pct_change":"#{VALUE.pct_change}","ref_price":"#{VALUE.ref_price}","stock_name":"#{VALUE.name}","time":"#{VALUE.time}","timestamp":"#{VALUE.timestamp}","topic":"#{TOPIC}","ts":"#{TIMESTAMP}"}}
 ```
-### [connectors.kafkaConnector.connections.quickStart.fields.enableSkipFailedMapping](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4100)
+### [connectors.kafkaConnector.connections.quickStart.fields.enableSkipFailedMapping](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4102)
      
 Optional. If set to `true`, if a field mapping fails, that specific field's value will simply be omitted from the update sent to the Lightstreamer clients, while other successfully mapped fields from the same record will still be delivered.
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.quickStart.fields.mappings.timestamp](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4076)
+### [connectors.kafkaConnector.connections.quickStart.fields.mappings.timestamp](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4078)
      
 At least one must be provided. A field mapping. Map the value extracted through the `#{extraction_expression}` to the Lightstreamer field name specified by key. The expression is written in the Data Extraction Language. See documentation at: https://github.com/lightstreamer/Lightstreamer-kafka-connector?tab=readme-ov-file#record-mapping-fieldfield_name.
 
 **Default:** `"#{VALUE.timestamp}"`
-### [connectors.kafkaConnector.connections.quickStart.groupId](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3788)
+### [connectors.kafkaConnector.connections.quickStart.groupId](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3789)
      
 Optional. The name of the consumer group this connection belongs to. Sets the value for the `group.id` key used to configure the internal Kafka Consumer. See https://kafka.apache.org/documentation/#consumerconfigs_group.id for details.
 
@@ -2372,97 +2372,97 @@ Optional. The name of the consumer group this connection belongs to. Sets the va
 ```
 kafkaConnector.adapterSetId + name + randomly generated suffix
 ```
-### [connectors.kafkaConnector.connections.quickStart.logger](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4103)
+### [connectors.kafkaConnector.connections.quickStart.logger](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4105)
      
 Optional. Logger configuration for the connection.
 
 **Default:** `{"appenders":["stdout"],"level":"INFO"}`
-### [connectors.kafkaConnector.connections.quickStart.logger.appenders](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4107)
+### [connectors.kafkaConnector.connections.quickStart.logger.appenders](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4109)
      
 Mandatory. List of references to the appenders defined in `kafkaConnector.logging.appenders`.
 
 **Default:** `["stdout"]`
-### [connectors.kafkaConnector.connections.quickStart.logger.level](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4111)
+### [connectors.kafkaConnector.connections.quickStart.logger.level](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4113)
      
 Mandatory. The logger level.
 
 **Default:** `"INFO"`
-### [connectors.kafkaConnector.connections.quickStart.name](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3768)
+### [connectors.kafkaConnector.connections.quickStart.name](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3769)
      
 Mandatory and unique across all configurations. The connection name. This value will be used by the Clients to request real-time data from this specific Kafka connection through a Subscription object. The connection name is also used to group all logging messages belonging to the same connection.
 
 **Default:** `"K8S-QuickStart"`
-### [connectors.kafkaConnector.connections.quickStart.record](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3883)
+### [connectors.kafkaConnector.connections.quickStart.record](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3884)
      
 Optional. Record evaluation settings.
 
 **Default:** `all settings at their defaults`
-### [connectors.kafkaConnector.connections.quickStart.record.consumeFrom](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3894)
+### [connectors.kafkaConnector.connections.quickStart.record.consumeFrom](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3896)
      
-Optional. Specifies where to start consuming events from: - `LATEST`: start consuming events from the end of the topic  partition - `EARLIEST`: start consuming events from the beginning of the topic  partition Sets the value of the `auto.offset.reset` key to configure the internal Kafka Consumer.
+Optional. Specifies where to start consuming events from: - `LATEST`: start consuming events from the end of the topic  partition. - `EARLIEST`: start consuming events from the beginning of the topic  partition. Sets the value of the `auto.offset.reset` key to configure the internal Kafka Consumer. See https://kafka.apache.org/documentation/#consumerconfigs_auto.offset.reset
 
 **Default:** `LATEST`
-### [connectors.kafkaConnector.connections.quickStart.record.consumeWithOrderStrategy](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3913)
+### [connectors.kafkaConnector.connections.quickStart.record.consumeWithOrderStrategy](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3915)
      
 Optional, but effective only if `consumeWithThreadNumber` is set to a value greater than 1 (which includes the default value). The order strategy to be used for concurrent processing of the incoming deserialized records. If set to `ORDER_BY_PARTITION`, maintain the order of records within each partition. If set to `ORDER_BY_KEY`, maintain the order among the records sharing the same key. If set to `UNORDERED`, provide no ordering guarantees.
 
 **Default:** `ORDER_BY_PARTITION`
-### [connectors.kafkaConnector.connections.quickStart.record.consumeWithThreadNumber](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3901)
+### [connectors.kafkaConnector.connections.quickStart.record.consumeWithThreadNumber](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3903)
      
 Optional. The number of threads to be used for concurrent processing of the incoming deserialized records. If set to `-1`, the number of threads will be automatically determined based on the number of available CPU cores.
 
 **Default:** `1`
-### [connectors.kafkaConnector.connections.quickStart.record.extractionErrorStrategy](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3983)
+### [connectors.kafkaConnector.connections.quickStart.record.extractionErrorStrategy](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3985)
      
 Optional. The error handling strategy to be used if an error occurs while extracting data from incoming deserialized records. If set to `IGNORE_AND_CONTINUE`, the error is ignored and the processing of the record continues. If set to `FORCE_UNSUBSCRIPTION`, the processing of the record is stopped and the unsubscription of the items requested by all the Lightstreamer clients subscribed to this connection is forced.
 
 **Default:** `IGNORE_AND_CONTINUE`
-### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3917)
+### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3919)
      
 Optional. Key evaluator configuration.
 
 **Default:** `all settings at their defaults`
-### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator.enableSchemaRegistry](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3949)
+### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator.enableSchemaRegistry](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3951)
      
-Enablement of the Confluent Schema Registry for  validation of the key. Must be set to `true` when `keyEvaluator.type` is set to `AVRO` and no local schema are specified.
+Enablement of the Confluent Schema Registry for validation of the key. Must be set to `true` when `keyEvaluator.type` is set to `AVRO` and no local schema are specified.
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator.localSchemaFilePathRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3942)
+### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator.localSchemaFilePathRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3944)
      
-Mandatory if `type` is set to `AVRO` and `enableSchemaRegistry` is set to `false`. The configmap name and key where the local schema for message validation of the key is stored. The setting takes precedence over `enableSchemaRegistry` if the latter is set to `true`.
+Mandatory if `type` is set to `AVRO` and  `enableSchemaRegistry` is set to `false`. The configmap name and key where the local schema for message validation of the key is stored. The setting takes precedence over `enableSchemaRegistry` if the latter is set to `true`.
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator.type](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3935)
+### [connectors.kafkaConnector.connections.quickStart.record.keyEvaluator.type](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3937)
      
-Optional. The format to be used to deserialize the key of a Kafka record. Possible values: - `AVRO` - `JSON` - `STRING` - `INTEGER` - `BOOLEAN` - `BYTE_ARRAY` - `BYTE_BUFFER` - `BYTES` - ``DOUBLE` - `FLOAT` - `LONG` - `SHORT` - `UUID`
+Optional. The format to be used to deserialize the key of a Kafka record. Possible values: - `AVRO` - `JSON` - `STRING` - `INTEGER` - `BOOLEAN` - `BYTE_ARRAY` - `BYTE_BUFFER` - `BYTES` - `DOUBLE` - `FLOAT` - `LONG` - `SHORT` - `UUID`
 
 **Default:** `STRING`
-### [connectors.kafkaConnector.connections.quickStart.record.schemaRegistryRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3987)
+### [connectors.kafkaConnector.connections.quickStart.record.schemaRegistryRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3989)
      
 Optional. The reference to Schema Registry configuration defined in `connectors.kafkaConnector.schemaRegistry`.
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3953)
+### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3955)
      
 Optional. Value evaluator configuration.
 
 **Default:** `all settings at their defaults`
-### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator.enableSchemaRegistry](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3973)
+### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator.enableSchemaRegistry](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3975)
      
 Enablement of the Confluent Schema Registry for validation of the value. Must be set to `true` when `valueEvaluator.type` is set to `AVRO` and no local schema are specified.
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator.localSchemaFilePathRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3966)
+### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator.localSchemaFilePathRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3968)
      
 Mandatory if `type` is set to `AVRO` and `enableSchemaRegistry` is set to `false`. The configmap name and key where the local schema for message validation of the value is stored. The setting takes precedence over `enableSchemaRegistry` if the latter is set to `true`.
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator.type](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3959)
+### [connectors.kafkaConnector.connections.quickStart.record.valueEvaluator.type](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3961)
      
 Optional. The format to be used to deserialize the value of a Kafka record. See `record.keyEvaluator.type` for the list of supported formats.
 
 **Default:** `STRING`
-### [connectors.kafkaConnector.connections.quickStart.routing](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3990)
+### [connectors.kafkaConnector.connections.quickStart.routing](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3992)
      
 Mandatory. Record routings configuration.
 
@@ -2471,17 +2471,17 @@ Mandatory. Record routings configuration.
 ```
 {"enableTopicRegEx":null,"itemTemplates":{"stockTemplate":"stock-#{index=KEY}"},"topicMappings":{"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}}
 ```
-### [connectors.kafkaConnector.connections.quickStart.routing.enableTopicRegEx](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4062)
+### [connectors.kafkaConnector.connections.quickStart.routing.enableTopicRegEx](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4064)
      
 Optional. Enable `connectors.kafkaConnector.routing.topicMappings.{}.topic` to be treated as a regular expression rather than of a literal topic name.
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.quickStart.routing.itemTemplates](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3998)
+### [connectors.kafkaConnector.connections.quickStart.routing.itemTemplates](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4000)
      
 Optional. Maps of item template expressions. An expressions is made of: - ITEM_PREFIX: the prefix of the item name - BINDABLE_EXPRESSIONS: a sequence of bindable extraction expressions. See https://lightstreamer.com/api/ls-kafka-connector/latest/ls-kafka-connector/record-extraction.html.
 
 **Default:** `{}`
-### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4002)
+### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4004)
      
 Mandatory. Kafka topic mappings.
 
@@ -2490,7 +2490,7 @@ Mandatory. Kafka topic mappings.
 ```
 {"stock":{"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}}
 ```
-### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4037)
+### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4039)
      
 At least one must be provided. A Kafka topic mappings. Map a Kafka topic to: - one or more simple items - one or more item templates - any combination of the above  Examples:  topicMappingSample1:   topic: "aTopicName"   items:     - "item1"     - "item2"     - "itemN"  topicMappingSample2:   topic: "anotherTopicName"   itemTemplateRefs:     - "itemTemplate1"     - "itemTemplate2"     - "itemTemplateN"  topicMappingSample3   topic: "yetAnotherTopicName"   items:     - "item1"     - "item2"     - "itemN"   itemTemplateRefs:     - "itemTemplate1"     - "itemTemplate2"     - "itemTemplateN"
 
@@ -2499,27 +2499,27 @@ At least one must be provided. A Kafka topic mappings. Map a Kafka topic to: - o
 ```
 {"itemTemplateRefs":["stockTemplate"],"items":[],"topic":"stock"}
 ```
-### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock.itemTemplateRefs](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4054)
+### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock.itemTemplateRefs](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4056)
      
 Mandatory if `items` is empty. List of item template to which the topic must be mapped.
 
 **Default:** `[]`
-### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock.items](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4046)
+### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock.items](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4048)
      
 Mandatory if `itemTemplateRefs` is empty. List of simple items to which the topic must be mapped.
 
 **Default:** `[]`
-### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock.topic](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4041)
+### [connectors.kafkaConnector.connections.quickStart.routing.topicMappings.stock.topic](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4043)
      
 Mandatory and unique across all topic mappings. The Kafka topic name.
 
 **Default:** `"stock"`
-### [connectors.kafkaConnector.connections.quickStart.sslConfig](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3792)
+### [connectors.kafkaConnector.connections.quickStart.sslConfig](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3793)
      
 Optional. TLS/SSL settings for the connection.
 
 **Default:** `all settings at their defaults`
-### [connectors.kafkaConnector.connections.quickStart.sslConfig.allowedCipherSuites](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3809)
+### [connectors.kafkaConnector.connections.quickStart.sslConfig.allowedCipherSuites](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3810)
      
 Optional. List of enabled secure cipher suites.
 
@@ -2528,7 +2528,7 @@ Optional. List of enabled secure cipher suites.
 ```
 all the available cipher suites in the running JVM
 ```
-### [connectors.kafkaConnector.connections.quickStart.sslConfig.allowedProtocols](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3805)
+### [connectors.kafkaConnector.connections.quickStart.sslConfig.allowedProtocols](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3806)
      
 Optional. List of enabled secure communication protocols.
 
@@ -2537,31 +2537,31 @@ Optional. List of enabled secure communication protocols.
 ```
 [TLSv1.2, TLSv1.3] when running on Java 11 or newer TLSv1.2 otherwise
 ```
-### [connectors.kafkaConnector.connections.quickStart.sslConfig.enableHostnameVerification](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3813)
+### [connectors.kafkaConnector.connections.quickStart.sslConfig.enableHostnameVerification](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3814)
      
 Optional. Enablement of the hostname verification.
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.quickStart.sslConfig.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3796)
+### [connectors.kafkaConnector.connections.quickStart.sslConfig.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3797)
      
 Optional. Enablement of the encryption.
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.quickStart.sslConfig.keyStoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3825)
+### [connectors.kafkaConnector.connections.quickStart.sslConfig.keyStoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3826)
      
 Optional. The reference to a keystore used if mutual TLS is  enabled on Kafka brokers. See the `keystores.myKafkaConnectorKeystore` settings for general details on keystore configuration for the Kafka Connector.
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.quickStart.sslConfig.protocol](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3801)
+### [connectors.kafkaConnector.connections.quickStart.sslConfig.protocol](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3802)
      
-Optional. The SSL protocol to be used. Possible values: `TLSv1.2`,  `TLSv1.3`.
+Optional. The SSL protocol to be used. Possible values: `TLSv1.2`, `TLSv1.3`.
 
 **Default:**
 
 ```
 TLSv1.3 when running on Java 11 or newer, TLSv1.2 otherwise
 ```
-### [connectors.kafkaConnector.connections.quickStart.sslConfig.trustStoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3819)
+### [connectors.kafkaConnector.connections.quickStart.sslConfig.trustStoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3820)
      
 Optional. The reference to a keystore used to validate the certificates provided by the Kafka brokers. See the `keystores.myKafkaConnectorKeystore` settings for general details on keystore configuration for the Kafka Connector.
 
@@ -2571,12 +2571,12 @@ Optional. The reference to a keystore used to validate the certificates provided
 Optional. Enablement of the Lightstreamer Kafka Connector.
 
 **Default:** `false`
-### [connectors.kafkaConnector.localSchemaFiles](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4114)
+### [connectors.kafkaConnector.localSchemaFiles](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4116)
      
 Optional. Local schema files used for message validation.
 
 **Default:** `{"myKeySchema":null,"myValueSchema":null}`
-### [connectors.kafkaConnector.localSchemaFiles.myKeySchema](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4118)
+### [connectors.kafkaConnector.localSchemaFiles.myKeySchema](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4120)
      
 Optional. The configmap name and key where the local schema file is stored.
 
@@ -2627,14 +2627,14 @@ Optional. Global loggers configuration.
 ```
 {"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter":{"appenders":["stdout"],"level":"INFO"},"org.apache.kafka":{"appenders":["stdout"],"level":"WARN"}}
 ```
-### [connectors.kafkaConnector.logging.loggers."com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3739)
+### [connectors.kafkaConnector.logging.loggers."com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3740)
      
-Logger for the Kafka Connector Metadata Adapter. Replace the name with the one of the custom Metadata Adapter class.
+Logger for the Kafka Connector Metadata Adapter. Replace this key with the the name with the one of the custom Metadata  Adapter class.
 
 **Default:** `{"appenders":["stdout"],"level":"INFO"}`
 ### [connectors.kafkaConnector.logging.loggers."org.apache.kafka"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3727)
      
-The logger name
+Logger for the internal official Java client activities.
 
 **Default:** `{"appenders":["stdout"],"level":"WARN"}`
 ### [connectors.kafkaConnector.logging.loggers."org.apache.kafka".appenders](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3731)
@@ -2647,7 +2647,7 @@ Mandatory. List of references to the appenders to be used by the logger.
 Mandatory. The logger level.
 
 **Default:** `"WARN"`
-### [connectors.kafkaConnector.schemaRegistry](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4127)
+### [connectors.kafkaConnector.schemaRegistry](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4129)
      
 Optional. Set of Schema Registry configurations.
 
@@ -2656,7 +2656,7 @@ Optional. Set of Schema Registry configurations.
 ```
 {"mySchemaRegistry":{"basicAuthentication":{"credentialsSecretRef":null,"enabled":null},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":null,"keyStoreRef":null,"trustStoreRef":null},"url":"https://schema-registry:8084"}}
 ```
-### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4132)
+### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4134)
      
 Mandatory if either `connections.{}.keyEvaluator.type` or is `connections.{}.valueEvaluator.type` set to `AVRO` and no local schema paths are specified. Schema Registry configuration.
 
@@ -2665,7 +2665,7 @@ Mandatory if either `connections.{}.keyEvaluator.type` or is `connections.{}.val
 ```
 {"basicAuthentication":{"credentialsSecretRef":null,"enabled":null},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":null,"keyStoreRef":null,"trustStoreRef":null},"url":"https://schema-registry:8084"}
 ```
-### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.basicAuthentication](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4140)
+### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.basicAuthentication](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4142)
      
 Optional. Basic HTTP authentication of a connection against the Schema Registry.
 
@@ -2674,17 +2674,17 @@ Optional. Basic HTTP authentication of a connection against the Schema Registry.
 ```
 {"credentialsSecretRef":null,"enabled":null}
 ```
-### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.basicAuthentication.credentialsSecretRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4149)
+### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.basicAuthentication.credentialsSecretRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4151)
      
 Mandatory if `enable` is set to `true`. The name of the secret containing the credentials. The secret must contain the keys `user` and `password`.
 
 **Default:** `nil`
-### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.basicAuthentication.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4144)
+### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.basicAuthentication.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4146)
      
 Optional. Enablement of the Basic HTTP authentication.
 
 **Default:** `false`
-### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4153)
+### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4155)
      
 Mandatory if the https protocol is specified in `url`. TLS/SSL settings.
 
@@ -2693,7 +2693,7 @@ Mandatory if the https protocol is specified in `url`. TLS/SSL settings.
 ```
 {"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":null,"keyStoreRef":null,"trustStoreRef":null}
 ```
-### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.allowCipherSuites](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4163)
+### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.allowCipherSuites](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4165)
      
 Optional. List of enabled secure cipher suites.
 
@@ -2702,7 +2702,7 @@ Optional. List of enabled secure cipher suites.
 ```
 all the available cipher suites in the running JVM
 ```
-### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.allowProtocols](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4157)
+### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.allowProtocols](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4159)
      
 Optional. List of enabled secure communication protocols.
 
@@ -2711,22 +2711,22 @@ Optional. List of enabled secure communication protocols.
 ```
 [TLSv1.2, TLSv1.3] when running on Java 11 or newer, TLSv1.2 otherwise
 ```
-### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.enableHostnameVerification](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4168)
+### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.enableHostnameVerification](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4170)
      
 Optional. Enablement of the hostname verification.
 
 **Default:** `false`
-### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.keyStoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4180)
+### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.keyStoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4182)
      
 Optional. The reference to a keystore used if mutual TLS is  enabled on the Schema Registry. See the `keystores.myKafkaConnectorKeystore` settings for general details on keystore configuration for the Kafka Connector.
 
 **Default:** `nil`
-### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.trustStoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4174)
+### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.sslConfig.trustStoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4176)
      
 Optional. The reference to a keystore used to validate the certificates provided by the Schema Registry. See the `keystores.myKafkaConnectorKeystore` settings for general details on keystore configuration for the Kafka Connector.
 
 **Default:** `nil`
-### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.url](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4136)
+### [connectors.kafkaConnector.schemaRegistry.mySchemaRegistry.url](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4138)
      
 Mandatory. The URL of the Confluent Schema Registry. An encrypted connection is enabled by specifying the `https` protocol.
 
