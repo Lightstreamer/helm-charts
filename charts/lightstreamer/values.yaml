@@ -285,7 +285,6 @@ service:
 
   # -- Additional selectors.
   additionalSelectors:
-    mode: "active"
 
   # -- The service type.
   # See https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types.
@@ -389,11 +388,11 @@ license:
   # @default -- javascript_client
   enabledCommunityEditionClientApi: "javascript_client"
 
-  # -- Mandatory if `edition` is set to `ENTERPRISE`. Configure the ENTERPRISE
+  # -- Mandatory if `edition` is set to `ENTERPRISE`. Configure the `ENTERPRISE`
   # edition.
   enterprise:
 
-    # -- (string) Mandatory. The type of the ENTERPRISE edition.
+    # -- (string) Mandatory. The type of the `ENTERPRISE` edition.
     # Possible values: `DEMO`, `EVALUATION`, `STARTUP`, 
     # `NON-PRODUCTION-LIMITED`, `NON-PRODUCTION-FULL`, `PRODUCTION`, 
     # `HOT-STANDBY`.
@@ -408,7 +407,7 @@ license:
     # If set to `ONLINE`, the following host names below must be reachable on
     # port 443: 
     # - `https://clm1.lightstreamer.com/`
-    # - `https://clm2.lightstreamer.com/`.
+    # - `https://clm2.lightstreamer.com/`
     # If set to `FILE`, based on `licenseType`, one or both the values are 
     # possible.
     # For `EVALUATION` and `STARTUP`: `ONLINE` is mandatory.
@@ -545,8 +544,8 @@ license:
   # the Online License Manager, to upload audit logs, and to check for software
   # updates.
   # The host names below must be reachable from the proxy on port 443:
-  # - https://clm1.lightstreamer.com/    (depending on the configuration)
-  # - https://clm2.lightstreamer.com/    (depending on the configuration)
+  # - https://clm1.lightstreamer.com/ (depending on the configuration)
+  # - https://clm2.lightstreamer.com/ (depending on the configuration)
   # - https://service.lightstreamer.com/ (regardless of the configuration)
   # Several methods are provided for the proxy configuration, including
   # PAC files, auto-discovery, and direct HTTP and SOCKS configuration.
@@ -675,21 +674,21 @@ logging:
   loggers:
 
     # -- Optional. Logger used by the internal monitoring system to log load
-    # statistics at `INFO` level  with a human-readable syntax.
+    # statistics at `INFO` level with a human-readable syntax.
     # The frequency of the samples produced by the internal monitoring system
     # is governed by the `management.collectorMillis` setting.
     # However, a resampling to lower frequencies can be performed, based on the
     # level specified for each logger; in particular:
-    #   at `TRACE` level, all samples are logged;
-    #   at `DEBUG` level, one sample out of 10 is logged;
-    #   at `INFO` level, one sample out of 60 is logged;
-    #   at a higher level, no log is produced.
+    # - At `TRACE` level, all samples are logged.
+    # - At `DEBUG` level, one sample out of 10 is logged.
+    # - At `INFO` level, one sample out of 60 is logged.
+    # - At a higher level, no log is produced.
     # The resampling behavior can be changed at runtime, by changing the level;
     # however, if the level is set to `ERROR` on startup, the logger will be
     # disabled throughout the life of the Server, regardless of further changes.
     # When resampling is in place, note that, for each displayed sample, values
     # that are supposed to be averaged over a timeframe still refer to the
-    # current sample's timeframe (based on  `management.collectorMillis`);
+    # current sample's timeframe (based on `management.collectorMillis`);
     # however, values that are supposed to be the maximum over all timeframes
     # refer also to the samples that were not displayed.
     # On the other hand, delta statistics, like "new connections", are always
@@ -1227,7 +1226,7 @@ servers:
     # The header names involved are always converted to lower case.
     responseHttpHeaders:
 
-      # -- Optional. Requests to look for any header lines for  the specified
+      # -- Optional. Requests to look for any header lines for the specified
       # field name on the HTTP request header and to copy them to the HTTP
       # response header.
       # @default -- []
@@ -1252,12 +1251,12 @@ servers:
     # -- Optional. Settings that allow for better recognition of the remote
     # address of the connected clients. This can be done in two ways:
     #
-    # - by taking advantage of the `X-Forwarded-For` HTTP header, that
+    # - By taking advantage of the `X-Forwarded-For` HTTP header, that
     #   intermediate HTTP proxies and level-7 Load Balancers usually set to
     #   supply connection routing information in an incremental way (this is
-    #   done through the `skipLocalForwards` setting);
+    #   done through the `skipLocalForwards` setting).
     #
-    # - by receiving the routed address directly from a TCP reverse proxy or
+    # - By receiving the routed address directly from a TCP reverse proxy or
     #   level-4 Load Balancer through the Proxy Protocol, when the proxy is
     #   configured to do so (this is done through the `enableProxyProtocol` 
     #   setting).
@@ -1275,7 +1274,7 @@ servers:
     # @default -- all settings at their defaults
     clientIdentification:
 
-      # -- Optional.  If set to `true`, prevents the determined address from
+      # -- Optional. If set to `true`, prevents the determined address from
       # being sent to the clients. In fact, the address is notified to the
       # client upon connection and it is made available to application code by
       # the most recent Unified Client SDKs through the `clientIp` property in
@@ -1568,8 +1567,8 @@ keystores:
     # -- (string) Optional. The keystore type.
     # The currently supported types are:
     # - `JKS`, which is the Sun/Oracle's custom keystore type, whose support is
-    #   made available by every Java installation;
-    # - `PKCS12`, which is supported by all recent Java installations;
+    #    made available by every Java installation.
+    # - `PKCS12`, which is supported by all recent Java installations.
     # - `PKCS11`, which as a bridge to an external PKCS11 implementation;
     #   this is an experimental extension; contact Lightstreamer Support for
     #   details.
@@ -1593,10 +1592,10 @@ keystores:
 
     # -- (string) Optional. The keystore type.
     # The currently supported types are:
-    # - JKS, which is the Sun/Oracle's custom keystore type, whose support is
-    #   made available by every Java installation;
-    # - PKCS12, which is supported by all recent Java installations;
-    # @default -- "JKS"
+    # - `JKS`, which is the Sun/Oracle's custom keystore type, whose support is
+    #   made available by every Java installation.
+    # - `PKCS12`, which is supported by all recent Java installations.
+    # @default -- JKS
     # type: JKS
     # -- Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key
     # where the keystore file is stored.
@@ -1693,10 +1692,11 @@ globalSocket:
     # -- (int) Optional. Maximum time the Server is allowed to wait for the
     # client "close" frame, in case the Server is sending its own close" frame
     # first, in order to try to close the connection in a clean way.
-    # @default -- no timeout is set and the global `global.readTimeoutMillis` applies
+    # @default -- no timeout is set and the global `global.readTimeoutMillis`
+    # applies.
     maxClosingWaitMillis:
 
-    # -- Optional.  Maximum payload size allowed for an outbound frame.
+    # -- Optional. Maximum payload size allowed for an outbound frame.
     # When larger updates have to be sent, the related WebSocket messages will
     # be split into multiple frames.
     # A lower limit for the setting may be enforced by the Server.
@@ -1773,7 +1773,7 @@ security:
     # client may not give up its authorization, even if the related origin is
     # removed from the list and the server is restarted, until its 
     # authorization expires.
-    # @default -- `3600`
+    # @default -- 3600
     optionsMaxAgeSeconds: 3600
 
     # -- Optional. In case the client wishes to send custom headers to the
@@ -2126,7 +2126,7 @@ management:
       port:
 
     # -- (string) Optional. Enabling of the availability of session-related
-    # mbeans, the  ones identified by `type="Session"`.
+    # mbeans, the ones identified by `type="Session"`.
     # If set to `active`, for each active session, a corresponding mbean of
     # type `Session` is available with full functionality.
     # If set to `sampled_statistics_only`, for each active session, a
@@ -2161,7 +2161,7 @@ management:
   # the provided "stop" script are met (see `jmx`).
   # If set to `true`, the startup will wail if the JMX RMI connector is not
   # configured or the `ServerMBean` cannot bet started. This also enforces the
-  # check of the JMX port reachability ( see `rmiConnector.enableTestPorts`
+  # check of the JMX port reachability (see `rmiConnector.enableTestPorts`
   # and the remarks on the test effectiveness); if the test fails, the
   # startup will also fail.
   # If set to `false`, no check is made that the "stop" script should work.
@@ -2304,8 +2304,8 @@ management:
     enableAvailabilityOnAllServers: true
 
     # -- Optional, but ineffective if `enableAvailabilityOnAllServers` is set
-    # to `false`. List of server socket configurations (defined in 
-    # `servers.{}`) for which healthcheck requests can be issued.
+    # to `false`. List of server socket configurations (defined in `servers.{}`) 
+    # for which healthcheck requests can be issued.
     # @default -- []
     availableOnServers: []
 
@@ -2339,7 +2339,7 @@ pushSession:
   # The optimal content-length for web clients (i.e. browser user agents)
   # should not be too high, in order to reduce the maximum allocated memory on
   # the client side. Also note that some browsers, in case of a very high
-  # content-length, may reduce streaming capabilities (noticed with  IE8 and
+  # content-length, may reduce streaming capabilities (noticed with IE8 and
   # 4GB).
   # This setting can be overridden by the Clients (some LS client libraries
   # actually set their own default).
@@ -2449,7 +2449,7 @@ pushSession:
   # Aggregate statistics on lost updates are also provided by the JMX interface
   # (if available) and by the Internal Monitor.
   # @default -- unlimited size
-  maxBufferSize: 1000`
+  maxBufferSize: 1000
 
   # -- (int) Mandatory. Longest time a disconnected session can be kept alive
   # while waiting for the Client to rebind such session to another connection,
@@ -2576,7 +2576,7 @@ pushSession:
   # - `jsonpatch`: computes the difference in JSON Patch format, provided
   # that the values are valid JSON representations;
   # - `diff_match_patch`: computes the difference with Google's
-  # "diff-match-patch" algorithm ( the result is then serialized to the custom
+  # "diff-match-patch" algorithm (the result is then serialized to the custom
   # "TLCP-diff" format).
   # Note that trying "diff" algorithms on unsuitable data may waste resources.
   # For this reason, the default algorithm list is empty,which means that no
@@ -2628,7 +2628,7 @@ pushSession:
   # update activity is low from memory when the session is closed.
   # If set to `AUTO`, the current setting of `pushSession.enableDeltaDelivery`
   # is used; in fact, setting `pushSession.enableDeltaDeliver` as `false` may
-  # denote  the need for reducing permanent per-session memory.
+  # denote the need for reducing permanent per-session memory.
   # @default -- AUTO
   reusePumpBuffers:
 
@@ -3216,7 +3216,7 @@ webServer:
 
   # -- Optional. Enabling of the internal web server.
   # If set to `true`, the Server accepts requests for file resources.
-  # If set  to `false`, the Server ignores requests for file resources.
+  # If set to `false`, the Server ignores requests for file resources.
   # @default -- false
   enabled: true
   
@@ -3252,7 +3252,7 @@ webServer:
   persistencyMinutes:
   # -- Optional. Path of the MIME types configuration property file.
   # The file path is relative to the conf directory.
-  # @default --  ./mime_types.properties
+  # @default -- ./mime_types.properties
 
   mimeTypesConfig:
   # -- Optional. Path of an HTML page to be returned as the body upon a
@@ -3376,7 +3376,7 @@ cluster:
   # for the subdomain name. For example, assuming the `mycompany.com`
   # subdomain is declared in the front-end pages:
   # - If the full address is `push1.mycompany.com`, the name should be
-  # `push`;
+  #   `push`.
   # - If the full address is `push.int2.cnt3.mycompany.com`, the name
   #   should be `push.int2.cnt3`.
   # Refer to `cluster.controlLinkAddress` for other remarks.
@@ -3499,16 +3499,16 @@ load:
   # -- (int) Optional. Maximum number of threads allowed for the `SERVER`
   # internal pool, which is devoted to the management of the client requests.
   # This kind of tasks includes operations that are potentially blocking:
-  # - `getHostName`;
-  # - socket close;
-  # - calls to a Metadata Adapter that may need to access to some external
+  # - `getHostName`.
+  # - Socket close.
+  # - Calls to a Metadata Adapter that may need to access to some external
   #   resource (i.e. mainly `notifyUser`, `getItems`, `getSchema`; other 
   #   methods should be implemented as nonblocking, by leaning on data cached 
-  #   by `notifyUser`);
-  # - calls to a Data Adapter that may need to access to some external resource
+  #   by `notifyUser`).
+  # - Calls to a Data Adapter that may need to access to some external resource
   #   (i.e. subscribe and unsubscribe, though it should always be possible to
-  #   implement such calls asynchronously);
-  # - file access by the internal web server, though it should be used  only in
+  #   implement such calls asynchronously).
+  # - File access by the internal web server, though it should be used only in
   #   demo and test scenarios.
   # Note that specific thread pools can optionally be defined in order to
   # handle some of the tasks that, by default, are handled by the `SERVER` 
@@ -3556,10 +3556,10 @@ load:
   # machines, allocating multiple threads for this task may be beneficial.
   # Only in corner cases, it is possible that some operations turn out to be
   # blocking; in particular:
-  # - `getHostName`, only if banned hostnames are configured;
-  # - socket close, only if banned hostnames are configured;
-  # - read from the "proxy protocol", only if configured;
-  # - service of requests on a "priority port", only available for internal use.
+  # - `getHostName`, only if banned hostnames are configured-
+  # - Socket close, only if banned hostnames are configured.
+  # - Read from the "proxy protocol", only if configured.
+  # - Service of requests on a "priority port", only available for internal use.
   # A zero value means a potentially unlimited number of threads.
   # @default -- the number of available total cores, as detected by the JVM
   acceptPoolMaxSize:
@@ -3723,7 +3723,7 @@ connectors:
       # -- Optional. Global loggers configuration.
       loggers:
 
-        # -- The logger name
+        # -- Logger for the internal official Java client activities.
         org.apache.kafka:
 
           # -- Mandatory. List of references to the appenders to be used by
@@ -3735,7 +3735,8 @@ connectors:
           level: WARN
 
         # -- Logger for the Kafka Connector Metadata Adapter.
-        # Replace the name with the one of the custom Metadata Adapter class.
+        # Replace this key with the the name with the one of the custom Metadata 
+        # Adapter class.
         com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter:
           appenders:
             - stdout
@@ -3796,7 +3797,7 @@ connectors:
           enabled: true
 
           # -- (string) Optional. The SSL protocol to be used. Possible values:
-          # `TLSv1.2`,  `TLSv1.3`.
+          # `TLSv1.2`, `TLSv1.3`.
           # @default -- TLSv1.3 when running on Java 11 or newer, TLSv1.2 otherwise
           protocol:
 
@@ -3885,11 +3886,12 @@ connectors:
           # -- (string) Optional. Specifies where to start consuming events
           # from:
           # - `LATEST`: start consuming events from the end of the topic 
-          # partition
+          # partition.
           # - `EARLIEST`: start consuming events from the beginning of the topic 
-          # partition
+          # partition.
           # Sets the value of the `auto.offset.reset` key to configure the
           # internal Kafka Consumer.
+          # See https://kafka.apache.org/documentation/#consumerconfigs_auto.offset.reset
           # @default -- LATEST
           consumeFrom: EARLIEST
 
@@ -3926,7 +3928,7 @@ connectors:
             # - `BYTE_ARRAY`
             # - `BYTE_BUFFER`
             # - `BYTES`
-            # - ``DOUBLE`
+            # - `DOUBLE`
             # - `FLOAT`
             # - `LONG`
             # - `SHORT`
@@ -3934,14 +3936,14 @@ connectors:
             # @default -- STRING
             type: INTEGER
 
-            # -- Mandatory if `type` is set to `AVRO` and
+            # -- Mandatory if `type` is set to `AVRO` and 
             # `enableSchemaRegistry` is set to `false`. The configmap name and
             # key where the local schema for message validation of the key is
             # stored. The setting takes precedence over `enableSchemaRegistry`
             # if the latter is set to `true`.
             localSchemaFilePathRef:
 
-            # -- Enablement of the Confluent Schema Registry for  validation of
+            # -- Enablement of the Confluent Schema Registry for validation of
             # the key.
             # Must be set to `true` when `keyEvaluator.type` is set to `AVRO`
             # and no local schema are specified.
