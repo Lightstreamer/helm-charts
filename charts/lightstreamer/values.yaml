@@ -3689,8 +3689,27 @@ connectors:
     # @default -- false
     enabled: false
 
-    # -- Mandatory. The Lightstreamer Kafka Connector version to install.
-    version: "1.2.0"
+    # -- Mandatory. Define the provisioning method of the Lightstreamer Kafka 
+    # Connector.
+    # Either specify one of the `fromGitHubRelease` or `fromVolume` sections. 
+    provisioning:
+
+      # -- (string) The Lightstreamer Kafka Connector release to download from
+      # the GitHub official repository.
+      fromGitHubRelease:
+
+      # -- (string) The URL from which to download the connector package.
+      fromUrl:
+
+      # The reference to a volume where connector package is stored.
+      fromVolume:
+
+        # -- (string) Mandatory. The name of volume.
+        name:
+
+        # -- (string) The filepath to the connector package in the volume, 
+        # e.g.: `/connectors/lightstreamer-kafka-connector-1.2.0.zip``
+        filePath:
 
     # -- Mandatory. Define the Kafka Connector Adapter Set and its unique ID.
     adapterSetId: "KafkaConnector"
@@ -3984,8 +4003,8 @@ connectors:
           # @default -- IGNORE_AND_CONTINUE
           extractionErrorStrategy:
 
-          # -- Optional. The reference to Schema Registry configuration defined
-          # in `connectors.kafkaConnector.schemaRegistry`.
+          # -- Optional. The reference to a Schema Registry configuration 
+          # defined in `connectors.kafkaConnector.schemaRegistry`.
           schemaRegistryRef:
 
         # -- Mandatory. Record routings configuration.
