@@ -18,7 +18,7 @@ limitations under the License.
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "lightstreamer.kafka-connector.fullname" . }}-conf
+  name: {{ include "lightstreamer.kafka-connector.name" . }}-conf
   labels:
     {{- include "lightstreamer.labels" . | nindent 4 }}
 data:
