@@ -149,7 +149,7 @@ Render a probe for the deployment descriptor.
 {{- end -}}
 
 {{/*
-Render all the probes for the deployment descriptor-
+Render all the probes for the deployment descriptor.
 */}}
 {{- define "lightstreamer.deployment.all-probes" -}}
 {{- $probes := .Values.deployment.probes }}
@@ -200,14 +200,14 @@ Validate a server configuration reference, ensuring that the server exists and i
 {{- end }}
 
 {{/*
-  Render the server name when used as port reference.
+Render the server name when used as port reference.
 */}}
 {{- define "lightstreamer.configuration.serverPortName" -}}
 {{ . | kebabcase }}
 {{- end }}
 
 {{/*
-Render the keystore settings for the main configuration file 
+Render the keystore settings for the main configuration file.
 */}}
 {{- define "lightstreamer.configuration.keystore" -}}
 {{- $top := index . 0 -}}
@@ -243,7 +243,7 @@ Render the keystore settings for the main configuration file
 {{- end -}}
 
 {{/* 
-Render the truststore settings for the Lightstreamer configuration file 
+Render the truststore settings for the Lightstreamer configuration file.
 */}}
 {{- define "lightstreamer.configuration.truststore" -}}
 {{- $top := index . 0 -}}
@@ -321,10 +321,17 @@ Create the logging level attribute for subloggers.
 {{- end }}
 
 {{/*
-Create the full name of the Lightstreamer Kafka Connector .
+Create the name of the Lightstreamer Kafka Connector.
 */}}
-{{- define "lightstreamer.kafka-connector.fullname" -}}
-{{- printf "lightstreamer-kafka-connector-%s" .Values.connectors.kafkaConnector.version }}
+{{- define "lightstreamer.kafka-connector.name" -}}
+{{- printf "lightstreamer-kafka-connector" }}
+{{- end }}
+
+{{/*
+Create the URL of the Lightstreamer Kafka Connector.
+*/}}
+{{- define "lightstreamer.kafka-connector.url" -}}
+{{- printf "https://github.com/Lightstreamer/Lightstreamer-kafka-connector/releases/download/v%s/%s-%s.zip" . (include "lightstreamer.kafka-connector.name" .) . }}
 {{- end }}
 
 {{/*
