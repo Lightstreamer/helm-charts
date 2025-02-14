@@ -1,18 +1,32 @@
 {{- if ((.Values.connectors).kafkaConnector).enabled }}
-{{- $kafkaConnectorVersion := required "connectors.kafkaConnector.version must be set" .Values.connectors.kafkaConnector.version }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "lightstreamer.kafka-connector.fullname" . }}-init-conf
+  name: {{ include "lightstreamer.kafka-connector.name" . }}-init-conf
   labels:
     {{- include "lightstreamer.labels" . | nindent 4 }}
 data:
-  kafka-connector-downloader.sh: |-
+  kafka-connector-deployer.sh: |-
     #!/bin/bash
-    set -ex
-    wget -O /archives-kafka-connector/kafka-connector.zip https://github.com/Lightstreamer/Lightstreamer-kafka-connector/releases/download/v{{ $kafkaConnectorVersion }}/{{ include "lightstreamer.kafka-connector.fullname" . }}.zip
-    unzip /archives-kafka-connector/kafka-connector.zip -d /archives-kafka-connector
-    rm -f /archives-kafka-connector/kafka-connector.zip
-    cp /sources-kafka-connector-conf/adapters.xml /archives-kafka-connector/{{ include "lightstreamer.kafka-connector.fullname" . }}/adapters.xml
-    cp /sources-kafka-connector-conf/log4j.properties /archives-kafka-connector/{{ include "lightstreamer.kafka-connector.fullname" . }}/log4j.properties
+    set -ex    
+  {{- $provisioning := .Values.connectors.kafkaConnector.provisioning }}
+    ZIP_ARCHIVE=kafka-connector.zip
+  {{- with $provisioning }}
+    {{- if .fromGitHubRelease }}
+    wget -O /kafka-connector-source-archives/${ZIP_ARCHIVE} {{ include "lightstreamer.kafka-connector.url" .fromGitHubRelease }}
+    {{- else if .fromUrl }}
+    wget -O /kafka-connector-source-archives/${ZIP_ARCHIVE} {{ .fromUrl }}
+    {{- else if .fromVolume }}
+    ZIP_ARCHIVE={{ required "connectors.kafkaConnector.provisioning.fromVolume.filePath must be set" .fromVolume.filePath }}
+    {{- else }}
+      {{- fail "either specify connectors.kafkaConnector.provisioning.fromGitHubRelease or connectors.kafkaConnector.provisioning.fromVolume" -}}
+    {{- end }}
+  {{- else }}
+    {{- fail "connectors.kafkaConnector.provisioning must be set" -}}
+  {{- end }}
+    unzip /kafka-connector-source-archives/${ZIP_ARCHIVE} -d /kafka-connector-deployment
+    mv /kafka-connector-deployment/* /kafka-connector-deployment/{{ include "lightstreamer.kafka-connector.name" . }} 
+    cp /kafka-connector-source-conf/adapters.xml /kafka-connector-deployment/{{ include "lightstreamer.kafka-connector.name" . }}/adapters.xml
+    cp /kafka-connector-source-conf/log4j.properties /kafka-connector-deployment/{{ include "lightstreamer.kafka-connector.name" . }}/log4j.properties
+    chown -R 10000:10000 /kafka-connector-deployment
 {{- end }}
