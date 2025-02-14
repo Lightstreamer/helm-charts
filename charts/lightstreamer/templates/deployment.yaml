@@ -222,7 +222,6 @@ spec:
           {{- /* END ENV VARIABLES FOR MPN */ -}}
           {{- /* START ENV VARIABLES FOR THE KAFKA CONNECTOR */ -}}
           {{- if ((.Values.connectors).kafkaConnector).enabled }} {{/* start of kafkaConnector enabled */}}
-            {{- $kafkaConnector := include "lightstreamer.kafka-connector.fullname" . }}
             {{- /* AUTHENTICATION */ -}}
             {{- $authSecretRefs := list }}
             {{- range $key, $connection := $.Values.connectors.kafkaConnector.connections }}
@@ -352,15 +351,15 @@ spec:
           {{- /* END VOLUME MOUNTS FOR KEYSTORES */ -}}
           {{- /* START VOLUME MOUNTS FOR KAFKA CONNECTOR */ -}}
           {{- if ((.Values.connectors).kafkaConnector).enabled }}
-            {{- $kafkaConnector := include "lightstreamer.kafka-connector.fullname" . }}
-            - name: kafka-connector-storage
+            {{- $kafkaConnector := include "lightstreamer.kafka-connector.name" . }}
+            - name: kafka-connector-deployment
               mountPath: /lightstreamer/adapters/{{ $kafkaConnector }}
-              subPath: {{ include "lightstreamer.kafka-connector.fullname" . }}
+              subPath: {{ include "lightstreamer.kafka-connector.name" . }}
             {{- range $key, $value := ((.Values.connectors).kafkaConnector).localSchemaFiles }}
-            {{- if $value}}
+              {{- if $value}}
             - name: kafka-connector-schema-files-{{ $key | lower }}
               mountPath: /lightstreamer/adapters/{{ $kafkaConnector }}/schemas/{{ $key }}
-            {{- end }}
+              {{- end }}
             {{- end }}
           {{- end }}
           {{- /* END VOLUME MOUNTS FOR KAFKA CONNECTOR */ -}}
@@ -396,16 +395,24 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
         {{- if ((.Values.connectors).kafkaConnector).enabled }}
-        - name: kafka-connector-downloader
+          {{- with .Values.connectors.kafkaConnector.provisioning }}
+        - name: kafka-connector-deployer
           image: alpine
-          command: ['sh', '/scripts/kafka-connector-downloader.sh']
+          command: ['sh', '/scripts/kafka-connector-deployer.sh']
           volumeMounts:
-          - name: kafka-connector-deploy-scripts
-            mountPath: /scripts
-          - name: kafka-connector-storage
-            mountPath: /archives-kafka-connector
-          - name: kafka-connector-configuration
-            mountPath: /sources-kafka-connector-conf
+            - name: kafka-connector-init-scripts
+              mountPath: /scripts  
+            {{- if or .fromGitHubRelease .fromUrl }}
+            - name: kafka-connector-source-storage
+            {{- else }}
+            - name: {{ required "connectors.kafkaConnector.provisioning.fromVolume.name must be set" .fromVolume.name }}
+            {{- end }}
+              mountPath: /kafka-connector-source-archives
+            - name: kafka-connector-configuration
+              mountPath: /kafka-connector-source-conf
+            - name: kafka-connector-deployment
+              mountPath: /kafka-connector-deployment
+          {{- end }}
         {{- end }}
       volumes:
         - name: lightstreamer-start-script-source
@@ -487,24 +494,31 @@ spec:
         {{- /* END VOLUMES FOR GOOGLE SERVICE JSON FILES */ -}}
       {{- end }}
       {{- /* END VOLUMES FOR MPN */ -}}
-      {{- /* VOLUME FOR KAFKA CONNECTOR */ -}}
+      {{- /* START VOLUME FOR KAFKA CONNECTOR */ -}}
       {{- if ((.Values.connectors).kafkaConnector).enabled }}
-        - name: kafka-connector-storage
+        - name: kafka-connector-deployment
           emptyDir: {}
-        - name: kafka-connector-deploy-scripts
+        - name: kafka-connector-init-scripts
           configMap:
-            name: {{ include "lightstreamer.kafka-connector.fullname" . }}-init-conf
+            name: {{ include "lightstreamer.kafka-connector.name" . }}-init-conf
         - name: kafka-connector-configuration
           configMap:
-            name: {{ include "lightstreamer.kafka-connector.fullname" . }}-conf
+            name: {{ include "lightstreamer.kafka-connector.name" . }}-conf
         {{- range $key, $value := ((.Values.connectors).kafkaConnector).localSchemaFiles }}
-        {{- if $value}}
+          {{- if $value}}
         - name: kafka-connector-schema-files-{{ $key | lower }}
           configMap:
             name: {{ required (printf "connectors.kafkaConnector.localSchemaFiles.%s.name must be set" $key) ($value.name) }}
+          {{- end }}
         {{- end }}
-        {{- end }}
+        {{- with ((.Values.connectors).kafkaConnector).provisioning }}
+          {{- if or .fromUrl .fromGitHubRelease }}
+        - name: kafka-connector-source-storage
+          emptyDir: {}
+          {{- end}}
+        {{- end  }}
       {{- end }}
+      {{- /* END VOLUME FOR KAFKA CONNECTOR */ -}}
       {{- with .Values.deployment.extraVolumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
