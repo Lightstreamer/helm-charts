@@ -66,6 +66,7 @@ spec:
             {{- toYaml .Values.deployment.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/lightstreamer/bin/unix-like/launch.sh"]
           {{- if .Values.management.jmx  }}
           lifecycle:
             preStop:
@@ -221,7 +222,7 @@ spec:
           {{- end }}
           {{- /* END ENV VARIABLES FOR MPN */ -}}
           {{- /* START ENV VARIABLES FOR THE KAFKA CONNECTOR */ -}}
-          {{- if ((.Values.connectors).kafkaConnector).enabled }} {{/* start of kafkaConnector enabled */}}
+          {{- if ((.Values.connectors).kafkaConnector).enabled }}
             {{- /* AUTHENTICATION */ -}}
             {{- $authSecretRefs := list }}
             {{- range $key, $connection := $.Values.connectors.kafkaConnector.connections }}
@@ -267,7 +268,7 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           volumeMounts:
-            - name: lightstreamer-start-script
+            - name: lightstreamer-bin
               mountPath: /lightstreamer/bin/unix-like
             - name: lightstreamer-configuration
               mountPath: /lightstreamer/conf
@@ -350,15 +351,21 @@ spec:
           {{- end }}
           {{- /* END VOLUME MOUNTS FOR KEYSTORES */ -}}
           {{- /* START VOLUME MOUNTS FOR KAFKA CONNECTOR */ -}}
-          {{- if ((.Values.connectors).kafkaConnector).enabled }}
-            {{- $kafkaConnector := include "lightstreamer.kafka-connector.name" . }}
+          {{- with .Values.connectors.kafkaConnector }}
+            {{- if .enabled }}
+            - name: kafka-connector-configuration
+              mountPath: /kafka-connector-conf
+              {{- $kafkaConnector := include "lightstreamer.kafka-connector.name" . }}
+              {{- if not .provisioning.fromPathInImage }}
             - name: kafka-connector-deployment
               mountPath: /lightstreamer/adapters/{{ $kafkaConnector }}
               subPath: {{ include "lightstreamer.kafka-connector.name" . }}
-            {{- range $key, $value := ((.Values.connectors).kafkaConnector).localSchemaFiles }}
-              {{- if $value}}
+              {{- end }}
+              {{- range $key, $value := .localSchemaFiles }}
+                {{- if $value}}
             - name: kafka-connector-schema-files-{{ $key | lower }}
               mountPath: /lightstreamer/adapters/{{ $kafkaConnector }}/schemas/{{ $key }}
+                {{- end }}
               {{- end }}
             {{- end }}
           {{- end }}
@@ -382,43 +389,51 @@ spec:
       priorityClassName: {{ . }}
       {{- end }}
       initContainers:
-        - name: change-ownership
-          image: busybox
-          command: ["/bin/sh"]
-          args: ["-c", "cp /tmp/*.sh /lightstreamer/bin/unix-like/ && chown -R 10000:10000 /lightstreamer/bin/unix-like && chmod 0777 /lightstreamer/bin/unix-like/*.sh"]
+        {{- if ((.Values.connectors).kafkaConnector).enabled }}
+        {{- with .Values.connectors.kafkaConnector.provisioning }}
+          {{- if not .fromPathInImage }}
+        - name: kafka-connector-deployer
+          image: alpine
+          command: ['sh', '/bin/kafka-connector-deployer.sh']
           volumeMounts:
-            - name: lightstreamer-start-script-source
-              mountPath: /tmp
+            - name: kafka-connector-deployer-script
+              mountPath: /bin/kafka-connector-deployer.sh
+              subPath: kafka-connector-deployer.sh
+              {{- if or .fromGitHubRelease .fromUrl }}
+            - name: kafka-connector-source-storage
+              {{- else }}
+            - name: {{ required "connectors.kafkaConnector.provisioning.fromVolume.name must be set" .fromVolume.name -}}
+              {{- end }}
+              mountPath: /kafka-connector-source-archives
+            - name: kafka-connector-deployment
+              mountPath: /kafka-connector-deployment
+            {{- end}}
+          {{- end }}
+        {{- end }}      
+        - name: initializer
+          image: busybox
+          command: ["/bin/sh", "-c", "/bin/init.sh"]
+          volumeMounts:
+            - name: lightstreamer-init-script
+              mountPath: /bin/init.sh
+              subPath: init.sh
             - name: lightstreamer-start-script
+              mountPath: /ls-script
+            - name: lightstreamer-bin
               mountPath: /lightstreamer/bin/unix-like
         {{- with .Values.deployment.extraInitContainers }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
-        {{- if ((.Values.connectors).kafkaConnector).enabled }}
-          {{- with .Values.connectors.kafkaConnector.provisioning }}
-        - name: kafka-connector-deployer
-          image: alpine
-          command: ['sh', '/scripts/kafka-connector-deployer.sh']
-          volumeMounts:
-            - name: kafka-connector-init-scripts
-              mountPath: /scripts  
-            {{- if or .fromGitHubRelease .fromUrl }}
-            - name: kafka-connector-source-storage
-            {{- else }}
-            - name: {{ required "connectors.kafkaConnector.provisioning.fromVolume.name must be set" .fromVolume.name }}
-            {{- end }}
-              mountPath: /kafka-connector-source-archives
-            - name: kafka-connector-configuration
-              mountPath: /kafka-connector-source-conf
-            - name: kafka-connector-deployment
-              mountPath: /kafka-connector-deployment
-          {{- end }}
-        {{- end }}
       volumes:
-        - name: lightstreamer-start-script-source
+        - name: lightstreamer-init-script
+          configMap:
+            defaultMode: 0777
+            name: {{ include "lightstreamer.fullname" . }}-init-script
+        - name: lightstreamer-start-script
           configMap:
             name: {{ include "lightstreamer.fullname" . }}-start-script
-        - name: lightstreamer-start-script
+            defaultMode: 0777
+        - name: lightstreamer-bin
           emptyDir: {}
         - name: lightstreamer-configuration
           configMap:
@@ -496,11 +511,13 @@ spec:
       {{- /* END VOLUMES FOR MPN */ -}}
       {{- /* START VOLUME FOR KAFKA CONNECTOR */ -}}
       {{- if ((.Values.connectors).kafkaConnector).enabled }}
+        {{- if not (((.Values.connectors).kafkaConnector).provisioning).fromPathInImage }}
+        - name: kafka-connector-deployer-script
+          configMap:
+            name: {{ include "lightstreamer.kafka-connector.name" . }}-deployer-script
         - name: kafka-connector-deployment
           emptyDir: {}
-        - name: kafka-connector-init-scripts
-          configMap:
-            name: {{ include "lightstreamer.kafka-connector.name" . }}-init-conf
+        {{- end }}
         - name: kafka-connector-configuration
           configMap:
             name: {{ include "lightstreamer.kafka-connector.name" . }}-conf
