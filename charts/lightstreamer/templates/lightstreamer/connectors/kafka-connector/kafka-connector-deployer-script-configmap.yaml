@@ -1,0 +1,32 @@
+{{- if ((.Values.connectors).kafkaConnector).enabled }}
+{{- include "lightstreamer.kafka-connector.validateProvisioning" .Values.connectors.kafkaConnector }}
+{{- if not .Values.connectors.kafkaConnector.provisioning.fromPathInImage }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "lightstreamer.kafka-connector.name" . }}-deployer-script
+  labels:
+    {{- include "lightstreamer.labels" . | nindent 4 }}
+data:
+  kafka-connector-deployer.sh: |-
+    #!/bin/sh
+    set -ex
+  {{- $provisioning := .Values.connectors.kafkaConnector.provisioning }}
+  {{- with $provisioning }}
+    KAFKA_CONNECTOR_DEPLOYMENT=/kafka-connector-deployment/{{ include "lightstreamer.kafka-connector.name" . }}
+    ZIP_ARCHIVE=kafka-connector.zip
+    {{- if .fromGitHubRelease }}
+    wget -O /kafka-connector-source-archives/${ZIP_ARCHIVE} {{ include "lightstreamer.kafka-connector.url" .fromGitHubRelease }}
+    {{- else if .fromUrl }}
+    wget -O /kafka-connector-source-archives/${ZIP_ARCHIVE} {{ .fromUrl }}
+    {{- else if .fromVolume }}
+    ZIP_ARCHIVE={{ required "connectors.kafkaConnector.provisioning.fromVolume.filePath must be set" .fromVolume.filePath }}
+    {{- else }}
+      {{- fail "connectors.kafkaConnector.provisioning must be set to one of: \"fromGitHubRelease\", \"fromUrl\", \"fromVolume\"" -}}
+    {{- end }}
+    unzip /kafka-connector-source-archives/${ZIP_ARCHIVE} -d /kafka-connector-deployment
+    mv /kafka-connector-deployment/* ${KAFKA_CONNECTOR_DEPLOYMENT}
+    chown -R 10000:10000 ${KAFKA_CONNECTOR_DEPLOYMENT}
+  {{- end }}
+{{- end }}
+{{- end }}
