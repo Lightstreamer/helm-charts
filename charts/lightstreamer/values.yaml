@@ -231,6 +231,13 @@ deployment:
   # See https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/.
   resources: {}
 
+  # -- List of commands to run before the Lightstreamer Server starts.
+  # You can use it to perform any custom initialization.
+  # For example, you can use it to copy configuration files or to source
+  # environment variables from external files.
+  preCommands:
+    # - echo "Launching Lightstreamer Server"
+
   # -- Additional selectors.
   additionalSelectors: {}
 
