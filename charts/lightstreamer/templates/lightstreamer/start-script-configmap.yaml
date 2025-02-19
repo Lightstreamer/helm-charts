@@ -21,7 +21,21 @@ metadata:
   labels:
     {{- include "lightstreamer.labels" . | nindent 4 }}
 data:
-   LS.sh: |-
+   {{- if ((.Values.connectors).kafkaConnector).enabled }}
+   copy-kafka-connector-conf.sh: |
+     #!/bin/sh
+     {{- with ((.Values.connectors).kafkaConnector).provisioning }}
+       {{- if not .fromPathInImage }}
+      KAFKA_CONNECTOR_DEPLOYMENT=/lightstreamer/adapters/{{ include "lightstreamer.kafka-connector.name" . }}
+       {{- else }}
+      KAFKA_CONNECTOR_DEPLOYMENT={{ .fromPathInImage }}
+       {{- end }}
+     {{- end }}
+      cp /kafka-connector-conf/adapters.xml ${KAFKA_CONNECTOR_DEPLOYMENT}/adapters.xml
+      cp /kafka-connector-conf/log4j.properties ${KAFKA_CONNECTOR_DEPLOYMENT}/log4j.properties
+   {{- end }}
+
+   LS.sh: |
       #!/bin/sh
       # Do not remove this line. File tag: linux_launch-APV-7.2.0.
 
@@ -250,3 +264,13 @@ data:
          exec "$JAVA" $JAVA_OPTS "$KERNEL_LIB_PATH" "$INTERNAL_LIB_PATH" "$LOGGING_LIB_PATH" "$MPN_LIB_PATH" -cp "$cpath" $class "$arg1" >> "$LS_HOME/logs/LS.out" 2>&1 &
 
       fi
+
+   launch.sh: |
+      #!/bin/bash
+      {{- if ((.Values.connectors).kafkaConnector).enabled }}
+      ./copy-kafka-connector-conf.sh
+      {{- end}}
+      {{- range .Values.deployment.preCommands }}
+      {{ . }}
+      {{- end}}   
+      ./LS.sh run      
