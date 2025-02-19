@@ -366,7 +366,7 @@ Render the Lightstreamer configuration file
                are not fully supported by the Conscrypt provider.
              Instructions on how to setup a JKS keystore are provided in the
              TLS/SSL Certificates document. -->
-      {{- with required "sslConfig.keyStoreRef must be set" .keyStoreRef }}
+      {{- with required "sslConfig.keystoreRef must be set" .keystoreRef }}
         {{- include "lightstreamer.configuration.keystore" (list $.Values.keyStores .)  | nindent 8 }}
       {{- end }}
 
@@ -624,7 +624,7 @@ Render the Lightstreamer configuration file
              case, where the latter is used as a truststore.
              Moreover, the handling of keystore replacement doesn't apply here. -->
       {{- if or .enableClientAuth .enableMandatoryClientAuth }}
-          {{- with required "sslConfig.trustStoreRef must be set since either sslConfig.enableClientAuth or sslConfig.enableMandatoryClientAuth are enabled " .trustStoreRef }}
+          {{- with required "sslConfig.truststoreRef must be set since either sslConfig.enableClientAuth or sslConfig.enableMandatoryClientAuth are enabled " .truststoreRef }}
                {{- include "lightstreamer.configuration.truststore" (list $.Values.keyStores .)  | nindent 8 }}
           {{- end }}
       {{- else }}
@@ -1245,7 +1245,7 @@ Render the Lightstreamer configuration file
                  "javax.net.ssl.keyStore" and "javax.net.ssl.keyStorePassword"
                  JVM properties will apply. -->
       {{- if or .port.enableSsl (.dataPort).enableSsl }}
-        {{- with required "management.jmx.rmiConnector.keyStoreRef must be set" .keyStoreRef }}
+        {{- with required "management.jmx.rmiConnector.keystoreRef must be set" .keystoreRef }}
           {{- include "lightstreamer.configuration.keystore" (list $.Values.keyStores .) | nindent 12 }}
         {{- end }}
       {{- else }}
