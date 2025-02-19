@@ -182,7 +182,7 @@ Render the Lightstreamer Kafka Connector configuration file
 
         <!-- Optional. The path of the trust store file, relative to the deployment folder
              (LS_HOME/adapters/lightstreamer-kafka-connector-<version>). -->
-        {{- if .trustStoreRef}}
+        {{- if .truststoreRef}}
           {{- include "lightstreamer.kafka-connector.configuration.truststore" (list "encryption.truststore" $.Values.keyStores .trustStoreRef)  | nindent 8 }}
         {{- else }}
         <!--
@@ -196,10 +196,10 @@ Render the Lightstreamer Kafka Connector configuration file
         <!--
         <param name="encryption.truststore.password">kafka-connector-truststore-password</param>
         -->
-        {{- end }} {{/* of .trustStoreRef */}}
+        {{- end }} {{/* of .truststoreRef */}}
 
-        {{- if .keyStoreRef }}
-          {{- include "lightstreamer.kafka-connector.configuration.keystore" (list "encryption.keystore" $.Values.keyStores .keyStoreRef)  | nindent 8 }}
+        {{- if .keystoreRef }}
+          {{- include "lightstreamer.kafka-connector.configuration.keystore" (list "encryption.keystore" $.Values.keyStores .keystoreRef)  | nindent 8 }}
         {{- else }}
         <!-- Optional. Enable a key store. Can be one of the following:
              - true
@@ -733,17 +733,17 @@ Render the Lightstreamer Kafka Connector configuration file
           {{- end }} {{/* of .enableHostnameVerification */}}
 
         <!-- If required, configure the trust store to trust the Confluent Schema Registry certificates -->
-          {{- if .trustStoreRef}}
-            {{- include "lightstreamer.kafka-connector.configuration.truststore" (list "schema.registry.truststore" $.Values.keyStores .trustStoreRef)  | nindent 8 }}
+          {{- if .truststoreRef}}
+            {{- include "lightstreamer.kafka-connector.configuration.truststore" (list "schema.registry.truststore" $.Values.keyStores .truststoreRef)  | nindent 8 }}
           {{- else }}        
         <!--
         <param name="schema.registry.encryption.truststore.path">secrets/kafka-connector.truststore.jks</param>
         <param name="schema.registry.encryption.truststore.password">kafka-connector-truststore-password</param>
         -->
-          {{- end }} {{/* of .trustStoreRef */}}
+          {{- end }} {{/* of .truststoreRef */}}
 
-          {{- if .keyStoreRef }}
-            {{- include "lightstreamer.kafka-connector.configuration.keystore" (list "schema.registry.keystore" $.Values.keyStores .keyStoreRef)  | nindent 8 }}
+          {{- if .keystoreRef }}
+            {{- include "lightstreamer.kafka-connector.configuration.keystore" (list "schema.registry.keystore" $.Values.keyStores .keystoreRef)  | nindent 8 }}
           {{- else }}
         <!-- If mutual TLS is enabled on the Confluent Schema Registry, enable and configure the key store -->
         <!--
@@ -752,7 +752,7 @@ Render the Lightstreamer Kafka Connector configuration file
         <param name="schema.registry.encryption.keystore.password">kafka-connector-password</param>
         <param name="schema.registry.encryption.keystore.key.password">kafka-connector-private-key-password</param>
         -->
-          {{- end }} {{/* of .keyStoreRef */}}
+          {{- end }} {{/* of .keystoreRef */}}
         {{- end }} {{/* of .sslConfig */}}
       {{- else }}
         {{- if or (($connection.record.keyEvaluator).enableSchemaRegistry) (($connection.record.valueEvaluator).enableSchemaRegistry) }}
