@@ -105,7 +105,7 @@ limitations under the License.
            The file path is relative to the directory that contains this
            configuration file. -->
       {{- if has $app.serviceLevel (list "development" "production") }}
-        {{- $keyStoreName := required (printf "mpn.appleNotifierConfig.apps.%s.keyStoreRef must be set because of service level set to \"%s\"" $appName $app.serviceLevel) $app.keystoreRef }}
+        {{- $keyStoreName := required (printf "mpn.appleNotifierConfig.apps.%s.keystoreRef must be set because of service level set to \"%s\"" $appName $app.serviceLevel) $app.keystoreRef }}
         {{- $keyStore := required (printf "mpn.appleNotifierConfig.keystores.%s not defined" $keyStoreName) (get ($.Values.mpn.appleNotifierConfig.keyStores | default dict) $keyStoreName) }}
       <keystore_file>keystores/{{ $keyStoreName }}/{{ required (printf "mpn.appleNotifierConfig.keystores.%s.keystoreFileSecretRef.key must be set" $keyStoreName) ($keyStore.keystoreFileSecretRef).key }}</keystore_file>
       <keystore_password>$env.LS_MPN_APPLE_KEYSTORE_{{ $keyStoreName | upper | replace "-" "_" }}_PASSWORD</keystore_password>
