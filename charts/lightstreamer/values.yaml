@@ -3858,6 +3858,7 @@ adapters:
       remoteHost:
 
       # - Optional. The local network interface to bind to.
+      # Example: 192.168."1.1"
       # @default -- will bind to any available interface
       interface:
 
@@ -3867,27 +3868,29 @@ adapters:
 
         # -- Optional. Enablement of the encryption.
         # @default -- false
-        enabled: false
+        enabled: true
 
         # -- Mandatory. The reference to a keystore configuration (defined in
         # `keystores`).
         # See the `keystores.myServerKeystore` settings for general details on
         # keystore configuration.
-        keystoreRef:
+        keystoreRef: myServerKeystore
 
         # -- See `servers.{}.sslConfig.allowCipherSuites`.
         allowCipherSuites: []
 
         # -- See `servers.{}.sslConfig.removeCipherSuites`.
-        removeCipherSuites: []
+        removeCipherSuites:
+          - _DHE_
 
         # -- See `servers.{}.sslConfig.enforceServerCipherPreference`.
         enforceServerCipherSuitePreference:
           enabled: true
-          order: "JVM"
+          order: JVM
 
         # -- See `servers.{}.sslConfig.allowProtocols`.
-        allowProtocols: []
+        allowProtocols:
+          - TLSv1.2
 
         # -- See `servers.{}.sslConfig.removeProtocols`.
         removeProtocols: []
@@ -3904,21 +3907,21 @@ adapters:
         # @default -- true
         enableHostnameVerification:
 
-        # -- Optional. Authentication settings for the connection.
-        authentication:
+      # -- Optional. Authentication settings for the connection.
+      authentication:
 
-          # -- Optional. If set to `true`, enforces Remote Adapter 
-          # authentication on the connection based on a user/password credential 
-          # check.
-          # Note that the user names will be used in log messages at `INFO`
-          # level or above, whereas the passwords won't.
-          # @default -- false
-          enabled: false
+        # -- Optional. If set to `true`, enforces Remote Adapter 
+        # authentication on the connection based on a user/password credential 
+        # check.
+        # Note that the user names will be used in log messages at `INFO`
+        # level or above, whereas the passwords won't.
+        # @default -- false
+        enabled: true
 
-          # -- Mandatory if `enabled` is set to `true`. The reference to the 
-          # secrets containing the credentials of the users allowed to connect.
-          # Every secret must contains the keys `user` and `password`.
-          credentialsSecrets: []
+        # -- Mandatory if `enabled` is set to `true`. The reference to the 
+        # secrets containing the credentials of the users allowed to connect.
+        # Every secret must contains the keys `user` and `password`.
+        credentialsSecrets: []
 
       # -- (int) Optional. Only used if `remoteHost` is configured. Delay to be 
       # enforced before retrying a connection attempt to the Remote Server, to
@@ -4008,9 +4011,9 @@ adapters:
       # @default -- either `send_code` or `fail`, depending on whether or not the `notifyUserDisconnectionCode` parameter is supplied
       notifyUserOnDisconnection:
 
-      # -- Optional when `notifyUserOnDisconnection` is not supplied; mandatory
-      # when `notifyUserOnDisconnection` is set to `send_code`; otherwise 
-      # forbidden. An integer to be supplied as a custom error code by 
+      # -- (int) Optional when `notifyUserOnDisconnection` is not supplied; 
+      # mandatory when `notifyUserOnDisconnection` is set to `send_code`; 
+      # otherwise forbidden. An integer to be supplied as a custom error code by 
       # `notifyUser`, through a `CreditsException`, when the request is being 
       # refused because of the unavailability of the Remote Metadata Adapter.
       # The code must be zero or negative, as positive codes are reserved by the
@@ -4030,12 +4033,12 @@ adapters:
       # -- Optional. Configuration of the custom initialization parameters to be 
       # sent to the remote.
       remoteParamsConfig:
-        # -- Optional. Determines the the custom initialization parameters to 
-        # be sent to the remote. The supplied value is meant as a prefix, such
-        # that all parameters supplied to this Proxy Adapter and whose names 
-        # start with this prefix will be sent. The value must contain a ':' 
-        # character, as all parameter names that don't contain a ':' character 
-        # are reserved.
+        # -- (string) Optional. Determines the the custom initialization 
+        # parameters to be sent to the remote. The supplied value is meant as a 
+        # prefix, such that all parameters supplied to this Proxy Adapter and 
+        # whose names start with this prefix will be sent. The value must 
+        # contain a `:` character, as all parameter names that don't contain a
+        # `:` character are reserved.
         # Hence, the normal configuration parameters will not be sent to the
         # remote counterpart, unless explicitly duplicated with a prefixed name.
         # Anyway, the following parameters, with obvious meaning, will be 
@@ -4083,14 +4086,17 @@ adapters:
 
       # -- Optional. If set to `true`, enforces the clearing of all internal 
       # caches when a new Remote Metadata Adapter instance is connected after 
-      # the disconnection of the previous instance. In fact, some requests to 
-      # the Remote Adapter can be used to fulfill multiple subsequent requests 
-      # from the Server, hence their responses are cached for a few seconds. 
-      # However, for requests whose responses are not supposed to change with 
-      # time, the cached responses are kept longest, so as to be also used to
-      # save further identical requests to the Remote counterpart.
-      # By setting `true`, responses obtained from a previous instance will 
-      # never be used to save requests to the new instance.
+      # the disconnection of the previous instance.
+      # In fact, some requests to the Remote Adapter involve aggregate data and
+      # are meant to be used to fulfill multiple subsequent requests from the 
+      # Server, hence their responses are cached for a few seconds. However, 
+      # for requests whose responses are not supposed to change with time, the 
+      # cached responses are kept longer, so as to be used to fulfill further 
+      # identical requests from the Server and save the submission of the 
+      # related aggregate requests to the Remote counterpart.
+      # By setting `true`, responses obtained from a previous Remote Metadata 
+      # Adapter instance will never be used to fulfill requests from the Server 
+      # targeted to the new instance.
       # @default -- false
       enableClearingOnNewRemote:      
 
