@@ -1,0 +1,69 @@
+{{/*
+Render the Lightstreamer configuration file of an Adapter Set
+*/}}
+{{- define "lightstreamer.adapters" -}}
+{{- $ := index . 0 -}}
+{{- $adapterName := index . 1 -}}
+{{- $adapter := index . 2 -}}
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Do not remove this line. File tag: adapters_conf-APV-7.4.5. -->
+
+<!-- Mandatory. Define an Adapter Set and its unique ID. -->
+{{- with $adapter }}
+<adapters_conf id={{ required (printf "adapters.%s.id must be set" $adapterName) .id | quote }}>
+
+{{- with .adapterSetPool }}
+
+  <adapter_set_pool>
+    <max_size>{{ .maxSize }}</max_size>
+    <max_free>{{ .maxFree }}</max_free>
+  </adapter_set_pool>
+
+{{- end }}
+
+{{- if not (quote .enableMetadataInitializedFirst | empty)}}
+  <metadata_adapter_initialised_first>{{ .enableMetadataInitializedFirst | ternary "Y" "N" }}</metadata_adapter_initialised_first>
+{{- end }}
+
+  <metadata_provider>
+{{- if .proxyMetadataAdapter }}
+  {{- with .proxyMetadataAdapter }}
+    {{ $proxyClass := .enableRobustAdapter | default false | ternary "ROBUST_PROXY_FOR_REMOTE_ADAPTER" "PROXY_FOR_REMOTE_ADAPTER" }}
+    <adapter_class>{{ $proxyClass }}</adapter_class>
+    <classloader>log-enabled</classloader>
+
+    {{- include "lightstreamer.adapters.metadata-provider.authenticationPool" . | nindent 4 -}}
+    {{- include "lightstreamer.adapters.metadata-provider.messagesPool" . | nindent 4 -}}
+    {{- include "lightstreamer.adapters.metadata-provider.mpnPumpPool" . | nindent 4 -}}
+    
+    {{- if not (quote .enableTableNotificationsSequentialization | empty) }}
+    <metadata_adapter_initialised_first>{{ .enableTableNotificationsSequentialization | ternary "Y" "N" }}</metadata_adapter_initialised_first>
+    {{- end }}
+    
+    <param name="request_reply_port">{{ required (printf "adapters.%s.proxyMetadataAdapter.requestReplyPort must be set" $adapterName) (int .requestReplyPort) }}</param>
+    {{- if not (quote .remoteHost | empty) }}
+    <param name="remote_host">{{ .remoteHost }}</param>
+    {{- end }}
+    {{- if not (quote .interface | empty) }}
+    <param name="interface">{{ .interface }}</param>
+    {{- end }}
+
+    {{- include "lightstreamer.adapters.proxy.sslConfig" (list $.Values.keystores .) | indent 4 -}}
+    {{- include "lightstreamer.adapters.proxy.authentication" . | indent 4 -}}
+    {{- include "lightstreamer.adapters.proxy.connection" . | indent 4 -}}
+    {{- include "lightstreamer.adapters.proxy.closeNotification" (list $adapterName .) | indent 4 -}}
+    {{- include "lightstreamer.adapters.proxy.remoteParams" (list $adapterName .) | indent 4 -}}
+
+  {{- end }} {{/* .proxyMetadataAdapter */}}
+{{- else if .metadataAdapter }}
+{{- else }}
+  {{ printf "At least one of metadataAdapter or proxyMetadataAdapter must be set" | fail }}
+{{- end }}
+
+  </metadata_adapter>
+
+<adapters_conf>
+
+{{- end }} {{/* $adapter */}}
+{{- end}}
+
