@@ -23,5 +23,5 @@ metadata:
 data:
 {{- range $key,$adapter := .Values.adapters }}
   {{ $key | lower }}.xml: |-
-  {{- include "lightstreamer.adapters" (list $key $adapter) | nindent 4 -}}
+  {{- include "lightstreamer.adapters" (list $ $key $adapter) | nindent 4 -}}
 {{- end }}
