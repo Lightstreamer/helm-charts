@@ -327,6 +327,12 @@ Create the name of the Lightstreamer Kafka Connector.
 {{- printf "lightstreamer-kafka-connector" }}
 {{- end }}
 
+{{- define "lightstreamer.kafka-connector.validateProvisioning" -}}
+{{- if not .provisioning }} 
+  {{- fail "connectors.kafkaConnector.provisioning must be set" }}
+{{- end }}
+{{- end }}
+
 {{/*
 Create the URL of the Lightstreamer Kafka Connector.
 */}}
@@ -400,4 +406,263 @@ Render the keystore settings for the Lightstreamer Kafka Connector configuration
 {{- if not (quote $keyStore.type | empty) }}
 <param name="{{ $prefix }}.keystore.type">{{ $keyStore.type }}</param>
 {{- end -}}
+{{- end -}}
+
+{{/*
+Render the <authentication_pool> block for the adapters configuration file.
+*/}}
+{{- define "lightstreamer.adapters.metadata-provider.authenticationPool" -}}
+{{- with .authenticationPool }}
+<authentication_pool>
+  {{- if not (quote .maxSize | empty) }}
+  <max_size>{{ int .maxSize }}</max_size>
+  {{- end }}
+  {{- if not (quote .maxFree | empty) }}
+  <max_free>{{ int .maxFree }}</max_free>
+  {{- end }}
+  {{- if not (quote .maxPendingRemoteRequests | empty) }}
+  <max_pending_remote_requests>{{ int .maxPendingRemoteRequests }}</max_pending_remote_requests>
+  {{- end }}
+  {{- if not (quote .maxQueue | empty) }}
+  <max_queue>{{ int .maxQueue }}</max_queue>
+  {{- end }}
+</authentication_pool>
+{{- end }}
+{{- end -}}
+
+{{/*
+Render the <messages_pool> block for the adapters configuration file.
+*/}}
+{{- define "lightstreamer.adapters.metadata-provider.messagesPool" -}}
+{{- with .messagesPool}}
+<messages_pool>
+  {{- if not (quote .maxSize | empty) }}
+  <max_size>{{ int .maxSize }}</max_size>
+  {{- end }}
+  {{- if not (quote .maxFree | empty) }}
+  <max_free>{{ int .maxFree }}</max_free>
+  {{- end }}
+  {{- if not (quote .maxPendingRemoteRequests | empty) }}
+  <max_pending_remote_requests>{{ int .maxPendingRemoteRequests }}</max_pending_remote_requests>
+  {{- end }}
+  {{- if not (quote .maxQueue | empty) }}
+  <max_queue>{{ int .maxQueue }}</max_queue>
+  {{- end }}
+</message_pool>
+{{- end }}
+{{- end -}}
+
+{{/*
+Render the <mpn_pool> block for the adapters configuration file.
+*/}}
+{{- define "lightstreamer.adapters.metadata-provider.mpnPumpPool" -}}
+{{- with .mpnPumpPool }}
+<mpn_pool>
+  {{- if not (quote .maxSize | empty) }}
+  <max_size>{{ int .maxSize }}</max_size>
+  {{- end }}
+  {{- if not (quote .maxFree | empty) }}
+  <max_free>{{ int .maxFree }}</max_free>
+  {{- end }}
+</mpn_pool>
+{{- end }}
+{{- end }}
+
+{{/*
+Render the tls parameters for the proxy adapters.
+*/}}
+{{- define "lightstreamer.adapters.proxy.sslConfig" }}
+{{- $keystores := index . 0 -}}
+{{- $parent := index . 1 -}}
+{{- if (($parent).sslConfig).enabled }}
+
+<!-- TLS SETTINGS -->
+{{- with $parent.sslConfig }}
+<param name="tls">Y</param>
+  {{- /* tls.keystore */ -}}
+  {{- include "lightstreamer.adapters.proxy.keystore" (list $keystores .keystoreRef) | nindent 0 }}
+
+  {{- /* tls.allow_cipher_suite */ -}}
+  {{- $counter := 0}}
+  {{- range .allowCipherSuites }}
+    {{- $counter = add1 $counter }} 
+<param name="tls.allow_cipher_suite.{{ $counter }}">{{ . }}</param>
+  {{- end }}
+
+  {{- /* tls.remove_cipher_suites */ -}}
+  {{- $counter := 0}}
+  {{- range .removeCipherSuites }}
+    {{- $counter = add1 $counter }} 
+<param name="tls.remove_cipher_suites.{{ $counter }}">{{ . }}</param>
+  {{- end }}  
+
+  {{- /* tls.allow_protocol */ -}}
+  {{- $counter := 0}}
+  {{- range .allowProtocols }}
+    {{- $counter = add1 $counter }} 
+<param name="tls.allow_protocol.{{ $counter }}">{{ . }}</param>
+  {{- end }}  
+
+  {{- /* tls.remove_protocols */ -}}
+  {{- $counter := 0}}
+  {{- range .removeProtocols }}
+    {{- $counter = add1 $counter }} 
+<param name="tls.remove_protocols.{{ $counter }}">{{ . }}</param>
+  {{- end }}  
+
+  {{- /* tls.force_client_auth */ -}}
+  {{- if not (quote .enableMandatoryClientAuth | empty) }}
+<param name="tls.force_client_auth">{{ .enableMandatoryClientAuth | ternary "Y" "N"}}</param>
+  {{- end }}
+
+  {{- /* tls.enforce_server_cipher_suite_preference */ -}}
+  {{- if (.enforceServerCipherSuitePreference).enabled }}
+<param name="tls.enforce_server_cipher_suite_preference">Y</param>
+    {{- if not (quote .enforceServerCipherSuitePreference.order | empty )}}
+<param name="tls.enforce_server_cipher_suite_preference.order">{{ .enforceServerCipherSuitePreference.order }}</param>
+    {{- end }}
+  {{- end }}
+  {{- /* tls.skip_hostname_check */ -}}
+  {{- if not (quote .enableHostnameVerification | empty) }}
+<param name="tls.skip_hostname_check">{{ .enableHostnameVerification | ternary "N" "Y" }}</param>
+  {{- end }}
+{{- end }}
+<!-- END TLS SETTINGS -->
+{{- end -}}
+{{- end -}}
+
+{{/*
+Render the authentication parameters for the proxy adapters.
+*/}}
+{{- define "lightstreamer.adapters.proxy.authentication" -}}
+{{- if (.authentication).enabled }}
+
+<!-- AUTHENTICATION SETTINGS -->
+{{- with .authentication }}
+{{- /* auth */}}    
+<param name="auth">Y</param>
+  {{- $counter := 0 }}
+  {{- range .credentialsSecrets }}
+    {{- $counter = add1 $counter }} 
+    {{- /* auth.credentials.<N>.user */}}    
+<param name="auth.credentials.{{ $counter }}.user">$env.LS_PROXY_CREDENTIAL_{{ . | upper | replace "-" "_" }}_USER></param>
+
+    {{- /* auth.credentials.<N>.password */}}    
+<param name="auth.credentials.{{ $counter }}.password">$env.LS_PROXY_CREDENTIAL_{{ . | upper | replace "-" "_" }}_PASSWORD></param>
+
+  {{- end }}
+{{- end }}
+<!-- END AUTHENTICATION SETTINGS -->
+{{- end -}}
+{{- end -}}
+
+{{/*
+Render the keystore settings for the proxy adapters.
+*/}}
+{{- define "lightstreamer.adapters.proxy.keystore" -}}
+{{- $top := index . 0 -}}
+{{- $key := index . 1 -}}
+{{- $keyStore := required (printf "keystores.%s not defined" $key) (get $top $key) -}}
+
+{{- /* tls.keystore.type */}}
+<param name="tls.keystore.type">{{ $keyStore.type }}</param>
+
+{{- /* tls.keystore.keystore_file */}}
+<param name="tls.keystore.keystore_file">../../conf/keystores/{{ $key }}/{{ required (printf "keystores.%s.keystoreFileSecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</param>
+
+{{- /* tls.keystore.password */}}
+<param name="tls.keystore.password">$env.LS_KEYSTORE_{{ $key | upper |replace "-" "_" }}_PASSWORD</param>
+
+{{- end -}}
+
+{{/*
+Render the connection-related timeout settings for the proxy adapters.
+*/}}
+{{- define "lightstreamer.adapters.proxy.connection" -}}
+{{- $pars := list .connectionRetryMillis .connectionRecoveryTimeoutMillis .firstConnectionTimeoutMillis -}}
+{{- if not ($pars | empty) }}
+
+  {{- /* connection_retry_millis */ -}}
+  {{- if not (quote .connectionRetryMillis | empty) }}
+<param name="connection_retry_millis">{{ int .connectionRetryMillis }}</param>
+  {{- end }}
+
+  {{- /* connection_recovery_timeout_millis */ -}}
+  {{- if not (quote .connectionRecoveryTimeoutMillis | empty) }}
+<param name="connection_recovery_timeout_millis">{{ int .connectionRecoveryTimeoutMillis }}</param>
+  {{- end }}
+
+  {{- /* first_connection_timeout_millis */ -}}
+  {{- if not (quote .firstConnectionTimeoutMillis | empty) }}
+<param name="first_connection_timeout_millis">{{ int .firstConnectionTimeoutMillis }}</param>
+  {{- end }}
+
+{{- end }}
+{{- end -}}
+
+{{/*
+Render the close/disconnection notification settings for the proxy adapters.
+*/}}
+{{- define "lightstreamer.adapters.proxy.closeNotification" -}}
+{{- $adapterName := index . 0 -}}
+{{- $proxy := index . 1 -}}
+
+{{- /* close_notifications_recovery */ -}}
+{{- if $proxy.closeNotificationsRecovery -}}
+{{- $possibleValues := list "pessimistic" "optimistic" "unneeded" -}}
+{{- if not (has  $proxy.closeNotificationsRecovery $possibleValues) }}
+  {{ printf "adapters.%s.proxyMetadataAdapter.closeNotificationsRecovery must be one of: %s" $adapterName $possibleValues | fail }}
+{{- end }}
+<param name="close_notifications_recovery">{{ $proxy.closeNotificationsRecovery }}</param>
+{{- end }}
+
+{{- /* notify_user_on_disconnection */ -}}
+{{- if $proxy.notifyUserOnDisconnection -}}
+{{- $possibleValues := list "fail" "force_retry" "send_code" -}}
+{{- if not (has $proxy.notifyUserOnDisconnection $possibleValues) }}
+  {{ printf "adapters.%s.proxyMetadataAdapter.notifyUserOnDisconnection must be one of: %s" $adapterName $possibleValues | fail }}
+{{- end }}
+<param name="notify_user_on_disconnection">{{ $proxy.notifyUserOnDisconnection }}</param>
+{{- end }}
+
+{{- /* notify_user_disconnection_code */ -}}
+{{- if not (quote $proxy.notifyUserDisconnectionCode | empty)  }}
+  {{- if gt (int $proxy.notifyUserDisconnectionCode) 0 }}
+    {{ printf "adapters.%s.proxyMetadataAdapter.notifyUserDisconnectionCode must a non positive integer" $adapterName | fail }}
+  {{- end }}
+<param name="notify_user_disconnection_code">{{ int $proxy.notifyUserDisconnectionCode }}</param>
+
+  {{- /* notify_user_disconnection_msg */ -}}
+  {{- if not (quote $proxy.notifyUserDisconnectionMsg | empty)  }}
+<param name="notify_user_disconnection_msg">{{ $proxy.notifyUserDisconnectionMsg }}</param>
+  {{- end }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Render the remote parameters for the proxy adapters.
+*/}}
+{{- define "lightstreamer.adapters.proxy.remoteParams" -}}
+{{- $adapterName := index . 0 -}}
+{{- $proxy := index . 1 -}}
+{{- with $proxy.remoteParamsConfig }}
+<!-- REMOTE PARAMS SETTINGS -->
+  {{- $prefix := .prefix -}}
+  {{- if not (quote $prefix | empty) }}
+  {{- /* remote_params_prefix */}}
+    {{- if not (contains ":" $prefix) }}
+      {{ printf "adapters.%s.proxyMetadataAdapter.remoteParamsConfig.prefix must contain a colon" $adapterName | fail }}
+    {{- end }}
+<param name="remote_params_prefix">{{ $prefix }}</param>
+
+  {{- /* remote:xxx */}}
+    {{- range $paramName, $paramValue := .params}}
+      {{- if not (hasPrefix $prefix $paramName) }}
+       {{ printf "adapters.%s.proxyMetadataAdapter.remoteParamsConfig.params.%s key must start with the prefix \"%s\"" $adapterName $paramName $prefix | fail }}
+      {{- end}}
+<param name={{ printf "%s%s" $prefix $paramName | quote }}>{{ $paramValue }}</param>
+    {{- end }}
+  {{- end }}
+<!-- END REMOTE PARAMS SETTINGS -->
+{{- end }}
 {{- end -}}
