@@ -109,19 +109,19 @@ spec:
             {{- toYaml .Values.deployment.resources | nindent 12 }}
           env:
           {{- /* START ENV VARIABLES FOR LIGHTSTREAMER KEYSTORES */ -}}
-          {{- range $key, $value := .Values.keyStores }}
+          {{- range $key, $value := .Values.keystores }}
             {{- if $value }}
             - name: LS_KEYSTORE_{{ $key | upper | replace "-" "_" }}_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ required (printf "keyStores.%s.keystorePasswordSecretRef.name must be set" $key) ($value.keystorePasswordSecretRef).name }}
-                  key: {{ required (printf "keyStores.%s.keystorePasswordSecretRef.key must be set" $key) ($value.keystorePasswordSecretRef).key }}
+                  name: {{ required (printf "keystores.%s.keystorePasswordSecretRef.name must be set" $key) ($value.keystorePasswordSecretRef).name }}
+                  key: {{ required (printf "keystores.%s.keystorePasswordSecretRef.key must be set" $key) ($value.keystorePasswordSecretRef).key }}
               {{- if $value.keyPasswordSecretRef }}
             - name: LS_KEYSTORE_{{ $key | upper | replace "-" "_" }}_KEY_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ required (printf "keyStores.%s.keyPasswordSecretRef.name must be set" $key) ($value.keyPasswordSecretRef).name }}
-                  key: {{ required (printf "keyStores.%s.keyPasswordSecretRef.key must be set" $key) ($value.keyPasswordSecretRef).key }}
+                  name: {{ required (printf "keystores.%s.keyPasswordSecretRef.name must be set" $key) ($value.keyPasswordSecretRef).name }}
+                  key: {{ required (printf "keystores.%s.keyPasswordSecretRef.key must be set" $key) ($value.keyPasswordSecretRef).key }}
               {{- end }}
             {{- end }}
           {{- end }}
@@ -209,18 +209,44 @@ spec:
               value: "-Dls_hibernate_connection_username=$(LS_HIBERNATE_CONNECTION_USERNAME) -Dls_hibernate_connection_password=$(LS_HIBERNATE_CONNECTION_PASSWORD)"
             {{/* END ENV VARIABLES FOR HIBERNATE CONNECTION */}}
             {{- /* START ENV VARIABLES FOR APPLE KEYSTORES */ -}}
-            {{- range $keyStoreName, $keyStore := (.Values.mpn.appleNotifierConfig).keyStores }}
+            {{- range $keyStoreName, $keyStore := (.Values.mpn.appleNotifierConfig).keystores }}
               {{- if $keyStore }}
             - name: LS_MPN_APPLE_KEYSTORE_{{ $keyStoreName | upper | replace "-" "_" }}_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ required (printf "mpn.appleNotifierConfig.keyStores.%s.keystorePasswordSecretRef.name must be set" $keyStoreName) ($keyStore.keystorePasswordSecretRef).name }}
-                  key: {{ required (printf "mpn.appleNotifierConfig.keyStores.%s.keystorePasswordSecretRef.key must be set" $keyStoreName) ($keyStore.keystorePasswordSecretRef).key }}
+                  name: {{ required (printf "mpn.appleNotifierConfig.keystores.%s.keystorePasswordSecretRef.name must be set" $keyStoreName) ($keyStore.keystorePasswordSecretRef).name }}
+                  key: {{ required (printf "mpn.appleNotifierConfig.keystores.%s.keystorePasswordSecretRef.key must be set" $keyStoreName) ($keyStore.keystorePasswordSecretRef).key }}
               {{- end }}
             {{- end }}
             {{- /* END ENV VARIABLES FOR APPLE KEYSTORES */ -}}
           {{- end }}
           {{- /* END ENV VARIABLES FOR MPN */ -}}
+          {{- /* START ENV VARIABLES FOR THE ADAPTERS CONFIGURATION */ -}}
+          {{- $authSecretRefs := list }}
+          {{- range .Values.adapters }}
+            {{- if ((.proxyMetadataAdapter).authentication).enabled }}
+              {{- $authSecretRefs = concat $authSecretRefs .proxyMetadataAdapter.authentication.credentialsSecrets }}
+            {{- end}}
+            {{- with .proxyDataProviders }}
+              {{- if .authentication.enabled }}
+                {{- $authSecretRefs = concat $authSecretRefs .authentication.credentialsSecrets }}
+              {{- end }}
+            {{- end }}
+          {{- end }}
+          {{- $authSecretRefs := $authSecretRefs | uniq }}
+          {{- range $authSecretRefs }}
+            - name: LS_PROXY_CREDENTIAL_{{ . | upper | replace "-" "_" }}_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ . }}
+                  key: user
+            - name: LS_PROXY_CREDENTIAL_{{ . | upper | replace "-" "_" }}_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ . }}
+                  key: password      
+          {{- end }}
+          {{- /* END ENV VARIABLES FOR THE ADAPTERS CONFIGURATION */ -}}
           {{- /* START ENV VARIABLES FOR THE KAFKA CONNECTOR */ -}}
           {{- if ((.Values.connectors).kafkaConnector).enabled }}
             {{- /* AUTHENTICATION */ -}}
@@ -281,7 +307,7 @@ spec:
             - name: lightstreamer-mpn-google-conf
               mountPath: /lightstreamer/conf/mpn/google
             {{- /* START VOLUME MOUNTS FOR APPLE KEYSTORES */ -}}
-            {{- range $keyStoreName, $keyStore := (.Values.mpn.appleNotifierConfig).keyStores }}
+            {{- range $keyStoreName, $keyStore := (.Values.mpn.appleNotifierConfig).keystores }}
               {{- if $keyStore }}
             - name: lightstreamer-mpn-keystore-{{ $keyStoreName | lower | replace "_" "-" }}
               mountPath: /lightstreamer/conf/mpn/apple/keystores/{{ $keyStoreName }}
@@ -343,7 +369,7 @@ spec:
               mountPath: /lightstreamer/conf/error-page
           {{- end }}
           {{- /* START VOLUME MOUNTS FOR KEYSTORES */ -}}
-          {{- range $key, $value := .Values.keyStores }}
+          {{- range $key, $value := .Values.keystores }}
             {{- if $value }}
             - name: keystore-{{ $key | lower }}
               mountPath: /lightstreamer/conf/keystores/{{ $key }}
@@ -443,7 +469,7 @@ spec:
           configMap:
             name: {{ required "webServer.errorPageRef.name must be set" .name }}
       {{- end }}
-      {{- range $key, $value := .Values.keyStores }}
+      {{- range $key, $value := .Values.keystores }}
         {{- if $value }}
         - name: keystore-{{ $key | lower }}
           secret:
@@ -481,11 +507,11 @@ spec:
           configMap:
             name: {{ include "lightstreamer.fullname" . }}-mpn-google-conf
         {{- /* START VOLUMES FOR APPLE KEYSTORES */ -}}
-        {{- range $keyStoreName, $keyStore := (.Values.mpn.appleNotifierConfig).keyStores }}
+        {{- range $keyStoreName, $keyStore := (.Values.mpn.appleNotifierConfig).keystores }}
           {{- if $keyStore }}
         - name: lightstreamer-mpn-keystore-{{ $keyStoreName | lower | replace "_" "-" }}
           secret:
-            secretName: {{ required (printf "mpn.appleNotifierConfig.keyStores.%s.keystoreFileSecretRef.name must be set" $keyStoreName) $keyStore.keystoreFileSecretRef.name }}
+            secretName: {{ required (printf "mpn.appleNotifierConfig.keystores.%s.keystoreFileSecretRef.name must be set" $keyStoreName) $keyStore.keystoreFileSecretRef.name }}
           {{- end }}
         {{- end }}
         {{- /* END VOLUMES FOR APPLE KEYSTORES */ -}}
