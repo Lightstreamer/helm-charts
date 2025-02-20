@@ -367,7 +367,7 @@ Render the Lightstreamer configuration file
              Instructions on how to setup a JKS keystore are provided in the
              TLS/SSL Certificates document. -->
       {{- with required "sslConfig.keystoreRef must be set" .keystoreRef }}
-        {{- include "lightstreamer.configuration.keystore" (list $.Values.keyStores .)  | nindent 8 }}
+        {{- include "lightstreamer.configuration.keystore" (list $.Values.keystores .)  | nindent 8 }}
       {{- end }}
 
         <!-- Optional and cumulative, but forbidden if <remove_cipher_suites> is used.
@@ -625,7 +625,7 @@ Render the Lightstreamer configuration file
              Moreover, the handling of keystore replacement doesn't apply here. -->
       {{- if or .enableClientAuth .enableMandatoryClientAuth }}
           {{- with required "sslConfig.truststoreRef must be set since either sslConfig.enableClientAuth or sslConfig.enableMandatoryClientAuth are enabled " .truststoreRef }}
-               {{- include "lightstreamer.configuration.truststore" (list $.Values.keyStores .)  | nindent 8 }}
+               {{- include "lightstreamer.configuration.truststore" (list $.Values.keystores .)  | nindent 8 }}
           {{- end }}
       {{- else }}
         <!--
@@ -1246,7 +1246,7 @@ Render the Lightstreamer configuration file
                  JVM properties will apply. -->
       {{- if or .port.enableSsl (.dataPort).enableSsl }}
         {{- with required "management.jmx.rmiConnector.keystoreRef must be set" .keystoreRef }}
-          {{- include "lightstreamer.configuration.keystore" (list $.Values.keyStores .) | nindent 12 }}
+          {{- include "lightstreamer.configuration.keystore" (list $.Values.keystores .) | nindent 12 }}
         {{- end }}
       {{- else }}
             <!--
