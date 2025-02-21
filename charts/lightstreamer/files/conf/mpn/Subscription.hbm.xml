@@ -31,28 +31,47 @@
 
       <property name="adapterSetName" column="ADAPTER_SET_NAME" type="string" length="32" index="INDEX_SUBSCRIPTION_KEY" />
       <property name="dataAdapterName" column="DATA_ADAPTER_NAME" type="string" length="32" index="INDEX_SUBSCRIPTION_KEY" />
+        <!--
+            Warning: The column lengths should be consistent with the Adapter Set
+            and Data Adapter names configured.
+        -->
 
       <property name="groupId" column="GROUP_ID" type="string" length="255" index="INDEX_SUBSCRIPTION_KEY" />
+      <property name="schemaName" column="SCHEMA_NAME" type="string" length="255" index="INDEX_SUBSCRIPTION_KEY" />
+        <!--
+            Warning: The column lengths should be enough to store all the possible group ids
+            and schema names allowed by the Metadata Adapter for MPN subscriptions.
+        -->
 
-      <list name="items" table="SUBSCRIPTION_ITEMS" inverse="true" lazy="false" cascade="all">
+      <list name="items" table="SUBSCRIPTION_ITEMS" inverse="true" lazy="true" cascade="all">
       	<key column="SUBSCRIPTION_ID" />
       	<list-index column="ITEM_IDX" />
       	<one-to-many class="SubscriptionItem" />
       </list>
 
-      <property name="schemaName" column="SCHEMA_NAME" type="string" length="255" index="INDEX_SUBSCRIPTION_KEY" />
-
-      <list name="fields" table="SUBSCRIPTION_FIELDS" lazy="false" cascade="all">
+      <list name="fields" table="SUBSCRIPTION_FIELDS" lazy="true" cascade="all">
       	<key column="SUBSCRIPTION_ID" />
       	<list-index column="FIELD_IDX" />
       	<element column="FIELD" type="string" length="32" />
+          <!--
+              Warning: The column length should be enough to store all the possible
+              field names available for MPN subscriptions.
+          -->
       </list>
 
       <property name="mode" column="SUB_MODE" type="string" length="16" />
 
       <property name="notificationFormat" column="NOTIFICATION_FORMAT" type="string" length="8192" />
+        <!--
+            Warning: The column length should be enough to store all the possible values
+            of notification format allowed by the Metadata Adapter for MPN subscriptions.
+        -->
 
       <property name="triggerExpression" column="TRIGGER_EXP" type="string" length="255" index="INDEX_SUBSCRIPTION_KEY" />
+        <!--
+            Warning: The column length should be enough to store all the possible values
+            of trigger expression allowed by the Metadata Adapter for MPN subscriptions.
+        -->
       <property name="triggeredDate" column="TRIGGERED_DATE" type="timestamp" />
 
    </class>
