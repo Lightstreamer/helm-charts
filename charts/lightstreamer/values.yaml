@@ -3691,11 +3691,17 @@ load:
 # -- Optional. Adapters configuration.
 adapters:
   myAdapterSet:
+
+    # -- Optional. Enablement of the Adapter Set.
+    # @default -- false
+    enabled: true
+
+    # -- Mandatory. Define an Adapter Set and its unique ID.
     id: "MY_ADAPTER_SET"
 
     # -- Optional. Requests the creation of a specific `SET` thread pool, 
     # devoted to the management of all the client requests pertaining to 
-    # sessions based on this Adapter Set. Only requests related with the special
+    # sessions based on this Adapter Set. Only requests related to the special
     # Data Adapter used to supply the state of the MPN Module (if enabled) are
     # not included and fall into the global `SERVER` pool.
     # Note, however, that the `AUTHENTICATION` and `MSG` pools are always
@@ -3738,681 +3744,934 @@ adapters:
     # -- Mandatory. Configuration of the Proxy Metadata Adapter, which is 
     # embedded in Lightstreamer Server and available out of the box.
     # The Proxy Metadata Adapter communicates with its remote counterpart
-    # through standard TCP sockets. It listens on a configurable port
-    # and waits for its counterpart to connect.
-    # proxyMetadataAdapter:
+    # through standard TCP sockets. It listens on a configurable port and waits
+    # its counterpart to connect.
+    metadataProvider:
 
-    #   # -- Optional. Enablement of the Robust Proxy Metadata Adapter to manage
-    #   # the case in which the remote counterpart is missing, by just refusing 
-    #   # all new requests from the clients and storing all state change 
-    #   # notifications that have to be sent to the backend (namely, session 
-    #   # closing and table closing notifications).
-    #   # Meanwhile, this Metadata Adapter keeps waiting for connection from a new
-    #   # Remote Server; upon connection, it will flush pending notify requests,
-    #   # then start working normally. However, if the remote counterpart has 
-    #   # restarted from scratch, then retrieving and restoring the state of the
-    #   # previously connected instance will be its own burden; for how to 
-    #   # identify the involved Server instance, see `remoteParams.prefix`.
-    #   # Note that the unavailability of the Metadata Adapter is a severe issue
-    #   # for Lightstreamer and all client requests performed in this condition 
-    #   # will fail with an `unexpected error` cause; this can be avoided only 
-    #   # for requests for new sessions (see `notifyUserDisconnectionCode`).
-    #   # @default -- false
-    #   enableRobustAdapter: true
+      proxyMetadataAdapter:
+        enabled: true
 
-    #   # -- Optional. Configures the specific `AUTHENTICATION` thread pool,
-    #   # expressly devoted to the calls of Notify User against the Remote 
-    #   # Metadata Adapter.
-    #   # This pool is always created and the Notify User calls to Proxy Adapters
-    #   # are performed asynchronously, hence they are not supposed to keep 
-    #   # threads engaged.
-    #   # In order to keep track of the pending asynchronous requests, they are
-    #   # counted in the global statistics as part of the pool task queue (but not
-    #   # as contributing to the pool queue wait).
-    #   #
-    #   # By default, the pool has one fixed thread. If this setting is defined,
-    #   # its `maxSize` and `maxFree` values, with meaning similar to that of
-    #   # the global `load.serverPoolMaxSize` and `load.serverPoolMaxFree`, are 
-    #   # optional, both with default `1`.
-    #   # In fact, it is not expected that more than one thread will ever be
-    #   # needed, since the pool's only task is to forward the Notify User 
-    #   # requests.
-    #   # On the other hand, configuring the pool is recommended, to constrain the
-    #   # maximum number of pending requests to the Remote Metadata Adapter 
-    #   # through the optional `maxPendingRemoteRequests` settings (if set <= 0,
-    #   # it poses no limitation; this is also the default).
-    #   # The optional `maxQueue` setting is also available, with meaning similar
-    #   # to the global `load.serverPoolMaxQueue`. If defined, the length of the
-    #   # queue of this pool, instead of being added to the length checked by 
-    #   # `load.serverPoolMaxQueue`, will be checked against this limit, but with
-    #   # the same consequent backpressure actions.
-    #   authenticationPool:
-    #     maxSize: 1
-    #     maxFree: 0
-    #     maxPendingRemoteRequests: 0
-    #     maxQueue: 0
+        # -- Optional. Enablement of the Robust Proxy Metadata Adapter to manage
+        # the case in which the remote counterpart is missing, by just refusing 
+        # all new requests from the clients and storing all state change 
+        # notifications that have to be sent to the backend (namely, session 
+        # closing and table closing notifications).
+        # Meanwhile, this Metadata Adapter keeps waiting for connection from a 
+        # new Remote Server; upon connection, it will flush pending notify 
+        # requests, then start working normally. However, if the remote 
+        # counterpart has restarted from scratch, then retrieving and restoring 
+        # the state of the previously connected instance will be its own burden; 
+        # for how to identify the involved Server instance, see 
+        # `remoteParams.prefix`.
+        # Note that the unavailability of the Metadata Adapter is a severe issue
+        # for Lightstreamer and all client requests performed in this condition 
+        # will fail with an `unexpected error` cause; this can be avoided only 
+        # for requests for new sessions (see `notifyUserDisconnectionCode`).
+        # @default -- false
+        enableRobustAdapter: true
 
-    #   # -- Optional. Configures the specific `MSG` thread pool, expressly 
-    #   # devoted to the calls of Notify User Message, which handle messages sent
-    #   # by the client, against the Remote Metadata Adapter.
-    #   # This pool is always created and the Notify User Message calls to Proxy 
-    #   # Adapters are performed asynchronously, hence they are not supposed to 
-    #   # keep threads engaged.
-    #   # In order to keep track of the pending asynchronous requests, they are
-    #   # counted in the global statistics as part of the pool task queue (but
-    #   # not as contributing to the pool queue wait).
-    #   #
-    #   # By default, the pool has one fixed thread. If this setting is defined,
-    #   # its `maxSize` and `maxFree` values, with meaning similar to that of the
-    #   # global `load.serverPoolMaxSize` and `load.serverPoolMaxFree` settings,
-    #   # are optional, both with default `1`.
-    #   # In fact, it is not expected that more than one thread will ever be
-    #   # needed, since the pool's only task is to forward the Notify User 
-    #   # requests.
-    #   # On the other hand, configuring the pool is recommended, to constrain
-    #   # the maximum number of pending requests to the Remote Metadata Adapter
-    #   # through the optional `maxPendingRemoteRequests` setting (if set <= 0, it
-    #   # poses no limitation; this is also the default).
-    #   # The optional `maxQueue` setting is also available, with meaning similar 
-    #   # to the global `load.serverPoolMaxQueue`. If defined, the length of the
-    #   # queue of this pool, instead of being added to the length checked by
-    #   # `load.serverPoolMaxQueue`, will be checked against this limit, but with
-    #   # the same consequent backpressure actions.
-    #   messagesPool:
-    #     maxSize: 1
-    #     maxFree: 2
-    #     maxPendingRemoteRequests: 3 
-    #     maxQueue: 4
+        # -- Optional. Configures the specific `AUTHENTICATION` thread pool,
+        # expressly devoted to the calls of Notify User against the Remote 
+        # Metadata Adapter.
+        # This pool is always created and the Notify User calls to Proxy 
+        # Adapters are performed asynchronously, hence they are not supposed to 
+        # keep  threads engaged.
+        # In order to keep track of the pending asynchronous requests, they are
+        # counted in the global statistics as part of the pool task queue (but 
+        # not as contributing to the pool queue wait).
+        #
+        # By default, the pool has one fixed thread. If this setting is defined,
+        # its `maxSize` and `maxFree` values, with meaning similar to that of
+        # the global `load.serverPoolMaxSize` and `load.serverPoolMaxFree`, are 
+        # optional, both with default `1`.
+        # In fact, it is not expected that more than one thread will ever be
+        # needed, since the pool's only task is to forward the Notify User 
+        # requests.
+        # On the other hand, configuring the pool is recommended, to constrain 
+        # the maximum number of pending requests to the Remote Metadata Adapter 
+        # through the optional `maxPendingRemoteRequests` settings (if set <= 0,
+        # it poses no limitation; this is also the default).
+        # The optional `maxQueue` setting is also available, with meaning
+        # similar to the global `load.serverPoolMaxQueue`. If defined, the 
+        # length of the queue of this pool, instead of being added to the length
+        # checked by `load.serverPoolMaxQueue`, will be checked against this 
+        # limit, but with the same consequent backpressure actions.
+        authenticationPool:
+          maxSize: 1
+          maxFree: 0
+          maxPendingRemoteRequests: 1
+          maxQueue: 0
 
-    #   # -- Optional. Requests the creation of a specific `MPN REQUESTS` thread
-    #   # pool, devoted to the submission to the Remote Metadata Adapter of all
-    #   # the mobile push notification requests pertaining to sessions based on
-    #   # this Adapter Set.
-    #   #
-    #   # If not defined, these calls are managed by the thread pool related with
-    #   # the Adapter Set, if, in turn, defined. If defined, the `maxSize` and
-    #   # `maxFree` settings are mandatory, with meaning similar to that of the
-    #   # global `load.serverPoolMaxSize` and `load.serverPoolMaxFree` settings.
-    #   # Note that `maxSize` also indicates the maximum number of pending 
-    #   # requests to the Remote Metadata Adapter.
-    #   # Using a specific thread pool is advisable if the implementation of MPN
-    #   # operations (like Notify MPN Subscription Activation etc.) may introduce 
-    #   # delays.
-    #   mpnPool: 
-    #     maxSize: 1
-    #     maxFree: 2
+        # -- Optional. Configures the specific `MSG` thread pool, expressly 
+        # devoted to the calls of Notify User Message, which handle messages 
+        # sent by the client, against the Remote Metadata Adapter.
+        # This pool is always created and the Notify User Message calls to Proxy 
+        # Adapters are performed asynchronously, hence they are not supposed to 
+        # keep threads engaged.
+        # In order to keep track of the pending asynchronous requests, they are
+        # counted in the global statistics as part of the pool task queue (but
+        # not as contributing to the pool queue wait).
+        #
+        # By default, the pool has one fixed thread. If this setting is defined,
+        # its `maxSize` and `maxFree` values, with meaning similar to that of 
+        # the global `load.serverPoolMaxSize` and `load.serverPoolMaxFree` 
+        # settings, are optional, both with default `1`.
+        # In fact, it is not expected that more than one thread will ever be
+        # needed, since the pool's only task is to forward the Notify User 
+        # requests.
+        # On the other hand, configuring the pool is recommended, to constrain
+        # the maximum number of pending requests to the Remote Metadata Adapter
+        # through the optional `maxPendingRemoteRequests` setting (if set <= 0, 
+        # it poses no limitation; this is also the default).
+        # The optional `maxQueue` setting is also available, with meaning 
+        # similar  to the global `load.serverPoolMaxQueue`. If defined, the 
+        # length of the queue of this pool, instead of being added to the length 
+        # checked by `load.serverPoolMaxQueue`, will be checked against this 
+        # limit, but with the same consequent backpressure actions.
+        messagesPool:
+          maxSize: 1
+          maxFree: 2
+          maxPendingRemoteRequests: 3 
+          maxQueue: 4
 
-    #   # -- Optional. If set to `true`, ensures that all Table (i.e.
-    #   # Subscription) notifications (that is, all the invocations to the Notify
-    #   # New Tables and Notify Tables Close methods) pertaining to the same 
-    #   # session will be sequential, with no overlapping; if set to `false`, then
-    #   # concurrent invocations will be possible.
-    #   # Note that the final invocation to Notify Session Close is always 
-    #   # guaranteed to occur after all the above notifications have terminated.
-    #   # @default -- false
-    #   enableTableNotificationsSequentialization:
+        # -- Optional. Requests the creation of a specific `MPN REQUESTS` thread
+        # pool, devoted to the submission to the Remote Metadata Adapter of all
+        # the mobile push notification requests pertaining to sessions based on
+        # this Adapter Set.
+        #
+        # If not defined, these calls are managed by the thread pool related to
+        # the Adapter Set, if, in turn, defined. If defined, the `maxSize` and
+        # `maxFree` settings are mandatory, with meaning similar to that of the
+        # global `load.serverPoolMaxSize` and `load.serverPoolMaxFree` settings.
+        # Note that `maxSize` also indicates the maximum number of pending 
+        # requests to the Remote Metadata Adapter.
+        # Using a specific thread pool is advisable if the implementation of 
+        # MPN operations (like Notify MPN Subscription Activation etc.) may 
+        # introduce delays.
+        mpnPool: 
+          maxSize: 1
+          maxFree: 2
 
-    #   # -- (int) Mandatory. The request/reply port to listen on. The connection 
-    #   # on this port will carry the requests/replies channels.
-    #   requestReplyPort: 6663
+        # -- Optional. If set to `true`, ensures that all Table (i.e.
+        # Subscription) notifications (that is, all the invocations to the 
+        # Notify New Tables and Notify Tables Close methods) pertaining to the 
+        # same session will be sequential, with no overlapping; if set to 
+        # `false`, then concurrent invocations will be possible.
+        # Note that the final invocation to Notify Session Close is always 
+        # guaranteed to occur after all the above notifications have terminated.
+        # @default -- false
+        enableTableNotificationsSequentialization:
 
-    #   # --- (string) Optional. If set, inverts the normal connection 
-    #   # establishment behavior, by having the Proxy Adapter open a client 
-    #   # socket on the configured request/reply port towards the Remote Adapter, 
-    #   # using the host address specified here.
-    #   # This is not the preferred setting but it can be useful in some 
-    #   # scenarios. See a discussion in the Adapter Remoting Infrastructure 
-    #   # architecture document. Obviously, the setting requires a corresponding
-    #   # behavior by the Remote Server.
-    #   # When this setting is leveraged, most of the other elements and 
-    #   # parameters are still valid (in particular, `sslConfig`), although some 
-    #   # of their descriptions refer to the listening port case and should be
-    #   # reinterpreted; only the following ones are ignored:
-    #   # - `interface`
-    #   # - sslConfig.enforceServerCipherSuitePreference
-    #   # - sslConfig.enableClientAuth
-    #   # - remote_address_whitelist
-    #   # Note, in particular, that the keystore parameters are available, though
-    #   # optional. This allows for authentication of the Proxy Adapter by the
-    #   # Remote Server by requesting the Proxy Adapter's TLS client certificate. 
-    #   remoteHost:
+        # -- (int) Mandatory. The request/reply port to listen on. The 
+        # connection  on this port will carry the requests/replies channels.
+        requestReplyPort: 6663
 
-    #   # - Optional. The local network interface to bind to.
-    #   # Example: 192.168."1.1"
-    #   # @default -- will bind to any available interface
-    #   interface:
+        # --- (string) Optional. If set, inverts the normal connection 
+        # establishment behavior, by having the Proxy Adapter open a client 
+        # socket on the configured request/reply port towards the Remote 
+        # Adapter,  using the host address specified here.
+        # This is not the preferred setting but it can be useful in some 
+        # scenarios. See a discussion in the Adapter Remoting Infrastructure 
+        # architecture document. Obviously, the setting requires a corresponding
+        # behavior by the Remote Server.
+        # When this setting is leveraged, most of the other settings and 
+        # parameters are still valid (in particular, `sslConfig`), although some 
+        # of their descriptions refer to the listening port case and should be
+        # reinterpreted; only the following ones are ignored:
+        # - `interface`
+        # - sslConfig.enforceServerCipherSuitePreference
+        # - sslConfig.enableClientAuth
+        # - remote_address_whitelist
+        # Note, in particular, that the keystore parameters are available, 
+        # though optional. This allows for authentication of the Proxy Adapter 
+        # by the Remote Server by requesting the Proxy Adapter's TLS client
+        # certificate. 
+        remoteHost: mymetadataadapter.com
 
-    #   # -- Optional. TLS/SSL settings for the connection to the remote Metadata
-    #   # Adapter.
-    #   sslConfig:
+        # - Optional. The local network interface to bind to.
+        # Example: 192.168."1.1"
+        # @default -- will bind to any available interface
+        interface:
 
-    #     # -- Optional. Enablement of the encryption.
-    #     # @default -- false
-    #     enabled: true
+        # -- Optional. TLS/SSL settings for the connection to the remote 
+        # Metadata Adapter.
+        sslConfig:
 
-    #     # -- Mandatory. The reference to a keystore configuration (defined in
-    #     # `keystores`).
-    #     # See the `keystores.myServerKeystore` settings for general details on
-    #     # keystore configuration.
-    #     keystoreRef: myServerKeystore
+          # -- Optional. Enablement of the encryption.
+          # @default -- false
+          enabled: true
 
-    #     # -- See `servers.{}.sslConfig.allowCipherSuites`.
-    #     allowCipherSuites: []
+          # -- Mandatory. The reference to a keystore configuration (defined in
+          # `keystores`).
+          # See the `keystores.myServerKeystore` settings for general details on
+          # keystore configuration.
+          keystoreRef: myServerKeystore
 
-    #     # -- See `servers.{}.sslConfig.removeCipherSuites`.
-    #     removeCipherSuites:
-    #       - _DHE_
+          # -- See `servers.{}.sslConfig.allowCipherSuites`.
+          allowCipherSuites: []
 
-    #     # -- See `servers.{}.sslConfig.enforceServerCipherPreference`.
-    #     enforceServerCipherSuitePreference:
-    #       enabled: true
-    #       order: JVM
+          # -- See `servers.{}.sslConfig.removeCipherSuites`.
+          removeCipherSuites:
+            - _DHE_
 
-    #     # -- See `servers.{}.sslConfig.allowProtocols`.
-    #     allowProtocols:
-    #       - TLSv1.2
+          # -- See `servers.{}.sslConfig.enforceServerCipherPreference`.
+          enforceServerCipherSuitePreference:
+            enabled: true
+            order: JVM
 
-    #     # -- See `servers.{}.sslConfig.removeProtocols`.
-    #     removeProtocols: []
+          # -- See `servers.{}.sslConfig.allowProtocols`.
+          allowProtocols:
+            - TLSv1.2
 
-    #     # -- See `servers.{}.sslConfig.enableMandatoryClientAuth`.
-    #     enableMandatoryClientAuth:
+          # -- See `servers.{}.sslConfig.removeProtocols`.
+          removeProtocols: []
 
-    #     # -- Mandatory if `enableMandatoryClientAuth` is set to `true`. The
-    #     # reference to a keystore configuration (defined in `keystores`).
-    #     # See the `keystores.myServerKeystore` settings for general details on
-    #     # keystore configuration.
-    #     truststoreRef: myServerKeystore
+          # -- See `servers.{}.sslConfig.enableMandatoryClientAuth`.
+          enableMandatoryClientAuth:
 
-    #     # -- Optional. Only used if `remoteHost` is configured.
-    #     # If set to `false`, suppresses the check of the hostname in the TLS
-    #     # certificate, which, in this context, is received from the Remote
-    #     # Server.
-    #     # Setting to `false` is only meant to be used in a development/test
-    #     # scenario.
-    #     # @default -- true
-    #     enableHostnameVerification:
+          # -- Mandatory if `enableMandatoryClientAuth` is set to `true`. The
+          # reference to a keystore configuration (defined in `keystores`).
+          # See the `keystores.myServerKeystore` settings for general details on
+          # keystore configuration.
+          truststoreRef: myServerKeystore
 
-    #   # -- Optional. Authentication settings for the connection.
-    #   authentication:
+          # -- Optional. Only used if `remoteHost` is configured.
+          # If set to `false`, suppresses the check of the hostname in the TLS
+          # certificate, which, in this context, is received from the Remote
+          # Server.
+          # Setting to `false` is only meant to be used in a development/test
+          # scenario.
+          # @default -- true
+          enableHostnameVerification:
 
-    #     # -- Optional. If set to `true`, enforces Remote Adapter 
-    #     # authentication on the connection based on a user/password credential 
-    #     # check.
-    #     # Note that the user names will be used in log messages at `INFO`
-    #     # level or above, whereas the passwords won't.
-    #     # @default -- false
-    #     enabled: true
+        # -- Optional. Authentication settings for the connection.
+        authentication:
 
-    #     # -- Mandatory if `enabled` is set to `true`. The reference to the 
-    #     # secrets containing the credentials of the users allowed to connect.
-    #     # Every secret must contains the keys `user` and `password`.
-    #     credentialsSecrets: []
+          # -- Optional. If set to `true`, enforces Remote Adapter 
+          # authentication on the connection based on a user/password credential 
+          # check.
+          # Note that the user names will be used in log messages at `INFO`
+          # level or above, whereas the passwords won't.
+          # @default -- false
+          enabled: true
 
-    #   # -- (int) Optional. Only used if `remoteHost` is configured. Delay to be 
-    #   # enforced before retrying a connection attempt to the Remote Server, to
-    #   # prevent a possible strict loop of unsuccessful attempts.
-    #   # @default -- 10000
-    #   connectionRetryMillis:
+          # -- Mandatory if `enabled` is set to `true`. The reference to the 
+          # secrets containing the credentials of the users allowed to connect.
+          # Every secret must contains the keys `user` and `password`.
+          credentialsSecrets: []
 
-    #   # -- (int) Optional. The timeout for initialization errors. After an 
-    #   # unsuccessful attempt to achieve a connection from a remote server due to 
-    #   # an error in configuration, network access or initialization, the Proxy
-    #   # Adapter will be allowed to retry listening for connections only after
-    #   # ensuring that at least this time has elapsed since the previous attempt.
-    #   # A negative value prevents further attempts, so that no remote server 
-    #   # will be available.
-    #   # @default -- -1
-    #   connectionRecoveryTimeoutMillis:
+        # -- (int) Optional, but effective only if `remoteHost` is specified.
+        # Delay to be enforced before retrying a connection attempt to the 
+        # Remote Server, to prevent a possible strict loop of unsuccessful 
+        # attempts.
+        # @default -- 10000
+        connectionRetryMillis: 1
 
-    #   # -- (int) Optional. The timeout for the first connection attempt. Upon 
-    #   # the Proxy Adapter initialization at Lightstreamer Server startup, if a 
-    #   # remote server connection is not available, Lightstreamer Server startup
-    #   # can be delayed until this timeout expires.
-    #   # A negative value stands for an unlimited timeout.
-    #   # @default -- -1
-    #   firstConnectionTimeoutMillis:
+        # -- (int) Optional, but effective only if `enableRobustAdapter` is set 
+        # to `true`. The timeout for initialization errors. After an 
+        # unsuccessful attempt to achieve a connection from a remote server due 
+        # to an error in configuration, network access or initialization, the 
+        # Proxy Adapter will be allowed to retry listening for connections only 
+        # after ensuring that at least this time has elapsed since the previous 
+        # attempt.
+        # A negative value prevents further attempts, so that no remote server 
+        # will be available.
+        # @default -- -1
+        connectionRecoveryTimeoutMillis: 10000
 
-    #   # -- (string) Optional. The strategy to be adopted whenever a new remote 
-    #   # server is available in order to resend the state change notifications 
-    #   # that could not or might not have been sent to the previous remote 
-    #   # server.
-    #   # This involves the notifications of session closing and the optional
-    #   # notifications of table closing.
-    #   # Note that the Proxy Adapter has no way of knowing exactly if a
-    #   # notification has been processed by a remote server if no answer had been
-    #   # received at the time the connection was closed. Also consider that the
-    #   # answers from the remote server are not expected to come in the same 
-    #   # sequence as the requests.
-    #   # Hence, no perfect recovery is possible and the remote server must be 
-    #   # able to deal with an imperfect notification sequence.
-    #   # Currently, the only available options are:
-    #   #
-    #   # - `pessimistic`
-    #   #    All notifications since the first one that could not or may not have
-    #   #    been processed by the previous remote server are resent to the new 
-    #   #    one.
-    #   #    This ensures that all notifications are processed at least once, but
-    #   #    may cause some notifications to be issued for a second time.
-    #   #    Even notifications that did get an answer could be resent, in order
-    #   #    to preserve the original sequence.
-    #   #    Note that timed out requests (see the `timeoutMillis` setting) are 
-    #   #    considered as processed.
-    #   #
-    #   # - `optimistic`
-    #   #    Only notifications after the last one that got an answer by the
-    #   #    previous remote server are resent to the new one.
-    #   #
-    #   # - `unneeded`
-    #   #    No notifications are resent. In case the close notifications are 
-    #   #    ignored by the remote server implementation, this can save a possibly
-    #   #    long playback of unneeded messages.
-    #   #    Note that table notifications, for both opening and closing, are
-    #   #    already omitted, unless requested by the remote server through the
-    #   #    `wantsTablesNotification` method.
-    #   #
-    #   # @default -- pessimistic
-    #   closeNotificationsRecovery:
+        # -- (int) Optional, but effective only if `enableRobustAdapter` is set 
+        # to `true`. The timeout for the first connection attempt. Upon 
+        # the Proxy Adapter initialization at Lightstreamer Server startup, if 
+        # a remote server connection is not available, Lightstreamer Server 
+        # startup can be delayed until this timeout expires.
+        # A negative value stands for an unlimited timeout.
+        # Note that, when Lightstreamer Server startup completes, as long as a
+        # connection to a remote server is still missing, all client requests 
+        # will be refused.
+        # @default -- -1
+        firstConnectionTimeoutMillis: 10000
 
-    #   # -- (string) Optional. The action to be performed when the authentication 
-    #   # of the request for a new Session (through `notifyUser`) cannot be 
-    #   # carried out because of the unavailability of the Remote Metadata 
-    #   # Adapter.
-    #   # Can be one of the following:
-    #   #
-    #   # - `fail`
-    #   #   The request will fail as though an unexpected error had been occurred.
-    #   #
-    #   # - `force_retry`
-    #   #   The request will fail, but the server should also instruct the client
-    #   #   to retry the request.
-    #   #
-    #   # - `send_code`
-    #   #   The request will be refused by throwing a CreditsException with a
-    #   #   custom error code that has to be specified through the
-    #   #   `notifyUserDisconnectionCode` parameter; in this way, the code will
-    #   #   be communicated to the client as a Metadata Adapter custom refusal 
-    #   #   code.
-    #   #
-    #   # @default -- either `send_code` or `fail`, depending on whether or not the `notifyUserDisconnectionCode` parameter is supplied
-    #   notifyUserOnDisconnection:
+        # -- (string) Optional, but effective only if `enableRobustAdapter` is 
+        # set to `true`. The strategy to be adopted whenever a new remote 
+        # server is available in order to resend the state change notifications 
+        # that could not or might not have been sent to the previous remote 
+        # server.
+        # This involves the notifications of session closing and the optional
+        # notifications of table closing.
+        # Note that the Proxy Adapter has no way of knowing exactly if a
+        # notification has been processed by a remote server if no answer had 
+        # been received at the time the connection was closed. Also consider 
+        # that the answers from the remote server are not expected to come in 
+        # the same  sequence as the requests.
+        # Hence, no perfect recovery is possible and the remote server must be 
+        # able to deal with an imperfect notification sequence.
+        # Currently, the only available options are:
+        #
+        # - `pessimistic`
+        #    All notifications since the first one that could not or may not 
+        #    have been processed by the previous remote server are resent to the 
+        #    new one.
+        #    This ensures that all notifications are processed at least once, 
+        #    but may cause some notifications to be issued for a second time.
+        #    Even notifications that did get an answer could be resent, in order
+        #    to preserve the original sequence.
+        #    Note that timed out requests (see the `timeoutMillis` setting) are 
+        #    considered as processed.
+        #
+        # - `optimistic`
+        #    Only notifications after the last one that got an answer by the
+        #    previous remote server are resent to the new one.
+        #
+        # - `unneeded`
+        #    No notifications are resent. In case the close notifications are 
+        #    ignored by the remote server implementation, this can save a 
+        #    possibly long playback of unneeded messages.
+        #    Note that table notifications, for both opening and closing, are
+        #    already omitted, unless requested by the remote server through the
+        #    `wantsTablesNotification` method.
+        #
+        # @default -- pessimistic
+        closeNotificationsRecovery:
 
-    #   # -- (int) Optional when `notifyUserOnDisconnection` is not supplied; 
-    #   # mandatory when `notifyUserOnDisconnection` is set to `send_code`; 
-    #   # otherwise forbidden. An integer to be supplied as a custom error code by 
-    #   # `notifyUser`, through a `CreditsException`, when the request is being 
-    #   # refused because of the unavailability of the Remote Metadata Adapter.
-    #   # The code must be zero or negative, as positive codes are reserved by the
-    #   # Server.
-    #   # @default -- no code will be used, hence `notifyUserOnDisconnection` will be set as fail
-    #   notifyUserDisconnectionCode: -10
+        # -- (string) Optional, but effective only if `enableRobustAdapter` is 
+        # set to `true`. The action to be performed when the  authentication of
+        # the request for a new Session (through `notifyUser`) cannot be carried
+        # out because of the unavailability of the Remote Metadata Adapter.
+        # Can be one of the following:
+        #
+        # - `fail`
+        #   The request will fail as though an unexpected error had been 
+        #   occurred.
+        #
+        # - `force_retry`
+        #   The request will fail, but the server should also instruct the 
+        #   client to retry the request.
+        #
+        # - `send_code`
+        #   The request will be refused by throwing a CreditsException with a
+        #   custom error code that has to be specified through the
+        #   `notifyUserDisconnectionCode` parameter; in this way, the code will
+        #   be communicated to the client as a Metadata Adapter custom refusal 
+        #   code.
+        #
+        # @default -- either `send_code` or `fail`, depending on whether or not the `notifyUserDisconnectionCode` parameter is supplied
+        notifyUserOnDisconnection: fail
 
-    #   # -- Optional, but effective when `notifyUserDisconnectionCode` is set. A
-    #   # string to be supplied as a custom error message by `notifyUser`, through
-    #   # a `CreditsException`, when the request is being refused because of the
-    #   # unavailability of the Remote Metadata Adapter.
-    #   # The message will be used in association with the error code configured
-    #   # through `notifyUserDisconnectionCode`.
-    #   # @default -- the error message is supplied by the Robust Proxy Metadata Adapter
-    #   notifyUserDisconnectionMsg: "Remote Metadata Adapter unavailable"
+        # -- (int) Optional when `notifyUserOnDisconnection` is not supplied; 
+        # mandatory when `notifyUserOnDisconnection` is set to `send_code`; 
+        # otherwise forbidden. An integer to be supplied as a custom error code 
+        # by `notifyUser`, through a `CreditsException`, when the request is 
+        # being refused because of the unavailability of the Remote Metadata 
+        # Adapter.
+        # The code must be zero or negative, as positive codes are reserved by 
+        # the Server.
+        # @default -- no code will be used, hence `notifyUserOnDisconnection` will be set as fail
+        notifyUserDisconnectionCode: -10
 
-    #   # -- Optional. Configuration of the custom initialization parameters to be 
-    #   # sent to the remote.
-    #   remoteParamsConfig:
-    #     # -- (string) Optional. Determines the the custom initialization 
-    #     # parameters to be sent to the remote. The supplied value is meant as a 
-    #     # prefix, such that all parameters supplied to this Proxy Adapter and 
-    #     # whose names start with this prefix will be sent. The value must 
-    #     # contain a `:` character, as all parameter names that don't contain a
-    #     # `:` character are reserved.
-    #     # Hence, the normal configuration parameters will not be sent to the
-    #     # remote counterpart, unless explicitly duplicated with a prefixed name.
-    #     # Anyway, the following parameters, with obvious meaning, will be 
-    #     # provided by the Proxy Adapter and will also be sent:
-    #     # - `ARI.version`
-    #     # - `keepalive_hint.millis` (optional)
-    #     # - `adapters_conf.id`
-    #     # - `server.instance_id`
-    #     # - `proxy.instance_id`
-    #     # where the latter is added by the Robust Proxy Metadata Adapter and 
-    #     # allows a Remote Metadata Adapter to detect if it is in replacement of 
-    #     # a previous instance for the same Proxy Adapter instance, and to 
-    #     # possibly recover the state, including the currently active sessions 
-    #     # and the related users.
-    #     # @default -- "" (no custom initialization parameters will be sent)
-    #     prefix: "remote:"
+        # -- Optional, but effective only if `notifyUserDisconnectionCode` is 
+        # specified. A string to be supplied as a custom error message by `notifyUser`, 
+        # through a `CreditsException`, when the request is being refused 
+        # because of the unavailability of the Remote Metadata Adapter.
+        # The message will be used in association with the error code configured
+        # through `notifyUserDisconnectionCode`.
+        # @default -- the error message is supplied by the Robust Proxy Metadata 
+        # Adapter
+        notifyUserDisconnectionMsg: "Remote Metadata Adapter unavailable"
+
+        # -- Optional. Configuration of the custom initialization parameters to 
+        # be sent to the remote.
+        remoteParamsConfig:
         
-    #     # -- Optional, but effective only if `prefix` is specified. Set of custom
-    #     # initialization parameters to be sent to the remote counterpart.
-    #     # Every key is the name of the parameter and must start with the value
-    #     # specified in the `prefix` setting.
-    #     params:
-    #       # "remote:xxxx": my value for the remote counterpart
+          # -- (string) Optional. Determines the the custom initialization 
+          # parameters to be sent to the remote. The supplied value is meant as 
+          # a prefix, such that all parameters supplied to this Proxy Adapter 
+          # and whose names start with this prefix will be sent. The value must 
+          # contain a `:` character, as all parameter names that don't contain a
+          # `:` character are reserved.
+          # Hence, the normal configuration parameters will not be sent to the
+          # remote counterpart, unless explicitly duplicated with a prefixed 
+          # name.
+          # Anyway, the following parameters, with obvious meaning, will be 
+          # provided by the Proxy Adapter and will also be sent:
+          # - `ARI.version`
+          # - `keepalive_hint.millis` (optional)
+          # - `adapters_conf.id`
+          # - `server.instance_id`
+          # - `proxy.instance_id`
+          # where the latter is added by the Robust Proxy Metadata Adapter and 
+          # allows a Remote Metadata Adapter to detect if it is in replacement 
+          # of a previous instance for the same Proxy Adapter instance, and to 
+          # possibly recover the state, including the currently active sessions 
+          # and the related users.
+          # @default -- "" (no custom initialization parameters will be sent)
+          prefix: "remote:"
+        
+          # -- Optional, but effective only if `prefix` is specified. Set of 
+          # custom initialization parameters to be sent to the remote 
+          # counterpart.
+          # Every key is the name of the parameter and must start with the value
+          # specified in the `prefix` setting.
+          params:
+            # "remote:xxxx": my value for the remote counterpart
 
-    #   # -- (int) Optional. Timeout for sent requests. A negative value stands 
-    #   # for an unlimited timeout. 
-    #   # Timed out requests are considered as failed and later answers are 
-    #   # ignored.
-    #   # @default -- 10000 
-    #   timeoutMillis:
+        # -- (int) Optional. Timeout for sent requests. A negative value stands 
+        # for an unlimited timeout. 
+        # Timed out requests are considered as failed and later answers are 
+        # ignored.
+        # @default -- 10000 
+        timeoutMillis:
 
-    #   # -- Optional. If set to `false`, suppresses clearing of the cached 
-    #   # profile data for a user when no sessions for the user are active. This 
-    #   # is only for troubleshooting purpose, as profile data are always 
-    #   # refreshed upon Notify User requests.
-    #   # @default -- true
-    #   enableClearingOnSessionClose:
+        # -- Optional. If set to `false`, suppresses clearing of the cached 
+        # profile data for a user when no sessions for the user are active. This 
+        # is only for troubleshooting purpose, as profile data are always 
+        # refreshed upon Notify User requests.
+        # @default -- true
+        enableClearingOnSessionClose: true
 
-    #   # -- Optional, but ineffective if `enableClearingOnSessionClose` is set to
-    #   # `false`. Sets the minimum time cached profile data are kept; these
-    #   # cached data are needed in order to manage request processing before a 
-    #   # session is fully started.
-    #   # @default -- 10000 
-    #   userDataTimeoutMillis:      
+        # -- Optional, but ineffective if `enableClearingOnSessionClose` is set 
+        # to `false`. Sets the minimum time cached profile data are kept; these
+        # cached data are needed in order to manage request processing before a 
+        # session is fully started.
+        # @default -- 10000 
+        userDataTimeoutMillis:      
 
-    #   # -- Optional, but effective only if `enableRobust` is set to `true`. If 
-    #   # set to `true`, enforces the clearing of all internal caches when a new
-    #   # Remote Metadata Adapter instance is connected after the disconnection of
-    #   # the previous instance.
-    #   # In fact, some requests to the Remote Adapter involve aggregate data and
-    #   # are meant to be used to fulfill multiple subsequent requests from the 
-    #   # Server, hence their responses are cached for a few seconds. However, 
-    #   # for requests whose responses are not supposed to change with time, the 
-    #   # cached responses are kept longer, so as to be used to fulfill further 
-    #   # identical requests from the Server and save the submission of the 
-    #   # related aggregate requests to the Remote counterpart.
-    #   # By setting `true`, responses obtained from a previous Remote Metadata 
-    #   # Adapter instance will never be used to fulfill requests from the Server 
-    #   # targeted to the new instance.
-    #   # @default -- false
-    #   enableClearingOnNewRemote: TRUE
+        # -- Optional, but effective only if `enableRobust` is set to `true`. If 
+        # set to `true`, enforces the clearing of all internal caches when a new
+        # Remote Metadata Adapter instance is connected after the disconnection 
+        # of the previous instance.
+        # In fact, some requests to the Remote Adapter involve aggregate data 
+        # and are meant to be used to fulfill multiple subsequent requests from 
+        # the Server, hence their responses are cached for a few seconds. 
+        # However, for requests whose responses are not supposed to change with 
+        # time, the cached responses are kept longer, so as to be used to 
+        # fulfill further identical requests from the Server and save the 
+        # submission of the related aggregate requests to the Remote 
+        # counterpart.
+        # By setting `true`, responses obtained from a previous Remote Metadata 
+        # Adapter instance will never be used to fulfill requests from the 
+        # Server targeted to the new instance.
+        # @default -- false
+        enableClearingOnNewRemote: true
 
-    #   # -- (string) Optional. Specifies a comma-separated list of hosts allowed 
-    #   # to connect to this proxy adapter in order to act as remote adapters.
-    #   # If a list is specified, connections received from addresses not in the 
-    #   # list will be turned down, otherwise any connection will be accepted.
-    #   # The addresses can be in any form accepted by the Java 
-    #   # `InetAddress.getByName` method.
-    #   # Example: `localhost,192.168.0.190`
-    #   # @default -- ""
-    #   remoteAddressWhitelist: localhost,192.168.0.190
+        # -- (string) Optional. Specifies a comma-separated list of hosts 
+        # allowed to connect to this proxy adapter in order to act as remote 
+        # adapters.
+        # If a list is specified, connections received from addresses not in the 
+        # list will be turned down, otherwise any connection will be accepted.
+        # The addresses can be in any form accepted by the Java 
+        # `InetAddress.getByName` method.
+        # Example: `localhost,192.168.0.190`
+        # @default -- ""
+        remoteAddressWhitelist: localhost,192.168.0.190
 
-    #   # -- (int) Optional. Timeout for inactivity on the connection with respect 
-    #   # to messages coming from the Remote Metadata Adapter.
-    #   # If neither replies nor keepalives are received within the specified
-    #   # timeout, the TCP connection will be considered broken and will be 
-    #   # closed; as a consequence, a connection with a new Remote Metadata 
-    #   # Adapter will be attempted.
-    #   # Setting a timeout is only meaningful if the Remote Metadata Adapter is
-    #   # configured to either send keepalive messages at a shorter interval, or 
-    #   # obey the keepalive interval requested by this Proxy (see 
-    #   # `keepaliveHintMillis`).
-    #   # A zero or negative value stands for an unlimited timeout.
-    #   # @default -- -1
-    #   keepaliveTimeoutMillis: 3
+        # -- (int) Optional. Timeout for inactivity on the connection with 
+        # respect to messages coming from the Remote Metadata Adapter.
+        # If neither replies nor keepalives are received within the specified
+        # timeout, the TCP connection will be considered broken and will be 
+        # closed; as a consequence, a connection with a new Remote Metadata 
+        # Adapter will be attempted.
+        # Setting a timeout is only meaningful if the Remote Metadata Adapter is
+        # configured to either send keepalive messages at a shorter interval, or 
+        # obey the keepalive interval requested by this Proxy (see 
+        # `keepaliveHintMillis`).
+        # A zero or negative value stands for an unlimited timeout.
+        # @default -- -1
+        keepaliveTimeoutMillis: 3
 
-    #   # -- (int) Optional. Keepalive interval to be requested to the Remote
-    #   # Metadata Adapter.
-    #   # The value should be low enough to ensure that, if obeyed, the connection
-    #   # will pass the timeout checks (see `keepaliveTimeoutMillis`).
-    #   # A zero or negative value stands for no keepalive request, which still
-    #   # allows the Remote Metadata Adapter to send keepalives for its own
-    #   # purpose.
-    #   # The default depends on the setting of `keepaliveTimeoutMillis`:
-    #   # - if not configured: `-1`
-    #   # - if less than `4` seconds: half the `keepaliveTimeoutMillis`
-    #   # - otherwise: `2` seconds less than the `keepaliveTimeoutMillis`
-    #   # @default -- See description
-    #   keepaliveHintMillis: 1
+        # -- (int) Optional. Keepalive interval to be requested to the Remote
+        # Metadata Adapter.
+        # The value should be low enough to ensure that, if obeyed, the 
+        # connection will pass the timeout checks (see 
+        # `keepaliveTimeoutMillis`).
+        # A zero or negative value stands for no keepalive request, which still
+        # allows the Remote Metadata Adapter to send keepalives for its own
+        # purpose.
+        # The default depends on the setting of `keepaliveTimeoutMillis`:
+        # - if not configured: `-1`
+        # - if less than `4` seconds: half the `keepaliveTimeoutMillis`
+        # - otherwise: `2` seconds less than the `keepaliveTimeoutMillis`
+        # @default -- See description
+        keepaliveHintMillis: 1
 
-    metadataAdapter: 
+      metadataAdapter: 
+        enabled: true
 
-      # -- Mandatory. Java class name of the adapter.
-      adapterClass: aJavaClass
+        # -- Mandatory. Java class name of the adapter.
+        adapterClass: aJavaClass
 
-      # -- (string) Optional. Determines the ClassLoader to be used to load the 
-      # Adapter related classes. Possible values are:
-      # - `common`: The common ClassLoader assigned to the whole Adapter Set
-      #   is used; this ClassLoader already includes all the classes found in
-      #   the common `lib" and `classes` folders; it also inherits from a global
-      #   ClassLoader that includes all the classes found under the `shared/lib`
-      #   and `shared/classes` folders. If a specific `installDir` is assigned
-      #   to the Adapter, classes found in its `lib` and `classes` subfolders
-      #   are added to the Adapter Set ClassLoader.
-      # - `dedicated`: A dedicated ClassLoader, which still inherits from the
-      #   Adapter Set ClassLoader, is used. In this case, it is mandatory that
-      #   a specific `installDir` is assigned to the Adapter; hence, classes
-      #   found in its `lib` and `classes` subfolders are added to the dedicated
-      #   the ClassLoader.
-      # - `log-enabled`: A dedicated ClassLoader which also includes the `slf4j`
-      #   library used by the Server is used; hence the Adapter shares the log
-      #   configuration with the Server. However, in this case, the Adapter
-      #   ClassLoader does not inherit from the Adapter Set ClassLoader, hence
-      #   no sharing of classes with other Adapters is possible. If no specific
-      #   `installDir` is assigned to the Adapter, then the dedicated 
-      #   ClassLoader will be added all classes found in the common `lib` and 
-      #   `classes` folders.
-      #
-      # The determined ClassLoader is also set as the "context ClassLoader" in
-      # all Adapter method invocations.
-      # @default -- common
-      classLoader: dedicated
+        # -- (string) Optional. Determines the ClassLoader to be used to load 
+        # the Adapter related classes. Possible values are:
+        # - `common`: The common ClassLoader assigned to the whole Adapter Set
+        #   is used; this ClassLoader already includes all the classes found in
+        #   the common `lib" and `classes` folders; it also inherits from a 
+        #   global ClassLoader that includes all the classes found under the 
+        #   `shared/lib` and `shared/classes` folders. If a specific 
+        #   `installDir` is assigned to the Adapter, classes found in its `lib` 
+        #   and `classes` subfolders are added to the Adapter Set ClassLoader.
+        # - `dedicated`: A dedicated ClassLoader, which still inherits from the
+        #   Adapter Set ClassLoader, is used. In this case, it is mandatory that
+        #   a specific `installDir` is assigned to the Adapter; hence, classes
+        #   found in its `lib` and `classes` subfolders are added to the 
+        #   dedicated the ClassLoader.
+        # - `log-enabled`: A dedicated ClassLoader which also includes the 
+        #   `slf4j` library used by the Server is used; hence the Adapter shares 
+        #   the log configuration with the Server. However, in this case, the 
+        #   Adapter ClassLoader does not inherit from the Adapter Set 
+        #   ClassLoader, hence no sharing of classes with other Adapters is 
+        #   possible. If no specific `installDir` is assigned to the Adapter, 
+        #   then the dedicated ClassLoader will be added all classes found in 
+        #   the common `lib` and `classes` folders.
+        #
+        # The determined ClassLoader is also set as the "context ClassLoader" in
+        # all Adapter method invocations.
+        # @default -- common
+        classLoader: dedicated
 
-      # -- Optional. Configures the specific `AUTHENTICATION` thread pool, 
-      # expressly devoted to the calls of `notifyUser` against this Metadata
-      # Adapter.
-      # This pool is always created and the `notifyUser` calls to the Metadata
-      # Adapters are performed asynchronously, hence they are not supposed to 
-      # keep threads engaged.
-      # In order to keep track of the pending asynchronous requests, they are
-      # counted in the global statistics as part of the pool task queue (but not
-      # as contributing to the pool queue wait).
-      #
-      # By default, the pool has one fixed thread. If this setting is defined,
-      # its `maxSize` and `maxFree` values, with meaning similar to that of
-      # the global `load.serverPoolMaxSize` and `load.serverPoolMaxFree`, are 
-      # optional, both with default `1`.
-      # In fact, it is not expected that more than one thread will ever be
-      # needed, since the implementations of `notifyUser` are require to be
-      # fast and non-blocking and to perform any slow processing asynchronously.
-      # On the other hand, configuring the pool is recommended, to constrain
-      # the maximum number of pending requests to the Metadata Adapter
-      # through the optional `maxPendingRequests` setting (if set <= 0, it poses
-      # no limitation; this is also the default).
-      # The optional `maxQueue` setting is also available, with meaning similar
-      # to the global `load.serverPoolMaxQueue`. If defined, the length of the
-      # queue of this pool, instead of being added to the length checked by
-      # `load.serverPoolMaxQueue, will be checked against this limit, but with
-      # the same consequent backpressure actions.
-      authenticationPool:
-        maxSize: 1
-        maxFree: 0
-        maxPendingRequests: 4
-        maxQueue: 0      
+        # -- Optional. Configures the specific `AUTHENTICATION` thread pool, 
+        # expressly devoted to the calls of `notifyUser` against this Metadata
+        # Adapter.
+        # This pool is always created and the `notifyUser` calls to the Metadata
+        # Adapters are performed asynchronously, hence they are not supposed to 
+        # keep threads engaged.
+        # In order to keep track of the pending asynchronous requests, they are
+        # counted in the global statistics as part of the pool task queue (but 
+        # not as contributing to the pool queue wait).
+        #
+        # By default, the pool has one fixed thread. If this setting is defined,
+        # its `maxSize` and `maxFree` values, with meaning similar to that of
+        # the global `load.serverPoolMaxSize` and `load.serverPoolMaxFree`, are 
+        # optional, both with default `1`.
+        # In fact, it is not expected that more than one thread will ever be
+        # needed, since the implementations of `notifyUser` are require to be
+        # fast and non-blocking and to perform any slow processing 
+        # asynchronously.
+        # On the other hand, configuring the pool is recommended, to constrain
+        # the maximum number of pending requests to the Metadata Adapter
+        # through the optional `maxPendingRequests` setting (if set <= 0, it 
+        # poses no limitation; this is also the default).
+        # The optional `maxQueue` setting is also available, with meaning 
+        # similar to the global `load.serverPoolMaxQueue`. If defined, the 
+        # length of the queue of this pool, instead of being added to the length 
+        # checked by `load.serverPoolMaxQueue, will be checked against this 
+        # limit, but with the same consequent backpressure actions.
+        # authenticationPool:
+        #   maxSize: 1
+        #   maxFree: 0
+        #   maxPendingRequests: 4
+        #   maxQueue: 0      
       
-      # -- Optional. Configures the specific `MSG` thread pool, expressly 
-      # devoted to the calls of `notifyUserMessage`, which handle messages sent
-      # by the client, against this Metadata Adapter.
-      # This pool is always created and the `notifyUserMessage` calls to the
-      # Metadata Adapters are performed asynchronously, hence they are not 
-      # supposed to keep threads engaged.
-      # In order to keep track of the pending asynchronous requests, they are
-      # counted in the global statistics as part of the pool task queue (but not
-      # as contributing to the pool queue wait).
-      #
-      # By default, the pool has one fixed thread. If this setting is defined,
-      # its `maxSize` and `maxFree` values, with meaning similar to that of the
-      # global `load.serverPoolMaxSize` and `load.serverPoolMaxFree` settings,
-      # are optional, both with default `1`.
-      # In fact, it is not expected that more than one thread will ever be 
-      # needed, since the implementations of `notifyUserMessage` are require to
-      # be fast and non-blocking and to perform any slow processing 
-      # asynchronously.
-      # On the other hand, configuring the pool is recommended, to constrain
-      # the maximum number of pending requests to the Metadata Adapter through
-      # the optional `maxPendingRequests` setting (if set <= 0, it poses no
-      # limitation; this is also the default).
-      # The optional `maxQueue` subelement is also available, with meaning
-      # similar to the global `load.serverPoolMaxQueue`. If defined, the length
-      # of the queue of this pool, instead of being added to the length 
-      # checked by `load.serverPoolMaxQueue`, will be checked against this 
-      # limit, but with the same consequent backpressure actions.
-      messagesPool:
-        maxSize: 1
-        maxFree: 0
-        maxPendingRequests: 4
-        maxQueue: 0 
+        # -- Optional. Configures the specific `MSG` thread pool, expressly 
+        # devoted to the calls of `notifyUserMessage`, which handle messages 
+        # sent by the client, against this Metadata Adapter.
+        # This pool is always created and the `notifyUserMessage` calls to the
+        # Metadata Adapters are performed asynchronously, hence they are not 
+        # supposed to keep threads engaged.
+        # In order to keep track of the pending asynchronous requests, they are
+        # counted in the global statistics as part of the pool task queue (but 
+        # not as contributing to the pool queue wait).
+        #
+        # By default, the pool has one fixed thread. If this setting is defined,
+        # its `maxSize` and `maxFree` values, with meaning similar to that of 
+        # the global `load.serverPoolMaxSize` and `load.serverPoolMaxFree` 
+        # settings, are optional, both with default `1`.
+        # In fact, it is not expected that more than one thread will ever be 
+        # needed, since the implementations of `notifyUserMessage` are require 
+        # to be fast and non-blocking and to perform any slow processing 
+        # asynchronously.
+        # On the other hand, configuring the pool is recommended, to constrain
+        # the maximum number of pending requests to the Metadata Adapter through
+        # the optional `maxPendingRequests` setting (if set <= 0, it poses no
+        # limitation; this is also the default).
+        # The optional `maxQueue` subelement is also available, with meaning
+        # similar to the global `load.serverPoolMaxQueue`. If defined, the 
+        # length of the queue of this pool, instead of being added to the length 
+        # checked by `load.serverPoolMaxQueue`, will be checked against this 
+        # limit, but with the same consequent backpressure actions.
+        # messagesPool:
+        #   maxSize: 1
+        #   maxFree: 0
+        #   maxPendingRequests: 4
+        #   maxQueue: 0 
 
-      # -- Optional. Requests the creation of a specific `MPN REQUESTS` thread
-      # pool, devoted to the submission to the Remote Metadata Adapter of all
-      # the mobile push notification requests pertaining to sessions based on
-      # this Adapter Set.
-      #
-      # If not defined, these calls are managed by the thread pool related with
-      # the Adapter Set, if, in turn, defined. If defined, the `maxSize` and
-      # `maxFree` settings are mandatory, with meaning similar to that of the
-      # global `load.serverPoolMaxSize` and `load.serverPoolMaxFree` settings.
-      # Note that `maxSize` also indicates the maximum number of pending 
-      # requests to the Remote Metadata Adapter.
-      # Using a specific thread pool is advisable if the implementation of MPN
-      # operations (like `notifyMpnSubscriptionActivation` etc.) may introduce 
-      # delays.
-      mpnPool:
-        maxSize: 1
-        maxFree: 0
+        # -- Optional. Requests the creation of a specific `MPN REQUESTS` thread
+        # pool, devoted to the submission to the Remote Metadata Adapter of all
+        # the mobile push notification requests pertaining to sessions based on
+        # this Adapter Set.
+        #
+        # If not defined, these calls are managed by the thread pool related to
+        # the Adapter Set, if, in turn, defined. If defined, the `maxSize` and
+        # `maxFree` settings are mandatory, with meaning similar to that of the
+        # global `load.serverPoolMaxSize` and `load.serverPoolMaxFree` settings.
+        # Note that `maxSize` also indicates the maximum number of pending 
+        # requests to the Remote Metadata Adapter.
+        # Using a specific thread pool is advisable if the implementation of MPN
+        # operations (like `notifyMpnSubscriptionActivation` etc.) may introduce 
+        # delays.
+        # mpnPool:
+        #   maxSize: 1
+        #   maxFree: 0
 
-      # -- Optional. If set to `true`, ensures that all Table (i.e
-      # . Subscription) notifications (that is, all the invocations to 
-      # `notifyNewTables` and `notifyTablesClose`) pertaining to the same
-      # session will be sequential, with no overlapping; if set to `false`, then
-      # concurrent invocations will be possible.
-      # Note that the final invocation to `notifySessionClose` is always
-      # guaranteed to occur after all the above notifications have terminated.
-      # @default -- false
-      enableTableNotificationsSequentialization:
+        # -- Optional. If set to `true`, ensures that all Table (i.e
+        # . Subscription) notifications (that is, all the invocations to 
+        # `notifyNewTables` and `notifyTablesClose`) pertaining to the same
+        # session will be sequential, with no overlapping; if set to `false`, 
+        # then concurrent invocations will be possible.
+        # Note that the final invocation to `notifySessionClose` is always
+        # guaranteed to occur after all the above notifications have terminated.
+        # @default -- false
+        enableTableNotificationsSequentialization:
 
-      # -- (int) Optional and specific for adapters that inherit from 
-      # `com.lightstreamer.adapters.metadata.LiteralBasedProvider`.
-      # Define values to be returned in the `getAllowedMaxBandwidth` method for 
-      # any User and Item supplied.
-      # See [LiteralBaseProvider javadoc](https://lightstreamer.com/api/ls-adapter-inprocess/latest/com/lightstreamer/adapters/metadata/LiteralBasedProvider.html) javadoc 
-      maxBandwidth: 50
+        # -- (int) Optional and specific for adapters that inherit from 
+        # `com.lightstreamer.adapters.metadata.LiteralBasedProvider`.
+        # Define values to be returned in the `getAllowedMaxBandwidth` method 
+        # for any User and Item supplied.
+        # See [LiteralBaseProvider javadoc](https://lightstreamer.com/api/ls-adapter-inprocess/latest/com/lightstreamer/adapters/metadata/LiteralBasedProvider.html) javadoc 
+        maxBandwidth: 50
 
-      # -- (int) Optional and specific for adapters that inherit from 
-      # `com.lightstreamer.adapters.metadata.LiteralBasedProvider`.
-      # Define values to be returned in the `getAllowedMaxItemFrequency` method
-      # for any User and Item supplied.
-      # See [LiteralBaseProvider javadoc](https://lightstreamer.com/api/ls-adapter-inprocess/latest/com/lightstreamer/adapters/metadata/LiteralBasedProvider.html) javadoc 
-      maxFrequency: 3
+        # -- (int) Optional and specific for adapters that inherit from 
+        # `com.lightstreamer.adapters.metadata.LiteralBasedProvider`.
+        # Define values to be returned in the `getAllowedMaxItemFrequency` 
+        # method for any User and Item supplied.
+        # See [LiteralBaseProvider javadoc](https://lightstreamer.com/api/ls-adapter-inprocess/latest/com/lightstreamer/adapters/metadata/LiteralBasedProvider.html) javadoc 
+        maxFrequency: 3
 
-      # -- (int) Optional and specific for adapters that inherit from 
-      # `com.lightstreamer.adapters.metadata.LiteralBasedProvider`.
-      # Define values to be returned in the `getAllowedBufferSize` method for 
-      # any User and Item supplied.
-      # See [LiteralBaseProvider javadoc](https://lightstreamer.com/api/ls-adapter-inprocess/latest/com/lightstreamer/adapters/metadata/LiteralBasedProvider.html) javadoc 
-      bufferSize: 30
+        # -- (int) Optional and specific for adapters that inherit from 
+        # `com.lightstreamer.adapters.metadata.LiteralBasedProvider`.
+        # Define values to be returned in the `getAllowedBufferSize` method for 
+        # any User and Item supplied.
+        # See [LiteralBaseProvider javadoc](https://lightstreamer.com/api/ls-adapter-inprocess/latest/com/lightstreamer/adapters/metadata/LiteralBasedProvider.html) javadoc 
+        bufferSize: 30
 
-      # -- (int) Optional and specific for adapters that inherit from 
-      # `com.lightstreamer.adapters.metadata.LiteralBasedProvider`.
-      # Define values to be returned in the `getMinSourceFrequency` method for 
-      # any User and Item supplied.
-      # See [LiteralBaseProvider javadoc](https://lightstreamer.com/api/ls-adapter-inprocess/latest/com/lightstreamer/adapters/metadata/LiteralBasedProvider.html) javadoc 
-      prefilterFrequency: 5 
+        # -- (int) Optional and specific for adapters that inherit from 
+        # `com.lightstreamer.adapters.metadata.LiteralBasedProvider`.
+        # Define values to be returned in the `getMinSourceFrequency` method for 
+        # any User and Item supplied.
+        # See [LiteralBaseProvider javadoc](https://lightstreamer.com/api/ls-adapter-inprocess/latest/com/lightstreamer/adapters/metadata/LiteralBasedProvider.html) javadoc 
+        prefilterFrequency: 5 
 
-      # -- (int) Optional and specific for adapters that inherit from 
-      # `com.lightstreamer.adapters.metadata.LiteralBasedProvider`.
-      # Define values to be returned in the `getDistinctSnapshotLength` method
-      # for any User and Item supplied.
-      # See [LiteralBaseProvider javadoc](https://lightstreamer.com/api/ls-adapter-inprocess/latest/com/lightstreamer/adapters/metadata/LiteralBasedProvider.html) javadoc 
-      distinctSnapshotLength: 30      
+        # -- (int) Optional and specific for adapters that inherit from 
+        # `com.lightstreamer.adapters.metadata.LiteralBasedProvider`.
+        # Define values to be returned in the `getDistinctSnapshotLength` method
+        # for any User and Item supplied.
+        # See [LiteralBaseProvider javadoc](https://lightstreamer.com/api/ls-adapter-inprocess/latest/com/lightstreamer/adapters/metadata/LiteralBasedProvider.html) javadoc 
+        distinctSnapshotLength: 30      
 
-      # -- (string) Optional and specific for adapters that inherit from 
-      # `com.lightstreamer.adapters.metadata.LiteralBasedProvider`.
-      # Comma-separated list of User names to be allowed by the `notifyUser` 
-      # method.
-      # See [LiteralBaseProvider javadoc](https://lightstreamer.com/api/ls-adapter-inprocess/latest/com/lightstreamer/adapters/metadata/LiteralBasedProvider.html) javadoc 
-      allowedUsers: "user123,user456"
+        # -- (string) Optional and specific for adapters that inherit from 
+        # `com.lightstreamer.adapters.metadata.LiteralBasedProvider`.
+        # Comma-separated list of User names to be allowed by the `notifyUser` 
+        # method.
+        # See [LiteralBaseProvider javadoc](https://lightstreamer.com/api/ls-adapter-inprocess/latest/com/lightstreamer/adapters/metadata/LiteralBasedProvider.html) javadoc 
+        allowedUsers: "user123,user456"
 
-      # -- Optional and specific for adapters that inherit from
-      # `com.lightstreamer.adapters.metadata.LiteralBasedProvider`).
-      # Define how the `modeMayBeAllowed` method should behave, by associating 
-      # to each item the modes in which it can be managed by the Server.
-      # Each item is assigned to the first family that matches its name and (if
-      # supplied) the related Data Adapter.
-      # If no families are specified at all, then `modeMayBeAllowed` always 
-      # returns `true`, though this is not recommended, because the Server does
-      # not support more than one mode out of `MERGE`, `DISTINCT`, and `COMMAND`
-      # for the same item. In such a case, the Server would just manage each
-      # item in the mode specified by the first Client request it receives for
-      # the item and would be up to the Clients to ensure that the same item
-      # cannot be requested in two conflicting Modes.
-      # See [LiteralBaseProvider javadoc](https://lightstreamer.com/api/ls-adapter-inprocess/latest/com/lightstreamer/adapters/metadata/LiteralBasedProvider.html) javadoc 
-      itemFamilies:
+        # -- Optional and specific for adapters that inherit from
+        # `com.lightstreamer.adapters.metadata.LiteralBasedProvider`).
+        # Define how the `modeMayBeAllowed` method should behave, by associating 
+        # to each item the modes in which it can be managed by the Server.
+        # Each item is assigned to the first family that matches its name and (if
+        # supplied) the related Data Adapter.
+        # If no families are specified at all, then `modeMayBeAllowed` always 
+        # returns `true`, though this is not recommended, because the Server does
+        # not support more than one mode out of `MERGE`, `DISTINCT`, and `COMMAND`
+        # for the same item. In such a case, the Server would just manage each
+        # item in the mode specified by the first Client request it receives for
+        # the item and would be up to the Clients to ensure that the same item
+        # cannot be requested in two conflicting Modes.
+        # See [LiteralBaseProvider javadoc](https://lightstreamer.com/api/ls-adapter-inprocess/latest/com/lightstreamer/adapters/metadata/LiteralBasedProvider.html) javadoc 
+        itemFamilies:
 
-        # -- Optional. Define a family of items.
-        itemFamily1:
-          # -- (string) Mandatory. The item name pattern 
-          # (in java.util.regex.Pattern format).
-          itemPattern: monitor_log_.*
+          # -- Optional. Define a family of items.
+          itemFamily1:
+            # -- (string) Mandatory. The item name pattern (in 
+            # java.util.regex.Pattern format).
+            itemPattern: monitor_log_.*
 
-          # -- (string) Mandatory. The related Data Adapter.
-          dataAdapter: MONITOR
+            # -- (string) Mandatory. The related Data Adapter.
+            dataAdapter: MONITOR
 
-          # -- (string) Mandatory. The allowed modes (in comma separated format)
-          # for the family of items.
-          modes: DISTINCT
+            # -- (string) Mandatory. The allowed modes (in comma separated 
+            # format) for the family of items.
+            modes: DISTINCT
 
-        # itemFamily2:
-        #   itemPattern: monitor_.*
-        #   dataAdapter: MONITOR
-        #   modes: MERGE
-        # itemFamily3:
-        #   itemPattern: monitor_.*
-        #   dataAdapter: MONITOR
-        #   modes: MERGE
-        # itemFamily4:
-        #   itemPattern: monitor_.*
-        #   dataAdapter: MONITOR
-        #   modes: MERGE,COMMAND,COMMAND
+          # itemFamily2:
+          #   itemPattern: monitor_.*
+          #   dataAdapter: MONITOR
+          #   modes: MERGE
+          # itemFamily3:
+          #   itemPattern: monitor_.*
+          #   dataAdapter: MONITOR
+          #   modes: MERGE
+          # itemFamily4:
+          #   itemPattern: monitor_.*
+          #   dataAdapter: MONITOR
+          #   modes: MERGE,COMMAND,COMMAND
 
     dataProviders:
-    remoteDataProviders:
+
       myRemoteProvider:
+
+        # -- Optional, but mandatory if multiple Data Adapters (either proxy
+        # or in-process) are defined in the same Adapter Set. The name of the
+        # Data Adapter.
+        # @default -- DEFAULT
         name: "MY_REMOTE"
-        dataAdapterPool:
-          maxSize:
-          maxFree:
-        # -- Mandatory
-        requestReplyPort:
-        remoteHost:
-        interface:
-        connectionRecoveryTimeoutMillis:
-        firstConnectionTimeoutMillis:
-        timeoutMillis:
-        keepaliveTimeoutMillis:
-        keepaliveHintMillis:
-        eventsRecoveryStrategy:
-        statusItem:
-        remoteName:
-        sslConfig:
-          enabled: false
-          keystoreRef:
-          allowCipherSuites: []
-          removeCipherSuites: []
-          allowProtocols: []
-          removeProtocols: []
-          enableClientAuth:
-          enableHostnameVerification:
-          credentialsSecrets: []
-        remoteParamPrefix:
-        remoteParams:
-          myParam: myValue
 
+        # -- Optional. Requests the creation of a specific `DATA" thread pool,
+        # expressly devoted to the submission to the Remote Data Adapter of
+        # table subscription and unsubscription requests for all the tables
+        # based on this Data Adapter.
+        # This involves the calls of Subscribe and Unsubscribe to the Remote
+        # Data Adapter and the calls of Get Items, Get Schema, Get Item Data,
+        # Get User Item Data, Notify New Tables, and the MPN-related methods
+        # to the Remote Metadata Adapter.
 
+        # If not defined, these requests are managed by the thread pool related
+        # to the Adapter Set, if, in turn, defined.
+        # If defined, the `maxSize` and `maxFree` settings are mandatory, with
+        # meaning similar to that of the global `load.serverPoolMaxSize` and
+        # and `load.serverPoolMaxFree` settings. Note that `maxSize` also
+        # indicates the maximum number of pending requests to the Remote
+        # Adapters.
+        # Using a specific thread pool is advisable if the implementation
+        # of any of the involved Adapter methods introduces delays.
+        # dataAdapterPool:
+        #   maxSize: 1
+        #   maxFree: 2
 
+        proxyDataAdapter:
+
+          enableRobustAdapter: false
+
+          # -- (int) Mandatory. The request/reply port to listen on. The connection 
+          # on this port will carry the requests/replies channels.
+          requestReplyPort: 6661
+
+          # --- (string) Optional. If set, inverts the normal connection 
+          # establishment behavior, by having the Proxy Adapter open a client 
+          # socket on the configured request/reply port towards the Remote 
+          # Adapter, using the host address specified here.
+          # This is not the preferred setting but it can be useful in some 
+          # scenarios. See a discussion in the Adapter Remoting Infrastructure 
+          # architecture document. Obviously, the setting requires a corresponding
+          # behavior by the Remote Server.
+          # When this setting is leveraged, most of the other elements and 
+          # parameters are still valid (in particular, `sslConfig`), although some 
+          # of their descriptions refer to the listening port case and should be
+          # reinterpreted; only the following ones are ignored:
+          # - `interface`
+          # - sslConfig.enforceServerCipherSuitePreference
+          # - sslConfig.enableClientAuth
+          # - remote_address_whitelist
+          # Note, in particular, that the keystore parameters are available, though
+          # optional. This allows for authentication of the Proxy Adapter by the
+          # Remote Server by requesting the Proxy Adapter's TLS client certificate. 
+          remoteHost:
+
+          # - Optional. The local network interface to bind to.
+          # Example: 192.168."1.1"
+          # @default -- will bind to any available interface
+          interface:
+
+          # -- Optional. TLS/SSL settings for the connection.
+          # @default -- all settings at their defaults
+          sslConfig:
+
+            # -- Optional. Enablement of the encryption.
+            # @default -- false
+            enabled: true
+
+            # -- Mandatory. The reference to a keystore configuration (defined in
+            # `keystores`).
+            # See the `keystores.myServerKeystore` settings for general details on
+            # keystore configuration.
+            keystoreRef: myServerKeystore
+
+            # -- See `servers.{}.sslConfig.allowCipherSuites`.
+            allowCipherSuites: []
+
+            # -- See `servers.{}.sslConfig.removeCipherSuites`.
+            removeCipherSuites:
+              - _DHE_
+
+            # -- See `servers.{}.sslConfig.allowProtocols`.
+            allowProtocols:
+              - TLSv1.2
+
+            # -- See `servers.{}.sslConfig.removeProtocols`.
+            removeProtocols: []
+
+            # -- See `servers.{}.sslConfig.enableMandatoryClientAuth`.
+            enableClientAuth:
+
+            # -- Optional. Only used if `remoteHost` is configured.
+            # If set to `false`, suppresses the check of the hostname in the TLS
+            # certificate, which, in this context, is received from the Remote
+            # Server.
+            # Setting to `false` is only meant to be used in a development/test
+            # scenario.
+            # @default -- true
+            enableHostnameVerification: false
+
+          # -- Optional. Authentication settings for the connection.
+          authentication:
+
+            # -- Optional. If set to `true`, enforces Remote Adapter 
+            # authentication on the connection based on a user/password 
+            # credential  check.
+            # Note that the user names will be used in log messages at `INFO`
+            # level or above, whereas the passwords won't.
+            # @default -- false
+            enabled: true
+
+            # -- Mandatory if `enabled` is set to `true`. The reference to the 
+            # secrets containing the credentials of the users allowed to 
+            # connect.
+            # Every secret must contains the keys `user` and `password`.
+            credentialsSecrets: []
+
+          # -- (int) Optional, but effective only if `remoteHost` is specified.
+          # Delay to be enforced before retrying a connection attempt to the 
+          # Remote Server, to prevent a possible strict loop of unsuccessful 
+          # attempts.
+          # @default -- 10000
+          connectionRetryMillis: 1
+
+          # -- (int) Optional, but effective only if `enableRobustAdapter` is 
+          # set to `true`. The timeout for initialization errors. After an 
+          # unsuccessful attempt to achieve a connection from a remote server 
+          # due to an error in configuration, network access or initialization, 
+          # the Proxy Adapter will be allowed to retry listening for connections 
+          # only after ensuring that at least this time has elapsed since the 
+          # previous attempt.
+          # A negative value prevents further attempts, so that no remote server 
+          # will be available.
+          # @default -- -1
+          connectionRecoveryTimeoutMillis: 10000
+
+          # -- (int) Optional, but effective only if `enableRobustAdapter` is 
+          # set to `true`. The timeout for the first connection attempt. Upon
+          # the Proxy Adapter initialization at Lightstreamer Server startup, if
+          # remote server connection is not available, 
+          # Lightstreamer Server startup can be delayed until this timeout 
+          # expires.
+          # A negative value stands for an unlimited timeout.
+          # Note that, when Lightstreamer Server startup completes, as long as a
+          # connection to a remote server is still missing, all subscription 
+          # requests will get an empty snapshot; then, when the connection is
+          # established, the data flow will be restored according to the 
+          # `eventsRecovery` setting.
+          # @default -- 0
+          firstConnectionTimeoutMillis: 1000
+
+          # -- (string) Optional, but effective only if `enableRobustAdapter` is 
+          # set to `true`. The strategy to be adopted whenever a new remote
+          # server is available in order to restore the data flow for items that
+          # were subscribed to while no remote server was available.
+          # No sophisticated recovery algorithms are available, as they could
+          # only depend on the specific item meanings.
+          # Currently, the only available options are:
+          #
+          # - `leave_hole`
+          #   The real time update flow is just restarted; this may give rise
+          #   to an inconsistent overall flow:
+          #   for `RAW` and `DISTINCT` subscriptions, there will be a hole in the
+          #   event sequence;
+          #   for `MERGE` and `COMMAND` subscriptions, out of date field values
+          #   might be mixed with up to date field values on the same item or 
+          #   key;
+          #   for `COMMAND` subscriptions, some keys might be missing for some
+          #   time and others might remain garbage for long time; some harmless
+          #   warning messages might also be issued by the Server.
+          #
+          # - `use_snapshot`
+          #   The snapshot of the item is requested to the remote server and it
+          #   is sent in the update flow "as is"; this strategy is suitable
+          #   for `MERGE` subscriptions, while in other cases it may give rise
+          #   to an inconsistent overall flow:
+          #   for `RAW` subscriptions, there will be a hole in the event sequence
+          #   and possible spurious entries;
+          #   for `DISTINCT` subscriptions, there might be either a hole or some
+          #   duplicates in the event sequence;
+          #   for `COMMAND` subscriptions, some keys might just remain garbage
+          #   for long time; some harmless warning messages might also be
+          #   issued by the Server.
+          #
+          # - `enforce_snapshot`
+          #   Upon interruption, a ClearSnapshot event is sent. Then, upon
+          #   reconnection, the snapshot of the item is requested to the remote
+          #   server and it is sent in the update flow as though it was a 
+          #   sequence of real-time updates; this strategy successfully restores 
+          #   the correct state for `MERGE` and `COMMAND` subscriptions, but it 
+          #   must be considered that:
+          #   for `MERGE` subscriptions, the clients will see null values during
+          #   the interruption;
+          #   for `RAW` subscriptions, there will be a hole in the event 
+          #   sequence and possible spurious entries;
+          #   for `DISTINCT` subscriptions, there might be either a hole or some
+          #   duplicates in the event sequence, but the ClearSnapshot signal may
+          #   act as a warning of the issue;
+          #   for `COMMAND` subscriptions, the clients will see an empty list
+          #   during the interruption, then the fictitious `ADD`s to restore the
+          #   list, but the ClearSnapshot signal may act as a warning of the 
+          #   issue.
+          #
+          # The configured strategy will be applied with all items.
+          # @default -- leave_hole
+          eventsRecovery: use_snapshot
+
+          # -- (string) Optional, but effective only if `enableRobustAdapter` is 
+          # set to `true`. Specifies an item name to be managed by the Proxy 
+          # Adapter for carrying information about the availability of the 
+          # Remote Data Adapter.
+          # This item will only supply one field, named `status`, whose value
+          # may only be one of the following:
+          # - `connecting` if no connection with a remote server has taken place 
+          #    yet;
+          # - `connected` if a connection with a remote server is currently in 
+          #   place;
+          # - `reconnecting` if a connection with a remote server has been lost.
+          # The item will support subscriptions in `MERGE` or `RAW` mode and 
+          # requests for the snapshot will also be supported.
+          #
+          # Note that the chosen name should be such that no conflicts with the
+          # item names supplied by the Remote Data Adapter can be possible.
+          # Also note that the Metadata Adapter must be aware of this item when
+          # performing permission checks.
+          # @default -- no item is added for carrying status information
+          statusItem: remote_adapter_status
+
+          # -- (int) Optional. Timeout for inactivity on the connection with 
+          # respect to messages coming from the Remote Metadata Adapter.
+          # If neither replies nor keepalives are received within the specified
+          # timeout, the TCP connection will be considered broken and will be 
+          # closed; as a consequence, a connection with a new Remote Metadata 
+          # Adapter will be attempted.
+          # Setting a timeout is only meaningful if the Remote Metadata Adapter is
+          # configured to either send keepalive messages at a shorter interval, or 
+          # obey the keepalive interval requested by this Proxy (see 
+          # `keepaliveHintMillis`).
+          # A zero or negative value stands for an unlimited timeout.
+          # @default -- -1
+          keepaliveTimeoutMillis: 3
+
+          # -- (int) Optional. Keepalive interval to be requested to the Remote
+          # Metadata Adapter.
+          # The value should be low enough to ensure that, if obeyed, the 
+          # connection will pass the timeout checks (see 
+          # `keepaliveTimeoutMillis`).
+          # A zero or negative value stands for no keepalive request, which still
+          # allows the Remote Metadata Adapter to send keepalives for its own
+          # purpose.
+          # The default depends on the setting of `keepaliveTimeoutMillis`:
+          # - if not configured: `-1`
+          # - if less than `4` seconds: half the `keepaliveTimeoutMillis`
+          # - otherwise: `2` seconds less than the `keepaliveTimeoutMillis`
+          # @default -- See description
+          keepaliveHintMillis: 1
+          
+          
 
       myDataAdapterOne:
-        name: 
+        name: "MY_ADAPTER_ONE"
         adapterClassName:
         classloader:
         dataAdapterPool:
