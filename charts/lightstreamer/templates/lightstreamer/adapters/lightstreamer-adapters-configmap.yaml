@@ -22,6 +22,8 @@ metadata:
     {{- include "lightstreamer.labels" . | nindent 4 }}
 data:
 {{- range $key,$adapter := .Values.adapters }}
+  {{- if $adapter.enabled }}
   {{ $key | lower }}.xml: |-
   {{- include "lightstreamer.adapters" (list $ $key $adapter) | nindent 4 -}}
+  {{- end }}
 {{- end }}
