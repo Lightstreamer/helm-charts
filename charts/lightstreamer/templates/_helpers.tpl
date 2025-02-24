@@ -409,10 +409,40 @@ Render the keystore settings for the Lightstreamer Kafka Connector configuration
 {{- end -}}
 
 {{/*
-Render the <authentication_pool> block for the adapters configuration file.
+Render the <authentication_pool> block for the proxy adapters configuration file.
+*/}}
+{{- define "lightstreamer.adapters.proxy.metadata-provider.authenticationPool" -}}
+{{- include "lightstreamer.adapters.metadata-provider.authenticationPool" (list true .) -}}
+{{- end -}}
+
+{{/*
+Render the <messages_pool> block for the proxy adapters configuration file.
+*/}}
+{{- define "lightstreamer.adapters.proxy.metadata-provider.messagesPool" -}}
+{{- include "lightstreamer.adapters.metadata-provider.messagesPool" (list true .) -}}
+{{- end -}}
+
+{{/*
+Render the <authentication_pool> block for the in-process adapters configuration file.
+*/}}
+{{- define "lightstreamer.adapters.in-process.metadata-provider.authenticationPool" -}}
+{{- include "lightstreamer.adapters.metadata-provider.authenticationPool" (list false .) -}}
+{{- end -}}
+
+{{/*
+Render the <messages_pool> block for the in-process adapters configuration file.
+*/}}
+{{- define "lightstreamer.adapters.in-process.metadata-provider.messagesPool" -}}
+{{- include "lightstreamer.adapters.metadata-provider.messagesPool" (list false .) -}}
+{{- end -}}
+
+{{/*
+Render the <authenticationPool> block for the adapters configuration file.
 */}}
 {{- define "lightstreamer.adapters.metadata-provider.authenticationPool" -}}
-{{- with .authenticationPool }}
+{{- $isRemote := index . 0 -}}
+{{- $parent := index . 1 -}}
+{{- with $parent.authenticationPool }}
 <authentication_pool>
   {{- if not (quote .maxSize | empty) }}
   <max_size>{{ int .maxSize }}</max_size>
@@ -420,8 +450,14 @@ Render the <authentication_pool> block for the adapters configuration file.
   {{- if not (quote .maxFree | empty) }}
   <max_free>{{ int .maxFree }}</max_free>
   {{- end }}
-  {{- if not (quote .maxPendingRemoteRequests | empty) }}
+  {{- if $isRemote }}
+    {{- if not (quote .maxPendingRemoteRequests | empty) }}
   <max_pending_remote_requests>{{ int .maxPendingRemoteRequests }}</max_pending_remote_requests>
+    {{- end }}
+  {{- else}}
+    {{- if not (quote .maxPendingRequests | empty) }}
+  <max_pending_requests>{{ int .maxPendingRequests }}</max_pending_requests>
+    {{- end }}  
   {{- end }}
   {{- if not (quote .maxQueue | empty) }}
   <max_queue>{{ int .maxQueue }}</max_queue>
@@ -434,7 +470,9 @@ Render the <authentication_pool> block for the adapters configuration file.
 Render the <messages_pool> block for the adapters configuration file.
 */}}
 {{- define "lightstreamer.adapters.metadata-provider.messagesPool" -}}
-{{- with .messagesPool}}
+{{- $isRemote := index . 0 -}}
+{{- $parent := index . 1 -}}
+{{- with $parent.messagesPool}}
 <messages_pool>
   {{- if not (quote .maxSize | empty) }}
   <max_size>{{ int .maxSize }}</max_size>
@@ -442,8 +480,14 @@ Render the <messages_pool> block for the adapters configuration file.
   {{- if not (quote .maxFree | empty) }}
   <max_free>{{ int .maxFree }}</max_free>
   {{- end }}
-  {{- if not (quote .maxPendingRemoteRequests | empty) }}
+  {{- if $isRemote }}
+    {{- if not (quote .maxPendingRemoteRequests | empty) }}
   <max_pending_remote_requests>{{ int .maxPendingRemoteRequests }}</max_pending_remote_requests>
+    {{- end }}
+  {{- else}}
+    {{- if not (quote .maxPendingRequests | empty) }}
+  <max_pending_requests>{{ int .maxPendingRequests }}</max_pending_requests>
+    {{- end }}
   {{- end }}
   {{- if not (quote .maxQueue | empty) }}
   <max_queue>{{ int .maxQueue }}</max_queue>
@@ -455,8 +499,8 @@ Render the <messages_pool> block for the adapters configuration file.
 {{/*
 Render the <mpn_pool> block for the adapters configuration file.
 */}}
-{{- define "lightstreamer.adapters.metadata-provider.mpnPumpPool" -}}
-{{- with .mpnPumpPool }}
+{{- define "lightstreamer.adapters.metadata-provider.mpnPool" -}}
+{{- with .mpnPool }}
 <mpn_pool>
   {{- if not (quote .maxSize | empty) }}
   <max_size>{{ int .maxSize }}</max_size>
@@ -469,17 +513,35 @@ Render the <mpn_pool> block for the adapters configuration file.
 {{- end }}
 
 {{/*
+  Render the <data_adapter_pool> block for the adapters configuration file.
+  */}}
+  {{- define "lightstreamer.adapters.data-provider.dataAdapterPool" -}}
+  {{- with .dataAdapterPool }}
+  <data_adapter_pool>
+    {{- if not (quote .maxSize | empty) }}
+    <max_size>{{ int .maxSize }}</max_size>
+    {{- end }}
+    {{- if not (quote .maxFree | empty) }}
+    <max_free>{{ int .maxFree }}</max_free>
+    {{- end }}
+  </data_adapter_pool>
+  {{- end }}
+  {{- end }}
+
+{{/*
 Render the tls parameters for the proxy adapters.
 */}}
 {{- define "lightstreamer.adapters.proxy.sslConfig" }}
-{{- $keystores := index . 0 -}}
-{{- $parent := index . 1 -}}
+{{- $adapterName := index . 0}}
+{{- $keystores := index . 1 -}}
+{{- $parent := index . 2 -}}
 {{- if (($parent).sslConfig).enabled }}
 
 <!-- TLS SETTINGS -->
 {{- with $parent.sslConfig }}
 <param name="tls">Y</param>
   {{- /* tls.keystore */ -}}
+  {{- $keystoreRef := required (printf "adapters.%s.{...}.sslConfig.keystoreRef must be set" $adapterName) .keystoreRef }}
   {{- include "lightstreamer.adapters.proxy.keystore" (list $keystores .keystoreRef) | nindent 0 }}
 
   {{- /* tls.allow_cipher_suite */ -}}
@@ -494,6 +556,14 @@ Render the tls parameters for the proxy adapters.
   {{- range .removeCipherSuites }}
     {{- $counter = add1 $counter }} 
 <param name="tls.remove_cipher_suites.{{ $counter }}">{{ . }}</param>
+  {{- end }}  
+
+  {{- /* tls.enforce_server_cipher_suite_preference */ -}}
+  {{- if (.enforceServerCipherSuitePreference).enabled }}
+<param name="tls.enforce_server_cipher_suite_preference">Y</param>
+    {{- if not (quote .enforceServerCipherSuitePreference.order | empty )}}
+<param name="tls.enforce_server_cipher_suite_preference.order">{{ .enforceServerCipherSuitePreference.order }}</param>
+    {{- end }}
   {{- end }}  
 
   {{- /* tls.allow_protocol */ -}}
@@ -515,13 +585,11 @@ Render the tls parameters for the proxy adapters.
 <param name="tls.force_client_auth">{{ .enableMandatoryClientAuth | ternary "Y" "N"}}</param>
   {{- end }}
 
-  {{- /* tls.enforce_server_cipher_suite_preference */ -}}
-  {{- if (.enforceServerCipherSuitePreference).enabled }}
-<param name="tls.enforce_server_cipher_suite_preference">Y</param>
-    {{- if not (quote .enforceServerCipherSuitePreference.order | empty )}}
-<param name="tls.enforce_server_cipher_suite_preference.order">{{ .enforceServerCipherSuitePreference.order }}</param>
-    {{- end }}
+  {{- /* tls.truststore */ -}}
+  {{- if .truststoreRef }}
+  {{- include "lightstreamer.adapters.proxy.truststore" (list $keystores .truststoreRef) | nindent 0 }}  
   {{- end }}
+
   {{- /* tls.skip_hostname_check */ -}}
   {{- if not (quote .enableHostnameVerification | empty) }}
 <param name="tls.skip_hostname_check">{{ .enableHostnameVerification | ternary "N" "Y" }}</param>
@@ -570,8 +638,33 @@ Render the keystore settings for the proxy adapters.
 {{- /* tls.keystore.keystore_file */}}
 <param name="tls.keystore.keystore_file">../../conf/keystores/{{ $key }}/{{ required (printf "keystores.%s.keystoreFileSecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</param>
 
+{{- /* tls.keystore.keystore_password.type */}}
+<param name="tls.keystore.keystore_password.type">text</param>
+
 {{- /* tls.keystore.password */}}
-<param name="tls.keystore.password">$env.LS_KEYSTORE_{{ $key | upper |replace "-" "_" }}_PASSWORD</param>
+<param name="tls.keystore.keystore_password">$env.LS_KEYSTORE_{{ $key | upper |replace "-" "_" }}_PASSWORD</param>
+
+{{- end -}}
+
+{{/*
+Render the truststore settings for the proxy adapters.
+*/}}
+{{- define "lightstreamer.adapters.proxy.truststore" -}}
+{{- $top := index . 0 -}}
+{{- $key := index . 1 -}}
+{{- $keyStore := required (printf "keystores.%s not defined" $key) (get $top $key) -}}
+
+{{- /* tls.truststore.type */}}
+<param name="tls.truststore.type">{{ $keyStore.type }}</param>
+
+{{- /* tls.truststore.keystore_file */}}
+<param name="tls.truststore.truststore_file">../../conf/keystores/{{ $key }}/{{ required (printf "keystores.%s.keystoreFileSecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</param>
+
+{{- /* tls.truststore.truststore_password.type */}}
+<param name="tls.truststore.truststore_password.type">text</param>
+
+{{- /* tls.truststore.truststore_password */}}
+<param name="tls.truststore.truststore_password">$env.LS_KEYSTORE_{{ $key | upper |replace "-" "_" }}_PASSWORD</param>
 
 {{- end -}}
 
@@ -583,18 +676,22 @@ Render the connection-related timeout settings for the proxy adapters.
 {{- if not ($pars | empty) }}
 
   {{- /* connection_retry_millis */ -}}
-  {{- if not (quote .connectionRetryMillis | empty) }}
+  {{- if .remoteHost }}
+    {{- if not (quote .connectionRetryMillis | empty) }}
 <param name="connection_retry_millis">{{ int .connectionRetryMillis }}</param>
-  {{- end }}
+    {{- end }}
+  {{- end}}
 
-  {{- /* connection_recovery_timeout_millis */ -}}
-  {{- if not (quote .connectionRecoveryTimeoutMillis | empty) }}
+  {{- if .enableRobustAdapter }}
+    {{- /* connection_recovery_timeout_millis */ -}}
+    {{- if not (quote .connectionRecoveryTimeoutMillis | empty) }}
 <param name="connection_recovery_timeout_millis">{{ int .connectionRecoveryTimeoutMillis }}</param>
-  {{- end }}
+    {{- end }}
 
-  {{- /* first_connection_timeout_millis */ -}}
-  {{- if not (quote .firstConnectionTimeoutMillis | empty) }}
+    {{- /* first_connection_timeout_millis */ -}}
+    {{- if not (quote .firstConnectionTimeoutMillis | empty) }}
 <param name="first_connection_timeout_millis">{{ int .firstConnectionTimeoutMillis }}</param>
+    {{- end }}
   {{- end }}
 
 {{- end }}
@@ -606,11 +703,12 @@ Render the close/disconnection notification settings for the proxy adapters.
 {{- define "lightstreamer.adapters.proxy.closeNotification" -}}
 {{- $adapterName := index . 0 -}}
 {{- $proxy := index . 1 -}}
+{{- if $proxy.enableRobustAdapter }}
 
 {{- /* close_notifications_recovery */ -}}
 {{- if $proxy.closeNotificationsRecovery -}}
 {{- $possibleValues := list "pessimistic" "optimistic" "unneeded" -}}
-{{- if not (has  $proxy.closeNotificationsRecovery $possibleValues) }}
+{{- if not (has $proxy.closeNotificationsRecovery $possibleValues) }}
   {{ printf "adapters.%s.proxyMetadataAdapter.closeNotificationsRecovery must be one of: %s" $adapterName $possibleValues | fail }}
 {{- end }}
 <param name="close_notifications_recovery">{{ $proxy.closeNotificationsRecovery }}</param>
@@ -636,6 +734,7 @@ Render the close/disconnection notification settings for the proxy adapters.
   {{- if not (quote $proxy.notifyUserDisconnectionMsg | empty)  }}
 <param name="notify_user_disconnection_msg">{{ $proxy.notifyUserDisconnectionMsg }}</param>
   {{- end }}
+{{- end }}
 {{- end }}
 {{- end -}}
 
