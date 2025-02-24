@@ -348,10 +348,10 @@ Render the Lightstreamer logging configuration file
 
   <!-- logging of mobile push notifications request processing;
        requests include those from clients (through the "client" sublogger)
-       and those related with internal operations -->
+       and those related to internal operations -->
   <!-- at INFO level, all request processing exit points and outcomes are dumped -->
   <!-- at DEBUG level, all request processing entry points are logged -->
-  <!-- All log related with client requests reports the IP and port of the involved connection -->
+  <!-- All log related to client requests reports the IP and port of the involved connection -->
   <logger name="LightstreamerLogger.mpn.requests"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "lightstreamerLogger.mpn.requests") }}/>
 
   <!-- logging of mobile push notifications activity related to notification gathering -->
@@ -368,20 +368,20 @@ Render the Lightstreamer logging configuration file
   <logger name="LightstreamerLogger.mpn.database.transactions"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "lightstreamerLogger.mpn.database.transactions") }}/>
 
   <!-- logging of mobile push notifications activity related to Apple platforms;
-       for activity related with notification submission, 
+       for activity related to notification submission, 
        specific subloggers are present for each application, e.g.:
        LightstreamerLogger.mpn.apple.com.mydomain.myapp -->
   <!-- at INFO level, all push notification payloads are dumped -->
   <logger name="LightstreamerLogger.mpn.apple"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "lightstreamerLogger.mpn.apple") }}/>
 
   <!-- logging of mobile push notifications activity related to Google platforms;
-       for activity related with notification submission, 
+       for activity related to notification submission, 
        specific subloggers are present for each application, e.g.:
        LightstreamerLogger.mpn.google.com.mydomain.myapp -->
   <!-- at INFO level, all push notification payloads are dumped -->
   <logger name="LightstreamerLogger.mpn.google"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "lightstreamerLogger.mpn.google") }}/>
 
-  <!-- logging of issues related with the special adapters handled by the MPN Module -->
+  <!-- logging of issues related to the special adapters handled by the MPN Module -->
   <logger name="LightstreamerLogger.mpn.status_adapters"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "lightstreamerLogger.mpn.status_adapters") }}/>
 
   <!-- logging of JavaScript client messages -->
