@@ -26,134 +26,179 @@ Render the Lightstreamer configuration file of an Adapter Set
   {{- end }}
 
   <metadata_provider>
-  {{- if .proxyMetadataAdapter }}
-    {{- with .proxyMetadataAdapter }}
-      {{- $isRobust := .enableRobustAdapter | default false }}
-      {{- $proxyClass := $isRobust | ternary "ROBUST_PROXY_FOR_REMOTE_ADAPTER" "PROXY_FOR_REMOTE_ADAPTER" }}
+  {{- with .metadataProvider }}
+    {{- if (.proxyMetadataAdapter).enabled }}
+      {{- with .proxyMetadataAdapter}}
+        {{- $isRobust := .enableRobustAdapter | default false }}
+        {{- $proxyClass := $isRobust | ternary "ROBUST_PROXY_FOR_REMOTE_ADAPTER" "PROXY_FOR_REMOTE_ADAPTER" }}
     <adapter_class>{{ $proxyClass }}</adapter_class>
     <classloader>log-enabled</classloader>
 
-      {{- include "lightstreamer.adapters.proxy.metadata-provider.authenticationPool" . | nindent 4 -}}
-      {{- include "lightstreamer.adapters.proxy.metadata-provider.messagesPool" . | nindent 4 -}}  
-      {{- include "lightstreamer.adapters.metadata-provider.mpnPool" . | nindent 4 -}}
+        {{- include "lightstreamer.adapters.proxy.metadata-provider.authenticationPool" . | nindent 4 -}}
+        {{- include "lightstreamer.adapters.proxy.metadata-provider.messagesPool" . | nindent 4 -}}  
+        {{- include "lightstreamer.adapters.metadata-provider.mpnPool" . | nindent 4 -}}
     
-      {{- if not (quote .enableTableNotificationsSequentialization | empty) }}
+        {{- if not (quote .enableTableNotificationsSequentialization | empty) }}
     <metadata_adapter_initialised_first>{{ .enableTableNotificationsSequentialization | ternary "Y" "N" }}</metadata_adapter_initialised_first>
-      {{- end }}
+        {{- end }}
     
     <param name="request_reply_port">{{ required (printf "adapters.%s.proxyMetadataAdapter.requestReplyPort must be set" $adapterName) (int .requestReplyPort) }}</param>
-      {{- if not (quote .remoteHost | empty) }}
+        {{- if not (quote .remoteHost | empty) }}
     <param name="remote_host">{{ .remoteHost }}</param>
-      {{- end }}
-      {{- if not (quote .interface | empty) }}
-    <param name="interface">{{ .interface }}</param>
-      {{- end }}
-
-      {{- include "lightstreamer.adapters.proxy.sslConfig" (list $adapterName $.Values.keystores .) | indent 4 -}}
-      {{- include "lightstreamer.adapters.proxy.authentication" . | indent 4 -}}
-      {{- include "lightstreamer.adapters.proxy.connection" . | indent 4 -}}
-      {{- include "lightstreamer.adapters.proxy.closeNotification" (list $adapterName .) | indent 4 -}}
-      {{- include "lightstreamer.adapters.proxy.remoteParams" (list $adapterName .) | indent 4 -}}
-
-      {{- if not (quote .timeoutMillis | empty) }}
-    <param name="timeout">{{ int .timeoutMillis }}</param>
-      {{- end }}
-
-      {{- if not (quote .enableClearingOnSessionClose | empty) }}
-    <param name="clear_on_session_close">{{ .enableClearingOnSessionClose | ternary "true" "false" }}</param>
-      {{- end }}
-
-      {{- if not (quote .userDataTimeoutMillis | empty)}}
-    <param name="user_data_timeout">{{ int .userDataTimeoutMillis }}</param>
-      {{- end }}
-
-      {{- if $isRobust }}
-        {{- if not (quote .enableClearingOnNewRemote | empty)}}
-    <param name="clear_on_new_remote">{{ .enableClearingOnNewRemote | ternary "true" "false" }}</param>
         {{- end }}
-      {{- end }}
+        {{- if not (quote .interface | empty) }}
+    <param name="interface">{{ .interface }}</param>
+        {{- end }}
 
-      {{- if .remoteAddressWhitelist }}
+        {{- include "lightstreamer.adapters.proxy.sslConfig" (list $adapterName $.Values.keystores .) | indent 4 -}}
+        {{- include "lightstreamer.adapters.proxy.authentication" . | indent 4 -}}
+        {{- include "lightstreamer.adapters.proxy.connection" . | indent 4 -}}
+        {{- include "lightstreamer.adapters.proxy.closeNotification" (list $adapterName .) | indent 4 -}}
+        {{- include "lightstreamer.adapters.proxy.remoteParams" (list $adapterName .) | indent 4 -}}
+
+        {{- if not (quote .timeoutMillis | empty) }}
+    <param name="timeout">{{ int .timeoutMillis }}</param>
+        {{- end }}
+
+        {{- if not (quote .enableClearingOnSessionClose | empty) }}
+    <param name="clear_on_session_close">{{ .enableClearingOnSessionClose | ternary "true" "false" }}</param>
+        {{- end }}
+
+        {{- if not (quote .userDataTimeoutMillis | empty)}}
+    <param name="user_data_timeout">{{ int .userDataTimeoutMillis }}</param>
+        {{- end }}
+
+        {{- if $isRobust }}
+          {{- if not (quote .enableClearingOnNewRemote | empty)}}
+    <param name="clear_on_new_remote">{{ .enableClearingOnNewRemote | ternary "true" "false" }}</param>
+          {{- end }}
+        {{- end }}
+
+        {{- if .remoteAddressWhitelist }}
     <param name="remote_address_white_list">{{ .remoteAddressWhitelist }}</param>
-      {{- end }}
+        {{- end }}
 
-      {{- if not (quote .keepaliveTimeoutMillis | empty) }}
+        {{- if not (quote .keepaliveTimeoutMillis | empty) }}
     <param name="keep_alive">{{ int .keepaliveTimeoutMillis }}</param>
-      {{- end }}
+        {{- end }}
 
-      {{- if not (quote .keepaliveHintMillis | empty) }}
+        {{- if not (quote .keepaliveHintMillis | empty) }}
     <param name="keep_alive_hint">{{ int .keepaliveHintMillis }}</param>
-      {{- end }}
-
-    {{- end }} {{/* .proxyMetadataAdapter */}}
-  {{- else if .metadataAdapter }}
-    {{- with .metadataAdapter }}
-    
+        {{- end }}
+      {{- end }} {{/* proxyMetadataAdapter */}}
+    {{- else if .metadataAdapter }}
+      {{- with .metadataAdapter }}
     <adapter_class>{{ required (printf "adapters.%s.metadataAdapter.adapterClass must be set" $adapterName) .adapterClass }}</adapter_class>
 
-      {{- if not (quote .classLoader | empty) }}
-        {{- $possibleClassLoaders := list "common" "dedicated" "log-enabled" }}
-        {{- if not (has .classLoader $possibleClassLoaders) }}
-          {{- printf "adapters.%s.metadataAdapter.classLoader must be one of %s" $adapterName $possibleClassLoaders | fail }}
-        {{- end }}
+        {{- if not (quote .classLoader | empty) }}
+          {{- $possibleClassLoaders := list "common" "dedicated" "log-enabled" }}
+          {{- if not (has .classLoader $possibleClassLoaders) }}
+            {{- printf "adapters.%s.metadataAdapter.classLoader must be one of %s" $adapterName $possibleClassLoaders | fail }}
+          {{- end }}
     <classloader>{{ .classLoader }}</classloader>
-      {{- end}}
+        {{- end}}
 
-      {{- include "lightstreamer.adapters.in-process.metadata-provider.authenticationPool" . | nindent 4 -}}
-      {{- include "lightstreamer.adapters.in-process.metadata-provider.messagesPool" . | nindent 4 -}}
-      {{- include "lightstreamer.adapters.metadata-provider.mpnPool" . | nindent 4 -}}
+        {{- include "lightstreamer.adapters.in-process.metadata-provider.authenticationPool" . | nindent 4 -}}
+        {{- include "lightstreamer.adapters.in-process.metadata-provider.messagesPool" . | nindent 4 -}}
+        {{- include "lightstreamer.adapters.metadata-provider.mpnPool" . | nindent 4 -}}
 
-      {{- if not (quote .enableTableNotificationsSequentialization | empty) }}
+        {{- if not (quote .enableTableNotificationsSequentialization | empty) }}
     <metadata_adapter_initialised_first>{{ .enableTableNotificationsSequentialization | ternary "Y" "N" }}</metadata_adapter_initialised_first>
-      {{- end }}
+        {{- end }}
 
-      {{- if not (quote .maxBandwidth | empty) }}
+        {{- if not (quote .maxBandwidth | empty) }}
     <param name="max_bandwidth">{{ .maxBandwidth }}</param>
-      {{- end }}
+        {{- end }}
 
-      {{- if not (quote .maxFrequency | empty) }}
+        {{- if not (quote .maxFrequency | empty) }}
     <param name="max_frequency">{{ .maxFrequency }}</param>
-      {{- end }}
+        {{- end }}
 
-      {{- if not (quote .bufferSize | empty) }}
+        {{- if not (quote .bufferSize | empty) }}
     <param name="buffer_size">{{ .bufferSize }}</param>
-      {{- end }}
+        {{- end }}
 
-      {{- if not (quote .prefilterFrequency | empty) }}
+        {{- if not (quote .prefilterFrequency | empty) }}
     <param name="prefilter_frequency">{{ .prefilterFrequency }}</param>
-      {{- end }}
+        {{- end }}
 
-      {{- if not (quote .distinctSnapshotLength | empty) }}   
+        {{- if not (quote .distinctSnapshotLength | empty) }}   
     <param name="distinct_snapshot_length">{{ .distinctSnapshotLength }}</param>
-      {{- end }}
+        {{- end }}
 
-      {{- if not (quote .allowedUsers | empty) }}
+        {{- if not (quote .allowedUsers | empty) }}
     <param name="allowed_users">{{ .allowedUsers }}</param>
-      {{- end }}
+        {{- end }}
 
-      {{- $counter := 0 }}
-      {{- range $family, $values := .itemFamilies }}
-        {{- $counter = add1 $counter }} 
+        {{- $counter := 0 }}
+        {{- range $family, $values := .itemFamilies }}
+          {{- $counter = add1 $counter }} 
     <param name="item_family_{{ $counter }}">{{ required (printf "adapters.%s.metadataAdapter.itemFamilies.%s.itemPattern must be set" $adapterName $family) $values.itemPattern }}</param>
     <param name="data_adapter_for_item_family_{{ $counter }}">{{ required (printf "adapters.%s.metadataAdapter.itemFamilies.%s.dataAdapter must be set" $adapterName $family) $values.dataAdapter }}</param>
-        {{- $modes := regexSplit "," $values.modes -1 }}
-        {{- range $modes}}
-          {{- if not (has . (list "DISTINCT" "COMMAND" "MERGE" "RAW")) }}
-            {{ printf "adapters.%s.metadataAdapter.itemFamilies.%s.modes must be a comma-separated list of DISTINCT, COMMAND, MERGE, RAW" $adapterName $family | fail }}
-          {{- end }}
-        {{- end}}
+          {{- $modes := regexSplit "," $values.modes -1 }}
+          {{- range $modes}}
+            {{- if not (has . (list "DISTINCT" "COMMAND" "MERGE" "RAW")) }}
+              {{ printf "adapters.%s.metadataAdapter.itemFamilies.%s.modes must be a comma-separated list of DISTINCT, COMMAND, MERGE, RAW" $adapterName $family | fail }}
+            {{- end }}
+          {{- end}}
     <param name="modes_for_item_family_{{ $counter }}">{{ $values.modes }}</param>
-      {{- end }}
+        {{- end }}
    
-    {{- end }}
-  {{- else }}
-    {{ printf "At least one of metadataAdapter or proxyMetadataAdapter must be set" | fail }}
+      {{- end }} {{/* metadataAdapter */}}
+    {{- end }} {{/* metadataAdapter or proxyMetadataAdapter */}}
   {{- end }}
+  </metadata_provider> {{/* metadata_provider */}}
 
-  </metadata_adapter>
+  {{- range $dataProviderName, $dataProvider := .dataProviders }}
 
+  <data_provider name={{ $dataProvider.name | quote }}>
+
+    {{- if $dataProvider.proxyDataAdapter }}
+      {{- with $dataProvider.proxyDataAdapter }}
+        {{- $isRobust := .enableRobustAdapter | default false }}
+        {{- $proxyClass := $isRobust | ternary "ROBUST_PROXY_FOR_REMOTE_ADAPTER" "PROXY_FOR_REMOTE_ADAPTER" }}
+    <adapter_class>{{ $proxyClass }}</adapter_class>
+    <classloader>log-enabled</classloader>
+
+        {{- include "lightstreamer.adapters.data-provider.dataAdapterPool" $dataProvider | nindent 2 }}
+
+    <param name="request_reply_port">{{ required (printf "adapters.%s.proxyMetadataAdapter.requestReplyPort must be set" $adapterName) (int .requestReplyPort) }}</param>
+        {{- if not (quote .remoteHost | empty) }}
+    <param name="remote_host">{{ .remoteHost }}</param>
+        {{- end }}
+        {{- if not (quote .interface | empty) }}
+    <param name="interface">{{ .interface }}</param>
+        {{- end }}
+
+        {{- include "lightstreamer.adapters.proxy.sslConfig" (list $adapterName $.Values.keystores .) | indent 4 -}}
+        {{- include "lightstreamer.adapters.proxy.authentication" . | indent 4 -}}
+        {{- include "lightstreamer.adapters.proxy.connection" . | indent 4 -}}
+
+        {{- if $isRobust }}
+          {{- if .eventsRecovery }}
+            {{- $possibleValues := list "leave_hole" "use_snapshot" "enforce_snapshot" -}}
+            {{- if not (has .eventsRecovery $possibleValues) }}
+              {{ printf "adapters.%s.dataProviders.%s.closeNotificationsRecovery must be one of: %s" $adapterName $dataProviderName $possibleValues | fail }}
+            {{- end }}
+    <param name="events_recovery">{{ .eventsRecovery }}</param>
+          {{- end }}
+
+          {{- if not (quote .statusItem | empty) }}
+    <param name="status_item">{{ .statusItem }}</param>
+          {{- end }}
+        {{- end }} 
+
+      {{- end }} {{/* proxyDataAdapter */}}
+    {{- else if $dataProvider.dataProvider }}
+      {{- with $dataProvider.dataProvider }}
+    <adapter_class>{{ required (printf "adapters.%s.dataProviders.%s.adapterClass must be set" $adapterName $dataProviderName) .adapterClass }}</adapter_class>
+    <classloader>{{ .classLoader }}</classloader>
+      {{- end }} {{/* dataProvider */}} 
+    {{- end }} {{/* proxyDataAdapter or dataProvider */}}
+  </data_provider>
+  {{- end }}  {{/* dataProviders */}}
+  
 <adapters_conf>
 
 {{- end }} {{/* $adapter */}}
-{{- end}}
-
+{{- end -}}
