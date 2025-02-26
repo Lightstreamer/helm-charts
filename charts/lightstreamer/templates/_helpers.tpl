@@ -166,6 +166,9 @@ server exists and no duplicated names or ports are defined.
 {{- $usedNames := list }}
 {{- $usedPorts := list }}
 {{- range $serverKey, $server :=.Values.servers }}
+  {{- if not $server }}
+    {{ printf "servers.%s must be set" $serverKey | fail }}
+  {{- end }}
   {{- if $server.enabled }}
     {{- /* CHECK SERVER NAMES */ -}}
     {{- $serverName := required (printf "servers.%s.name must be set" $serverKey) $server.name }}
@@ -409,40 +412,174 @@ Render the keystore settings for the Lightstreamer Kafka Connector configuration
 {{- end -}}
 
 {{/*
-Render the <authentication_pool> block for the proxy adapters configuration file.
+Validate all the adapter set configurations, ensuring that:
+- No duplicate adapter set ids exist.
+- Either a in-process or proxy metadata adapter is defined for each enabled adapter set.
+- An adapter class name is defined for each in-process metadata adapter.
+- A request/reply port is defined for each proxy metadata adapter.
+- At least one enabled data provider is defined for each enabled adapter set.
+- Either a in-process or proxy data adapter is defined for each enabled data provider.
+- No duplicate data provider names exist for each enabled adapter set.
+- An adapter class name is defined for each in-process data adapter.
+- A request/reply port is defined for each proxy data adapter.
+- No clashing ports exist.
+*/}}
+{{- define "lightstreamer.adapters.validateAllAdapterSets" -}}
+{{- $userAdapterIds := list -}}
+{{- $usedPorts := list}}
+{{- range $adapterName, $adapterSet := .Values.adapters}}
+  {{- if not $adapterSet }}
+    {{- fail (printf "adapters.%s must be set" $adapterName) }}
+  {{- end }}
+  {{- if $adapterSet.enabled }}
+  {{- /* CHECK ADAPTER SET IDS */ -}}
+    {{- $adapterId := required (printf "adapters.%s.id must be set" $adapterName) $adapterSet.id }}
+    {{- if has $adapterId $userAdapterIds }}
+      {{- fail (printf "adapters.%s.id \"%s\" already used" $adapterName $adapterId ) }}
+    {{- end }}
+    {{- $userAdapterIds = append $userAdapterIds $adapterId }}
+
+    {{- $metadataProvider := required (printf "adapters.%s.metadataProvider must be set" $adapterName) $adapterSet.metadataProvider -}}
+    {{- if hasKey $metadataProvider "inProcessMetadataAdapter" }}
+      {{- /* CHECK IN-PROCESS METADATA ADAPTER CLASS NAME */}}
+      {{- $inProcess := $metadataProvider.inProcessMetadataAdapter | default dict }}
+      {{- $adapterClass := required (printf "adapters.%s.metadataProvider.inProcessMetadataAdapter.adapterClass must be set" $adapterName) $inProcess.adapterClass }}
+    {{- else if hasKey $metadataProvider "proxyMetadataAdapter" }}
+      {{- $proxy := $metadataProvider.proxyMetadataAdapter | default dict }}
+      {{- /* CHECK PROXY METADATA ADAPTER REQUEST/REPLY PORT */ -}}
+      {{- $requestReplyPort := int (required (printf "adapters.%s.metadataProvider.proxyMetadataAdapters.requestReplyPort must be set" $adapterName) $proxy.requestReplyPort) }}
+      {{- if has $requestReplyPort $usedPorts }}
+        {{- fail (printf "adapters.%s.metadataProvider.proxyMetadataAdapters.requestReplyPort \"%d\" already used" $adapterName $requestReplyPort ) }}
+      {{- end }}
+      {{- $usedPorts = append $usedPorts $requestReplyPort }}
+    {{- else }}
+      {{- printf "Either specify \"inProcessMetadataAdapter\" or \"proxyMetadataAdapter\" in adapters.%s.metadataProvider " $adapterName | fail }}    
+    {{- end }}
+    
+    {{- $enabledDataProviders := list }}
+    {{- $dataProviders := required (printf "adapters.%s.dataProviders must be set" $adapterName) $adapterSet.dataProviders }}
+    {{- range $dataProviderKey, $dataProvider := $dataProviders }}
+      {{- if not $dataProvider }}
+        {{- fail (printf "adapters.%s.dataProviders.%s must be set" $adapterName $dataProviderKey) }}
+      {{- end }}
+      {{- if $dataProvider.enabled }}
+        {{- /* CHECK DATA PROVIDER NAMES */ -}}
+        {{- $dataProviderName := required (printf "adapters.%s.dataProviders.%s.name must be set" $adapterName $dataProviderKey) $dataProvider.name }}
+        {{- if has $dataProviderName $enabledDataProviders }}
+          {{- fail (printf "adapters.%s.dataProviders.%s.name \"%s\" already used" $adapterName $dataProviderKey $dataProviderName ) }}
+        {{- end }}
+        {{- $enabledDataProviders = append $enabledDataProviders $dataProviderName }}
+
+        {{- if hasKey $dataProvider "inProcessDataAdapter" }}
+          {{- $inProcess := $dataProvider.inProcessDataAdapter | default dict }}
+          {{- /* CHECK IN-PROCESS DATA ADAPTER CLASS NAME */ -}}
+          {{- $adapterClass := required (printf "adapters.%s.dataProviders.%s.inProcessMetadataAdapter.adapterClass must be set" $adapterName $dataProviderKey) $inProcess.adapterClass }}
+        {{- else if hasKey $dataProvider "proxyDataAdapter" }}
+          {{- $proxy := $dataProvider.proxyDataAdapter | default dict }}
+          {{- /* CHECK REQUEST/REPLY PORTS */ -}}
+          {{- $dataProviderPort := int (required (printf "adapters.%s.dataProviders.%s.proxyDataAdapter.requestReplyPort must be set" $adapterName $dataProviderKey) $proxy.requestReplyPort) }}
+          {{- if has $dataProviderPort $usedPorts }}
+            {{- fail (printf "adapters.%s.dataProviders.%s.proxyDataAdapter.requestReplyPort \"%d\" already used" $adapterName $dataProviderKey $dataProviderPort ) }}
+          {{- end }}
+          {{- $usedPorts = append $usedPorts $dataProviderPort }}
+        {{- else }}
+          {{- printf "Either specify \"inProcessDataAdapter\" or \"proxyDataAdapter\" in adapters.%s.dataProviders.%s " $adapterName $dataProviderKey | fail }}    
+        {{- end }}
+      {{- end }}
+    {{- end }}
+    {{- if $enabledDataProviders | empty }}
+      {{- fail (printf "At least one enabled data provider must be defined for adapters.%s" $adapterName) }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
+Create the Java class name of the Proxy Meta/Data Adapter.
+*/}}
+{{- define "lightstreamer.adapters.proxy.common.class" -}}
+{{- .enableRobustAdapter | default false | ternary "ROBUST_PROXY_FOR_REMOTE_ADAPTER" "PROXY_FOR_REMOTE_ADAPTER" -}}
+{{- end }}
+
+{{/*
+Render the <authentication_pool> block for the Proxy Metadata Adapter.
 */}}
 {{- define "lightstreamer.adapters.proxy.metadata-provider.authenticationPool" -}}
 {{- include "lightstreamer.adapters.metadata-provider.authenticationPool" (list true .) -}}
 {{- end -}}
 
 {{/*
-Render the <messages_pool> block for the proxy adapters configuration file.
+Render the <messages_pool> block for the Proxy Metadata Adapter.
 */}}
 {{- define "lightstreamer.adapters.proxy.metadata-provider.messagesPool" -}}
 {{- include "lightstreamer.adapters.metadata-provider.messagesPool" (list true .) -}}
 {{- end -}}
 
 {{/*
-Render the <authentication_pool> block for the in-process adapters configuration file.
+Render the <mpn_pool> block for the Proxy Metadata Adapter.
+*/}}
+{{- define "lightstreamer.adapters.proxy.metadata-provider.mpnPool" -}}
+{{- include "lightstreamer.adapters.metadata-provider.mpnPool" . -}}
+{{- end }}
+
+{{/*
+Render the <authentication_pool> block for the in-process Metadata Adapter.
 */}}
 {{- define "lightstreamer.adapters.in-process.metadata-provider.authenticationPool" -}}
 {{- include "lightstreamer.adapters.metadata-provider.authenticationPool" (list false .) -}}
 {{- end -}}
 
 {{/*
-Render the <messages_pool> block for the in-process adapters configuration file.
+Render the <messages_pool> block for the in-process Metadata Adapter.
 */}}
 {{- define "lightstreamer.adapters.in-process.metadata-provider.messagesPool" -}}
 {{- include "lightstreamer.adapters.metadata-provider.messagesPool" (list false .) -}}
 {{- end -}}
 
 {{/*
-Render the <authenticationPool> block for the adapters configuration file.
+Render the <mpn_pool> block for the in-process Metadata Adapter.
+*/}}
+{{- define "lightstreamer.adapters.in-process.metadata-provider.mpnPool" -}}
+{{- include "lightstreamer.adapters.metadata-provider.mpnPool" . -}}
+{{- end }}
+
+{{/*
+Render the <data_authentication_pool> block for the Proxy Data Adapter.
+*/}}
+{{- define "lightstreamer.adapters.proxy.data-provider.dataAdapterPool" -}}
+{{- include "lightstreamer.adapters.data-provider.dataAdapterPool" . -}}
+{{- end }}
+
+{{/*
+Render the <data_authentication_pool> block for the in-process Data Adapter.
+*/}}
+{{- define "lightstreamer.adapters.in-process.data-provider.dataAdapterPool" -}}
+{{- include "lightstreamer.adapters.data-provider.dataAdapterPool" . -}}
+{{- end }}
+
+{{/*
+Render the custom initialization parameters for the in-process adapters.
+*/}}
+{{- define "lightstreamer.adapters.in-process.common.initParams" -}}
+{{- if .initParams }}
+
+<!-- CUSTOM INITIALIZATION PARAMETERS -->
+{{- range $paramName, $paramValue := .initParams }}
+<param name={{ $paramName | quote}}>{{ $paramValue }}</param>
+{{- end }}
+<!-- END CUSTOM INITIALIZATION PARAMETERS -->
+{{- end }}
+{{- end }}
+
+{{/*
+Render the <authenticationPool> block for the Metadata Adapter.
 */}}
 {{- define "lightstreamer.adapters.metadata-provider.authenticationPool" -}}
 {{- $isRemote := index . 0 -}}
 {{- $parent := index . 1 -}}
 {{- with $parent.authenticationPool }}
+
+<!-- AUTHENTICATION POOL -->
 <authentication_pool>
   {{- if not (quote .maxSize | empty) }}
   <max_size>{{ int .maxSize }}</max_size>
@@ -463,16 +600,19 @@ Render the <authenticationPool> block for the adapters configuration file.
   <max_queue>{{ int .maxQueue }}</max_queue>
   {{- end }}
 </authentication_pool>
+<!-- END AUTHENTICATION POOL -->
 {{- end }}
 {{- end -}}
 
 {{/*
-Render the <messages_pool> block for the adapters configuration file.
+Render the <messages_pool> block for the Metadata Adapter.
 */}}
 {{- define "lightstreamer.adapters.metadata-provider.messagesPool" -}}
 {{- $isRemote := index . 0 -}}
 {{- $parent := index . 1 -}}
 {{- with $parent.messagesPool}}
+
+<!-- MESSAGES POOL ->
 <messages_pool>
   {{- if not (quote .maxSize | empty) }}
   <max_size>{{ int .maxSize }}</max_size>
@@ -493,14 +633,17 @@ Render the <messages_pool> block for the adapters configuration file.
   <max_queue>{{ int .maxQueue }}</max_queue>
   {{- end }}
 </message_pool>
+<!-- END MESSAGES POOL ->
 {{- end }}
 {{- end -}}
 
 {{/*
-Render the <mpn_pool> block for the adapters configuration file.
+Render the <mpn_pool> block for the Metadata Adapter.
 */}}
 {{- define "lightstreamer.adapters.metadata-provider.mpnPool" -}}
 {{- with .mpnPool }}
+
+<!-- MPN POOL -->
 <mpn_pool>
   {{- if not (quote .maxSize | empty) }}
   <max_size>{{ int .maxSize }}</max_size>
@@ -509,29 +652,30 @@ Render the <mpn_pool> block for the adapters configuration file.
   <max_free>{{ int .maxFree }}</max_free>
   {{- end }}
 </mpn_pool>
+<!-- END MPN POOL -->
 {{- end }}
 {{- end }}
 
 {{/*
-  Render the <data_adapter_pool> block for the adapters configuration file.
-  */}}
-  {{- define "lightstreamer.adapters.data-provider.dataAdapterPool" -}}
-  {{- with .dataAdapterPool }}
-  <data_adapter_pool>
-    {{- if not (quote .maxSize | empty) }}
-    <max_size>{{ int .maxSize }}</max_size>
-    {{- end }}
-    {{- if not (quote .maxFree | empty) }}
-    <max_free>{{ int .maxFree }}</max_free>
-    {{- end }}
-  </data_adapter_pool>
+Render the <data_adapter_pool> block for the Data Adapter.
+*/}}
+{{- define "lightstreamer.adapters.data-provider.dataAdapterPool" -}}
+{{- with .dataAdapterPool }}
+<data_adapter_pool>
+  {{- if not (quote .maxSize | empty) }}
+  <max_size>{{ int .maxSize }}</max_size>
   {{- end }}
+  {{- if not (quote .maxFree | empty) }}
+  <max_free>{{ int .maxFree }}</max_free>
   {{- end }}
+</data_adapter_pool>
+{{- end }}
+{{- end }}
 
 {{/*
 Render the tls parameters for the proxy adapters.
 */}}
-{{- define "lightstreamer.adapters.proxy.sslConfig" }}
+{{- define "lightstreamer.adapters.proxy.common.sslConfig" }}
 {{- $adapterName := index . 0}}
 {{- $keystores := index . 1 -}}
 {{- $parent := index . 2 -}}
@@ -602,21 +746,26 @@ Render the tls parameters for the proxy adapters.
 {{/*
 Render the authentication parameters for the proxy adapters.
 */}}
-{{- define "lightstreamer.adapters.proxy.authentication" -}}
-{{- if (.authentication).enabled }}
+{{- define "lightstreamer.adapters.proxy.common.authentication" -}}
+{{- $adapterName := index . 0 -}}
+{{- $proxy := index . 1 -}}
+{{- if ($proxy.authentication).enabled }}
 
 <!-- AUTHENTICATION SETTINGS -->
-{{- with .authentication }}
+{{- with $proxy.authentication }}
 {{- /* auth */}}    
 <param name="auth">Y</param>
   {{- $counter := 0 }}
+  {{- if .credentialsSecrets | empty }}
+    {{- fail (printf "adapters.%s.{...}.authentication.credentialsSecrets must be set" $adapterName) }}
+  {{- end }}
   {{- range .credentialsSecrets }}
     {{- $counter = add1 $counter }} 
     {{- /* auth.credentials.<N>.user */}}    
-<param name="auth.credentials.{{ $counter }}.user">$env.LS_PROXY_CREDENTIAL_{{ . | upper | replace "-" "_" }}_USER></param>
+<param name="auth.credentials.{{ $counter }}.user">$env.LS_PROXY_ADAPTER_CREDENTIAL_{{ . | upper | replace "-" "_" }}_USER></param>
 
     {{- /* auth.credentials.<N>.password */}}    
-<param name="auth.credentials.{{ $counter }}.password">$env.LS_PROXY_CREDENTIAL_{{ . | upper | replace "-" "_" }}_PASSWORD></param>
+<param name="auth.credentials.{{ $counter }}.password">$env.LS_PROXY_ADAPTER_CREDENTIAL_{{ . | upper | replace "-" "_" }}_PASSWORD></param>
 
   {{- end }}
 {{- end }}
@@ -671,7 +820,7 @@ Render the truststore settings for the proxy adapters.
 {{/*
 Render the connection-related timeout settings for the proxy adapters.
 */}}
-{{- define "lightstreamer.adapters.proxy.connection" -}}
+{{- define "lightstreamer.adapters.proxy.common.connection" -}}
 {{- $pars := list .connectionRetryMillis .connectionRecoveryTimeoutMillis .firstConnectionTimeoutMillis -}}
 {{- if not ($pars | empty) }}
 
@@ -698,9 +847,9 @@ Render the connection-related timeout settings for the proxy adapters.
 {{- end -}}
 
 {{/*
-Render the close/disconnection notification settings for the proxy adapters.
+Render the close/disconnection notification settings for the Proxy Metadata Adapter.
 */}}
-{{- define "lightstreamer.adapters.proxy.closeNotification" -}}
+{{- define "lightstreamer.adapters.proxy.metadata-provider.closeNotification" -}}
 {{- $adapterName := index . 0 -}}
 {{- $proxy := index . 1 -}}
 {{- if $proxy.enableRobustAdapter }}
@@ -741,7 +890,7 @@ Render the close/disconnection notification settings for the proxy adapters.
 {{/*
 Render the remote parameters for the proxy adapters.
 */}}
-{{- define "lightstreamer.adapters.proxy.remoteParams" -}}
+{{- define "lightstreamer.adapters.proxy.common.remoteParams" -}}
 {{- $adapterName := index . 0 -}}
 {{- $proxy := index . 1 -}}
 {{- with $proxy.remoteParamsConfig }}
@@ -750,14 +899,14 @@ Render the remote parameters for the proxy adapters.
   {{- if not (quote $prefix | empty) }}
   {{- /* remote_params_prefix */}}
     {{- if not (contains ":" $prefix) }}
-      {{ printf "adapters.%s.proxyMetadataAdapter.remoteParamsConfig.prefix must contain a colon" $adapterName | fail }}
+      {{ printf "adapters.%s.{...}.remoteParamsConfig.prefix must contain a colon" $adapterName | fail }}
     {{- end }}
 <param name="remote_params_prefix">{{ $prefix }}</param>
 
   {{- /* remote:xxx */}}
     {{- range $paramName, $paramValue := .params}}
       {{- if not (hasPrefix $prefix $paramName) }}
-       {{ printf "adapters.%s.proxyMetadataAdapter.remoteParamsConfig.params.%s key must start with the prefix \"%s\"" $adapterName $paramName $prefix | fail }}
+       {{ printf "adapters.%s.{...}.remoteParamsConfig.params.%s key must start with the prefix \"%s\"" $adapterName $paramName $prefix | fail }}
       {{- end}}
 <param name={{ printf "%s%s" $prefix $paramName | quote }}>{{ $paramValue }}</param>
     {{- end }}
@@ -765,3 +914,44 @@ Render the remote parameters for the proxy adapters.
 <!-- END REMOTE PARAMS SETTINGS -->
 {{- end }}
 {{- end -}}
+
+{{/*
+Render the common parameters for the proxy adapters.
+*/}}
+{{- define "lightstreamer.adapters.proxy.common" -}}
+{{- $adapterName := index . 0 -}}
+{{- $proxy := index . 1 -}}
+
+{{- /* request_reply_port */ -}}
+<param name="request_reply_port">{{ int $proxy.requestReplyPort }}</param>
+
+{{- /* remote_host */ -}}
+{{- if not (quote $proxy.remoteHost | empty) }}
+<param name="remote_host">{{ $proxy.remoteHost }}</param>
+{{- end }}
+
+{{- /* interface */ -}}
+{{- if not (quote $proxy.interface | empty) }}
+<param name="interface">{{ $proxy.interface }}</param>
+{{- end }}
+
+{{- /* timeout */ -}}
+{{- if not (quote $proxy.timeoutMillis | empty) }}
+<param name="timeout">{{ int $proxy.timeoutMillis }}</param>
+{{- end }}
+
+{{- /* remote_address_white_list */ -}}
+{{- if $proxy.remoteAddressWhitelist }}
+<param name="remote_address_white_list">{{ $proxy.remoteAddressWhitelist }}</param>
+{{- end }}
+
+{{- /* keep_alive */ -}}    
+{{- if not (quote $proxy.keepaliveTimeoutMillis | empty) }}
+<param name="keep_alive">{{ int $proxy.keepaliveTimeoutMillis }}</param>
+{{- end }}
+
+{{- /* keep_alive_hint */ -}}        
+{{- if not (quote $proxy.keepaliveHintMillis | empty) }}
+<param name="keep_alive_hint">{{ int $proxy.keepaliveHintMillis }}</param>
+{{- end }}
+{{- end -}}    
