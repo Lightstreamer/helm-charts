@@ -223,24 +223,28 @@ spec:
           {{- /* END ENV VARIABLES FOR MPN */ -}}
           {{- /* START ENV VARIABLES FOR THE ADAPTERS CONFIGURATION */ -}}
           {{- $authSecretRefs := list }}
-          {{- range .Values.adapters }}
-            {{- if ((.proxyMetadataAdapter).authentication).enabled }}
-              {{- $authSecretRefs = concat $authSecretRefs .proxyMetadataAdapter.authentication.credentialsSecrets }}
-            {{- end}}
-            {{- with .proxyDataProviders }}
-              {{- if .authentication.enabled }}
-                {{- $authSecretRefs = concat $authSecretRefs .authentication.credentialsSecrets }}
+          {{- range $adapter := .Values.adapters }}
+            {{- if $adapter.enabled }}
+              {{- if (((.metadataProvider).proxyMetadataAdapter).authentication).enabled }}
+                {{- $authSecretRefs = concat $authSecretRefs .metadataProvider.proxyMetadataAdapter.authentication.credentialsSecrets }}
+              {{- end }}
+              {{- range $dataProvider := .dataProviders}}
+                {{- if ($dataProvider).enabled }}
+                  {{- if ((.proxyDataAdapter).authentication).enabled }}
+                    {{- $authSecretRefs = concat $authSecretRefs .proxyDataAdapter.authentication.credentialsSecrets }}
+                  {{- end }}
+                {{- end }}
               {{- end }}
             {{- end }}
           {{- end }}
           {{- $authSecretRefs := $authSecretRefs | uniq }}
           {{- range $authSecretRefs }}
-            - name: LS_PROXY_CREDENTIAL_{{ . | upper | replace "-" "_" }}_USER
+            - name: LS_PROXY_ADAPTER_CREDENTIAL_{{ . | upper | replace "-" "_" }}_USER
               valueFrom:
                 secretKeyRef:
                   name: {{ . }}
                   key: user
-            - name: LS_PROXY_CREDENTIAL_{{ . | upper | replace "-" "_" }}_PASSWORD
+            - name: LS_PROXY_ADAPTER_CREDENTIAL_{{ . | upper | replace "-" "_" }}_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ . }}
