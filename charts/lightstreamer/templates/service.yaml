@@ -17,7 +17,7 @@ limitations under the License.
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "lightstreamer.fullname" . }}
+  name: {{ include "lightstreamer.service.name" . }}
   {{- with .Values.service.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -33,11 +33,16 @@ spec:
   loadBalancerClass: {{ . }}
   {{- end }}
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: {{ include "lightstreamer.service.targetPort" . }}
+  {{- if not .Values.service.ports }}
+   {{ printf "service.ports must be set " | fail }}
+  {{- end }}
+  {{- range .Values.service.ports }}
+    - port: {{ .port }}
+      targetPort: {{ include "lightstreamer.service.targetPort" (list $ .targetPort) }}
       protocol: TCP
-      nodePort: {{ .Values.service.nodePort }}
-      name: {{ include "lightstreamer.service.name" . }}
+      nodePort: {{ .nodePort }}
+      name: {{ .name }}
+  {{- end }}
   selector:
     {{- include "lightstreamer.selectorLabels" . | nindent 4 }}
     {{- with .Values.service.additionalSelectors }}
