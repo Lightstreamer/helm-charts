@@ -1,0 +1,51 @@
+{{/*
+Copyright (C) 2025 Lightstreamer Srl
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/}}
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "lightstreamer.fullname" . }}-init-scripts
+  labels:
+    {{- include "lightstreamer.labels" . | nindent 4 }}
+data:
+   {{- if ((.Values.connectors).kafkaConnector).enabled }}
+   copy-kafka-connector-conf.sh: |
+     #!/bin/sh
+     {{- with ((.Values.connectors).kafkaConnector).provisioning }}
+       {{- if not .fromPathInImage }}
+      KAFKA_CONNECTOR_DEPLOYMENT=/lightstreamer/adapters/{{ include "lightstreamer.kafka-connector.name" . }}
+       {{- else }}
+      KAFKA_CONNECTOR_DEPLOYMENT={{ .fromPathInImage }}
+       {{- end }}
+     {{- end }}
+      cp /kafka-connector-conf/adapters.xml ${KAFKA_CONNECTOR_DEPLOYMENT}/adapters.xml
+      cp /kafka-connector-conf/log4j.properties ${KAFKA_CONNECTOR_DEPLOYMENT}/log4j.properties
+   {{- end }}
+
+   launch.sh: |
+      #!/bin/bash
+      set -ex
+      # The working dir is /lightstreamer/bin/unix-like as per the Docker image settings
+      {{- if ((.Values.connectors).kafkaConnector).enabled }}
+      /lightstreamer/bin/init-scripts/copy-kafka-connector-conf.sh
+      {{- end}}
+      {{- range .Values.deployment.preCommands }}
+      {{ . }}
+      {{- end}}
+      if [ -n "${LS_HIBERNATE_SYSTEM_PROPERTIES}" ]; then
+         JAVA_OPTS="${JAVA_OPTS} ${LS_HIBERNATE_SYSTEM_PROPERTIES}"
+      fi
+      ./LS.sh run      
