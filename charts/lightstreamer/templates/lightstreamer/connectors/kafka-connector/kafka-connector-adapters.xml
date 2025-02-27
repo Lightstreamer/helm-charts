@@ -183,7 +183,7 @@ Render the Lightstreamer Kafka Connector configuration file
         <!-- Optional. The path of the trust store file, relative to the deployment folder
              (LS_HOME/adapters/lightstreamer-kafka-connector-<version>). -->
         {{- if .truststoreRef}}
-          {{- include "lightstreamer.kafka-connector.configuration.truststore" (list "encryption.truststore" $.Values.keystores .trustStoreRef)  | nindent 8 }}
+          {{- include "lightstreamer.kafka-connector.configuration.truststore" (list "encryption.truststore" $.Values.keystores .truststoreRef)  | nindent 8 }}
         {{- else }}
         <!--
         <param name="encryption.truststore.path">secrets/kafka-connector.truststore.jks</param>
