@@ -1,0 +1,61 @@
+{{/*
+Copyright (C) 2025 Lightstreamer Srl
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/}}
+
+{{/* Extract the list of proxy adapters*/}}
+{{- $proxyAdapters := dict }}
+{{- $metaCounter := 0}}
+{{- range $adapterName, $adapterSet := .Values.adapters }}
+  {{- if $adapterSet.enabled }}
+    {{- with $adapterSet.metadataProvider.proxyMetadataAdapter }}
+      {{- if not .remoteHost }}
+        {{- $metaCounter = add1 $metaCounter }}
+        {{- $key := printf "proxy-meta-%d" $metaCounter }}
+        {{- $_ := set $proxyAdapters $key .requestReplyPort }}
+      {{- end }}
+    {{- end }}
+    {{- $dataCounter := 0}}
+    {{- range $dataProviderName, $dataProvider := $adapterSet.dataProviders }}
+      {{- if $dataProvider.enabled }}
+        {{- with $dataProvider.proxyDataAdapter }}
+          {{- if not .remoteHost }}
+            {{- $dataCounter = add1 $dataCounter }}
+            {{- $key := printf "proxy-data-%d" $dataCounter }}
+            {{- $_ := set $proxyAdapters $key .requestReplyPort }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+  {{- end }}    
+{{- end }}
+
+{{/* Create the service for the proxy adapters*/}}
+{{- if $proxyAdapters }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "lightstreamer.fullname" . }}-adapters
+spec:
+  type: ClusterIP
+  ports:
+  {{- range $key, $port := $proxyAdapters }}
+    - port: {{ $port }}
+      targetPort: {{ $port }}
+      protocol: TCP
+      name: {{ $key }}
+  {{- end}}
+  selector:
+    {{- include "lightstreamer.selectorLabels" $ | nindent 4 }}
+{{- end }}
