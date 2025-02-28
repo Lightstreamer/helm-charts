@@ -14,16 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */}}
 
+{{- include "lightstreamer.adapters.validateAllAdapterSets" . }}
+{{- range $adapterName, $adapterSet := .Values.adapters }}
+{{- if $adapterSet.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "lightstreamer.fullname" . }}-adapters
+  name: {{ include "lightstreamer.adapters.configMapName" (list $ $adapterName) }} 
   labels:
-    {{- include "lightstreamer.labels" . | nindent 4 }}
+    {{- include "lightstreamer.labels" $ | nindent 4 }}
 data:
-{{- range $key,$adapter := .Values.adapters }}
-  {{- if $adapter.enabled }}
-  {{ $key | lower }}.xml: |-
-  {{- include "lightstreamer.adapters" (list $ $key $adapter) | nindent 4 -}}
-  {{- end }}
+  adapters.xml: |-
+  {{- include "lightstreamer.adapters" (list $ $adapterName $adapterSet) | nindent 4 }}
+--- 
 {{- end }}
+{{- end }}
+
