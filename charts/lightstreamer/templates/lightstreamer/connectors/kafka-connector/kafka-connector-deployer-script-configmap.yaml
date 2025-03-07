@@ -1,5 +1,5 @@
 {{- if ((.Values.connectors).kafkaConnector).enabled }}
-{{- include "lightstreamer.kafka-connector.validateProvisioning" .Values.connectors.kafkaConnector }}
+{{- include "lightstreamer.kafka-connector.validateProvisioning" . }}
 {{- if not .Values.connectors.kafkaConnector.provisioning.fromPathInImage }}
 apiVersion: v1
 kind: ConfigMap
@@ -8,25 +8,46 @@ metadata:
   labels:
     {{- include "lightstreamer.labels" . | nindent 4 }}
 data:
+  {{- /*
+  Retrieves the Kafka Connector distribution package from one of the
+  configurable provisioning sources (GitHub release, URL, or volume) and deploys
+  it to the ephemeral volume "kafka-connector-deployment", which will be
+  soft-linked to expected path in the Lightstreamer image by the
+  "copy-kafka-connector.sh" script launched at the startup.
+
+  The script is executed by the `kafka-connector-deployer` init container, which
+  is created ony if the "connector.kafkaConnector.provisioning.fromPathInImage"
+  setting is not leveraged: in that case, the connector is expected to be
+  already available in the image.
+  */}}
   kafka-connector-deployer.sh: |-
     #!/bin/sh
     set -ex
   {{- $provisioning := .Values.connectors.kafkaConnector.provisioning }}
   {{- with $provisioning }}
-    KAFKA_CONNECTOR_DEPLOYMENT=/kafka-connector-deployment/{{ include "lightstreamer.kafka-connector.name" . }}
-    ZIP_ARCHIVE=kafka-connector.zip
-    {{- if .fromGitHubRelease }}
-    wget -O /kafka-connector-source-archives/${ZIP_ARCHIVE} {{ include "lightstreamer.kafka-connector.url" .fromGitHubRelease }}
-    {{- else if .fromUrl }}
-    wget -O /kafka-connector-source-archives/${ZIP_ARCHIVE} {{ .fromUrl }}
-    {{- else if .fromVolume }}
-    ZIP_ARCHIVE={{ required "connectors.kafkaConnector.provisioning.fromVolume.filePath must be set" .fromVolume.filePath }}
+    KAFKA_CONNECTOR_DEPLOYMENT_PATH=/kafka-connector-deployment/{{ include "lightstreamer.kafka-connector.name" . }}
+    {{- if .fromVolume }}
+    # The ZIP archive is already available in the volume specified through
+    # "connectors.kafkaConnector.provisioning.fromVolume", mounted at the
+    # expected path.
+    ZIP_ARCHIVE= .fromVolume.filePath }}
     {{- else }}
-      {{- fail "connectors.kafkaConnector.provisioning must be set to one of: \"fromGitHubRelease\", \"fromUrl\", \"fromVolume\"" -}}
+    ZIP_ARCHIVE=kafka-connector.zip    
+      {{- if .fromGitHubRelease }}
+    # Download the ZIP archive from the GitHub release to the temporary
+    # directory mounted from the ephemeral volume
+    # "kafka-connector-source-storage".
+    wget -O /tmp/connectors-source-archives/kafka/${ZIP_ARCHIVE} {{ include "lightstreamer.kafka-connector.url" .fromGitHubRelease }}
+      {{- else if .fromUrl }}
+    # Download the ZIP archive from the specified URL to the temporary directory
+    # mounted from the ephemeral volume "kafka-connector-source-storage".
+    wget -O /tmp/connectors-source-archives/kafka/${ZIP_ARCHIVE} {{ .fromUrl }}
+      {{- end }}
     {{- end }}
-    unzip /kafka-connector-source-archives/${ZIP_ARCHIVE} -d /kafka-connector-deployment
-    mv /kafka-connector-deployment/* ${KAFKA_CONNECTOR_DEPLOYMENT}
-    chown -R 10000:10000 ${KAFKA_CONNECTOR_DEPLOYMENT}
+    unzip /tmp/connectors-source-archives/kafka/${ZIP_ARCHIVE} -d /kafka-connector-deployment
+    mv /kafka-connector-deployment/* ${KAFKA_CONNECTOR_DEPLOYMENT_PATH}
+    chown -R 10000:10000 ${KAFKA_CONNECTOR_DEPLOYMENT_PATH}
+    ls -la
   {{- end }}
 {{- end }}
 {{- end }}
