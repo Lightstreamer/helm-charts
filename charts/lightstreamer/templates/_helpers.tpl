@@ -90,24 +90,25 @@ Create the name of the service account to use.
 {{- end }}
 
 {{/*
-Render the Service name.
+Create the Service name.
 */}}
 {{- define "lightstreamer.service.name" -}}
 {{ .Values.service.name | default (printf "%s-%s" (include "lightstreamer.fullname" . ) "service") }}
 {{- end }}
 
 {{/*
-Render the Service target port.
+Create the Service target port.
 */}}
 {{- define "lightstreamer.service.targetPort" -}}
-{{- $serverKeyName := "Values.service.targetPort" }}
-{{- $serverKey := .Values.service.targetPort }}
-{{- include "lightstreamer.configuration.validateServerRef" (list . $serverKeyName $serverKey) }}
+{{- $ := index . 0}}
+{{- $serverKeyName := "service.ports[].targetPort" }}
+{{- $serverKey := index . 1 }}
+{{- include "lightstreamer.configuration.validateServerRef" (list $ $serverKeyName $serverKey) }}
 {{- include "lightstreamer.configuration.serverPortName" $serverKey -}}
 {{- end }}
 
 {{/*
-Render the port used health check.
+Create the port used health check.
 */}}
 {{- define "lightstreamer.deployment.healthcheckPort" -}}
 {{- $ := index . 0 }}
@@ -203,10 +204,10 @@ Validate a server configuration reference, ensuring that the server exists and i
 {{- end }}
 
 {{/*
-Render the server name when used as port reference.
+Create the port reference for a server configuration.
 */}}
 {{- define "lightstreamer.configuration.serverPortName" -}}
-{{ . | kebabcase }}
+{{ . | kebabcase | trunc 15 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
@@ -324,16 +325,41 @@ Create the logging level attribute for subloggers.
 {{- end }}
 
 {{/*
+Validate the Kafka Connector provisioning setting.
+*/}}
+{{- define "lightstreamer.kafka-connector.validateProvisioning" -}}
+{{- with required "connectors.kafkaConnector.provisioning must be set" .Values.connectors.kafkaConnector.provisioning }}
+{{- $admittedProvisioningMethods := list "fromPathInImage" "fromGitHubRelease" "fromUrl" }}
+{{- $methods := list }}
+{{- range $methodName, $method := . }}
+  {{- if and (has $methodName $admittedProvisioningMethods) $method }}
+    {{- $methods = append $methods $methodName }}
+  {{- end }}
+{{- end }}
+{{- if (.fromVolume).name }}
+  {{- $methods = append $methods "fromVolume"}}
+{{- end }}
+{{- if or (not $methods) (gt (len $methods) 1) }}
+  {{- fail (printf "connectors.kafkaConnector.provisioning must be one of %s" (append $admittedProvisioningMethods "fromVolume")) }}
+{{- end }}
+{{- $chosenMethodName := $methods | first }}
+{{- $chosenMethodValue := get . $chosenMethodName }}
+{{- if eq $chosenMethodName "fromVolume" }}
+  {{- if not .fromVolume.filePath }}
+    {{- fail "connectors.kafkaConnector.provisioning.fromVolume.filePath must be set" }}
+  {{- end }}
+{{- else }}  
+  {{- $_ := unset . "fromVolume" }}
+{{- end }}
+
+{{- end }}
+{{- end }}
+
+{{/*
 Create the name of the Lightstreamer Kafka Connector.
 */}}
 {{- define "lightstreamer.kafka-connector.name" -}}
 {{- printf "lightstreamer-kafka-connector" }}
-{{- end }}
-
-{{- define "lightstreamer.kafka-connector.validateProvisioning" -}}
-{{- if not .provisioning }} 
-  {{- fail "connectors.kafkaConnector.provisioning must be set" }}
-{{- end }}
 {{- end }}
 
 {{/*
@@ -495,6 +521,22 @@ Validate all the adapter set configurations, ensuring that:
 {{- end }}
 
 {{/*
+Create the name of the configmap containing the adapters.xml file of a specific adapter.
+*/}}
+{{- define "lightstreamer.adapters.configMapName" -}}
+{{- $ := index . 0 }}
+{{- $adapterName := index . 1 }}
+{{- include "lightstreamer.fullname" $ }}-{{ $adapterName | kebabcase }}-adapter-conf
+{{- end }}
+
+{{/*
+Create the port reference for a proxy adapter configuration.
+*/}}
+{{- define "lightstreamer.adapters.proxyPortName" -}}
+{{ . | kebabcase | trunc 15 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
 Create the Java class name of the Proxy Meta/Data Adapter.
 */}}
 {{- define "lightstreamer.adapters.proxy.common.class" -}}
@@ -612,7 +654,7 @@ Render the <messages_pool> block for the Metadata Adapter.
 {{- $parent := index . 1 -}}
 {{- with $parent.messagesPool}}
 
-<!-- MESSAGES POOL ->
+<!-- MESSAGES POOL -->
 <messages_pool>
   {{- if not (quote .maxSize | empty) }}
   <max_size>{{ int .maxSize }}</max_size>
@@ -632,8 +674,8 @@ Render the <messages_pool> block for the Metadata Adapter.
   {{- if not (quote .maxQueue | empty) }}
   <max_queue>{{ int .maxQueue }}</max_queue>
   {{- end }}
-</message_pool>
-<!-- END MESSAGES POOL ->
+</messages_pool>
+<!-- END MESSAGES POOL -->
 {{- end }}
 {{- end -}}
 
