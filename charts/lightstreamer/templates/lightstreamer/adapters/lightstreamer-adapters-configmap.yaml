@@ -20,7 +20,7 @@ limitations under the License.
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "lightstreamer.adapters.configMapName" (list $ $adapterName) }} 
+  name: {{ include "lightstreamer.adapters.configMapName" (list $ $adapterName) }}
   labels:
     {{- include "lightstreamer.labels" $ | nindent 4 }}
 data:
