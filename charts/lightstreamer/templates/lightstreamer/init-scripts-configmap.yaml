@@ -21,31 +21,87 @@ metadata:
   labels:
     {{- include "lightstreamer.labels" . | nindent 4 }}
 data:
-   {{- if ((.Values.connectors).kafkaConnector).enabled }}
-   copy-kafka-connector-conf.sh: |
-     #!/bin/sh
-     {{- with ((.Values.connectors).kafkaConnector).provisioning }}
-       {{- if not .fromPathInImage }}
-      KAFKA_CONNECTOR_DEPLOYMENT=/lightstreamer/adapters/{{ include "lightstreamer.kafka-connector.name" . }}
-       {{- else }}
-      KAFKA_CONNECTOR_DEPLOYMENT={{ .fromPathInImage }}
-       {{- end }}
-     {{- end }}
-      cp /kafka-connector-conf/adapters.xml ${KAFKA_CONNECTOR_DEPLOYMENT}/adapters.xml
-      cp /kafka-connector-conf/log4j.properties ${KAFKA_CONNECTOR_DEPLOYMENT}/log4j.properties
-   {{- end }}
+  {{- /*
+  Makes the Kafka Connector deployment available in the Lightstreamer container.
+  */}}
+  {{- if ((.Values.connectors).kafkaConnector).enabled }}
+  copy-kafka-connector.sh: |
+    #!/bin/sh
+    {{- with ((.Values.connectors).kafkaConnector).provisioning }}
+    KAFKA_CONNECTOR_DEPLOYMENT=/lightstreamer/deployed_adapters/{{ include "lightstreamer.kafka-connector.name" . }}
+      {{- if .fromPathInImage }}
+    # The connector is already available in the image, so just create a soft 
+    # link. 
+    ln -s {{ .fromPathInImage }} /lightstreamer/deployed_adapters/{{ include "lightstreamer.kafka-connector.name" . }}
+      {{- else }}
+    # The connector has already been deployed to the expected path in the by
+    # the "kafka-connector-deployer" init container. Do nothing.
+      {{- end }}
+    {{- end }}
+    # In all cases, override the configuration files with the ones rendered by 
+    # Helm and provided in the ConfigMap.
+    # The rendered schema files, if present, are already mounted from the 
+    # related ConfigMaps at the "schema" folder under the Kafka Connector.
+    cp /connectors-source-conf/kafka/adapters.xml ${KAFKA_CONNECTOR_DEPLOYMENT}/adapters.xml
+    cp /connectors-source-conf/kafka/log4j.properties ${KAFKA_CONNECTOR_DEPLOYMENT}/log4j.properties
+  {{- end }}
 
-   launch.sh: |
-      #!/bin/bash
-      set -ex
-      # The working dir is /lightstreamer/bin/unix-like as per the Docker image settings
-      {{- if ((.Values.connectors).kafkaConnector).enabled }}
-      /lightstreamer/bin/init-scripts/copy-kafka-connector-conf.sh
-      {{- end}}
-      {{- range .Values.deployment.preCommands }}
-      {{ . }}
-      {{- end}}
-      if [ -n "${LS_HIBERNATE_SYSTEM_PROPERTIES}" ]; then
-         JAVA_OPTS="${JAVA_OPTS} ${LS_HIBERNATE_SYSTEM_PROPERTIES}"
-      fi
-      ./LS.sh run      
+  launch.sh: |
+    #!/bin/bash
+    set -e
+    # The working dir is /lightstreamer/bin/unix-like as per the settings of the Docker image
+    mkdir -p /lightstreamer/deployed_adapters/
+    {{- if ((.Values.connectors).kafkaConnector).enabled }}
+    /lightstreamer/bin/init-scripts/copy-kafka-connector.sh
+    {{- end}}
+
+    {{- range $adapterName, $adapter := .Values.adapters }}
+      {{- if $adapter.enabled }}
+      {{- $adapterFolderName := $adapterName | kebabcase }}
+    mkdir -p /lightstreamer/deployed_adapters/{{ $adapterFolderName }}
+
+    echo "Copy the adapters.xml file for the '{{ $adapterName }}' Adapter Set"
+    cp /adapters-source-conf/{{ $adapterFolderName }}/adapters.xml /lightstreamer/deployed_adapters/{{ $adapterFolderName }}/adapters.xml
+
+        {{- if ($adapter.provisioning).fromPathInImage}}
+    mkdir -p /tmp/adapters-repo
+    ln -s {{ $adapter.provisioning.fromPathInImage }} /tmp/adapters-repo/{{ $adapterFolderName}}
+        {{- end }}
+
+        {{- $paths := list }}
+        {{- with $adapter.metadataProvider.inProcessMetadataAdapter }}
+          {{- $path := .provisioningPath | default "." }}
+            {{- $paths = append $paths $path }}
+        {{- end }}
+
+        {{- range $dataProviderName, $dataProvider := $adapter.dataProviders }}
+          {{- if $dataProvider.enabled }}
+            {{- with $dataProvider.inProcessDataAdapter }}
+            {{- $path := .provisioningPath | default "." }}
+              {{ $paths = append $paths $path }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+
+        {{- $paths := $paths | uniq }}
+    echo "Copying the resources for the '{{ $adapterName }}' Adapter Set"
+        {{- range $path := $paths }}
+          {{- if ne $path "." }}
+    mkdir /lightstreamer/deployed_adapters/{{ $adapterFolderName }}/{{ $path }}
+          {{- end }}
+    for dir in "lib" "classes"; do
+    cp -r /tmp/adapters-repo/{{ $adapterFolderName}}/{{ $path }}/$dir /lightstreamer/deployed_adapters/{{ $adapterFolderName }}/{{ $path }}/$dir
+    done
+        {{- end }}
+      {{- end }}
+    {{- end }}
+
+    {{/* The following commands are executed before the Lightstreamer Server is started */}}
+    {{- range .Values.deployment.preCommands }}
+    {{ . }}
+    {{- end}}
+
+    if [ -n "${LS_HIBERNATE_SYSTEM_PROPERTIES}" ]; then
+       JAVA_OPTS="${JAVA_OPTS} ${LS_HIBERNATE_SYSTEM_PROPERTIES}"
+    fi
+    ./LS.sh run
