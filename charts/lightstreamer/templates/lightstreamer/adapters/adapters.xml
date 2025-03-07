@@ -36,6 +36,7 @@ Render the Lightstreamer configuration file of an Adapter Set
     {{- if hasKey . "inProcessMetadataAdapter" }}
       {{- /* START IN-PROCESS METADATA ADAPTER */ -}}
       {{- with .inProcessMetadataAdapter }}
+    <install_dir>{{ .provisioningPath }}</install_dir>
     <adapter_class>{{ .adapterClass }}</adapter_class>
 
         {{- if not (quote .classLoader | empty) }}
@@ -86,6 +87,7 @@ Render the Lightstreamer configuration file of an Adapter Set
             {{- $counter = add1 $counter }}
 
     <param name="item_family_{{ $counter }}">{{ required (printf "adapters.%s.metadataProvider.inProcessMetadataAdapter.itemFamilies.%s.itemPattern must be set" $adapterName $familyName) $family.itemPattern }}</param>
+        {{- if not (quote $family.dataAdapter | empty) }}
     <param name="data_adapter_for_item_family_{{ $counter }}">{{ required (printf "adapters.%s.metadataProvider.inProcessMetadataAdapter.itemFamilies.%s.dataAdapter must be set" $adapterName $familyName) $family.dataAdapter }}</param>
             {{- $modes := regexSplit "," (required (printf "adapters.%s.metadataProvider.inProcessMetadataAdapter.itemFamilies.%s.modes must be set" $adapterName $familyName) $family.modes) -1 }}
             {{- range $modes}}
@@ -93,6 +95,7 @@ Render the Lightstreamer configuration file of an Adapter Set
                 {{ printf "adapters.%s.metadataProvider.inProcessMetadataAdapter.itemFamilies.%s.modes must be a comma-separated list of DISTINCT, COMMAND, MERGE, RAW" $adapterName $familyName | fail }}
               {{- end }}
             {{- end}}
+        {{- end }}
     <param name="modes_for_item_family_{{ $counter }}">{{ $family.modes }}</param>
           {{- end }}
         {{- end }}
@@ -149,8 +152,11 @@ Render the Lightstreamer configuration file of an Adapter Set
       {{- /* IN-PROCESS DATA ADAPTER */ -}}
       {{- if $dataProvider.inProcessDataAdapter }}
         {{- with $dataProvider.inProcessDataAdapter }}
+    <install_dir>{{ .provisioningPath }}</install_dir>
     <adapter_class>{{ .adapterClass }}</adapter_class>
+          {{- if not (quote .classLoader | empty )}}
     <classloader>{{ .classLoader }}</classloader>
+          {{- end }}
     {{- include "lightstreamer.adapters.in-process.common.initParams" . | indent 4 -}}
         {{- end }}
       {{- /* END IN-PROCESS DATA ADAPTER */ -}}
