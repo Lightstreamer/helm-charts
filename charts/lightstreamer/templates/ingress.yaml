@@ -56,13 +56,13 @@ spec:
               service:
                 name: {{ include "lightstreamer.service.name" . }}
                 port:
-                  number: {{ $.Values.service.port }}
+                  number: {{ (first .Values.service.ports).port }}
           {{- end }}
   {{- else }}
   defaultBackend:
     service:
       name: {{ include "lightstreamer.service.name" . }}
       port:
-        number: {{ $.Values.service.port }}
+        number: {{ (first .Values.service.ports).port }}
    {{- end }}
 {{- end }}
