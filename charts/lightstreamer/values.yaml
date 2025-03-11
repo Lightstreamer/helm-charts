@@ -3725,14 +3725,14 @@ adapters:
       # e.g.: `/lightstreamer/adapters/my-adapter-set`.
       fromPathInImage:
 
-      # The reference to a volume where the Adapter Set resources are stored.
+      # -- The reference to a volume where the Adapter Set resources are stored.
       fromVolume:
 
         # -- (string) Mandatory. The name of volume.
         name:
 
-        # -- (string) The path to the Adapter Set resources in the volume, 
-        # e.g.: `/adapters/my-adapter-set`.
+        # -- (string) Optional. The path to the Adapter Set resources in the 
+        # volume, e.g.: `/adapters/my-adapter-set`.
         path:
 
     # -- Optional. Requests the creation of a specific `SET` thread pool, 
@@ -4923,7 +4923,7 @@ connectors:
       # container.
       fromUrl:
 
-      # The reference to a volume where the Kafka Connector zip package is
+      # -- The reference to a volume where the Kafka Connector zip package is
       # stored. At startup, the the package will be deployed to the 
       # `/lightstreamer/deployed_adapters/kafka-connector` directory in the 
       # container.
