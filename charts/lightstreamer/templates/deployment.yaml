@@ -415,16 +415,15 @@ spec:
             {{- if .enabled }}
             - name: kafka-connector-configuration
               mountPath: /connectors-source-conf/kafka
-              {{- $kafkaConnector := include "lightstreamer.kafka-connector.name" . }}
               {{- if not .provisioning.fromPathInImage }}
             - name: kafka-connector-deployment
-              mountPath: /lightstreamer/deployed_adapters/{{ $kafkaConnector }}
-              subPath: {{ $kafkaConnector }}
+              mountPath: {{ include "lightstreamer.kafka-connector.deployment" . }}
+              subPath: {{ include "lightstreamer.kafka-connector.name" . }}
               {{- end }}
               {{- range $key, $value := .localSchemaFiles }}
                 {{- if $value}}
             - name: kafka-connector-schema-files-{{ $key | lower }}
-              mountPath: /lightstreamer/deployed_adapters/{{ $kafkaConnector }}/schemas/{{ $key }}
+              mountPath: {{ include "lightstreamer.kafka-connector.deployment" . }}/schemas/{{ $key }}
                 {{- end }}
               {{- end }}
             {{- end }}
@@ -436,7 +435,7 @@ spec:
             - name: lightstreamer-{{ $adapterName | kebabcase }}-adapter-conf
               mountPath: /adapters-source-conf/{{ $adapterName | kebabcase}}
               {{- with ($adapterSet.provisioning).fromVolume }}
-            - name: {{ required (printf "adapters.%s.provisioning.fromVolume.name must be set" $adapterName) .name }}
+            - name: {{ .name }}
               mountPath: /tmp/adapters-repo/{{ $adapterName | kebabcase}}
               {{- end }}
             {{- end}}
