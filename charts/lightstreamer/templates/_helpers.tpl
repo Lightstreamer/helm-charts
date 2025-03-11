@@ -160,8 +160,8 @@ Render all the probes for the deployment descriptor.
 {{- end }}
 
 {{/*
-Validate all the server configurations, ensuring that at least on enabled 
-server exists and no duplicated names or ports are defined.
+Validate all the server configurations, ensuring that at least one enabled 
+server exists and no duplicated names or ports are used.
 */}}
 {{- define "lightstreamer.configuration.validateAllServers" }}
 {{- $usedNames := list }}
@@ -325,10 +325,35 @@ Create the logging level attribute for subloggers.
 {{- end }}
 
 {{/*
+Validate all Kafka connection configurations, ensuring that at least one enabled
+configuration exists and no duplicate names are used.
+*/}}
+{{- define "lightstreamer.kafka-connector.validateAllConnections" -}}
+{{- $connectionNames := list }}
+{{- range $connectionKey, $connection := required "connectors.kafkaConnector.connections must be set" .Values.connectors.kafkaConnector.connections}}
+  {{- if not $connection }}
+    {{- fail (printf "connectors.kafkaConnector.connections.%s must be set" $connectionKey ) }}
+  {{- end }}
+  {{- if $connection.enabled }}
+    {{- /* CHECK CONNECTION NAME */ -}}
+    {{- $connectionName:= required (printf "connectors.kafkaConnector.connections.%s.name must be set" $connectionKey) $connection.name }}
+    {{- if has $connectionName $connectionNames }}
+      {{- fail (printf "connectors.kafkaConnector.connections.%s.name \"%s\" already used" $connectionKey $connectionName ) }}
+    {{- end }}
+    {{- $connectionNames = append $connectionNames $connectionName }}
+  {{- end }}
+{{- end }}
+{{- if $connectionNames | empty }}
+  {{- fail "At least one enabled Kafka connection configuration must be defined" }}
+{{- end }}
+{{- end }}
+
+{{/*
 Validate the Kafka Connector provisioning setting.
 */}}
 {{- define "lightstreamer.kafka-connector.validateProvisioning" -}}
 {{- with required "connectors.kafkaConnector.provisioning must be set" .Values.connectors.kafkaConnector.provisioning }}
+{{- /* Partial list of admitted provisioning methods */ -}}
 {{- $admittedProvisioningMethods := list "fromPathInImage" "fromGitHubRelease" "fromUrl" }}
 {{- $methods := list }}
 {{- range $methodName, $method := . }}
@@ -339,16 +364,21 @@ Validate the Kafka Connector provisioning setting.
 {{- if (.fromVolume).name }}
   {{- $methods = append $methods "fromVolume"}}
 {{- end }}
+{{- /* Check that only one provisioning method is set */ -}}
 {{- if or (not $methods) (gt (len $methods) 1) }}
   {{- fail (printf "connectors.kafkaConnector.provisioning must be one of %s" (append $admittedProvisioningMethods "fromVolume")) }}
 {{- end }}
 {{- $chosenMethodName := $methods | first }}
 {{- $chosenMethodValue := get . $chosenMethodName }}
+{{- /* When fromVolume is the chosen method, check that it is correctly set */ -}}
 {{- if eq $chosenMethodName "fromVolume" }}
   {{- if not .fromVolume.filePath }}
     {{- fail "connectors.kafkaConnector.provisioning.fromVolume.filePath must be set" }}
   {{- end }}
 {{- else }}  
+  {{- /* For any other provisioning method, clean up the current context from
+  the partially configuration of "fromVolume" provided in values.yaml, to prevent 
+  any possible conflict with the chosen provisioning method */ -}}
   {{- $_ := unset . "fromVolume" }}
 {{- end }}
 
@@ -363,7 +393,7 @@ Create the name of the Lightstreamer Kafka Connector.
 {{- end }}
 
 {{/*
-Create the URL of the Lightstreamer Kafka Connector.
+Create the download URL of the Lightstreamer Kafka Connector.
 */}}
 {{- define "lightstreamer.kafka-connector.url" -}}
 {{- printf "https://github.com/Lightstreamer/Lightstreamer-kafka-connector/releases/download/v%s/%s-%s.zip" . (include "lightstreamer.kafka-connector.name" .) . }}
