@@ -4925,7 +4925,7 @@ connectors:
           type: Console
 
           # -- (string) Mandatory. The appender layout pattern.
-          pattern: "[%d] [%-10c{1}] %-5p %m%n"
+          pattern: "%d|%-10c{1}|%-5p|%m%n"
 
       # -- Optional. Global loggers configuration.
       loggers:
