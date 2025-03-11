@@ -2870,7 +2870,7 @@ Mandatory. The name of volume.
 **Default:** `nil`
 ### [adapters.myAdapterSet.provisioning.fromVolume.path](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3736)
      
-The path to the Adapter Set resources in the volume,  e.g.: `/adapters/my-adapter-set`.
+Optional. The path to the Adapter Set resources in the  volume, e.g.: `/adapters/my-adapter-set`.
 
 **Default:** `nil`
 ## Connectors settings
@@ -3320,6 +3320,11 @@ The path to the Kafka Connector deployment in the image,  e.g.: `/lightstreamer/
 The URL from which to download the Kafka Connector zip package at startup. Once downloaded, the package will be deployed to the  `/lightstreamer/deployed_adapters/kafka-connector` directory in the  container.
 
 **Default:** `nil`
+### [connectors.kafkaConnector.provisioning.fromVolume](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4930)
+     
+The reference to a volume where the Kafka Connector zip package is stored. At startup, the the package will be deployed to the  `/lightstreamer/deployed_adapters/kafka-connector` directory in the  container.
+
+**Default:** `{"filePath":null,"name":null}`
 ### [connectors.kafkaConnector.provisioning.fromVolume.filePath](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4937)
      
 The filepath to the Kafka Connector zip package in the volume, e.g.: `/connectors/lightstreamer-kafka-connector-1.2.0.zip`.
