@@ -492,6 +492,7 @@ Render the keystore settings for the Lightstreamer Kafka Connector configuration
 {{/*
 Validate all the adapter set configurations, ensuring that:
 - No duplicate adapter set ids exist.
+- Possible provided provisioning settings are defined consistently.
 - Either a in-process or proxy metadata adapter is defined for each enabled adapter set.
 - An adapter class name is defined for each in-process metadata adapter.
 - A request/reply port is defined for each proxy metadata adapter.
@@ -505,8 +506,9 @@ Validate all the adapter set configurations, ensuring that:
 - No clashing ports exist.
 */}}
 {{- define "lightstreamer.adapters.validateAllAdapterSets" -}}
-{{- $userAdapterIds := list -}}
+{{- $userAdapterIds := list }}
 {{- $usedPorts := list }}
+{{- $ := . }}
 {{- range $adapterName, $adapterSet := .Values.adapters}}
   {{- if not $adapterSet }}
     {{- fail (printf "adapters.%s must be set" $adapterName) }}
@@ -519,7 +521,7 @@ Validate all the adapter set configurations, ensuring that:
     {{- end }}
     {{- $userAdapterIds = append $userAdapterIds $adapterId }}
     {{- /* Check the provisioning settings */ -}}
-    {{- include "lightstreamer.adapters.validateProvisioning" (list $adapterName $adapterSet) }}
+    {{- include "lightstreamer.adapters.validateProvisioning" (list $ $adapterName $adapterSet) }}
 
     {{- $metadataProvider := required (printf "adapters.%s.metadataProvider must be set" $adapterName) $adapterSet.metadataProvider -}}
     {{- if hasKey $metadataProvider "inProcessMetadataAdapter" }}
@@ -615,8 +617,9 @@ Validate the Adapter ClassLoader.
 Validate the Adapter provisioning setting.
 */}}
 {{- define "lightstreamer.adapters.validateProvisioning" -}}
-{{- $adapterSetName := index . 0 }}
-{{- $adapterSet := index . 1 }}
+{{- $ := index . 0 }}
+{{- $adapterSetName := index . 1 }}
+{{- $adapterSet := index . 2 }}
 {{- if $adapterSet.provisioning }}
   {{- /* List of admitted provisioning methods */ -}}
   {{- $admittedProvisioningMethods := list "fromPathInImage" "fromVolume" }}
@@ -633,9 +636,24 @@ Validate the Adapter provisioning setting.
   {{- end }}
   {{- $chosenMethodName := $methods | first }}
   {{- if eq $chosenMethodName "fromVolume" }}
-    {{- if not $adapterSet.provisioning.fromVolume.name }}
-      {{- printf "adapters.%s.provisioning.fromVolume.name must be set" $adapterSetName | fail }}
-    {{- end }} 
+
+    {{- /* Check that fromVolume.name is set */ -}}
+    {{- with $adapterSet.provisioning.fromVolume }}
+      {{- if not .name }}
+        {{- printf "adapters.%s.provisioning.fromVolume.name must be set" $adapterSetName | fail }}
+      {{- end }} 
+
+      {{- /* Check that fromVolume.name references an extra volume defined in deployment.extraVolumes */ -}}
+      {{- $extraVolumeNames := list }}
+      {{- range $.Values.deployment.extraVolumes }}
+        {{- $extraVolumeNames = append $extraVolumeNames .name }}
+      {{- end }}
+      {{- $extraVolumeNames := $extraVolumeNames | uniq }}
+      {{- if not (has .name $extraVolumeNames) }}
+        {{- printf "adapters.%s.provisioning.fromVolume.name must be set to a volume defined in deployment.extraVolumes" $adapterSetName | fail }}
+      {{- end }}
+    {{- end }}
+
   {{- end }}
 {{- end }}
 
