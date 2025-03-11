@@ -171,13 +171,14 @@ server exists and no duplicated names or ports are used.
     {{ printf "servers.%s must be set" $serverKey | fail }}
   {{- end }}
   {{- if $server.enabled }}
-    {{- /* CHECK SERVER NAMES */ -}}
+    {{- /* Check the server names */ -}}
     {{- $serverName := required (printf "servers.%s.name must be set" $serverKey) $server.name }}
     {{- if has $serverName $usedNames }}
       {{- fail (printf "servers.%s.name \"%s\" already used" $serverKey $serverName ) }}
     {{- end }}
     {{- $usedNames = append $usedNames $serverName }}
-    {{- /* CHECK SERVER PORTS */ -}}
+
+    {{- /* Check the server ports */ -}}
     {{- $serverPort := required (printf "servers.%s.port must be set" $serverKey) (int $server.port) }}
     {{- if has $serverPort $usedPorts }}
       {{- fail (printf "servers.%s.port \"%d\" already used" $serverKey $serverPort ) }}
@@ -335,7 +336,7 @@ configuration exists and no duplicate names are used.
     {{- fail (printf "connectors.kafkaConnector.connections.%s must be set" $connectionKey ) }}
   {{- end }}
   {{- if $connection.enabled }}
-    {{- /* CHECK CONNECTION NAME */ -}}
+    {{- /* Check the connection name */ -}}
     {{- $connectionName:= required (printf "connectors.kafkaConnector.connections.%s.name must be set" $connectionKey) $connection.name }}
     {{- if has $connectionName $connectionNames }}
       {{- fail (printf "connectors.kafkaConnector.connections.%s.name \"%s\" already used" $connectionKey $connectionName ) }}
@@ -352,36 +353,51 @@ configuration exists and no duplicate names are used.
 Validate the Kafka Connector provisioning setting.
 */}}
 {{- define "lightstreamer.kafka-connector.validateProvisioning" -}}
+{{- $ := . }}
 {{- with required "connectors.kafkaConnector.provisioning must be set" .Values.connectors.kafkaConnector.provisioning }}
-{{- /* Partial list of admitted provisioning methods */ -}}
-{{- $admittedProvisioningMethods := list "fromPathInImage" "fromGitHubRelease" "fromUrl" }}
-{{- $methods := list }}
-{{- range $methodName, $method := . }}
-  {{- if and (has $methodName $admittedProvisioningMethods) $method }}
-    {{- $methods = append $methods $methodName }}
+  {{- /* Partial list of admitted provisioning methods */ -}}
+  {{- $admittedProvisioningMethods := list "fromPathInImage" "fromGitHubRelease" "fromUrl" }}
+  {{- $methods := list }}
+  {{- range $methodName, $method := . }}
+    {{- if and (has $methodName $admittedProvisioningMethods) $method }}
+      {{- $methods = append $methods $methodName }}
+    {{- end }}
   {{- end }}
-{{- end }}
-{{- if (.fromVolume).name }}
-  {{- $methods = append $methods "fromVolume"}}
-{{- end }}
-{{- /* Check that only one provisioning method is set */ -}}
-{{- if or (not $methods) (gt (len $methods) 1) }}
-  {{- fail (printf "connectors.kafkaConnector.provisioning must be one of %s" (append $admittedProvisioningMethods "fromVolume")) }}
-{{- end }}
-{{- $chosenMethodName := $methods | first }}
-{{- /* When fromVolume is the chosen method, check that it is correctly set */ -}}
-{{- if eq $chosenMethodName "fromVolume" }}
-  {{- if not .fromVolume.filePath }}
-    {{- fail "connectors.kafkaConnector.provisioning.fromVolume.filePath must be set" }}
+  {{- if (.fromVolume).name }}
+    {{- $methods = append $methods "fromVolume"}}
   {{- end }}
-{{- else }}
-  {{- /* For any other provisioning method, clean up the current context from
-  the partially configuration of "fromVolume" provided in values.yaml, to prevent
-  any possible conflict with the chosen provisioning method */ -}}
-  {{- $_ := unset . "fromVolume" }}
+
+  {{- /* Check that only one provisioning method is set */ -}}
+  {{- if or (not $methods) (gt (len $methods) 1) }}
+    {{- fail (printf "connectors.kafkaConnector.provisioning must be one of %s" (append $admittedProvisioningMethods "fromVolume")) }}
+  {{- end }}
+
+  {{- $chosenMethodName := $methods | first }}
+  {{- /* When fromVolume is the chosen method, check that it is correctly set */ -}}
+  {{- if eq $chosenMethodName "fromVolume" }}
+
+    {{- /* Check that fromVolume.name references an extra volume defined in deployment.extraVolumes */ -}}
+    {{- $extraVolumeNames := list }}
+    {{- range $.Values.deployment.extraVolumes }}
+      {{- $extraVolumeNames = append $extraVolumeNames .name }}
+    {{- end }}
+    {{- $extraVolumeNames := $extraVolumeNames | uniq }}
+    {{- if not (has .fromVolume.name $extraVolumeNames) }}
+      {{- fail "connectors.kafkaConnector.provisioning.fromVolume.name must be set to a volume defined in deployment.extraVolumes" }}
+    {{- end }}
+
+    {{- /* Check that fromVolume.filePath is set */ -}}
+    {{- if not .fromVolume.filePath }}
+      {{- fail "connectors.kafkaConnector.provisioning.fromVolume.filePath must be set" }}
+    {{- end }}
+  {{- else }}
+    {{- /* For any other provisioning method, clean up the current context from
+    the partially configuration of "fromVolume" provided in values.yaml, to prevent
+    any possible conflict with the chosen provisioning method */ -}}
+    {{- $_ := unset . "fromVolume" }}
+  {{- end }}
 {{- end }}
 
-{{- end }}
 {{- end }}
 
 {{/*
@@ -496,32 +512,34 @@ Validate all the adapter set configurations, ensuring that:
     {{- fail (printf "adapters.%s must be set" $adapterName) }}
   {{- end }}
   {{- if $adapterSet.enabled }}
-    {{- /* CHECK ADAPTER SET IDS */ -}}
+    {{- /* Check the adapter sets ids */ -}}
     {{- $adapterId := required (printf "adapters.%s.id must be set" $adapterName) $adapterSet.id }}
     {{- if has $adapterId $userAdapterIds }}
       {{- fail (printf "adapters.%s.id \"%s\" already used" $adapterName $adapterId ) }}
     {{- end }}
     {{- $userAdapterIds = append $userAdapterIds $adapterId }}
-    {{- /* CHECK THE PROVISIONING SETTINGS */ -}}
+    {{- /* Check the provisioning settings */ -}}
     {{- include "lightstreamer.adapters.validateProvisioning" (list $adapterName $adapterSet) }}
 
     {{- $metadataProvider := required (printf "adapters.%s.metadataProvider must be set" $adapterName) $adapterSet.metadataProvider -}}
     {{- if hasKey $metadataProvider "inProcessMetadataAdapter" }}
-      {{- /* CHECK THE IN-PROCESS METADATA ADAPTER CLASS NAME */}}
+      {{- /* Check the in-process metadata adapter class name */}}
       {{- $inProcess := $metadataProvider.inProcessMetadataAdapter | default dict }}
       {{- $adapterClass := required (printf "adapters.%s.metadataProvider.inProcessMetadataAdapter.adapterClass must be set" $adapterName) $inProcess.adapterClass }}
-      {{- /* CHECK THE CLASSLOADER */}}
+
+      {{- /* Check the ClassLoader */}}
       {{- $classLoaderErrMsg := include "lightstreamer.adapters.in-process.common.validateClassLoader" $inProcess }}
       {{- if $classLoaderErrMsg }}
         {{- printf "adapters.%s.metadataAdapter.inProcessMetadataAdapter.classLoader %s" $adapterName $classLoaderErrMsg | fail }}
       {{- end}}      
-      {{- /* CHECK THE INSTALL DIR */}}
+
+      {{- /* Check the install dir */}}
       {{- if and ($inProcess.classLoader | eq "dedicated") (not $inProcess.installDir) }}
         {{- fail (printf "adapters.%s.metadataProvider.proxyMetadataAdapters.installDir must be set when using a dedicated class loader" $adapterName) }}
       {{- end }}
     {{- else if hasKey $metadataProvider "proxyMetadataAdapter" }}
       {{- $proxy := $metadataProvider.proxyMetadataAdapter | default dict }}
-      {{- /* CHECK THE PROXY METADATA ADAPTER REQUEST/REPLY PORT */ -}}
+      {{- /* Check the proxy metadata adapter request/reply port */ -}}
       {{- $requestReplyPort := int (required (printf "adapters.%s.metadataProvider.proxyMetadataAdapters.requestReplyPort must be set" $adapterName) $proxy.requestReplyPort) }}
       {{- if has $requestReplyPort $usedPorts }}
         {{- fail (printf "adapters.%s.metadataProvider.proxyMetadataAdapters.requestReplyPort \"%d\" already used" $adapterName $requestReplyPort ) }}
@@ -538,7 +556,7 @@ Validate all the adapter set configurations, ensuring that:
         {{- fail (printf "adapters.%s.dataProviders.%s must be set" $adapterName $dataProviderKey) }}
       {{- end }}
       {{- if $dataProvider.enabled }}
-        {{- /* CHECK THE DATA PROVIDER NAMES */ -}}
+        {{- /* Check the data provider name */ -}}
         {{- $dataProviderName := required (printf "adapters.%s.dataProviders.%s.name must be set" $adapterName $dataProviderKey) $dataProvider.name }}
         {{- if has $dataProviderName $enabledDataProviders }}
           {{- fail (printf "adapters.%s.dataProviders.%s.name \"%s\" already used" $adapterName $dataProviderKey $dataProviderName ) }}
@@ -547,20 +565,23 @@ Validate all the adapter set configurations, ensuring that:
 
         {{- if hasKey $dataProvider "inProcessDataAdapter" }}
           {{- $inProcess := $dataProvider.inProcessDataAdapter | default dict }}
-          {{- /* CHECK THE IN-PROCESS DATA ADAPTER CLASS NAME */ -}}
+          {{- /* Check the in-process data adapter class name */ -}}
           {{- $adapterClass := required (printf "adapters.%s.dataProviders.%s.inProcessDataAdapter.adapterClass must be set" $adapterName $dataProviderKey) $inProcess.adapterClass }}
-          {{- /* CHECK THE CLASSLOADER */}}
+
+          {{- /* Check the ClassLoader */}}
           {{- $classLoaderErrMsg := include "lightstreamer.adapters.in-process.common.validateClassLoader" $inProcess }}
           {{- if $classLoaderErrMsg }}
             {{- printf "adapters.%s.dataProviders.%s.inProcessDataAdapter.classLoader %s" $adapterName $dataProviderKey $classLoaderErrMsg | fail }}
           {{- end}}            
-          {{- /* CHECK THE INSTALL DIR */}}
+
+          {{- /* Check the install dir */}}
           {{- if and ($inProcess.classLoader | eq "dedicated") (not $inProcess.installDir) }}
             {{- fail (printf "adapters.%s.dataProviders.%s.inProcessDataAdapter.installDir must be set when using a dedicated class loader" $adapterName $dataProviderKey) }}
           {{- end }}
         {{- else if hasKey $dataProvider "proxyDataAdapter" }}
           {{- $proxy := $dataProvider.proxyDataAdapter | default dict }}
-          {{- /* CHECK THE REQUEST/REPLY PORTS */ -}}
+
+          {{- /* Check the request/reply port */ -}}
           {{- $dataProviderPort := int (required (printf "adapters.%s.dataProviders.%s.proxyDataAdapter.requestReplyPort must be set" $adapterName $dataProviderKey) $proxy.requestReplyPort) }}
           {{- if has $dataProviderPort $usedPorts }}
             {{- fail (printf "adapters.%s.dataProviders.%s.proxyDataAdapter.requestReplyPort \"%d\" already used" $adapterName $dataProviderKey $dataProviderPort ) }}
@@ -605,6 +626,7 @@ Validate the Adapter provisioning setting.
       {{- $methods = append $methods $methodName }}
     {{- end }}
   {{- end }}
+
   {{- /* Check that only one provisioning method is set */ -}}
   {{- if or (not $methods) (gt (len $methods) 1) }}
     {{- fail (printf "adapters.%s.provisioning must be one of %s" $adapterSetName $admittedProvisioningMethods) }}
