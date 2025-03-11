@@ -160,7 +160,7 @@ Render all the probes for the deployment descriptor.
 {{- end }}
 
 {{/*
-Validate all the server configurations, ensuring that at least one enabled 
+Validate all the server configurations, ensuring that at least one enabled
 server exists and no duplicated names or ports are used.
 */}}
 {{- define "lightstreamer.configuration.validateAllServers" }}
@@ -185,7 +185,7 @@ server exists and no duplicated names or ports are used.
     {{- $usedPorts = append $usedPorts $serverPort }}
   {{- end }}
 {{- end }}
-{{- if $usedNames | empty }} 
+{{- if $usedNames | empty }}
   {{- fail "At least one enabled server must be defined" }}
 {{- end }}
 {{- end }}
@@ -246,7 +246,7 @@ Render the keystore settings for the main configuration file.
 </keystore>
 {{- end -}}
 
-{{/* 
+{{/*
 Render the truststore settings for the Lightstreamer configuration file.
 */}}
 {{- define "lightstreamer.configuration.truststore" -}}
@@ -320,7 +320,7 @@ Create the logging level attribute for subloggers.
     {{- if not (has $loggerLevel $admittedLevels) }}
       {{- fail (printf "logging.loggers.lightstreamerLogger.subLoggers.%s.level must be one of %s" $loggerName $admittedLevels) }}
     {{- end }}
-{{- printf " level=%s" ($loggerLevel | quote) }} 
+{{- printf " level=%s" ($loggerLevel | quote) }}
 {{- end }}
 {{- end }}
 
@@ -375,9 +375,9 @@ Validate the Kafka Connector provisioning setting.
   {{- if not .fromVolume.filePath }}
     {{- fail "connectors.kafkaConnector.provisioning.fromVolume.filePath must be set" }}
   {{- end }}
-{{- else }}  
+{{- else }}
   {{- /* For any other provisioning method, clean up the current context from
-  the partially configuration of "fromVolume" provided in values.yaml, to prevent 
+  the partially configuration of "fromVolume" provided in values.yaml, to prevent
   any possible conflict with the chosen provisioning method */ -}}
   {{- $_ := unset . "fromVolume" }}
 {{- end }}
@@ -509,9 +509,9 @@ Validate all the adapter set configurations, ensuring that:
       {{- end }}
       {{- $usedPorts = append $usedPorts $requestReplyPort }}
     {{- else }}
-      {{- printf "Either specify \"inProcessMetadataAdapter\" or \"proxyMetadataAdapter\" in adapters.%s.metadataProvider " $adapterName | fail }}    
+      {{- printf "Either specify \"inProcessMetadataAdapter\" or \"proxyMetadataAdapter\" in adapters.%s.metadataProvider " $adapterName | fail }}
     {{- end }}
-    
+
     {{- $enabledDataProviders := list }}
     {{- $dataProviders := required (printf "adapters.%s.dataProviders must be set" $adapterName) $adapterSet.dataProviders }}
     {{- range $dataProviderKey, $dataProvider := $dataProviders }}
@@ -539,7 +539,7 @@ Validate all the adapter set configurations, ensuring that:
           {{- end }}
           {{- $usedPorts = append $usedPorts $dataProviderPort }}
         {{- else }}
-          {{- printf "Either specify \"inProcessDataAdapter\" or \"proxyDataAdapter\" in adapters.%s.dataProviders.%s " $adapterName $dataProviderKey | fail }}    
+          {{- printf "Either specify \"inProcessDataAdapter\" or \"proxyDataAdapter\" in adapters.%s.dataProviders.%s " $adapterName $dataProviderKey | fail }}
         {{- end }}
       {{- end }}
     {{- end }}
@@ -666,7 +666,7 @@ Render the <authenticationPool> block for the Metadata Adapter.
   {{- else}}
     {{- if not (quote .maxPendingRequests | empty) }}
   <max_pending_requests>{{ int .maxPendingRequests }}</max_pending_requests>
-    {{- end }}  
+    {{- end }}
   {{- end }}
   {{- if not (quote .maxQueue | empty) }}
   <max_queue>{{ int .maxQueue }}</max_queue>
@@ -763,16 +763,16 @@ Render the tls parameters for the proxy adapters.
   {{- /* tls.allow_cipher_suite */ -}}
   {{- $counter := 0}}
   {{- range .allowCipherSuites }}
-    {{- $counter = add1 $counter }} 
+    {{- $counter = add1 $counter }}
 <param name="tls.allow_cipher_suite.{{ $counter }}">{{ . }}</param>
   {{- end }}
 
   {{- /* tls.remove_cipher_suites */ -}}
   {{- $counter := 0}}
   {{- range .removeCipherSuites }}
-    {{- $counter = add1 $counter }} 
+    {{- $counter = add1 $counter }}
 <param name="tls.remove_cipher_suites.{{ $counter }}">{{ . }}</param>
-  {{- end }}  
+  {{- end }}
 
   {{- /* tls.enforce_server_cipher_suite_preference */ -}}
   {{- if (.enforceServerCipherSuitePreference).enabled }}
@@ -780,21 +780,21 @@ Render the tls parameters for the proxy adapters.
     {{- if not (quote .enforceServerCipherSuitePreference.order | empty )}}
 <param name="tls.enforce_server_cipher_suite_preference.order">{{ .enforceServerCipherSuitePreference.order }}</param>
     {{- end }}
-  {{- end }}  
+  {{- end }}
 
   {{- /* tls.allow_protocol */ -}}
   {{- $counter := 0}}
   {{- range .allowProtocols }}
-    {{- $counter = add1 $counter }} 
+    {{- $counter = add1 $counter }}
 <param name="tls.allow_protocol.{{ $counter }}">{{ . }}</param>
-  {{- end }}  
+  {{- end }}
 
   {{- /* tls.remove_protocols */ -}}
   {{- $counter := 0}}
   {{- range .removeProtocols }}
-    {{- $counter = add1 $counter }} 
+    {{- $counter = add1 $counter }}
 <param name="tls.remove_protocols.{{ $counter }}">{{ . }}</param>
-  {{- end }}  
+  {{- end }}
 
   {{- /* tls.force_client_auth */ -}}
   {{- if not (quote .enableMandatoryClientAuth | empty) }}
@@ -803,7 +803,7 @@ Render the tls parameters for the proxy adapters.
 
   {{- /* tls.truststore */ -}}
   {{- if .truststoreRef }}
-  {{- include "lightstreamer.adapters.proxy.truststore" (list $keystores .truststoreRef) | nindent 0 }}  
+  {{- include "lightstreamer.adapters.proxy.truststore" (list $keystores .truststoreRef) | nindent 0 }}
   {{- end }}
 
   {{- /* tls.skip_hostname_check */ -}}
@@ -825,18 +825,18 @@ Render the authentication parameters for the proxy adapters.
 
 <!-- AUTHENTICATION SETTINGS -->
 {{- with $proxy.authentication }}
-{{- /* auth */}}    
+{{- /* auth */}}
 <param name="auth">Y</param>
   {{- $counter := 0 }}
   {{- if .credentialsSecrets | empty }}
     {{- fail (printf "adapters.%s.{...}.authentication.credentialsSecrets must be set" $adapterName) }}
   {{- end }}
   {{- range .credentialsSecrets }}
-    {{- $counter = add1 $counter }} 
-    {{- /* auth.credentials.<N>.user */}}    
+    {{- $counter = add1 $counter }}
+    {{- /* auth.credentials.<N>.user */}}
 <param name="auth.credentials.{{ $counter }}.user">$env.LS_PROXY_ADAPTER_CREDENTIAL_{{ . | upper | replace "-" "_" }}_USER></param>
 
-    {{- /* auth.credentials.<N>.password */}}    
+    {{- /* auth.credentials.<N>.password */}}
 <param name="auth.credentials.{{ $counter }}.password">$env.LS_PROXY_ADAPTER_CREDENTIAL_{{ . | upper | replace "-" "_" }}_PASSWORD></param>
 
   {{- end }}
@@ -1017,13 +1017,13 @@ Render the common parameters for the proxy adapters.
 <param name="remote_address_white_list">{{ $proxy.remoteAddressWhitelist }}</param>
 {{- end }}
 
-{{- /* keep_alive */ -}}    
+{{- /* keep_alive */ -}}
 {{- if not (quote $proxy.keepaliveTimeoutMillis | empty) }}
 <param name="keep_alive">{{ int $proxy.keepaliveTimeoutMillis }}</param>
 {{- end }}
 
-{{- /* keep_alive_hint */ -}}        
+{{- /* keep_alive_hint */ -}}
 {{- if not (quote $proxy.keepaliveHintMillis | empty) }}
 <param name="keep_alive_hint">{{ int $proxy.keepaliveHintMillis }}</param>
 {{- end }}
-{{- end -}}    
+{{- end -}}
