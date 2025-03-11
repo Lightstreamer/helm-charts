@@ -36,14 +36,12 @@ Render the Lightstreamer configuration file of an Adapter Set
     {{- if hasKey . "inProcessMetadataAdapter" }}
       {{- /* START IN-PROCESS METADATA ADAPTER */ -}}
       {{- with .inProcessMetadataAdapter }}
-    <install_dir>{{ .provisioningPath }}</install_dir>
+        {{- if .installDir }}
+    <install_dir>{{ .installDir }}</install_dir>
+        {{- end}}
     <adapter_class>{{ .adapterClass }}</adapter_class>
 
         {{- if not (quote .classLoader | empty) }}
-          {{- $possibleClassLoaders := list "common" "dedicated" "log-enabled" }}
-          {{- if not (has .classLoader $possibleClassLoaders) }}
-            {{- printf "adapters.%s.metadataAdapter.classLoader must be one of %s" $adapterName $possibleClassLoaders | fail }}
-          {{- end }}
     <classloader>{{ .classLoader }}</classloader>
         {{- end}}
 
@@ -152,7 +150,9 @@ Render the Lightstreamer configuration file of an Adapter Set
       {{- /* IN-PROCESS DATA ADAPTER */ -}}
       {{- if $dataProvider.inProcessDataAdapter }}
         {{- with $dataProvider.inProcessDataAdapter }}
-    <install_dir>{{ .provisioningPath }}</install_dir>
+          {{- if .installDir }}
+    <install_dir>{{ .installDir }}</install_dir>
+          {{- end}}
     <adapter_class>{{ .adapterClass }}</adapter_class>
           {{- if not (quote .classLoader | empty )}}
     <classloader>{{ .classLoader }}</classloader>
