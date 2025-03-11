@@ -15,6 +15,7 @@ limitations under the License.
 */}}
 
 {{- if ((.Values.connectors).kafkaConnector).enabled }}
+{{- include "lightstreamer.kafka-connector.validateAllConnections" . }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
