@@ -28,11 +28,11 @@ data:
   copy-kafka-connector.sh: |
     #!/bin/sh
     {{- with ((.Values.connectors).kafkaConnector).provisioning }}
-    KAFKA_CONNECTOR_DEPLOYMENT=/lightstreamer/deployed_adapters/{{ include "lightstreamer.kafka-connector.name" . }}
+    KAFKA_CONNECTOR_DEPLOYMENT={{ include "lightstreamer.kafka-connector.deployment" . }}
       {{- if .fromPathInImage }}
     # The connector is already available in the image, so just create a soft 
     # link. 
-    ln -s {{ .fromPathInImage }} /lightstreamer/deployed_adapters/{{ include "lightstreamer.kafka-connector.name" . }}
+    ln -s {{ .fromPathInImage }} ${KAFKA_CONNECTOR_DEPLOYMENT}
       {{- else }}
     # The connector has already been deployed to the expected path in the by
     # the "kafka-connector-deployer" init container. Do nothing.
@@ -50,7 +50,7 @@ data:
     #!/bin/bash
     set -e
     # The working dir is /lightstreamer/bin/unix-like as per the settings of the Docker image
-    mkdir -p /lightstreamer/deployed_adapters/
+    mkdir -p {{ include "lightstreamer.adapters.fullAdaptersDir" . }}
     {{- if ((.Values.connectors).kafkaConnector).enabled }}
     /lightstreamer/bin/init-scripts/copy-kafka-connector.sh
     {{- end}}
@@ -58,10 +58,10 @@ data:
     {{- range $adapterName, $adapter := .Values.adapters }}
       {{- if $adapter.enabled }}
       {{- $adapterFolderName := $adapterName | kebabcase }}
-    mkdir -p /lightstreamer/deployed_adapters/{{ $adapterFolderName }}
+    mkdir -p {{ include "lightstreamer.adapters.fullAdaptersDir" . }}/{{ $adapterFolderName }}
 
     echo "Copy the adapters.xml file for the '{{ $adapterName }}' Adapter Set"
-    cp /adapters-source-conf/{{ $adapterFolderName }}/adapters.xml /lightstreamer/deployed_adapters/{{ $adapterFolderName }}/adapters.xml
+    cp /adapters-source-conf/{{ $adapterFolderName }}/adapters.xml {{ include "lightstreamer.adapters.fullAdaptersDir" . }}/{{ $adapterFolderName }}/adapters.xml
 
         {{- if ($adapter.provisioning).fromPathInImage}}
     mkdir -p /tmp/adapters-repo
@@ -101,7 +101,7 @@ data:
     root_source_path="/tmp/adapters-repo/{{ $adapterFolderName }}{{ $rootSourcePathSuffix }}"
     
     for path in $path_to_copy; do
-      destination_path="/lightstreamer/deployed_adapters/{{ $adapterFolderName }}/$path"
+      destination_path="{{ include "lightstreamer.adapters.fullAdaptersDir" . }}/{{ $adapterFolderName }}/$path"
       [[ "$s" !=  "." ]] && mkdir -p $destination_path
       for dir in "lib" "classes"; do
         full_source_path="${root_source_path}/$path/$dir"
