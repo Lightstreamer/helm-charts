@@ -2863,6 +2863,11 @@ Optional. Define the provisioning method of the Adapter Set. Either specify one 
 The path to the Adapter Set resources in the image, e.g.: `/lightstreamer/adapters/my-adapter-set`.
 
 **Default:** `nil`
+### [adapters.myAdapterSet.provisioning.fromVolume](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3729)
+     
+The reference to a volume where the Adapter Set resources are stored.
+
+**Default:** `{"name":null,"path":null}`
 ### [adapters.myAdapterSet.provisioning.fromVolume.name](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3732)
      
 Mandatory. The name of volume.
