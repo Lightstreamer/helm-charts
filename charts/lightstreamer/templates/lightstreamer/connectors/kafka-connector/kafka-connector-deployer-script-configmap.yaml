@@ -30,7 +30,7 @@ data:
     # The ZIP archive is already available in the volume specified through
     # "connectors.kafkaConnector.provisioning.fromVolume", mounted at the
     # expected path.
-    ZIP_ARCHIVE= .fromVolume.filePath }}
+    ZIP_ARCHIVE={{ .fromVolume.filePath }}
     {{- else }}
     ZIP_ARCHIVE=kafka-connector.zip    
       {{- if .fromGitHubRelease }}
