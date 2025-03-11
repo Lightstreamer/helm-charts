@@ -369,7 +369,6 @@ Validate the Kafka Connector provisioning setting.
   {{- fail (printf "connectors.kafkaConnector.provisioning must be one of %s" (append $admittedProvisioningMethods "fromVolume")) }}
 {{- end }}
 {{- $chosenMethodName := $methods | first }}
-{{- $chosenMethodValue := get . $chosenMethodName }}
 {{- /* When fromVolume is the chosen method, check that it is correctly set */ -}}
 {{- if eq $chosenMethodName "fromVolume" }}
   {{- if not .fromVolume.filePath }}
@@ -473,6 +472,8 @@ Validate all the adapter set configurations, ensuring that:
 - Either a in-process or proxy metadata adapter is defined for each enabled adapter set.
 - An adapter class name is defined for each in-process metadata adapter.
 - A request/reply port is defined for each proxy metadata adapter.
+- An install dir is specified when using a "dedicated" class loader.
+- A valid class loader is specified.
 - At least one enabled data provider is defined for each enabled adapter set.
 - Either a in-process or proxy data adapter is defined for each enabled data provider.
 - No duplicate data provider names exist for each enabled adapter set.
@@ -482,27 +483,38 @@ Validate all the adapter set configurations, ensuring that:
 */}}
 {{- define "lightstreamer.adapters.validateAllAdapterSets" -}}
 {{- $userAdapterIds := list -}}
-{{- $usedPorts := list}}
+{{- $usedPorts := list }}
 {{- range $adapterName, $adapterSet := .Values.adapters}}
   {{- if not $adapterSet }}
     {{- fail (printf "adapters.%s must be set" $adapterName) }}
   {{- end }}
   {{- if $adapterSet.enabled }}
-  {{- /* CHECK ADAPTER SET IDS */ -}}
+    {{- /* CHECK ADAPTER SET IDS */ -}}
     {{- $adapterId := required (printf "adapters.%s.id must be set" $adapterName) $adapterSet.id }}
     {{- if has $adapterId $userAdapterIds }}
       {{- fail (printf "adapters.%s.id \"%s\" already used" $adapterName $adapterId ) }}
     {{- end }}
     {{- $userAdapterIds = append $userAdapterIds $adapterId }}
+    {{- /* CHECK THE PROVISIONING SETTINGS */ -}}
+    {{- include "lightstreamer.adapters.validateProvisioning" (list $adapterName $adapterSet) }}
 
     {{- $metadataProvider := required (printf "adapters.%s.metadataProvider must be set" $adapterName) $adapterSet.metadataProvider -}}
     {{- if hasKey $metadataProvider "inProcessMetadataAdapter" }}
-      {{- /* CHECK IN-PROCESS METADATA ADAPTER CLASS NAME */}}
+      {{- /* CHECK THE IN-PROCESS METADATA ADAPTER CLASS NAME */}}
       {{- $inProcess := $metadataProvider.inProcessMetadataAdapter | default dict }}
       {{- $adapterClass := required (printf "adapters.%s.metadataProvider.inProcessMetadataAdapter.adapterClass must be set" $adapterName) $inProcess.adapterClass }}
+      {{- /* CHECK THE CLASSLOADER */}}
+      {{- $classLoaderErrMsg := include "lightstreamer.adapters.in-process.common.validateClassLoader" $inProcess }}
+      {{- if $classLoaderErrMsg }}
+        {{- printf "adapters.%s.metadataAdapter.inProcessMetadataAdapter.classLoader %s" $adapterName $classLoaderErrMsg | fail }}
+      {{- end}}      
+      {{- /* CHECK THE INSTALL DIR */}}
+      {{- if and ($inProcess.classLoader | eq "dedicated") (not $inProcess.installDir) }}
+        {{- fail (printf "adapters.%s.metadataProvider.proxyMetadataAdapters.installDir must be set when using a dedicated class loader" $adapterName) }}
+      {{- end }}
     {{- else if hasKey $metadataProvider "proxyMetadataAdapter" }}
       {{- $proxy := $metadataProvider.proxyMetadataAdapter | default dict }}
-      {{- /* CHECK PROXY METADATA ADAPTER REQUEST/REPLY PORT */ -}}
+      {{- /* CHECK THE PROXY METADATA ADAPTER REQUEST/REPLY PORT */ -}}
       {{- $requestReplyPort := int (required (printf "adapters.%s.metadataProvider.proxyMetadataAdapters.requestReplyPort must be set" $adapterName) $proxy.requestReplyPort) }}
       {{- if has $requestReplyPort $usedPorts }}
         {{- fail (printf "adapters.%s.metadataProvider.proxyMetadataAdapters.requestReplyPort \"%d\" already used" $adapterName $requestReplyPort ) }}
@@ -519,7 +531,7 @@ Validate all the adapter set configurations, ensuring that:
         {{- fail (printf "adapters.%s.dataProviders.%s must be set" $adapterName $dataProviderKey) }}
       {{- end }}
       {{- if $dataProvider.enabled }}
-        {{- /* CHECK DATA PROVIDER NAMES */ -}}
+        {{- /* CHECK THE DATA PROVIDER NAMES */ -}}
         {{- $dataProviderName := required (printf "adapters.%s.dataProviders.%s.name must be set" $adapterName $dataProviderKey) $dataProvider.name }}
         {{- if has $dataProviderName $enabledDataProviders }}
           {{- fail (printf "adapters.%s.dataProviders.%s.name \"%s\" already used" $adapterName $dataProviderKey $dataProviderName ) }}
@@ -528,11 +540,20 @@ Validate all the adapter set configurations, ensuring that:
 
         {{- if hasKey $dataProvider "inProcessDataAdapter" }}
           {{- $inProcess := $dataProvider.inProcessDataAdapter | default dict }}
-          {{- /* CHECK IN-PROCESS DATA ADAPTER CLASS NAME */ -}}
-          {{- $adapterClass := required (printf "adapters.%s.dataProviders.%s.inProcessMetadataAdapter.adapterClass must be set" $adapterName $dataProviderKey) $inProcess.adapterClass }}
+          {{- /* CHECK THE IN-PROCESS DATA ADAPTER CLASS NAME */ -}}
+          {{- $adapterClass := required (printf "adapters.%s.dataProviders.%s.inProcessDataAdapter.adapterClass must be set" $adapterName $dataProviderKey) $inProcess.adapterClass }}
+          {{- /* CHECK THE CLASSLOADER */}}
+          {{- $classLoaderErrMsg := include "lightstreamer.adapters.in-process.common.validateClassLoader" $inProcess }}
+          {{- if $classLoaderErrMsg }}
+            {{- printf "adapters.%s.dataProviders.%s.inProcessDataAdapter.classLoader %s" $adapterName $dataProviderKey $classLoaderErrMsg | fail }}
+          {{- end}}            
+          {{- /* CHECK THE INSTALL DIR */}}
+          {{- if and ($inProcess.classLoader | eq "dedicated") (not $inProcess.installDir) }}
+            {{- fail (printf "adapters.%s.dataProviders.%s.inProcessDataAdapter.installDir must be set when using a dedicated class loader" $adapterName $dataProviderKey) }}
+          {{- end }}
         {{- else if hasKey $dataProvider "proxyDataAdapter" }}
           {{- $proxy := $dataProvider.proxyDataAdapter | default dict }}
-          {{- /* CHECK REQUEST/REPLY PORTS */ -}}
+          {{- /* CHECK THE REQUEST/REPLY PORTS */ -}}
           {{- $dataProviderPort := int (required (printf "adapters.%s.dataProviders.%s.proxyDataAdapter.requestReplyPort must be set" $adapterName $dataProviderKey) $proxy.requestReplyPort) }}
           {{- if has $dataProviderPort $usedPorts }}
             {{- fail (printf "adapters.%s.dataProviders.%s.proxyDataAdapter.requestReplyPort \"%d\" already used" $adapterName $dataProviderKey $dataProviderPort ) }}
@@ -548,6 +569,47 @@ Validate all the adapter set configurations, ensuring that:
     {{- end }}
   {{- end }}
 {{- end }}
+{{- end }}
+
+{{/*
+Validate the Adapter ClassLoader.
+*/}}
+{{- define "lightstreamer.adapters.in-process.common.validateClassLoader" -}}
+{{- if not (quote .classLoader | empty) }}
+{{- $possibleValues := list "common" "dedicated" "log-enabled" }}
+{{- if not (has .classLoader $possibleValues) }}
+  {{- printf "must be one of %s" $possibleValues }}
+{{- end }}
+{{- end}}  
+{{- end }}
+
+{{/*
+Validate the Adapter provisioning setting.
+*/}}
+{{- define "lightstreamer.adapters.validateProvisioning" -}}
+{{- $adapterSetName := index . 0 }}
+{{- $adapterSet := index . 1 }}
+{{- if $adapterSet.provisioning }}
+  {{- /* List of admitted provisioning methods */ -}}
+  {{- $admittedProvisioningMethods := list "fromPathInImage" "fromVolume" }}
+  {{- $methods := list }}
+  {{- range $methodName, $method := $adapterSet.provisioning }}
+    {{- if and (has $methodName $admittedProvisioningMethods) $method }}
+      {{- $methods = append $methods $methodName }}
+    {{- end }}
+  {{- end }}
+  {{- /* Check that only one provisioning method is set */ -}}
+  {{- if or (not $methods) (gt (len $methods) 1) }}
+    {{- fail (printf "adapters.%s.provisioning must be one of %s" $adapterSetName $admittedProvisioningMethods) }}
+  {{- end }}
+  {{- $chosenMethodName := $methods | first }}
+  {{- if eq $chosenMethodName "fromVolume" }}
+    {{- if not $adapterSet.provisioning.fromVolume.name }}
+      {{- printf "adapters.%s.provisioning.fromVolume.name must be set" $adapterSetName | fail }}
+    {{- end }} 
+  {{- end }}
+{{- end }}
+
 {{- end }}
 
 {{/*
