@@ -3540,7 +3540,7 @@ load:
   # @default -- 1000
   serverPoolMaxSize:
 
-  # -- (int) Optional, but mandatory if `load.serverPoolMaxSize`is set to `0`.
+  # -- (int) Optional, but mandatory if `load.serverPoolMaxSize` is set to `0`.
   # Maximum number of idle threads allowed for the `SERVER` internal pool,
   # which is devoted to the management of the client requests.
   # Put in a different way, it is the minimum number of threads that can be
@@ -3717,9 +3717,23 @@ adapters:
     # -- Mandatory. Define an Adapter Set and its unique ID.
     id: "MY_ADAPTER_SET"
 
+    # -- Optional. Define the provisioning method of the Adapter Set.
+    # Either specify one of `fromPathInImage` or `fromVolume`.
     provisioning:
 
-      fromPathInImage
+      # -- (string) The path to the Adapter Set resources in the image,
+      # e.g.: `/lightstreamer/adapters/my-adapter-set`.
+      fromPathInImage:
+
+      # The reference to a volume where the Adapter Set resources are stored.
+      fromVolume:
+
+        # -- (string) Mandatory. The name of volume.
+        name:
+
+        # -- (string) The path to the Adapter Set resources in the volume, 
+        # e.g.: `/adapters/my-adapter-set`.
+        path:
 
     # -- Optional. Requests the creation of a specific `SET` thread pool, 
     # devoted to the management of all the client requests pertaining to 
@@ -3775,12 +3789,18 @@ adapters:
         # -- Mandatory. Java class name of the adapter.
         adapterClass: aJavaClass
 
+        # -- Optional, but mandatory if `classLoader` is set to `dedicated`.
+        # Specify a directory other than `.` or this Adapter's own class and
+        # configuration files.
+        # @default -- .
+        installDir:
+
         # -- (string) Optional. Determines the ClassLoader to be used to load 
         # the Adapter related classes. Possible values are:
         #
         # - `common`: The common ClassLoader assigned to the whole Adapter Set
         #   is used; this ClassLoader already includes all the classes found in
-        #   the common `lib`` and `classes` folders; it also inherits from a 
+        #   the common `lib` and `classes` folders; it also inherits from a 
         #   global ClassLoader that includes all the classes found under the 
         #   `shared/lib` and `shared/classes` folders. If a specific 
         #   `installDir` is assigned to the Adapter, classes found in its `lib` 
@@ -4477,8 +4497,13 @@ adapters:
           # -- Mandatory. Java class name of the adapter.
           adapterClass: aJavaClass
 
+          # -- Optional. See 
+          # `adapters.{}.metadataProvider.inProcessMetadataAdapter.installDir`.
+          # @default -- .
+          installDir:
+
           # -- Optional. See
-          # adapters.{}.metadataProvider.inProcessMetadataAdapter.classLoader.
+          # `adapters.{}.metadataProvider.inProcessMetadataAdapter.classLoader`.
           # @default -- common
           classloader:
 
@@ -4879,24 +4904,36 @@ connectors:
     # or `fromVolume`.
     provisioning:
 
-      # -- (string) The Lightstreamer Kafka Connector release to download from
+      # -- (string) The path to the Kafka Connector deployment in the image, 
+      # e.g.: `/lightstreamer/adapters/lightstreamer-kafka-connector-1.2.0`.
+      # At startup, the deployment folder will be mounted at 
+      # `/lightstreamer/deployed_adapters/kafka-connector` in the container.
       fromPathInImage:
 
       # -- (string) The Lightstreamer Kafka Connector release to download from
-      # the GitHub official repository.
+      # the GitHub official repository at startup. Once downloaded, the package
+      # will be deployed to the 
+      # `/lightstreamer/deployed_adapters/kafka-connector` directory in the 
+      # container.
       fromGitHubRelease:
 
-      # -- (string) The URL from which to download the connector package.
+      # -- (string) The URL from which to download the Kafka Connector zip
+      # package at startup. Once downloaded, the package will be deployed to the 
+      # `/lightstreamer/deployed_adapters/kafka-connector` directory in the 
+      # container.
       fromUrl:
 
-      # The reference to a volume where connector package is stored.
+      # The reference to a volume where the Kafka Connector zip package is
+      # stored. At startup, the the package will be deployed to the 
+      # `/lightstreamer/deployed_adapters/kafka-connector` directory in the 
+      # container.
       fromVolume:
 
         # -- (string) Mandatory. The name of volume.
         name:
 
-        # -- (string) The filepath to the connector package in the volume, 
-        # e.g.: `/connectors/lightstreamer-kafka-connector-1.2.0.zip`
+        # -- (string) The filepath to the Kafka Connector zip package in the
+        # volume, e.g.: `/connectors/lightstreamer-kafka-connector-1.2.0.zip`.
         filePath:
 
     # -- Mandatory. Define the Kafka Connector Adapter Set and its unique ID.
