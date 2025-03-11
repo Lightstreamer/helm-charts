@@ -288,18 +288,23 @@ service:
   # @default -- generated using the fullname template
   name:
 
-  # -- Additional Service annotations.
+  # -- Optional. Additional Service annotations.
   annotations: {}
 
-  # -- Additional Service labels.
+  # -- Optional. Additional Service labels.
   labels: {}
 
-  # -- Additional selectors.
+  # -- Optional. Additional selectors.
   additionalSelectors:
 
-  # -- The service type.
+  # -- Optional. The service type.
   # See https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types.
+  # @default -- ClusterIP
   type:
+
+  # -- Optional. The IP address of the service.
+  # @default -- Allocated by the Kubernetes control plane
+  clusterIP:
 
   # -- At least one must be provided. List of ports exposed by the service.
   ports:
@@ -4973,8 +4978,8 @@ connectors:
         # -- Enablement of the connection.
         # If set to `false`, the Lightstreamer Server will automatically deny
         # every subscription made to the connection.
-        # @default -- true
-        enabled: true
+        # @default -- false
+        enabled:
 
         # -- (string) Mandatory. The Kafka Cluster bootstrap server endpoint
         # expressed as the list of host/port pairs used to establish the
@@ -5242,7 +5247,7 @@ connectors:
 
               # -- Mandatory and unique across all topic mappings. The Kafka
               # topic name.
-              topic: stock
+              topic: stocks
 
               # -- Mandatory if `itemTemplateRefs` is empty. List of simple
               # items to which the topic must be mapped.
