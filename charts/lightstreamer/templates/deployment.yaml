@@ -474,7 +474,7 @@ spec:
               {{- if or .fromGitHubRelease .fromUrl }}
             - name: kafka-connector-source-storage
               {{- else }}
-            - name: {{ required "connectors.kafkaConnector.provisioning.fromVolume.name must be set" .fromVolume.name -}}
+            - name: .fromVolume.name
               {{- end }}
               mountPath: /tmp/connectors-source-archives/kafka
             - name: kafka-connector-deployment
