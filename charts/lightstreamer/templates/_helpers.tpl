@@ -388,16 +388,23 @@ Validate the Kafka Connector provisioning setting.
 Create the name of the Lightstreamer Kafka Connector.
 */}}
 {{- define "lightstreamer.kafka-connector.name" -}}
-{{- printf "lightstreamer-kafka-connector" }}
+{{- printf "kafka-connector" }}
 {{- end }}
 
 {{/*
 Create the download URL of the Lightstreamer Kafka Connector.
 */}}
 {{- define "lightstreamer.kafka-connector.url" -}}
-{{- printf "https://github.com/Lightstreamer/Lightstreamer-kafka-connector/releases/download/v%s/%s-%s.zip" . (include "lightstreamer.kafka-connector.name" .) . }}
+{{- printf "https://github.com/Lightstreamer/Lightstreamer-kafka-connector/releases/download/v%s/lightstreamer-kafka-connector-%s.zip" . . }}
 {{- end }}
 
+{{/*
+Create the deployment folder the Lightstreamer Kafka Connector.
+*/}}
+{{- define "lightstreamer.kafka-connector.deployment" -}}
+{{- printf "/lightstreamer/deployed_adapters/kafka-connector" }}
+{{- end }}
+  
 {{/*
 Render the truststore settings for the Lightstreamer Kafka Connector configuration file.
 */}}
@@ -611,6 +618,21 @@ Validate the Adapter provisioning setting.
 {{- end }}
 
 {{- end }}
+
+{{/*
+Create the Adapters path name, relative to the Lightstreamer conf directory.
+*/}}
+{{- define "lightstreamer.adapters.adaptersDir" -}}
+{{- printf "deployed_adapters" }}
+{{- end }}
+
+{{/*
+Create the full Adapters path name
+*/}}
+{{- define "lightstreamer.adapters.fullAdaptersDir" -}}
+{{- printf "/lightstreamer/%s" (include "lightstreamer.adapters.adaptersDir" .) }}
+{{- end }}
+  
 
 {{/*
 Create the name of the configmap containing the adapters.xml file of a specific adapter.
