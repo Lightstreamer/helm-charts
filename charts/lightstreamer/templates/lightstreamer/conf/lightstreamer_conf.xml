@@ -752,7 +752,7 @@ Render the Lightstreamer configuration file
              Note that the above is possible also when 0 is specified.
              Default: 0. -->
     {{- if not (quote .maxPongDelayMillis | empty) }}
-        <max_pong_day_millis>{{ int .maxPongDelayMillis }}</max_pong_day_millis>
+        <max_pong_delay_millis>{{ int .maxPongDelayMillis }}</max_pong_delay_millis>
     {{- else }}
         <!--
         <max_pong_delay_millis>1000</max_pong_delay_millis>
@@ -1093,7 +1093,7 @@ Render the Lightstreamer configuration file
 
     <!-- Mandatory. Sampling time for internal load statistics (Server
          Monitor). These statistics are available through the JMX interface;
-         some of these statistics are logged bt the Internal Monitor log
+         some of these statistics are logged by the Internal Monitor log
          or can be subscribed to through the internal Monitoring Adapter Set.
          Full JMX features is an optional feature, available depending
          on Edition and License Type. -->
