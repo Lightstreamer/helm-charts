@@ -1069,14 +1069,14 @@ Render the close/disconnection notification settings for the Proxy Metadata Adap
 {{- end }}
 
 {{- /* notify_user_disconnection_code */ -}}
-{{- if not (quote $proxy.notifyUserDisconnectionCode | empty)  }}
+{{- if not (quote $proxy.notifyUserDisconnectionCode | empty) }}
   {{- if gt (int $proxy.notifyUserDisconnectionCode) 0 }}
     {{ printf "adapters.%s.proxyMetadataAdapter.notifyUserDisconnectionCode must a non positive integer" $adapterName | fail }}
   {{- end }}
 <param name="notify_user_disconnection_code">{{ int $proxy.notifyUserDisconnectionCode }}</param>
 
   {{- /* notify_user_disconnection_msg */ -}}
-  {{- if not (quote $proxy.notifyUserDisconnectionMsg | empty)  }}
+  {{- if not (quote $proxy.notifyUserDisconnectionMsg | empty) }}
 <param name="notify_user_disconnection_msg">{{ $proxy.notifyUserDisconnectionMsg }}</param>
   {{- end }}
 {{- end }}
