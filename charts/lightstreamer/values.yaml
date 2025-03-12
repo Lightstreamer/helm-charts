@@ -1292,7 +1292,7 @@ servers:
     # if available and different, will be added.
     # The determined address may also be sent to the clients, depending on the
     # Client SDK in use.
-    # @default -- all settings at their defaults
+    # If not specified, all settings at their defaults will be used.
     clientIdentification:
 
       # -- Optional. If set to `true`, prevents the determined address from
@@ -1955,7 +1955,7 @@ management:
 
   # -- (int) Mandatory. Sampling time for internal load statistics (Server
   # Monitor). These statistics are available through the JMX interface; some of
-  # these statistics are logged bt the Internal Monitor log or can be
+  # these statistics are logged by the Internal Monitor log or can be
   # subscribed to through the internal Monitoring Adapter Set.
   # Full JMX features is an optional feature, available depending on Edition
   # and License Type.
@@ -2059,7 +2059,7 @@ management:
 
       # -- Mandatory if either `port.enableSsl` or `dataPort.enableSsl` is set 
       # to true. The reference to a keystore configuration (defined in 
-      # `keystore`) to be used in case TLS/SSL is enabled for part or all of 
+      # `keystores`) to be used in case TLS/SSL is enabled for part or all of 
       # the communication.
       # See the `keystores.myServerKeystore` for general details on keystore
       # configuration. These include the runtime replacement of the keystore,
@@ -2885,7 +2885,6 @@ mpn:
   # If module startup is prevented, or not yet completed, or completed
   # unsuccessfully, the module is inactive. This means that no subscription
   # processing is performed and any client MPN requests are refused.
-  # @default -- all settings at their defaults
   activationOnStartUp:
 
     # -- Optional. If set to `true`, a module startup will be initiated
@@ -2939,7 +2938,7 @@ mpn:
   # The request processor is devoted to process incoming MPN requests, such as
   # subscription activations and deactivations. These requests access the
   # database and may be subject to blocking in case of database disconnection.
-  # @default -- all settings at their defaults
+  # If not specified, all settings at their defaults will be used.
   executorPool:
 
     # -- (int) Optional. Specifies the maximum number of threads the pool may
@@ -4632,7 +4631,6 @@ adapters:
           interface:
 
           # -- Optional. TLS/SSL settings for the connection.
-          # @default -- all settings at their defaults
           sslConfig:
 
             # -- Optional. Enablement of the encryption.
@@ -5033,7 +5031,6 @@ connectors:
         groupId: quickstart
 
         # -- Optional. TLS/SSL settings for the connection.
-        # @default -- all settings at their defaults
         sslConfig:
 
           # -- Optional. Enablement of the encryption.
@@ -5057,14 +5054,14 @@ connectors:
           # @default -- false
           enableHostnameVerification:
 
-          # -- Optional. The reference to a keystore used to validate the
-          # certificates provided by the Kafka brokers.
+          # -- Optional. The reference to a keystore (defined in 'keystores') 
+          # used to validate the certificates provided by the Kafka brokers.
           # See the `keystores.myKafkaConnectorKeystore` settings for general
           # details on keystore configuration for the Kafka Connector.
           truststoreRef: myServerKeystore
 
-          # -- Optional. The reference to a keystore used if mutual TLS is 
-          # enabled on Kafka brokers.
+          # -- Optional. The reference to a keystore (defined in 'keystores')
+          # used if mutual TLS is enabled on Kafka brokers.
           # See the `keystores.myKafkaConnectorKeystore` settings for general
           # details on keystore configuration for the Kafka Connector.
           keystoreRef:
@@ -5077,7 +5074,7 @@ connectors:
             # @default -- false
             enabled: false
 
-            # (string) Mandatory if `enabled` is set to `true`. The SASL
+            # -- (string) Mandatory if `enabled` is set to `true`. The SASL
             # mechanism type.
             # The Kafka Connector accepts the following authentication
             # mechanisms:
@@ -5124,7 +5121,7 @@ connectors:
               enableTicketCache:
 
         # -- Optional. Record evaluation settings.
-        # @default -- all settings at their defaults
+        # If not specified, all settings at their defaults will be used.
         record:
 
           # -- (string) Optional. Specifies where to start consuming events
@@ -5159,7 +5156,7 @@ connectors:
           consumeWithOrderStrategy:
 
           # -- Optional. Key evaluator configuration.
-          # @default -- all settings at their defaults
+          # If not specified, all settings at their defaults will be used.
           keyEvaluator:
 
             # -- (string) Optional. The format to be used to deserialize the
@@ -5181,10 +5178,11 @@ connectors:
             type: INTEGER
 
             # -- Mandatory if `type` is set to `AVRO` and 
-            # `enableSchemaRegistry` is set to `false`. The configmap name and
-            # key where the local schema for message validation of the key is
-            # stored. The setting takes precedence over `enableSchemaRegistry`
-            # if the latter is set to `true`.
+            # `enableSchemaRegistry` is set to `false`. The reference to a
+            # local schema file (defined in 
+            # `connectors.kafkaConnectors.localSchemaFiles`) for message 
+            # validation of the key. The setting takes precedence over 
+            # `enableSchemaRegistry` if the latter is set to `true`.
             localSchemaFilePathRef:
 
             # -- Enablement of the Confluent Schema Registry for validation of
@@ -5195,7 +5193,7 @@ connectors:
             enableSchemaRegistry:
 
           # -- Optional. Value evaluator configuration.
-          # @default -- all settings at their defaults
+          # If not specified, all settings at their defaults will be used.
           valueEvaluator:
 
             # -- (string) Optional. The format to be used to deserialize the
@@ -5204,11 +5202,12 @@ connectors:
             # @default -- STRING
             type: JSON
 
-            # -- Mandatory if `type` is set to `AVRO` and
-            # `enableSchemaRegistry` is set to `false`. The configmap name and
-            # key where the local schema for message validation of the value is
-            # stored. The setting takes precedence over `enableSchemaRegistry`
-            # if the latter is set to `true`.
+            # -- Mandatory if `type` is set to `AVRO` and 
+            # `enableSchemaRegistry` is set to `false`. The reference to a
+            # local schema file (defined in 
+            # `connectors.kafkaConnectors.localSchemaFiles`) for message 
+            # validation of the value. The setting takes precedence over 
+            # `enableSchemaRegistry` if the latter is set to `true`.
             localSchemaFilePathRef:
 
             # -- Enablement of the Confluent Schema Registry for validation of
@@ -5310,7 +5309,7 @@ connectors:
         # -- Mandatory. Record mappings configuration.
         fields:
 
-          # Mandatory. Record data to Lightstreamer field mappings.
+          # -- Mandatory. Record data to Lightstreamer field mappings.
           mappings:
 
             # -- At least one must be provided. A field mapping.
@@ -5346,6 +5345,7 @@ connectors:
           enableSkipFailedMapping:
 
         # -- Optional. Logger configuration for the connection.
+        # If not specified, all settings at their defaults will be used.
         logger:
 
           # -- Mandatory. List of references to the appenders defined in
@@ -5413,14 +5413,14 @@ connectors:
           # @default -- false
           enableHostnameVerification:
 
-          # -- Optional. The reference to a keystore used to validate the
-          # certificates provided by the Schema Registry.
+          # -- Optional. The reference to a keystore (defined in 'keystores') 
+          # used to validate the certificates provided by the Schema Registry.
           # See the `keystores.myKafkaConnectorKeystore` settings for general
           # details on keystore configuration for the Kafka Connector.
           truststoreRef:
 
-          # -- Optional. The reference to a keystore used if mutual TLS is 
-          # enabled on the Schema Registry.
+          # -- Optional. The reference to a keystore (defined in 'keystores')
+          # used if mutual TLS is enabled on the Schema Registry.
           # See the `keystores.myKafkaConnectorKeystore` settings for general
           # details on keystore configuration for the Kafka Connector.
           keystoreRef:
