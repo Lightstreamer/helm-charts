@@ -338,12 +338,12 @@ Render the Lightstreamer logging configuration file
 
   <!-- logging of MPN Module recurrent activity -->
   <!-- at INFO level, main operation exit points and outcomes are dumped -->
-  <!-- at DEBUG level, the various operation entry entry and exit points are logged -->
+  <!-- at DEBUG level, the various operation entry and exit points are logged -->
   <logger name="LightstreamerLogger.mpn.lifecycle"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "lightstreamerLogger.mpn.lifecycle") }}/>
 
   <!-- logging of mobile push notifications activity -->
   <!-- at INFO level, main operation exit points and outcomes are dumped -->
-  <!-- at DEBUG level, the various operation entry entry and exit points are logged -->
+  <!-- at DEBUG level, the various operation entry and exit points are logged -->
   <logger name="LightstreamerLogger.mpn.operations"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "lightstreamerLogger.mpn.operations") }}/>
 
   <!-- logging of mobile push notifications request processing;
