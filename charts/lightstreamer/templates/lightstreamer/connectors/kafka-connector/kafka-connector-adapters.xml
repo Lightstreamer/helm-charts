@@ -452,7 +452,7 @@ Render the Lightstreamer Kafka Connector configuration file.
              file relative to the deployment folder (LS_HOME/adapters/lightstreamer-kafka-connector-<version>) for
              message validation of the key. -->
             {{- with .localSchemaFilePathRef }}
-              {{ $localSchema := required (printf "localSchemaFiles.%s not defined" . ) (get ($.Values.connectors.kafkaConnector.localSchemaFiles | default dict) .) }}
+              {{ $localSchema := required (printf "connectors.kafkaConnector.localSchemaFiles.%s not defined" . ) (get ($.Values.connectors.kafkaConnector.localSchemaFiles | default dict) .) }}
         <param name="record.key.evaluator.schema.path">schemas/{{ . }}/{{ required (printf "connectors.kafkaConnector.localSchemaFiles.%s.key must be set" .) $localSchema.key }}</param>
             {{- else }}
               {{- if and (eq .type "AVRO") (not .enableSchemaRegistry) }}
@@ -513,7 +513,7 @@ Render the Lightstreamer Kafka Connector configuration file.
              file relative to the deployment folder (LS_HOME/adapters/lightstreamer-kafka-connector-<version>) for
              message validation of the the value. -->
             {{- with .localSchemaFilePathRef }}
-              {{ $localSchema := required (printf "kafkaConnector.localSchemaFiles.%s not defined" . ) (get ($.Values.connectors.kafkaConnector.localSchemaFiles | default dict) .) }}
+              {{ $localSchema := required (printf "connectors.kafkaConnector.localSchemaFiles.%s not defined" . ) (get ($.Values.connectors.kafkaConnector.localSchemaFiles | default dict) .) }}
         <param name="record.value.evaluator.schema.path">schemas/{{ . }}/{{ required (printf "connectors.kafkaConnector.localSchemaFiles.%s.key must be set" .) $localSchema.key }}</param>
             {{- else }}
               {{- if and (eq .type "AVRO") (not .enableSchemaRegistry) }}
@@ -605,7 +605,7 @@ Render the Lightstreamer Kafka Connector configuration file.
                {{- $templateRefs = append $templateRefs (printf "item-template.%s" .) }}
               {{- end }}
             {{- else }}
-              {{- required (printf "%s.itemTemplateRegs or %s.items must be set" $key $key) $mapping.items }}
+              {{- required (printf "%s.itemTemplateRefs or %s.items must be set" $key $key) $mapping.items }}
             {{- end }}
         <param name="map.{{ $mapping.topic }}.to">{{ join "," (concat ($templateRefs) ($mapping.items | default list)) }}</param>
           {{- else }}
@@ -657,11 +657,11 @@ Render the Lightstreamer Kafka Connector configuration file.
         <!-- ##### SCHEMA REGISTRY SETTINGS ##### -->
         {{- if ($connection.record).schemaRegistryRef }}
           {{- $schemaRegistryRef := $connection.record.schemaRegistryRef }}
-          {{- $schemaRegistry := required (printf "kafkaConnector.schemaRegistry.%s not defined" $schemaRegistryRef) (get ($.Values.connectors.kafkaConnector.schemaRegistry | default dict) $connection.record.schemaRegistryRef) }}
+          {{- $schemaRegistry := required (printf "connectors.kafkaConnector.schemaRegistry.%s not defined" $schemaRegistryRef) (get ($.Values.connectors.kafkaConnector.schemaRegistry | default dict) $connection.record.schemaRegistryRef) }}
 
         <!-- Mandatory if the Confluent Schema Registry is enabled. The URL of the Confluent Schema Registry.
              An encrypted connection is enabled by specifying the "https" protocol. -->
-        <param name="schema.registry.url">{{ required (printf "kafkaConnector.schemaRegistry.%s.url must be set" $schemaRegistryRef) $schemaRegistry.url }}</param>
+        <param name="schema.registry.url">{{ required (printf "connectors.kafkaConnector.schemaRegistry.%s.url must be set" $schemaRegistryRef) $schemaRegistry.url }}</param>
 
         <!-- Optional. Enable Basic HTTP authentication of this connection against the Schema Registry. Can be one of the following:
              - true
@@ -671,7 +671,7 @@ Render the Lightstreamer Kafka Connector configuration file.
           {{- if ($schemaRegistry.basicAuthentication).enabled }}
             {{- with $schemaRegistry.basicAuthentication }}
         <param name="schema.registry.basic.authentication.enable">true</param>
-              {{- with required (printf "kafkaConnector.schemaRegistry.%s.basicAuthentication.credentialsSecretRef must be set" $schemaRegistryRef) .credentialsSecretRef }}
+              {{- with required (printf "connectors.kafkaConnector.schemaRegistry.%s.basicAuthentication.credentialsSecretRef must be set" $schemaRegistryRef) .credentialsSecretRef }}
         <param name="schema.registry.basic.authentication.username">$env.LS_KAFKA_SCHEMA_REGISTRY_{{ . | upper | replace "-" "_" }}_USERNAME</param>
         <param name="schema.registry.basic.authentication.password">$env.LS_KAFKA_SCHEMA_REGISTRY_{{ . | upper | replace "-" "_" }}_PASSWORD</param>
               {{- end }} {{/* of .basicAuthentication */}}
@@ -696,7 +696,7 @@ Render the Lightstreamer Kafka Connector configuration file.
             {{- if .allowedProtocols }}
               {{- range $protocol := .allowedProtocols}}
                 {{- if not (mustHas $protocol (list "TLSv1.2" "TLSv1.3")) }}
-                  {{- fail (printf "kafkaConnector.schemaRegistry.%s.sslConfig.allowedProtocols must be a list of \"TLSv1.2\", \"TLSv1.3\"" $schemaRegistryRef) }}
+                  {{- fail (printf "connectors.kafkaConnector.schemaRegistry.%s.sslConfig.allowedProtocols must be a list of \"TLSv1.2\", \"TLSv1.3\"" $schemaRegistryRef) }}
                 {{- end }}
               {{- end }}
         <param name="schema.registry.encryption.enabled.protocols">{{ join "," .allowedProtocols }}</param>
@@ -709,7 +709,7 @@ Render the Lightstreamer Kafka Connector configuration file.
             {{- if .allowedCipherSuites }}
               {{- range $cipherSuite := .allowedCipherSuites}}
                 {{- if $cipherSuite | empty }}
-                  {{- fail (printf "kafkaConnector.schemaRegistry.%s.sslConfig.allowedCipherSuites must be a list of valid values" $schemaRegistryRef) }}
+                  {{- fail (printf "connectors.kafkaConnector.schemaRegistry.%s.sslConfig.allowedCipherSuites must be a list of valid values" $schemaRegistryRef) }}
                 {{- end }}
               {{- end }}
         <param name="schema.registry.encryption.cipher.suites">{{ join "," .allowedCipherSuites }}</param>
@@ -750,7 +750,7 @@ Render the Lightstreamer Kafka Connector configuration file.
             {{- end }} {{/* of .keystoreRef */}}
           {{- end }} {{/* of .sslConfig */}}
         {{- else }}
-          {{- if or (($connection.record.keyEvaluator).enableSchemaRegistry) (($connection.record.valueEvaluator).enableSchemaRegistry) }}
+          {{- if or ((($connection.record).keyEvaluator).enableSchemaRegistry) ((($connection.record).valueEvaluator).enableSchemaRegistry) }}
             {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.record.schemaRegistryRef or disable connectors.kafkaConnector.connections.%s.record.keyEvaluator.enableSchemaRegistry and connectors.kafkaConnector.connections.%s.record.valueEvaluator.enableSchemaRegistry" $key $key $key) }}
           {{- end }}
         {{- end }} {{/* of .schemaRegistryRef */}}
