@@ -27,19 +27,19 @@ data:
   {{- with $provisioning }}
     KAFKA_CONNECTOR_DEPLOYMENT_PATH=/kafka-connector-deployment/{{ include "lightstreamer.kafka-connector.name" . }}
     {{- if .fromVolume }}
-    # The ZIP archive is already available in the volume specified through
+    # The zip archive is already available in the volume specified through
     # "connectors.kafkaConnector.provisioning.fromVolume", mounted at the
     # expected path.
     ZIP_ARCHIVE={{ .fromVolume.filePath }}
     {{- else }}
     ZIP_ARCHIVE=kafka-connector.zip    
       {{- if .fromGitHubRelease }}
-    # Download the ZIP archive from the GitHub release to the temporary
+    # Download the zip archive from the GitHub release to the temporary
     # directory mounted from the ephemeral volume
     # "kafka-connector-source-storage".
     wget -O /tmp/connectors-source-archives/kafka/${ZIP_ARCHIVE} {{ include "lightstreamer.kafka-connector.url" .fromGitHubRelease }}
       {{- else if .fromUrl }}
-    # Download the ZIP archive from the specified URL to the temporary directory
+    # Download the zip archive from the specified URL to the temporary directory
     # mounted from the ephemeral volume "kafka-connector-source-storage".
     wget -O /tmp/connectors-source-archives/kafka/${ZIP_ARCHIVE} {{ .fromUrl }}
       {{- end }}
