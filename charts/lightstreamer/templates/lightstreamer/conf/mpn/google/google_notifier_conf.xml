@@ -29,7 +29,7 @@ limitations under the License.
         it too much, and subsequently sending notifications with a high
         frequency, may cause Google's Firebase Cloud Messaging service ("FCM")
         to close the connection and ban (temporarily or permanently) any
-        successive notification.
+        successive notifications.
         Mobile push notifications fired by a trigger are not subject to
         this limit and may be sent at higher pace.
         Default: 1000 (1 sec) -->
