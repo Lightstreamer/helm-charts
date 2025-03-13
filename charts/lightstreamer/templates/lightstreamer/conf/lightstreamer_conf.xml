@@ -15,7 +15,7 @@ limitations under the License.
 */}}
 
 {{/*
-Render the Lightstreamer configuration file 
+Render the Lightstreamer configuration file.
 */}}
 {{- define "lightstreamer.configuration" -}}
 <?xml version="1.0" encoding="UTF-8"?>
@@ -892,7 +892,7 @@ Render the Lightstreamer configuration file
          removed from the list and the server is restarted, until its authorization
          expires. -->
   {{- with .crossDomainPolicy }}
-    <cross_domain_policy{{- if .optionsMaxAgeSeconds }} options_max_age={{ .optionsMaxAgeSeconds | quote }}{{- end}}{{- if .acceptExtraHeaders }} accept_extra_headers={{ .acceptExtraHeaders | default "" | quote }}{{- end}}{{- if not (quote .acceptCredentials | empty )}} accept_credentials={{ .acceptCredentials | ternary "Y" "N" | quote }}{{- end }}>
+    <cross_domain_policy{{- if .optionsMaxAgeSeconds }} options_max_age={{ .optionsMaxAgeSeconds | quote }}{{- end }}{{- if .acceptExtraHeaders }} accept_extra_headers={{ .acceptExtraHeaders | default "" | quote }}{{- end }}{{- if not (quote .acceptCredentials | empty )}} accept_credentials={{ .acceptCredentials | ternary "Y" "N" | quote }}{{- end }}>
 
         <!-- Optional and cumulative. Declaration of an Origin allowed
              to consume responses to cross-origin requests.
@@ -1150,7 +1150,7 @@ Render the Lightstreamer configuration file
                  is considered.
                  Default: the same as configured in <port>. -->
       {{- if .dataPort }}
-        {{- with .dataPort }}                                                                                                             
+        {{- with .dataPort }}
             <data_port{{- if not (quote .enableSsl | empty) }} ssl={{ .enableSsl | ternary "Y" "N" | quote }}{{- end }}>{{ int (required "management.jmx.rmiConnector.dataPort.value must be set" .value) }}</data_port>
         {{- end }}
       {{- else }}
@@ -1542,12 +1542,12 @@ Render the Lightstreamer configuration file
              The optional "jmxtree_visible" attribute (whose default is "Y")
              allows for restriction of the access to the JMX Tree on a user basis;
              it is only effective if <jmxtree_enabled> is set to "Y". -->
-    {{- if and .credentials (not .enablePublicAccess) }}             
+    {{- if and .credentials (not .enablePublicAccess) }}
       {{- range $credential := .credentials }}
         {{- if $credential.secretRef}}
         <user id="$env.LS_DASHBOARD_CREDENTIAL_{{ $credential.secretRef | upper | replace "-" "_" }}_USER" password="$env.LS_DASHBOARD_CREDENTIAL_{{ .secretRef | upper | replace "-" "_"}}_PASSWORD"{{- if not (quote .enableJmxTreeVisibility | empty) }} jmxtree_visible={{ $credential.enableJmxTreeVisibility | ternary "Y" "N" | quote }}{{- end }} />
         {{- end }}
-      {{- end}}
+      {{- end }}
     {{- else}}
         <!--
         <user id="put_your_dashboard_user_here" password="put_your_dashboard_password_here" />
@@ -2267,7 +2267,7 @@ Render the Lightstreamer configuration file
       {{- fail "pushSession.defaultKeepaliveMillis must be set" }}
     {{- else }}
       {{- with .defaultKeepaliveMillis }}
-    <default_keepalive_millis{{ if not (quote .randomize | empty) }} randomize={{ .randomize | ternary "Y" "N" | quote }}{{- end}}>{{ int (required "pushSession.defaultKeepaliveMillis.value must be set" .value) }}</default_keepalive_millis>
+    <default_keepalive_millis{{ if not (quote .randomize | empty) }} randomize={{ .randomize | ternary "Y" "N" | quote }}{{- end }}>{{ int (required "pushSession.defaultKeepaliveMillis.value must be set" .value) }}</default_keepalive_millis>
       {{- end }}
     {{- end }}
 
@@ -2307,7 +2307,7 @@ Render the Lightstreamer configuration file
       {{- fail "pushSession.maxIdleMillis must be set" }}
     {{- else }}
       {{- with .maxIdleMillis }}
-    <max_idle_millis{{ if not (quote .randomize | empty) }} randomize={{ .randomize | ternary "Y" "N" | quote }}{{- end}}>{{ int (required "pushSession.maxIdle.value must be set" .value) }}</max_idle_millis>
+    <max_idle_millis{{ if not (quote .randomize | empty) }} randomize={{ .randomize | ternary "Y" "N" | quote }}{{- end }}>{{ int (required "pushSession.maxIdle.value must be set" .value) }}</max_idle_millis>
       {{- end }}
     {{- end }}
 
@@ -2377,7 +2377,7 @@ Render the Lightstreamer configuration file
              Default: /apple_web_service. -->
   {{- if .appleWebServicePath }}
         <apple_web_service_path>{{ .appleWebServicePath }}</apple_web_service_path>
-  {{- else }} 
+  {{- else }}
         <!--
         <apple_web_service_path>/applewebservice</apple_web_service_path>
         -->
@@ -2388,9 +2388,9 @@ Render the Lightstreamer configuration file
              and subscriptions. This data adapter is automatically added
              to all configured Adapter Sets in an MPN-enabled Server.
              Default: MPN_INTERNAL_DATA_ADAPTER. -->
-  {{- if .internalDataAdapter }} 
+  {{- if .internalDataAdapter }}
         <internal_data_adapter>MPN_ADAPTER</internal_data_adapter>
-  {{- else}}        
+  {{- else}}
         <!--
         <internal_data_adapter>MPN_ADAPTER</internal_data_adapter>
         -->
@@ -2430,7 +2430,7 @@ Render the Lightstreamer configuration file
         <!--
         <module_check_period_millis>5000</module_check_period_millis>
         -->
-  {{- end }} 
+  {{- end }}
 
         <!-- Optional. Timeout for a health check of other modules. If a module
              fails to do its health check for this period of time, other module
@@ -2441,13 +2441,13 @@ Render the Lightstreamer configuration file
              values of <module_check_period_millis> configured for the various
              instances in the cluster.
              Default: 30000. -->
-  {{- if not (quote .moduleTimeoutMillis | empty) }}             
-        <module_timeout_millis>{{ int .moduleTimeoutMillis }}</module_timeout_millis>  
+  {{- if not (quote .moduleTimeoutMillis | empty) }}
+        <module_timeout_millis>{{ int .moduleTimeoutMillis }}</module_timeout_millis>
   {{- else }}
         <!--
         <module_timeout_millis>30000</module_timeout_millis>
         -->
-  {{- end }}   
+  {{- end }}
 
 
         <!-- Optional. Enabling of the startup of the module upon Server startup.
@@ -2494,7 +2494,7 @@ Render the Lightstreamer configuration file
                   and the Server will keep running with an inactive module.
              See <activate_on_startup> for notes on inactive modules.
              Default: Y. -->
-  {{- if not (quote .enableModuleRecovery | empty) }}             
+  {{- if not (quote .enableModuleRecovery | empty) }}
         <module_recovery_enabled>{{ .enableModuleRecovery | ternary "Y" "N" }}</module_recovery_enabled>
   {{- else }}
         <!--
@@ -2550,9 +2550,9 @@ Render the Lightstreamer configuration file
     {{- if not (quote .maxFree | empty) }}
             <max_free>{{ int .maxFree }}</max_free>
     {{- else }}
-            <!-- <max_free>0</max_free> --> 
-    {{- end }} 
-        </executor_pool>  
+            <!-- <max_free>0</max_free> -->
+    {{- end }}
+        </executor_pool>
   {{- else }}
         <!--
         <executor_pool>
@@ -2560,7 +2560,7 @@ Render the Lightstreamer configuration file
             <max_free>0</max_free>
         </executor_pool>
         -->
-  {{- end}}
+  {{- end }}
 
         <!-- Optional. Requests the creation of a specific thread pool,
              "MPN DEVICE HANDLER", specifically dedicated to the handling
@@ -2587,9 +2587,9 @@ Render the Lightstreamer configuration file
     {{- if not (quote .maxFree | empty) }}
             <max_free>{{ int .maxFree }}</max_free>
     {{- else }}
-            <!-- <max_free>0</max_free> --> 
-    {{- end }} 
-        </device_handler_pool>  
+            <!-- <max_free>0</max_free> -->
+    {{- end }}
+        </device_handler_pool>
   {{- else }}
         <!--
         <device_handler_pool>
@@ -2597,7 +2597,7 @@ Render the Lightstreamer configuration file
             <max_free>0</max_free>
         </device_handler_pool>
         -->
-  {{- end}}             
+  {{- end }}
 
         <!-- Optional. Size of the notifiers' "MPN XXX NOTIFIER" internal
              thread pool, which is devoted to composing the notifications
@@ -2607,7 +2607,7 @@ Render the Lightstreamer configuration file
              for this task may be beneficial.
              Default: The number of available total cores, as detected by the
              JVM. -->
-  {{- if not (quote .notifierPoolSize | empty) }}             
+  {{- if not (quote .notifierPoolSize | empty) }}
         <notifier_pool_size>{{ int .notifierPoolSize }}</notifier_pool_size>
   {{- else }}
         <!--
@@ -2629,7 +2629,7 @@ Render the Lightstreamer configuration file
         <!--
         <mpn_pump_pool_size>10</mpn_pump_pool_size>
         -->
-  {{- end }}        
+  {{- end }}
 
         <!-- Optional. Number of threads used to parallelize the implementation
              of the internal MPN timers.
@@ -2644,7 +2644,7 @@ Render the Lightstreamer configuration file
         <!--
         <mpn_timer_pool_size>2</mpn_timer_pool_size>
         -->
-  {{- end}}
+  {{- end }}
 
         <!-- Mandatory if <enabled> is Y. Specifies what to do in case of
              database failure.
@@ -2671,7 +2671,7 @@ Render the Lightstreamer configuration file
   {{- if not (has .reactionOnDatabaseFailure (list "abort_operation" "continue_operation")) }}
     {{- fail "mpn.reactionOnDatabaseFailure must be one of: \"abort_operation\", \"continue_operation\"" }}
   {{- else }}
-        <reaction_on_database_failure>{{ .reactionOnDatabaseFailure }}</reaction_on_database_failure>     
+        <reaction_on_database_failure>{{ .reactionOnDatabaseFailure }}</reaction_on_database_failure>
   {{- end }}
 
         <!-- Optional. Path of the configuration file for Apple platforms notifier.
