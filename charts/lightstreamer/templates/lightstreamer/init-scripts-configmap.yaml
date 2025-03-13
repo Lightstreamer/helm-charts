@@ -30,17 +30,17 @@ data:
     {{- with ((.Values.connectors).kafkaConnector).provisioning }}
     KAFKA_CONNECTOR_DEPLOYMENT={{ include "lightstreamer.kafka-connector.deployment" . }}
       {{- if .fromPathInImage }}
-    # The connector is already available in the image, so just create a soft 
-    # link. 
+    # The connector is already available in the image, so just create a soft
+    # link.
     ln -s {{ .fromPathInImage }} ${KAFKA_CONNECTOR_DEPLOYMENT}
       {{- else }}
     # The connector has already been deployed to the expected path in the by
     # the "kafka-connector-deployer" init container. Do nothing.
       {{- end }}
     {{- end }}
-    # In all cases, override the configuration files with the ones rendered by 
+    # In all cases, override the configuration files with the ones rendered by
     # Helm and provided in the ConfigMap.
-    # The rendered schema files, if present, are already mounted from the 
+    # The rendered schema files, if present, are already mounted from the
     # related ConfigMaps at the "schema" folder under the Kafka Connector.
     cp /connectors-source-conf/kafka/adapters.xml ${KAFKA_CONNECTOR_DEPLOYMENT}/adapters.xml
     cp /connectors-source-conf/kafka/log4j.properties ${KAFKA_CONNECTOR_DEPLOYMENT}/log4j.properties
@@ -53,7 +53,7 @@ data:
     mkdir -p {{ include "lightstreamer.adapters.fullAdaptersDir" . }}
     {{- if ((.Values.connectors).kafkaConnector).enabled }}
     /lightstreamer/bin/init-scripts/copy-kafka-connector.sh
-    {{- end}}
+    {{- end }}
 
     {{- range $adapterName, $adapter := .Values.adapters }}
       {{- if $adapter.enabled }}
@@ -77,7 +77,7 @@ data:
         {{- with $adapter.metadataProvider.inProcessMetadataAdapter }}
           {{- if .installDir }}
             {{- $paths = append $paths .installDir }}
-          {{- end}}
+          {{- end }}
         {{- end }}
 
         {{- /* Add the installDir of the Data Adapters, if any */ -}}
@@ -86,7 +86,7 @@ data:
             {{- with $dataProvider.inProcessDataAdapter }}
               {{- if .installDir }}
                 {{- $paths = append $paths .installDir }}
-              {{- end}}
+              {{- end }}
             {{- end }}
           {{- end }}
         {{- end }}
@@ -99,7 +99,7 @@ data:
           {{- $rootSourcePathSuffix = printf "/%s" $adapter.provisioning.fromVolume.path }}
         {{- end }}
     root_source_path="/tmp/adapters-repo/{{ $adapterFolderName }}{{ $rootSourcePathSuffix }}"
-    
+
     for path in $path_to_copy; do
       destination_path="{{ include "lightstreamer.adapters.fullAdaptersDir" . }}/{{ $adapterFolderName }}/$path"
       [[ "$s" !=  "." ]] && mkdir -p $destination_path
@@ -115,7 +115,7 @@ data:
     {{/* The following commands are executed before the Lightstreamer Server is started */}}
     {{- range .Values.deployment.preCommands }}
     {{ . }}
-    {{- end}}
+    {{- end }}
 
     if [ -n "${LS_HIBERNATE_SYSTEM_PROPERTIES}" ]; then
        JAVA_OPTS="${JAVA_OPTS} ${LS_HIBERNATE_SYSTEM_PROPERTIES}"
