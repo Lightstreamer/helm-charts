@@ -41,7 +41,7 @@ Render the Hibernate configuration file for the MPN module
       {{- if .dialect }}
     <property name="dialect">{{ .dialect }}</property>
       {{- end }}
-    {{- end}} {{/* with .connection */}}
+    {{- end }} {{/* with .connection */}}
 
     {{- range $propertyKey, $propertyValue := .optionalConfiguration }}
     <property name={{ $propertyKey | quote }}>{{ $propertyValue }}</property>
@@ -60,4 +60,4 @@ Render the Hibernate configuration file for the MPN module
   </session-factory>
 
 </hibernate-configuration>
-{{- end}}
+{{- end }}

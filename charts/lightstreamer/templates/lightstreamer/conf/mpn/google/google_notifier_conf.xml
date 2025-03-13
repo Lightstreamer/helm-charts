@@ -39,7 +39,7 @@ limitations under the License.
    <!--
    <min_send_delay_millis>1000</min_send_delay_millis>
    -->
-   {{- end}}
+   {{- end }}
 
    <!-- Optional. Size of the notifier's "MPN XXX MESSAGING" internal thread
         pool, which is devoted to sending the notifications payload. Each
@@ -130,7 +130,7 @@ limitations under the License.
          <accept>Double\.parseDouble\(\$\[\d+\]\) [&lt;&gt;] [+-]?(\d*\.)?\d+</accept>
       </trigger_expressions>
       -->
-      {{- end }} 
+      {{- end }}
    </app>
 
     {{- end }} {{/* if ($app).enabled */}}

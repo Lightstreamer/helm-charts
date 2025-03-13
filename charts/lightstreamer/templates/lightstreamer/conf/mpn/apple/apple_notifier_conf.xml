@@ -40,7 +40,7 @@ limitations under the License.
    <!--
    <min_send_delay_millis>1000</min_send_delay_millis>
    -->
-  {{- end}}
+  {{- end }}
 
    <!-- Optional. Maximum number of concurrent connections to APNS
         services. The connection pool starts with 1 connection and grows
@@ -129,7 +129,7 @@ limitations under the License.
       {{- if hasPrefix "web." $app.id }}
         {{- if $app.pushPackageFileRef }}
           {{- $name := required (printf "mpn.appleNotifierConfig.apps.%s.pushPackageFileRef.name must be set" $appName) $app.pushPackageFileRef.name }}
-          {{- $key := required (printf "mpn.appleNotifierConfig.apps.%s.pushPackageFileRef.key must be set" $appName) $app.pushPackageFileRef.key }}   
+          {{- $key := required (printf "mpn.appleNotifierConfig.apps.%s.pushPackageFileRef.key must be set" $appName) $app.pushPackageFileRef.key }}
       <push_package_file>{{ $appName }}/{{ $key }}</push_package_file>
         {{- else }}
           {{- fail (printf "mpn.appleNotifierConfig.apps.%s.pushPackageFileRef must be set for a web app" $appName) }}
@@ -174,7 +174,7 @@ limitations under the License.
          <accept>Double\.parseDouble\(\$\[\d+\]\) [&lt;&gt;] [+-]?(\d*\.)?\d+</accept>
       </trigger_expressions>
       -->
-      {{- end }} 
+      {{- end }}
    </app>
 
     {{- end }} {{/* if ($app).enabled */}}
