@@ -26,5 +26,5 @@ data:
   lightstreamer_log_conf.xml: |-
     {{- include "lightstreamer.configuration.log" . | nindent 4 }}
   lightstreamer_edition_conf.xml: |-
-    {{- include "lightstreamer.configuration.edition" . | nindent 4 }}  
-{{ (.Files.Glob "files/conf/*.properties").AsConfig | nindent 2 }}    
+    {{- include "lightstreamer.configuration.edition" . | nindent 4 }}
+{{ (.Files.Glob "files/conf/*.properties").AsConfig | nindent 2 }}
