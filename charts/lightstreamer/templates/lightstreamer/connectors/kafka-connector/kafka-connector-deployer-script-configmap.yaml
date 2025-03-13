@@ -32,7 +32,7 @@ data:
     # expected path.
     ZIP_ARCHIVE={{ .fromVolume.filePath }}
     {{- else }}
-    ZIP_ARCHIVE=kafka-connector.zip    
+    ZIP_ARCHIVE=kafka-connector.zip
       {{- if .fromGitHubRelease }}
     # Download the zip archive from the GitHub release to the temporary
     # directory mounted from the ephemeral volume
