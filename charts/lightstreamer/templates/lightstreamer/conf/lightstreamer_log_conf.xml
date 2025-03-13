@@ -368,14 +368,14 @@ Render the Lightstreamer logging configuration file
   <logger name="LightstreamerLogger.mpn.database.transactions"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "lightstreamerLogger.mpn.database.transactions") }}/>
 
   <!-- logging of mobile push notifications activity related to Apple platforms;
-       for activity related to notification submission, 
+       for activity related to notification submission,
        specific subloggers are present for each application, e.g.:
        LightstreamerLogger.mpn.apple.com.mydomain.myapp -->
   <!-- at INFO level, all push notification payloads are dumped -->
   <logger name="LightstreamerLogger.mpn.apple"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "lightstreamerLogger.mpn.apple") }}/>
 
   <!-- logging of mobile push notifications activity related to Google platforms;
-       for activity related to notification submission, 
+       for activity related to notification submission,
        specific subloggers are present for each application, e.g.:
        LightstreamerLogger.mpn.google.com.mydomain.myapp -->
   <!-- at INFO level, all push notification payloads are dumped -->
@@ -436,7 +436,7 @@ Render the Lightstreamer logging configuration file
     If any Adapter should log through the java.util.logging support
     on the same categories, (either directly, or by using the same JDK services,
     or through some third-party library), this log will be shared with the Server log.
-    
+
     If, for any reason, it is required that the configuration of the java.util.logging
     system for some of these categories is done elsewhere, then the mappings done here
     can be disabled at startup, by just removing or commenting out the corresponding
@@ -461,7 +461,7 @@ Render the Lightstreamer logging configuration file
       {{- include "lightstreamer.configuration.log.appender_ref" (list $.Values.logging.appenders .) | indent 4 }}
   </logger>
     {{- end }}
-    
+
     {{- with  (get . "org.jboss.logging") }}
   <logger name="org.jboss.logging" level={{ include "lightstreamer.configuration.log.level" . | quote }}>
       {{- include "lightstreamer.configuration.log.appender_ref" (list $.Values.logging.appenders .) | indent 4 }}
@@ -478,7 +478,7 @@ Render the Lightstreamer logging configuration file
     These loggers are related to other third-party libraries used internally
     by the Server.
   -->
-    {{- with  (get . "org.apache.http") }}  
+    {{- with  (get . "org.apache.http") }}
   <logger name="org.apache.http" level={{ include "lightstreamer.configuration.log.level" . | quote }}>
       {{- include "lightstreamer.configuration.log.appender_ref" (list $.Values.logging.appenders .) | indent 4 }}
   </logger>
