@@ -55,7 +55,7 @@ spec:
       targetPort: {{ $port }}
       protocol: TCP
       name: {{ $key }}
-  {{- end}}
+  {{- end }}
   selector:
     {{- include "lightstreamer.selectorLabels" $ | nindent 4 }}
 {{- end }}

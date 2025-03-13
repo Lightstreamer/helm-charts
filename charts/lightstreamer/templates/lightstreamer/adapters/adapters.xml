@@ -38,12 +38,12 @@ Render the Lightstreamer configuration file of an Adapter Set
       {{- with .inProcessMetadataAdapter }}
         {{- if .installDir }}
     <install_dir>{{ .installDir }}</install_dir>
-        {{- end}}
+        {{- end }}
     <adapter_class>{{ .adapterClass }}</adapter_class>
 
         {{- if not (quote .classLoader | empty) }}
     <classloader>{{ .classLoader }}</classloader>
-        {{- end}}
+        {{- end }}
 
         {{- include "lightstreamer.adapters.in-process.metadata-provider.authenticationPool" . | indent 4 -}}
         {{- include "lightstreamer.adapters.in-process.metadata-provider.messagesPool" . | indent 4 -}}
@@ -92,7 +92,7 @@ Render the Lightstreamer configuration file of an Adapter Set
               {{- if not (has . (list "DISTINCT" "COMMAND" "MERGE" "RAW")) }}
                 {{ printf "adapters.%s.metadataProvider.inProcessMetadataAdapter.itemFamilies.%s.modes must be a comma-separated list of DISTINCT, COMMAND, MERGE, RAW" $adapterName $familyName | fail }}
               {{- end }}
-            {{- end}}
+            {{- end }}
         {{- end }}
     <param name="modes_for_item_family_{{ $counter }}">{{ $family.modes }}</param>
           {{- end }}
@@ -152,7 +152,7 @@ Render the Lightstreamer configuration file of an Adapter Set
         {{- with $dataProvider.inProcessDataAdapter }}
           {{- if .installDir }}
     <install_dir>{{ .installDir }}</install_dir>
-          {{- end}}
+          {{- end }}
     <adapter_class>{{ .adapterClass }}</adapter_class>
           {{- if not (quote .classLoader | empty )}}
     <classloader>{{ .classLoader }}</classloader>
