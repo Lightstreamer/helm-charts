@@ -26,7 +26,6 @@ metadata:
 data:
   adapters.xml: |-
   {{- include "lightstreamer.adapters" (list $ $adapterName $adapterSet) | nindent 4 }}
---- 
+---
 {{- end }}
 {{- end }}
-

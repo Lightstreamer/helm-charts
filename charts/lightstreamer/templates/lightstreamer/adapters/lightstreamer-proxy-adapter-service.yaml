@@ -38,7 +38,7 @@ limitations under the License.
         {{- end }}
       {{- end }}
     {{- end }}
-  {{- end }}    
+  {{- end }}
 {{- end }}
 
 {{/* Create the service for the proxy adapters*/}}
