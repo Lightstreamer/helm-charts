@@ -420,7 +420,7 @@ Create the deployment folder the Lightstreamer Kafka Connector.
 {{- define "lightstreamer.kafka-connector.deployment" -}}
 {{- printf "/lightstreamer/deployed_adapters/kafka-connector" }}
 {{- end }}
-  
+
 {{/*
 Render the truststore settings for the Lightstreamer Kafka Connector configuration file.
 */}}
@@ -533,7 +533,7 @@ Validate all the adapter set configurations, ensuring that:
       {{- $classLoaderErrMsg := include "lightstreamer.adapters.in-process.common.validateClassLoader" $inProcess }}
       {{- if $classLoaderErrMsg }}
         {{- printf "adapters.%s.metadataAdapter.inProcessMetadataAdapter.classLoader %s" $adapterName $classLoaderErrMsg | fail }}
-      {{- end}}      
+      {{- end }}
 
       {{- /* Check the install dir */}}
       {{- if and ($inProcess.classLoader | eq "dedicated") (not $inProcess.installDir) }}
@@ -574,7 +574,7 @@ Validate all the adapter set configurations, ensuring that:
           {{- $classLoaderErrMsg := include "lightstreamer.adapters.in-process.common.validateClassLoader" $inProcess }}
           {{- if $classLoaderErrMsg }}
             {{- printf "adapters.%s.dataProviders.%s.inProcessDataAdapter.classLoader %s" $adapterName $dataProviderKey $classLoaderErrMsg | fail }}
-          {{- end}}            
+          {{- end }}
 
           {{- /* Check the install dir */}}
           {{- if and ($inProcess.classLoader | eq "dedicated") (not $inProcess.installDir) }}
@@ -610,7 +610,7 @@ Validate the Adapter ClassLoader.
 {{- if not (has .classLoader $possibleValues) }}
   {{- printf "must be one of %s" $possibleValues }}
 {{- end }}
-{{- end}}  
+{{- end }}
 {{- end }}
 
 {{/*
@@ -641,7 +641,7 @@ Validate the Adapter provisioning setting.
     {{- with $adapterSet.provisioning.fromVolume }}
       {{- if not .name }}
         {{- printf "adapters.%s.provisioning.fromVolume.name must be set" $adapterSetName | fail }}
-      {{- end }} 
+      {{- end }}
 
       {{- /* Check that fromVolume.name references an extra volume defined in deployment.extraVolumes */ -}}
       {{- $extraVolumeNames := list }}
@@ -672,7 +672,7 @@ Create the full Adapters path name
 {{- define "lightstreamer.adapters.fullAdaptersDir" -}}
 {{- printf "/lightstreamer/%s" (include "lightstreamer.adapters.adaptersDir" .) }}
 {{- end }}
-  
+
 
 {{/*
 Create the name of the configmap containing the adapters.xml file of a specific adapter.
@@ -737,20 +737,6 @@ Render the <mpn_pool> block for the in-process Metadata Adapter.
 */}}
 {{- define "lightstreamer.adapters.in-process.metadata-provider.mpnPool" -}}
 {{- include "lightstreamer.adapters.metadata-provider.mpnPool" . -}}
-{{- end }}
-
-{{/*
-Render the <data_authentication_pool> block for the Proxy Data Adapter.
-*/}}
-{{- define "lightstreamer.adapters.proxy.data-provider.dataAdapterPool" -}}
-{{- include "lightstreamer.adapters.data-provider.dataAdapterPool" . -}}
-{{- end }}
-
-{{/*
-Render the <data_authentication_pool> block for the in-process Data Adapter.
-*/}}
-{{- define "lightstreamer.adapters.in-process.data-provider.dataAdapterPool" -}}
-{{- include "lightstreamer.adapters.data-provider.dataAdapterPool" . -}}
 {{- end }}
 
 {{/*
@@ -837,16 +823,14 @@ Render the <messages_pool> block for the Metadata Adapter.
 Render the <mpn_pool> block for the Metadata Adapter.
 */}}
 {{- define "lightstreamer.adapters.metadata-provider.mpnPool" -}}
-{{- with .mpnPool }}
+{{- $adapterName := index . 0 }}
+{{- $parent := index . 1 }}
+{{- with $parent.mpnPool }}
 
 <!-- MPN POOL -->
 <mpn_pool>
-  {{- if not (quote .maxSize | empty) }}
-  <max_size>{{ int .maxSize }}</max_size>
-  {{- end }}
-  {{- if not (quote .maxFree | empty) }}
-  <max_free>{{ int .maxFree }}</max_free>
-  {{- end }}
+  <max_size>{{ int (required (printf "adapters.%s.metadataProviders.{}.mpnPool.maxSize must be set" $adapterName) .maxSize) }}</max_size>
+  <max_free>{{ int (required (printf "adapters.%s.metadataProviders.{}.mpnPool.maxFree must be set" $adapterName) .maxFree) }}</max_free>
 </mpn_pool>
 <!-- END MPN POOL -->
 {{- end }}
@@ -856,15 +840,17 @@ Render the <mpn_pool> block for the Metadata Adapter.
 Render the <data_adapter_pool> block for the Data Adapter.
 */}}
 {{- define "lightstreamer.adapters.data-provider.dataAdapterPool" -}}
-{{- with .dataAdapterPool }}
+{{- $adapterName := index . 0 }}
+{{- $dataProviderName := index . 1 }}
+{{- $parent := index . 2 }}
+{{- with $parent.dataAdapterPool }}
+
+<!-- DATA ADAPTER POOL -->
 <data_adapter_pool>
-  {{- if not (quote .maxSize | empty) }}
-  <max_size>{{ int .maxSize }}</max_size>
-  {{- end }}
-  {{- if not (quote .maxFree | empty) }}
-  <max_free>{{ int .maxFree }}</max_free>
-  {{- end }}
+  <max_size>{{ int (required (printf "adapters.%s.dataProviders.%s.{}.dataAdapterPool.maxSize must be set" $adapterName $dataProviderName) .maxSize) }}</max_size>
+  <max_free>{{ int (required (printf "adapters.%s.dataProviders.%s.{}.dataAdapterPool.maxFree must be set" $adapterName $dataProviderName) .maxFree) }}</max_free>
 </data_adapter_pool>
+<!-- END DATA ADAPTER POOL -->
 {{- end }}
 {{- end }}
 
@@ -1025,7 +1011,7 @@ Render the connection-related timeout settings for the proxy adapters.
     {{- if not (quote .connectionRetryMillis | empty) }}
 <param name="connection_retry_millis">{{ int .connectionRetryMillis }}</param>
     {{- end }}
-  {{- end}}
+  {{- end }}
 
   {{- if .enableRobustAdapter }}
     {{- /* connection_recovery_timeout_millis */ -}}
@@ -1093,17 +1079,17 @@ Render the remote parameters for the proxy adapters.
 <!-- REMOTE PARAMS SETTINGS -->
   {{- $prefix := .prefix -}}
   {{- if not (quote $prefix | empty) }}
-  {{- /* remote_params_prefix */}}
+    {{- /* remote_params_prefix */}}
     {{- if not (contains ":" $prefix) }}
       {{ printf "adapters.%s.{...}.remoteParamsConfig.prefix must contain a colon" $adapterName | fail }}
     {{- end }}
 <param name="remote_params_prefix">{{ $prefix }}</param>
 
-  {{- /* remote:xxx */}}
+    {{- /* remote:xxx */}}
     {{- range $paramName, $paramValue := .params}}
       {{- if not (hasPrefix $prefix $paramName) }}
        {{ printf "adapters.%s.{...}.remoteParamsConfig.params.%s key must start with the prefix \"%s\"" $adapterName $paramName $prefix | fail }}
-      {{- end}}
+      {{- end }}
 <param name={{ printf "%s%s" $prefix $paramName | quote }}>{{ $paramValue }}</param>
     {{- end }}
   {{- end }}
@@ -1150,4 +1136,4 @@ Render the common parameters for the proxy adapters.
 {{- if not (quote $proxy.keepaliveHintMillis | empty) }}
 <param name="keep_alive_hint">{{ int $proxy.keepaliveHintMillis }}</param>
 {{- end }}
-{{- end -}}
+{{- end }}
