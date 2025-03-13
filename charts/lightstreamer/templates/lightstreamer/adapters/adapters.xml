@@ -18,8 +18,8 @@ Render the Lightstreamer configuration file of an Adapter Set
 
   <!-- ADAPTER SET POOL -->
   <adapter_set_pool>
-    <max_size>{{ required (printf "adapters.%s.adapterSetPool.maxSize must be set" $adapterName) .maxSize }}</max_size>
-    <max_free>{{ required (printf "adapters.%s.adapterSetPool.maxFree must be set" $adapterName) .maxFree }}</max_free>
+    <max_size>{{ int (required (printf "adapters.%s.adapterSetPool.maxSize must be set" $adapterName) .maxSize) }}</max_size>
+    <max_free>{{ int (required (printf "adapters.%s.adapterSetPool.maxFree must be set" $adapterName) .maxFree) }}</max_free>
   </adapter_set_pool>
   <!-- END ADAPTER SET POOL -->
   {{- end }}
@@ -47,7 +47,7 @@ Render the Lightstreamer configuration file of an Adapter Set
 
         {{- include "lightstreamer.adapters.in-process.metadata-provider.authenticationPool" . | indent 4 -}}
         {{- include "lightstreamer.adapters.in-process.metadata-provider.messagesPool" . | indent 4 -}}
-        {{- include "lightstreamer.adapters.in-process.metadata-provider.mpnPool" . | indent 4 -}}
+        {{- include "lightstreamer.adapters.in-process.metadata-provider.mpnPool" (list $adapterName .) | indent 4 -}}
         {{- include "lightstreamer.adapters.in-process.common.initParams" . | indent 4 -}}
 
         {{- if not (quote .enableTableNotificationsSequentialization | empty) }}
@@ -99,7 +99,7 @@ Render the Lightstreamer configuration file of an Adapter Set
         {{- end }}
         {{- /* END ITEM FAMILIES */ -}}
       {{- /* END IN-PROCESS METADATA ADAPTER */ -}}
-      {{- end }} 
+      {{- end }}
     {{- else if hasKey . "proxyMetadataAdapter" }}
       {{- /* PROXY METADATA ADAPTER */ -}}
       {{- with .proxyMetadataAdapter}}
@@ -109,7 +109,7 @@ Render the Lightstreamer configuration file of an Adapter Set
 
         {{- include "lightstreamer.adapters.proxy.metadata-provider.authenticationPool" . | indent 4 -}}
         {{- include "lightstreamer.adapters.proxy.metadata-provider.messagesPool" . | indent 4 -}}
-        {{- include "lightstreamer.adapters.proxy.metadata-provider.mpnPool" . | indent 4 -}}
+        {{- include "lightstreamer.adapters.proxy.metadata-provider.mpnPool" (list $adapterName .) | indent 4 -}}
 
         {{- if not (quote .enableTableNotificationsSequentialization | empty) }}
     <metadata_adapter_initialised_first>{{ .enableTableNotificationsSequentialization | ternary "Y" "N" }}</metadata_adapter_initialised_first>
@@ -145,7 +145,7 @@ Render the Lightstreamer configuration file of an Adapter Set
   {{- /* START DATA PROVIDERS */ -}}
   {{- range $dataProviderName, $dataProvider := .dataProviders }}
     {{- if $dataProvider.enabled  }}
-    
+
   <data_provider name={{ $dataProvider.name | quote }}>
       {{- /* IN-PROCESS DATA ADAPTER */ -}}
       {{- if $dataProvider.inProcessDataAdapter }}
@@ -157,7 +157,10 @@ Render the Lightstreamer configuration file of an Adapter Set
           {{- if not (quote .classLoader | empty )}}
     <classloader>{{ .classLoader }}</classloader>
           {{- end }}
+
+    {{- include "lightstreamer.adapters.data-provider.dataAdapterPool" (list $adapterName $dataProviderName .) | nindent 4 -}}
     {{- include "lightstreamer.adapters.in-process.common.initParams" . | indent 4 -}}
+
         {{- end }}
       {{- /* END IN-PROCESS DATA ADAPTER */ -}}
       {{- /* PROXY DATA ADAPTER */ -}}
@@ -167,7 +170,7 @@ Render the Lightstreamer configuration file of an Adapter Set
     <adapter_class>{{ include "lightstreamer.adapters.proxy.common.class" . }}</adapter_class>
     <classloader>log-enabled</classloader>
 
-          {{- include "lightstreamer.adapters.proxy.data-provider.dataAdapterPool" . | nindent 4 -}}
+          {{- include "lightstreamer.adapters.data-provider.dataAdapterPool" (list $adapterName $dataProviderName .) | nindent 4 -}}
           {{- include "lightstreamer.adapters.proxy.common" (list $adapterName .) | nindent 4 -}}
           {{- include "lightstreamer.adapters.proxy.common.sslConfig" (list $adapterName $.Values.keystores .) | indent 4 -}}
           {{- include "lightstreamer.adapters.proxy.common.authentication" (list $adapterName .) | indent 4 -}}
@@ -199,4 +202,4 @@ Render the Lightstreamer configuration file of an Adapter Set
 </adapters_conf>
 {{- end -}}
 {{- /* END ADAPTER SET */ -}}
-{{- end -}} 
+{{- end -}}
