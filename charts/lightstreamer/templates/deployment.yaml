@@ -126,7 +126,7 @@ spec:
             - name: {{ $key }}
               containerPort: {{ .requestReplyPort }}
               protocol: TCP
-                    {{- end}}
+                    {{- end }}
                   {{- end }}
                 {{- end }}
               {{- end }}
@@ -184,7 +184,7 @@ spec:
                 secretKeyRef:
                   name: {{ . }}
                   key: password
-          {{- end}}
+          {{- end }}
           {{- /* END VARIABLES FOR LIGHTSTREAMER LICENSE */ -}}
           {{- /* START ENV VARIABLES FOR LIGHTSTREAMER MANAGEMENT */ -}}
           {{- with (.Values.management.jmx).rmiConnector }}
@@ -278,7 +278,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ . }}
-                  key: password      
+                  key: password
           {{- end }}
           {{- /* END ENV VARIABLES FOR THE ADAPTERS CONFIGURATION */ -}}
           {{- /* START ENV VARIABLES FOR THE KAFKA CONNECTOR */ -}}
@@ -320,7 +320,7 @@ spec:
                   key: password
                 {{- end }}
               {{- end }} {{- /* end of $schemaRegistry.basicAuthentication.enabled */ -}}
-            {{- end}} {{- /* end of range $schemaRegistry */ -}}
+            {{- end }} {{- /* end of range $schemaRegistry */ -}}
             {{- /* END SCHEMA REGISTRY */ -}}
           {{- end }}
           {{- /* END ENV VARIABLES FOR THE KAFKA CONNECTOR */ -}}
@@ -438,7 +438,7 @@ spec:
             - name: {{ .name }}
               mountPath: /tmp/adapters-repo/{{ $adapterName | kebabcase}}
               {{- end }}
-            {{- end}}
+            {{- end }}
           {{- end }}
           {{- /* END VOLUME MOUNTS FOR ADAPTERS */ -}}
           {{- with .Values.deployment.extraVolumeMounts }}
@@ -446,7 +446,7 @@ spec:
           {{- end }}
         {{- with .Values.deployment.extraContainers }}
           {{- toYaml . | nindent 8 }}
-        {{- end}}
+        {{- end }}
       {{- with .Values.deployment.hostname }}
       hostname: {{ . }}
       {{- end }}
@@ -478,9 +478,9 @@ spec:
               mountPath: /tmp/connectors-source-archives/kafka
             - name: kafka-connector-deployment
               mountPath: /kafka-connector-deployment
-            {{- end}}
+            {{- end }}
           {{- end }}
-        {{- end }}      
+        {{- end }}
         {{- with .Values.deployment.extraInitContainers }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -593,7 +593,7 @@ spec:
           {{- if or .fromUrl .fromGitHubRelease }}
         - name: kafka-connector-source-storage
           emptyDir: {}
-          {{- end}}
+          {{- end }}
         {{- end  }}
       {{- end }}
       {{- /* END VOLUME FOR KAFKA CONNECTOR */ -}}
