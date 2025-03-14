@@ -3721,10 +3721,15 @@ adapters:
     provisioning:
 
       # -- (string) The path to the Adapter Set resources in the image,
-      # e.g.: `/lightstreamer/adapters/my-adapter-set`.
+      # e.g.: `/lightstreamer/adapters/my-adapter-set`. At startup, the path
+      # will me mounted at the designated Adapter Set folder under 
+      # the `/lightstreamer/deployed_adapters` directory in the container.
       fromPathInImage:
 
       # -- The reference to a volume where the Adapter Set resources are stored.
+      # At startup, the resources will be copied to the designated Adapter Set
+      # folder under the `/lightstreamer/deployed_adapters` directory in the
+      # container.
       fromVolume:
 
         # -- (string) Mandatory. The name of the volume.
@@ -3785,14 +3790,25 @@ adapters:
       # provided, this setting takes precedence.
       inProcessMetadataAdapter:
 
-        # -- Mandatory. Java class name of the adapter.
+        # -- Mandatory. Java class name of the Metadata Adapter.
         adapterClass:
 
         # -- Optional, but mandatory if `classLoader` is set to `dedicated`.
-        # Specify a directory other than `.` or this Adapter's own class and
-        # configuration files.
-        # @default -- .
+        # Specifies the directory where the Metadata Adapter's own `lib` and 
+        # `classes` folders are located in the provisioning source.
+        # The full path will be then available at
+        # `/lightstreamer/deployed_adapters/<adapter-set-folder>/<installDir>` 
+        # in the container.
+        # See `classLoader` for more details.
+        # @default -- . 
         installDir:
+
+        # -- Optional. The reference to a configmap containing extra 
+        # configuration files of the in-process Metadata Adapter. At startup,
+        # the files will be copied to the 
+        # `/lightstreamer/deployed_adapters/<adapter-set-folder>/installDir`
+        # directory in the container.
+        configMapRef:
 
         # -- (string) Optional. Determines the ClassLoader to be used to load
         # the Adapter related classes. Possible values are:
@@ -4579,13 +4595,25 @@ adapters:
         # this setting takes precedence.
         inProcessDataAdapter:
 
-          # -- Mandatory. Java class name of the adapter.
+          # -- Mandatory. Java class name of the Data Adapter.
           adapterClass:
 
-          # -- Optional. See
-          # `adapters.{}.metadataProvider.inProcessMetadataAdapter.installDir`.
-          # @default -- .
+          # -- Optional, but mandatory if `classLoader` is set to `dedicated`.
+          # Specifies the directory where the Data Adapter's own `lib` and 
+          # `classes` folders are located in the provisioning source.
+          # The full path will be then available at
+          # `/lightstreamer/deployed_adapters/<adapter-set-folder>/<installDir>` 
+          # in the container.
+          # See `classLoader` for more details.
+          # @default -- . 
           installDir:
+
+          # -- Optional. The reference to a configmap containing extra 
+          # configuration files of the in-process Data Adapter. At startup,
+          # the files will be copied to the
+          # `/lightstreamer/deployed_adapters/<adapter-set-folder>/installDir`
+          # directory in the container.
+          configMapRef:          
 
           # -- Optional. See
           # `adapters.{}.metadataProvider.inProcessMetadataAdapter.classLoader`.
