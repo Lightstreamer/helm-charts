@@ -144,7 +144,7 @@ Render the Lightstreamer configuration file of an Adapter Set
   {{- /* END METADATA PROVIDER */ -}}
   {{- /* START DATA PROVIDERS */ -}}
   {{- range $dataProviderName, $dataProvider := .dataProviders }}
-    {{- if $dataProvider.enabled  }}
+    {{- if $dataProvider.enabled }}
 
   <data_provider name={{ $dataProvider.name | quote }}>
       {{- /* IN-PROCESS DATA ADAPTER */ -}}
