@@ -46,46 +46,69 @@ data:
     cp /connectors-source-conf/kafka/log4j.properties ${KAFKA_CONNECTOR_DEPLOYMENT}/log4j.properties
   {{- end }}
 
-  launch.sh: |
-    #!/bin/bash
-    set -e
-    # The working dir is /lightstreamer/bin/unix-like as per the settings of the Docker image
-    mkdir -p {{ include "lightstreamer.adapters.fullAdaptersDir" . }}
-    {{- if ((.Values.connectors).kafkaConnector).enabled }}
-    /lightstreamer/bin/init-scripts/copy-kafka-connector.sh
-    {{- end }}
-
-    {{- range $adapterName, $adapter := .Values.adapters }}
-      {{- if $adapter.enabled }}
+  {{- /*
+  Setup the Adapters for the Lightstreamer Server.
+  */}}
+  setup-adapters.sh: |
+    set -ux;
+    {{- range $adapterName, $adapterSet := .Values.adapters }}
+      {{- if $adapterSet.enabled }}
       {{- $adapterFolderName := $adapterName | kebabcase }}
     mkdir -p {{ include "lightstreamer.adapters.fullAdaptersDir" . }}/{{ $adapterFolderName }}
 
     echo "Copy the adapters.xml file for the '{{ $adapterName }}' Adapter Set"
     cp /adapters-source-conf/{{ $adapterFolderName }}/adapters.xml {{ include "lightstreamer.adapters.fullAdaptersDir" . }}/{{ $adapterFolderName }}/adapters.xml
 
-        {{- if ($adapter.provisioning).fromPathInImage}}
-    mkdir -p /tmp/adapters-repo
-    ln -s {{ $adapter.provisioning.fromPathInImage }} /tmp/adapters-repo/{{ $adapterFolderName}}
+        {{- if ($adapterSet.provisioning).fromPathInImage}}
+          {{- /* 
+            Here we cannot use /tmp/adapters-repo because it is used as prefix for other volume 
+            mount paths that may be already in use. So let's use a different path.
+          */}}
+    root_source_path="/tmp/adapters-repo-from-image"
+    mkdir -p $root_source_path
+    ln -s {{ $adapterSet.provisioning.fromPathInImage }} $root_source_path/{{ $adapterFolderName }}
+    root_source_path="/tmp/adapters-repo-from-image/{{ $adapterFolderName }}"
+        {{- else }}
+          {{- $rootSourcePathSuffix := "" }}
+          {{- if (($adapterSet.provisioning).fromVolume).path }}
+            {{- $rootSourcePathSuffix = printf "/%s" $adapterSet.provisioning.fromVolume.path }}
+          {{- end }}
+    root_source_path="/tmp/adapters-repo/{{ $adapterFolderName }}{{ $rootSourcePathSuffix }}"        
         {{- end }}
+    ls -laR $root_source_path
 
         {{- /*
-        List of paths to copy from the provisioning source. Here we specify
-        "." to include the common "lib" and "classes" folders of the Adapter Set
+        List of paths containing the "lib" and "classes" folders to copy from 
+        the Adapter Set directory located in the provisioning source. By 
+        default, include "." to capture even the top-level "lib" and "classes"
+        folders.
         */ -}}
         {{- $paths := list "." }}
+        {{- $configMapRefs := dict }}
         {{- /* Add the installDir of the Metadata Adapter, if any */ -}}
-        {{- with $adapter.metadataProvider.inProcessMetadataAdapter }}
-          {{- if .installDir }}
+        {{- with $adapterSet.metadataProvider.inProcessMetadataAdapter }}
+          {{- if and .installDir (ne .installDir ".") }}
             {{- $paths = append $paths .installDir }}
+          {{- end }}
+          {{- if .configMapRef }}
+            {{- $key := .installDir | default "." }}
+            {{- $sourceConfigMapPaths := list (printf "/adapters-source-conf/%s/%s-config" $adapterFolderName .configMapRef) }}
+            {{- $_ := set $configMapRefs $key $sourceConfigMapPaths }}
           {{- end }}
         {{- end }}
 
         {{- /* Add the installDir of the Data Adapters, if any */ -}}
-        {{- range $dataProviderName, $dataProvider := $adapter.dataProviders }}
+        {{- range $dataProviderName, $dataProvider := $adapterSet.dataProviders }}
           {{- if $dataProvider.enabled }}
             {{- with $dataProvider.inProcessDataAdapter }}
-              {{- if .installDir }}
+              {{- if and .installDir (ne .installDir ".") }}
                 {{- $paths = append $paths .installDir }}
+              {{- end }}
+              {{- if .configMapRef }}
+                {{- $key := .installDir | default "." }}
+                {{- $sourceConfigMapPaths := get $configMapRefs $key | default list }}
+                {{- $sourceConfigMapPaths = append $sourceConfigMapPaths (printf "/adapters-source-conf/%s/%s-config" $adapterFolderName .configMapRef) }}
+                {{- $_ := set $configMapRefs $key ($sourceConfigMapPaths | uniq) }}
               {{- end }}
             {{- end }}
           {{- end }}
@@ -94,27 +117,46 @@ data:
         {{- $paths := $paths | uniq }}
     path_to_copy={{ join " " $paths | quote }}
     echo "Copying the resources for the '{{ $adapterName }}' Adapter Set"
-        {{- $rootSourcePathSuffix := "" }}
-        {{- if (($adapter.provisioning).fromVolume).path }}
-          {{- $rootSourcePathSuffix = printf "/%s" $adapter.provisioning.fromVolume.path }}
-        {{- end }}
-    root_source_path="/tmp/adapters-repo/{{ $adapterFolderName }}{{ $rootSourcePathSuffix }}"
 
     for path in $path_to_copy; do
       destination_path="{{ include "lightstreamer.adapters.fullAdaptersDir" . }}/{{ $adapterFolderName }}/$path"
-      [[ "$s" !=  "." ]] && mkdir -p $destination_path
+      #[[ "$path" !=  "." ]] && 
+      mkdir -p $destination_path
       for dir in "lib" "classes"; do
         full_source_path="${root_source_path}/$path/$dir"
+        ls -la $full_source_path
         full_destination_path="${destination_path}/$dir"
         [[ -d "${full_source_path}" ]] && cp -r $full_source_path $full_destination_path
       done
     done
+        
+        {{- range $installDir, $sourceConfigMapPaths := $configMapRefs }}
+          {{- range $sourceConfigMapPaths }}
+    cp {{ . }}/* {{ include "lightstreamer.adapters.fullAdaptersDir" . }}/{{ $adapterFolderName }}/{{ $installDir }}
+          {{- end }}
+        {{- end }}  
       {{- end }}
     {{- end }}
+  
+  launch.sh: |
+    #!/bin/bash
+    set -e
+    # The working dir is /lightstreamer/bin/unix-like as per the settings of the Docker image
+    mkdir -p {{ include "lightstreamer.adapters.fullAdaptersDir" . }}
 
-    {{/* The following commands are executed before the Lightstreamer Server is started */}}
-    {{- range .Values.deployment.preCommands }}
+    {{- if ((.Values.connectors).kafkaConnector).enabled }}
+    # Setup the Kafka Connector
+    /lightstreamer/bin/init-scripts/copy-kafka-connector.sh
+    {{- end }}
+
+    # Setup the Adapters
+    /lightstreamer/bin/init-scripts/setup-adapters.sh
+
+    {{- if .Values.deployment.preCommands }}
+    # Launch the pre-commands
+      {{- range .Values.deployment.preCommands }}
     {{ . }}
+      {{- end }}
     {{- end }}
 
     if [ -n "${LS_HIBERNATE_SYSTEM_PROPERTIES}" ]; then
