@@ -165,7 +165,7 @@ Render the Lightstreamer configuration file.
                  and to copy them to the HTTP response header.
                  The "name" attribute is mandatory; a final ":" is optional.
                  The value should be left empty. -->
-    {{- range .echo  }}
+    {{- range .echo }}
             <echo name={{ . | quote }} />
     {{- else }}
             <!--
@@ -738,7 +738,7 @@ Render the Lightstreamer configuration file.
   {{- with .webSocket }}
     {{- if not (quote .enabled | empty) }}
         <enabled>{{ .enabled | ternary "Y" "N" }}</enabled>
-    {{- else  }}
+    {{- else }}
         <!--
         <enabled>N</enabled>
         -->
