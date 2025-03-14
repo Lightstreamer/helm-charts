@@ -242,7 +242,7 @@ Render the Lightstreamer edition configuration file
          {{- if not (mustHas .maxDownstreamRate (list "1" "3" "unlimited") ) }}
            {{- fail "license.enterprise.optionalFeatures.maxDownstreamRate must be one of: \"1\", \"3\", \"unlimited\"" }}
          {{- else }}
-         <feature id="max_downstream_rate">{{ .maxDownstreamRate  }}</feature>
+         <feature id="max_downstream_rate">{{ .maxDownstreamRate }}</feature>
          {{- end }}
 
          <!-- Bandwidth Control.
