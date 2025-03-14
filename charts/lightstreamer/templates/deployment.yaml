@@ -67,7 +67,7 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/lightstreamer/bin/init-scripts/launch.sh"]
-          {{- if .Values.management.jmx  }}
+          {{- if .Values.management.jmx }}
           lifecycle:
             preStop:
               exec:
@@ -138,7 +138,7 @@ spec:
           resources:
             {{- toYaml .Values.deployment.resources | nindent 12 }}
           env:
-          {{- /* START ENV VARIABLES FOR LIGHTSTREAMER KEYSTORES */ -}}
+          {{- /* START ENV VARIABLES FOR KEYSTORES */ -}}
           {{- range $key, $value := .Values.keystores }}
             {{- if $value }}
             - name: LS_KEYSTORE_{{ $key | upper | replace "-" "_" }}_PASSWORD
@@ -155,8 +155,8 @@ spec:
               {{- end }}
             {{- end }}
           {{- end }}
-          {{- /* END ENV VARIABLES FOR LIGHTSTREAMER KEYSTORES */ -}}
-          {{- /* START ENV VARIABLES FOR LIGHTSTREAMER LICENSE */ -}}
+          {{- /* END ENV VARIABLES FOR KEYSTORES */ -}}
+          {{- /* START ENV VARIABLES FOR LICENSE */ -}}
           {{- if and (ne ((.Values.license).enterprise).licenseType "DEMO") (eq ((.Values.license).enterprise).licenseValidation "ONLINE") }}
             {{- with required "license.enterprise.onlinePasswordSecretRef must be set" .Values.license.enterprise.onlinePasswordSecretRef }}
             - name: LS_ENTERPRISE_LICENSE_ONLINE_PASSWORD
@@ -185,7 +185,7 @@ spec:
                   name: {{ . }}
                   key: password
           {{- end }}
-          {{- /* END VARIABLES FOR LIGHTSTREAMER LICENSE */ -}}
+          {{- /* END VARIABLES FOR LICENSE */ -}}
           {{- /* START ENV VARIABLES FOR LIGHTSTREAMER MANAGEMENT */ -}}
           {{- with (.Values.management.jmx).rmiConnector }}
             {{- if not .enablePublicAccess }}
@@ -221,7 +221,7 @@ spec:
               {{- end }}
             {{- end }}
           {{- end }}
-          {{- /* END ENV VARIABLES FOR LIGHTSTREAMER MANAGEMENT */ -}}
+          {{- /* END ENV VARIABLES FOR MANAGEMENT */ -}}
           {{- /* START ENV VARIABLES FOR MPN */ -}}
           {{- if (.Values.mpn).enabled }}
             {{/* START ENV VARIABLES FOR HIBERNATE CONNECTION */}}
@@ -432,11 +432,29 @@ spec:
           {{- /* START VOLUME MOUNTS FOR ADAPTERS */}}
           {{- range $adapterName, $adapterSet := .Values.adapters }}
             {{- if $adapterSet.enabled }}
+              {{- /* Mount the volume containing the adapters.xml file */}}
             - name: lightstreamer-{{ $adapterName | kebabcase }}-adapter-conf
-              mountPath: /adapters-source-conf/{{ $adapterName | kebabcase}}
+              mountPath: /adapters-source-conf/{{ $adapterName | kebabcase}}/adapters.xml
+              subPath: adapters.xml
               {{- with ($adapterSet.provisioning).fromVolume }}
             - name: {{ .name }}
               mountPath: /tmp/adapters-repo/{{ $adapterName | kebabcase}}
+              {{- end }}
+              {{- $configMapRefs := list }}
+              {{- with $adapterSet.metadataProvider.inProcessMetadataAdapter }}
+                {{- if .configMapRef }}
+                  {{- $configMapRefs = append $configMapRefs .configMapRef }}
+                {{- end }}
+              {{- end }}
+              {{- range $adapterSet.dataProviders }}
+                {{- if and .enabled (.inProcessDataAdapter).configMapRef }}
+                  {{- $configMapRefs = append $configMapRefs .inProcessDataAdapter.configMapRef }}
+                {{- end }}
+              {{- end }}
+              {{- $configMapRefs := $configMapRefs | uniq }}
+              {{- range $configMapRefs }}
+            - name: {{ . }}
+              mountPath: /adapters-source-conf/{{ $adapterName | kebabcase}}/{{ . }}-config
               {{- end }}
             {{- end }}
           {{- end }}
@@ -497,13 +515,34 @@ spec:
           configMap:
             name: {{ required "webServer.errorPageRef.name must be set" .name }}
       {{- end }}
+      {{- /* START VOLUMES FOR ADAPTERS */ -}}
+      {{- $configMapRefs := list }}
       {{- range $adapterName, $adapterSet := .Values.adapters }}
         {{- if $adapterSet.enabled }}
+          {{- /* Entry for the configmap the adapters.xml file */}}
         - name: lightstreamer-{{ $adapterName | kebabcase }}-adapter-conf
           configMap:
             name: {{ include "lightstreamer.adapters.configMapName" (list $ $adapterName) }}
+          {{- with $adapterSet.metadataProvider.inProcessMetadataAdapter }}
+            {{- if .configMapRef }}
+              {{- $configMapRefs = append $configMapRefs .configMapRef }}
+            {{- end }}
+          {{- end }}
+          {{- range $adapterSet.dataProviders }}
+            {{- if and .enabled (.inProcessDataAdapter).configMapRef }}
+              {{- $configMapRefs = append $configMapRefs .inProcessDataAdapter.configMapRef }}
+            {{- end }}
+          {{- end }}            
         {{- end }}
       {{- end }}
+      {{- $configMapRefs := $configMapRefs | uniq }}
+      {{- range $configMapRefs }}
+        - name: {{ . }}
+          configMap:
+            name: {{ . }}
+      {{- end }}
+      {{- /* END VOLUMES FOR ADAPTERS */ -}}
+      {{- /* START VOLUMES FOR KEYSTORES */ -}}
       {{- range $key, $value := .Values.keystores }}
         {{- if $value }}
         - name: keystore-{{ $key | lower }}
@@ -511,6 +550,7 @@ spec:
             secretName: {{ required (printf "keystores.%s.keystoreFileSecretRef.name must be set" $key) (($value.keystoreFileSecretRef).name) }}
         {{- end }}
       {{- end }}
+      {{- /* START VOLUMES FOR LICENSE FILE */ -}}
       {{- if and (ne ((.Values.license).enterprise).licenseType "DEMO") (eq ((.Values.license).enterprise).licenseValidation "FILE") }}
         {{- with required "license.enterprise.filePathSecretRef must be set" .Values.license.enterprise.filePathSecretRef }}
         - name: lightstreamer-enterprise-license
@@ -518,6 +558,7 @@ spec:
             secretName: {{ required "license.enterprise.filePathSecretRef.name must be set" .name }}
         {{- end }}
       {{- end }}
+      {{- /* END VOLUMES FOR LICENSE FILE */ -}}
       {{- /* START VOLUMES FOR PAC FILES */ -}}
       {{- $configMaps := list }}
       {{- range $index, $filePath := (((.Values.license).proxy).pacFiles).filePaths }}
@@ -570,7 +611,7 @@ spec:
         {{- /* END VOLUMES FOR GOOGLE SERVICE JSON FILES */ -}}
       {{- end }}
       {{- /* END VOLUMES FOR MPN */ -}}
-      {{- /* START VOLUME FOR KAFKA CONNECTOR */ -}}
+      {{- /* START VOLUMES FOR KAFKA CONNECTOR */ -}}
       {{- if ((.Values.connectors).kafkaConnector).enabled }}
         {{- if not (((.Values.connectors).kafkaConnector).provisioning).fromPathInImage }}
         - name: kafka-connector-deployer-script
@@ -594,9 +635,9 @@ spec:
         - name: kafka-connector-source-storage
           emptyDir: {}
           {{- end }}
-        {{- end  }}
+        {{- end }}
       {{- end }}
-      {{- /* END VOLUME FOR KAFKA CONNECTOR */ -}}
+      {{- /* END VOLUMES FOR KAFKA CONNECTOR */ -}}
       {{- with .Values.deployment.extraVolumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
