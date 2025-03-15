@@ -5390,7 +5390,6 @@ connectors:
             #     - "itemTemplate1"
             #     - "itemTemplate2"
             #     - "itemTemplateN"
-
             stock:
 
               # -- (string) Mandatory and unique across all topic mappings. The
