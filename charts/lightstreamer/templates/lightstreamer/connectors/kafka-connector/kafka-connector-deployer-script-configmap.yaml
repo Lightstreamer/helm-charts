@@ -13,7 +13,7 @@ data:
   configurable provisioning sources (GitHub release, URL, or volume) and deploys
   it to the ephemeral volume "kafka-connector-deployment", which will be
   soft-linked to expected path in the Lightstreamer image by the
-  "copy-kafka-connector.sh" script launched at the startup.
+  "setup-kafka-connector.sh" script launched at the startup.
 
   The script is executed by the `kafka-connector-deployer` init container, which
   is created ony if the "connector.kafkaConnector.provisioning.fromPathInImage"
