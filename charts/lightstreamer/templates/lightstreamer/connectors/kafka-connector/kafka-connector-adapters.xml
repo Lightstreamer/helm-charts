@@ -562,7 +562,7 @@ Render the Lightstreamer Kafka Connector configuration file.
 
         <!-- ##### RECORD ROUTING SETTINGS ##### -->
 
-        {{- with $connection.routing }}
+        {{- with required (printf "connectors.kafkaConnector.connections.%s.routing must be set" $key) $connection.routing }}
         <!-- Multiple and Optional. Define an item template expression, which is made of:
              - ITEM_PREFIX: the prefix of the item name
              - BINDABLE_EXPRESSIONS: a sequence of bindable extraction expressions. See documentation at:
@@ -595,19 +595,27 @@ Render the Lightstreamer Kafka Connector configuration file.
         <param name="map.aTopicName.to">item-template.template-name1,item1,item-template.template-name2,item2,...</param>
         -->
           {{- $itemTemplates := .itemTemplates }}
-          {{- range $key, $mapping := .topicMappings }}
-            {{ $templateRefs := list }}
-            {{- if $mapping.itemTemplateRefs}}
-              {{- range $mapping.itemTemplateRefs }}
-                {{- if not (hasKey $itemTemplates .)}}
-                  {{- fail (printf "Item template %s not defined" .) }}
-                {{- end }}
-               {{- $templateRefs = append $templateRefs (printf "item-template.%s" .) }}
-              {{- end }}
-            {{- else }}
-              {{- required (printf "%s.itemTemplateRefs or %s.items must be set" $key $key) $mapping.items }}
+          {{- $usedTopicNames := list }}
+          {{- range $mappingKey, $mapping := .topicMappings }}
+            {{- if not $mapping }}
+              {{- printf "connectors.kafkaConnector.connections.%s.routing.topicMappings.%s must be set" $key $mappingKey | fail }}
             {{- end }}
-        <param name="map.{{ $mapping.topic }}.to">{{ join "," (concat ($templateRefs) ($mapping.items | default list)) }}</param>
+            {{- $topic := required (printf "connectors.kafkaConnector.connections.%s.routing.topicMappings.%s.topic must be set" $key $mappingKey) $mapping.topic}}
+            {{- if has $topic $usedTopicNames }}
+              {{- fail (printf "connectors.kafkaConnector.connections.%s.routing.topicMappings.%s.topic %s already mapped" $key $mappingKey $topic) }}
+            {{- end }}
+            {{- $usedTopicNames = append $usedTopicNames $topic }}
+ 
+            {{- $templateRefs := list }}
+            {{- range $mapping.itemTemplateRefs }}
+              {{- if not (hasKey $itemTemplates .) }}
+                {{- fail (printf "Item template %s not defined" .) }}
+              {{- end }}
+              {{- $templateRefs = append $templateRefs (printf "item-template.%s" .) }}
+            {{- else }}
+              {{- required (printf "Either specify %s.itemTemplateRefs or %s.items" $mappingKey $mappingKey) $mapping.items }}
+            {{- end }}
+        <param name="map.{{ $topic }}.to">{{ join "," (concat ($templateRefs) ($mapping.items | default list)) }}</param>
           {{- else }}
             {{- fail (printf "connectors.kafkaConnector.connections.%s.routing.topicMappings must be set" $key) }}
           {{- end }} {{/* of .topicMappings */}}
