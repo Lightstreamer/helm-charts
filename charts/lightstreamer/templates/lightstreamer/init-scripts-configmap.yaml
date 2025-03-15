@@ -171,7 +171,8 @@ data:
   
   launch.sh: |
     #!/bin/bash
-    set -e
+    set -euo pipefail
+    
     # The working dir is /lightstreamer/bin/unix-like as per the settings of the Docker image
     mkdir -p {{ include "lightstreamer.adapters.fullAdaptersDir" . }}
 
