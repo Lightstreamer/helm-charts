@@ -26,8 +26,11 @@ data:
   */}}
   {{- if ((.Values.connectors).kafkaConnector).enabled }}
   setup-kafka-connector.sh: |
-    #!/bin/sh
+    #!/bin/bash
+    set -euo pipefail
+
     {{- with ((.Values.connectors).kafkaConnector).provisioning }}
+    # Initialize deployment path
     KAFKA_CONNECTOR_DEPLOYMENT={{ include "lightstreamer.kafka-connector.deployment" . }}
       {{- if .fromPathInImage }}
     # The connector is already available in the image, so just create a soft
@@ -50,14 +53,50 @@ data:
   Setup the Adapters for the Lightstreamer Server.
   */}}
   setup-adapters.sh: |
-    set -ux;
+    #!/bin/bash
+    set -euo pipefail
+    
+    # Copy adapter resources from source to destination
+    function copy_resources {
+      local source_path="$1"
+      local dest_path="$2"
+      local subdirs="$3"
+
+      # Validate source path exists
+      if [ ! -d "$source_path" ]; then
+        echo "Source path does not exist: $source_path"
+        return 1
+      fi
+
+      for path in $subdirs; do
+        local destination_path="${dest_path}/$path"
+        #[[ "$path" !=  "." ]] && 
+
+        # Create destination directory
+        mkdir -p $destination_path
+
+        # Copy lib and classes directories if they exist
+        for dir in "lib" "classes"; do
+          local full_source_path="${source_path}/$path/$dir"
+          local full_destination_path="${destination_path}/$dir"
+
+          if [ -d "${full_source_path}" ]; then
+            cp -r "$full_source_path" "$full_destination_path"
+          else
+            echo "Directory not found, skipping: $full_source_path"
+          fi
+        done
+      done
+    }
+
     {{- range $adapterName, $adapterSet := .Values.adapters }}
       {{- if $adapterSet.enabled }}
-      {{- $adapterFolderName := $adapterName | kebabcase }}
-    mkdir -p {{ include "lightstreamer.adapters.fullAdaptersDir" . }}/{{ $adapterFolderName }}
+        {{- $adapterFolderName := $adapterName | kebabcase }}
+    target_adapter_path="{{ include "lightstreamer.adapters.fullAdaptersDir" . }}/{{ $adapterFolderName }}"
+    mkdir -p "$target_adapter_path"
 
     echo "Copy the adapters.xml file for the '{{ $adapterName }}' Adapter Set"
-    cp /adapters-source-conf/{{ $adapterFolderName }}/adapters.xml {{ include "lightstreamer.adapters.fullAdaptersDir" . }}/{{ $adapterFolderName }}/adapters.xml
+    cp /adapters-source-conf/{{ $adapterFolderName }}/adapters.xml $target_adapter_path/adapters.xml
 
         {{- if ($adapterSet.provisioning).fromPathInImage}}
           {{- /* 
@@ -65,7 +104,7 @@ data:
             mount paths that may be already in use. So let's use a different path.
           */}}
     root_source_path="/tmp/adapters-repo-from-image"
-    mkdir -p $root_source_path
+    mkdir -p "$root_source_path"
     ln -s {{ $adapterSet.provisioning.fromPathInImage }} $root_source_path/{{ $adapterFolderName }}
     root_source_path="/tmp/adapters-repo-from-image/{{ $adapterFolderName }}"
         {{- else }}
@@ -75,7 +114,6 @@ data:
           {{- end }}
     root_source_path="/tmp/adapters-repo/{{ $adapterFolderName }}{{ $rootSourcePathSuffix }}"        
         {{- end }}
-    ls -laR $root_source_path
 
         {{- /*
         List of paths containing the "lib" and "classes" folders to copy from 
@@ -115,20 +153,13 @@ data:
         {{- end }}
 
         {{- $paths := $paths | uniq }}
-    path_to_copy={{ join " " $paths | quote }}
     echo "Copying the resources for the '{{ $adapterName }}' Adapter Set"
-
-    for path in $path_to_copy; do
-      destination_path="{{ include "lightstreamer.adapters.fullAdaptersDir" . }}/{{ $adapterFolderName }}/$path"
-      #[[ "$path" !=  "." ]] && 
-      mkdir -p $destination_path
-      for dir in "lib" "classes"; do
-        full_source_path="${root_source_path}/$path/$dir"
-        ls -la $full_source_path
-        full_destination_path="${destination_path}/$dir"
-        [[ -d "${full_source_path}" ]] && cp -r $full_source_path $full_destination_path
-      done
-    done
+    paths_to_copy={{ join " " $paths | quote }}
+    
+    if ! copy_resources "${root_source_path}" "${target_adapter_path}" "${paths_to_copy}" ; then
+      echo "Failed to copy resources for the '{{ $adapterName }}' Adapter Set"
+      exit 1
+    fi
         
         {{- range $installDir, $sourceConfigMapPaths := $configMapRefs }}
           {{- range $sourceConfigMapPaths }}
