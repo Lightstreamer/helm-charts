@@ -67,21 +67,32 @@ You can customize the deployment by overriding the default values in two differe
 
 For more details about chart customization, refer to the [official Helm documentation](https://helm.sh/docs/intro/using_helm/#customizing-the-chart-before-installing).
 
-In the subsequent section, we will guide you on how to configure the different configuration sections
+In the subsequent section, we will guide through the...
 
-### Configure Server
+### Configure a New Server Socket Configuration
 
-The default configuration already provides the `defaultServer` server socket configuration.
-The examples/servers/default-server.yaml file shows You may want to customize this configuration
-(https://github.com/Lightstreamer/helm-charts?tab=readme-ov-file#servers)
+To configure a new server socket, add a new entry to the [`servers`](README.md#servers) section, along with the mandatory settings (namely, [`name`](README.md#serversdefaultservername) and [`port`](README.md#serversdefaultserverport)). In addition, remember to enable the configuration through the [`enabled`](README.md#serversdefaultserverenabled) flag to include the new server socket in the deployment.
 
-Customize the defaultServer server
+```yaml
+servers:
+  myServerConfiguration:
+    enabled: true
+    name: "My Lightstreamer server"
+    port: 8080
+```
 
-For every server socket configuration you want to make part of the deployment, you must set the [`enabled`](https://github.com/Lightstreamer/helm-charts?tab=readme-ov-file#serversdefaultserverenabled) flag to `true`
+> [!IMPORTANT]
+> As the `defaultServer` server socket configuration is enabled by default, you must explicitly disable it if you don't want to include it in the deployment:
+> ```yaml
+> servers:
+>   defaultServer:
+>     enabled: false    
+>   ...
+> ```
 
-#### Multiple-Servers
+### Multiple-Servers
 
-To deploy multiple server socket configurations, add the relative entries to the servers sections:
+Lightstreamer Broker allows the management of multiple server sockets. Therefore you can specify as server socket configurations as you want by adding the the relative entries:
 
 ```yaml
 # Multiple server socket configurations
@@ -106,16 +117,7 @@ servers:
     port: 8083
 ```
 
-> [!IMPORTANT]
-> As the `defaultServer` configuration enabled by default, you must explicitly disable it if you don't want to include it in the final deployment:
-> ```yaml
-> servers:
->   defaultServer:
->     enabled: false    
->   ...
-> ```
-
-#### Config TLS/SSL
+### Config TLS/SSL
 
 To configure TLS/SSL settings for a server socket configuration:
 
@@ -184,14 +186,15 @@ servers:
     keystoreRef: 
 ```
 
-#### Logging
+### Logging
 
-#### Dashboard
+### Dashboard
 
-#### JMX
+### JMX
 
-#### Health Check
-### Configure Licensing
+### Health Check
+
+## Configure Licensing
   
 
 
