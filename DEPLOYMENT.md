@@ -16,17 +16,17 @@ Follow these steps to deploy the Lightstreamer Broker:
 
 1. **Add the Lightstreamer Helm repository:**
     ```sh
-    helm repo add lightstreamer https://lightstreamer.github.io/helm-charts
+    $ helm repo add lightstreamer https://lightstreamer.github.io/helm-charts
     ```
 
 2. **Update your Helm repositories:**
     ```sh
-    helm repo update
+    $ helm repo update
     ```
 
 3. **Install the Lightstreamer Helm Chart:**
     ```sh
-    helm install lightstreamer-app lightstreamer/lightstreamer --namespace lightstreamer --create-namespace
+    $ helm install lightstreamer-app lightstreamer/lightstreamer --namespace lightstreamer --create-namespace
     ```
 
 This will deploy the Lightstreamer Broker to your Kubernetes cluster with the default configuration.
@@ -40,7 +40,7 @@ You can customize the deployment by overriding the default values in two differe
 1. Use the `--set` option to specify overrides on the command line:
   
    ```sh
-   helm install lightstreamer lightstreamer/lightstreamer \
+   $ helm install lightstreamer lightstreamer/lightstreamer \
      --set servers.defaultServer.name="My Lightstreamer HTTP Server" \
      --namespace lightstreamer \
      --create-namespace
@@ -59,7 +59,7 @@ You can customize the deployment by overriding the default values in two differe
    - Run the helm command:
 
      ```sh
-     helm install lightstreamer lightstreamer/lightstreamer \
+     $ helm install lightstreamer lightstreamer/lightstreamer \
        --values default-server.yaml \
        --namespace lightstreamer \
        --create-namespace
@@ -90,9 +90,9 @@ servers:
 >   ...
 > ```
 
-### Multiple-Servers
+### Multiple Servers
 
-Lightstreamer Broker allows the management of multiple server sockets. Therefore you can specify as server socket configurations as you want by adding the the relative entries:
+Lightstreamer Broker allows the management of multiple server sockets. Therefore you can specify as many server socket configurations as you want by adding the the relative entries:
 
 ```yaml
 # Multiple server socket configurations
@@ -119,21 +119,29 @@ servers:
 
 ### Config TLS/SSL
 
-To configure TLS/SSL settings for a server socket configuration:
+To configure TLS/SSL settings for a server socket configuration, perform the following actions:
 
-- Set the [`enableHttps`](README.md#serversdefaultserverenablehttps) to `true`
+- Set the [`enableHttps`](README.md#serversdefaultserverenablehttps) flag of the target server configuration to `true`
+  
+  ```yaml
+  servers:
+    defaultServer:
+      enableHttps: true
+      ...
+  ```
+
 - Configure a keystore:
   
   1. Create a secret containing the keystore:
 
      ```sh
-     kubectl create secret generic <keystore-secret-name> --from-file=server.keystore=<path/to/keystore> --namespace <namespace>
+     $ kubectl create secret generic <keystore-secret-name> --from-file=server.keystore=<path/to/keystore> --namespace <namespace>
      ```
 
   2. Create a secret containing the keystore password:
 
      ```sh
-     kubectl create secret generic <keystore-password-secret-name> --from-literal=password=<keystore-password> --namespace <namespace>
+     $ kubectl create secret generic <keystore-password-secret-name> --from-literal=password=<keystore-password> --namespace <namespace>
      ```
 
   3. Define a new keystore in the [`keystores`](README.md#keystores) section:
@@ -152,7 +160,27 @@ To configure TLS/SSL settings for a server socket configuration:
            name: <keystore-password-secret-name> # The name used at step 2
            key: password                         # The secret key as specified at step 2
      ```
-- If required, configure a truststore by repeating similar actions of the previous section
+- If required, configure a truststore by repeating similar actions of the previous section:
+  
+  ```sh
+  $ kubectl create secret generic <truststore-secret-name> --from-file=server.truststore=<path/to/truststore> --namespace <namespace>
+  $ kubectl create secret generic <truststore-password-secret-name> --from-literal=password=<truststore-password> --namespace <namespace>
+  ```
+
+  ```yaml
+  keystores:
+    serverTruststore:
+      # The truststore type, here we assume JKS
+      type: JKS
+    
+      keystoreFileSecretRef:
+        name: <truststore-secret-name> 
+        key: server.truststore          
+
+      keystorePasswordSecretRef:
+        name: <truststore-password-secret-name> 
+        key: password                           
+  ```
 
 - Configure the [`sslConfig`](README.md#serversdefaultserversslconfig) section:
   
@@ -165,7 +193,7 @@ To configure TLS/SSL settings for a server socket configuration:
         keystoreRef: serverKeyStore
 
         # If required, the reference to the truststore definition
-        truststoreRef: <>
+        truststoreRef: <truststore-name>
 
         # Other settings
         ...
