@@ -192,7 +192,7 @@ To configure TLS/SSL settings for a server socket configuration, perform the fol
   
   ```yaml
   servers:
-    mtyHttpServer:
+    defaultServer:
       ...
       sslConfig:
         # The reference to the keystore definition
