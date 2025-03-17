@@ -148,6 +148,8 @@ To configure TLS/SSL settings for a server socket configuration, perform the fol
 
      ```yaml
      keystores:
+       ...
+
        serverKeystore:
          # The keystore type, here we assume JKS
          type: JKS
@@ -161,26 +163,30 @@ To configure TLS/SSL settings for a server socket configuration, perform the fol
            key: password                         # The secret key as specified at step 2
      ```
 - If required, configure a truststore by repeating similar actions of the previous section:
+
+  1. Create the truststore secrets:
   
-  ```sh
-  $ kubectl create secret generic <truststore-secret-name> --from-file=server.truststore=<path/to/truststore> --namespace <namespace>
-  $ kubectl create secret generic <truststore-password-secret-name> --from-literal=password=<truststore-password> --namespace <namespace>
-  ```
+     ```sh
+     $ kubectl create secret generic <truststore-secret-name> --from-file=server.truststore=<path/to/truststore> --namespace <namespace>
+     $ kubectl create secret generic <truststore-password-secret-name> --from-literal=password=<truststore-password> --namespace <namespace>
+     ```
 
-  ```yaml
-  keystores:
-    serverTruststore:
-      # The truststore type, here we assume JKS
-      type: JKS
-    
-      keystoreFileSecretRef:
-        name: <truststore-secret-name> 
-        key: server.truststore          
+  2. Define a truststore:
 
-      keystorePasswordSecretRef:
-        name: <truststore-password-secret-name> 
-        key: password                           
-  ```
+     ```yaml
+     keystores:
+       serverTruststore:
+         # The truststore type, here we assume JKS
+         type: JKS
+      
+         keystoreFileSecretRef:
+           name: <truststore-secret-name> 
+           key: server.truststore          
+
+         keystorePasswordSecretRef:
+           name: <truststore-password-secret-name> 
+           key: password                           
+     ```
 
 - Configure the [`sslConfig`](README.md#serversdefaultserversslconfig) section:
   
@@ -193,7 +199,7 @@ To configure TLS/SSL settings for a server socket configuration, perform the fol
         keystoreRef: serverKeyStore
 
         # If required, the reference to the truststore definition
-        truststoreRef: <truststore-name>
+        truststoreRef: serverTruststore
 
         # Other settings
         ...
