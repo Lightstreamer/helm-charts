@@ -1379,7 +1379,15 @@ servers:
       tlsProvider:
 
       # -- Mandatory. The reference to a keystore configuration (defined in
-      # `keystores`).
+      # `keystores`). The access to the included certificates is subject to the
+      # following constraints:
+      # - Only the first certificated found in the keystore ca be sent to the 
+      # client.
+      # - The password for the keystore and the password of the included 
+      # certificate should be the same.
+      # - The support of keystore contents may depend on the Security Provider
+      # in use; for instance, keystores with dual RSA/ECC certificates are not
+      # fully supported by the Conscrypt provider.
       # See the `keystores.myServerKeystore` settings for general details on
       # keystore configuration.
       keystoreRef: myServerKeystore
