@@ -88,7 +88,8 @@ servers:
     port: 8080
 ```
 
-> [!IMPORTANT]: If you do not want to include the default server socket configuration (`defaultServer`) in the deployment, explicitly disable it as follows:
+> [!IMPORTANT]
+> If you do not want to include the default server socket configuration (`defaultServer`) in the deployment, explicitly disable it as follows:
 > ```yaml
 > servers:
 >   defaultServer:
@@ -126,7 +127,8 @@ servers:
     port: 8083
 ```
 
-> [!TIP] Ensure that any unused server configurations are explicitly disabled by setting their `enabled` flag to `false`. For example:
+> [!TIP]
+> Ensure that any unused server configurations are explicitly disabled by setting their `enabled` flag to `false`. For example:
 > ```yaml
 > servers:
 >   unusedServer:
