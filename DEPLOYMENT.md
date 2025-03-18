@@ -65,13 +65,20 @@ You can customize the deployment by overriding the default values in two differe
        --create-namespace
      ```
 
-For more details about chart customization, refer to the [official Helm documentation](https://helm.sh/docs/intro/using_helm/#customizing-the-chart-before-installing).
+For more details about general chart customization, refer to the [official Helm documentation](https://helm.sh/docs/intro/using_helm/#customizing-the-chart-before-installing).
 
-In the subsequent section, we will guide through the...
+In the following sections, we will guide you on how to customize the values of the Lightstreamer Helm chart to configure the most critical aspects of deploying a Lightstreamer Broker to Kubernetes.
 
 ### Configure a New Server Socket Configuration
 
-To configure a new server socket, add a new entry to the [`servers`](README.md#servers) section, along with the mandatory settings (namely, [`name`](README.md#serversdefaultservername) and [`port`](README.md#serversdefaultserverport)). In addition, remember to enable the configuration through the [`enabled`](README.md#serversdefaultserverenabled) flag to include the new server socket in the deployment.
+To configure a new server socket, add a new entry to the [`servers`](README.md#servers) section with the following mandatory settings:
+
+- [`name`](README.md#serversdefaultservername): A unique name for the server socket.
+- [`port`](README.md#serversdefaultserverport): The port number the server socket will listen on.
+
+Moreover, set the [`enabled`](README.md#serversdefaultserverenabled) flag to `true` to include the server socket in the deployment.
+
+Example configuration:
 
 ```yaml
 servers:
@@ -81,43 +88,52 @@ servers:
     port: 8080
 ```
 
-> [!IMPORTANT]
-> As the `defaultServer` server socket configuration is enabled by default, you must explicitly disable it if you don't want to include it in the deployment:
+> [IMPORTANT!]: If you do not want to include the default server socket configuration (`defaultServer`) in the deployment, explicitly disable it as follows:
 > ```yaml
 > servers:
 >   defaultServer:
->     enabled: false    
->   ...
+>     enabled: false
+> ...
 > ```
 
 ### Multiple Servers
 
-Lightstreamer Broker allows the management of multiple server sockets. Therefore you can specify as many server socket configurations as you want by adding the the relative entries:
+Lightstreamer Broker supports managing multiple server sockets. You can define multiple server socket configurations by adding entries under the `servers` section in your values file.
+Each configuration must specify a unique name and port.
+
+Example configuration:
 
 ```yaml
 # Multiple server socket configurations
 servers:
 
   # Server socket listening on port 8081
-  http-Server1:
+  httpServer1:
     enabled: true
     name: "HTTP Server 1"
     port: 8081
 
   # Server socket listening on port 8082
-  http-Server2:
+  httpServer2:
     enabled: true
     name: "HTTP Server 2"
     port: 8082   
 
   # Server socket listening on port 8083
-  http_Server3:
+  httpServer3:
     enabled: true
     name: "HTTP Server 3"
     port: 8083
 ```
 
-### Config TLS/SSL
+> [TIP!] Ensure that any unused server configurations are explicitly disabled by setting their `enabled` flag to `false`. For example:
+> ```yaml
+> servers:
+>   unusedServer:
+>     enabled: false
+> ```
+
+### TLS/SSL
 
 To configure TLS/SSL settings for a server socket configuration, perform the following actions:
 
@@ -162,6 +178,7 @@ To configure TLS/SSL settings for a server socket configuration, perform the fol
            name: <keystore-password-secret-name> # The name used at step 2
            key: password                         # The secret key as specified at step 2
      ```
+    
 - If required, configure a truststore by repeating similar actions of the previous section:
 
   1. Create the truststore secrets:
@@ -205,31 +222,233 @@ To configure TLS/SSL settings for a server socket configuration, perform the fol
         ...
   ```
 
-The 
-Here a simple example:
-
-```yaml
-servers:
-  myHttpServer:
-    enabled: true
-    name: "Lightstreamer HTTPS server"
-    enableHttps: true # Mandatory to enable the sslConfig block
-
-  sslConfig:
-
-    keystoreRef: 
-```
-
 ### Logging
 
-### Dashboard
+The provided logging settings are designed to meet the needs of most production environments. However, you can customize the configuration to suit specific requirements.
 
-### JMX
+#### Primary Loggers
 
-### Health Check
+The [`logging.loggers`](README.md#loggingloggers) section defines the primary loggers used by the Lightstreamer Broker:
+
+- [`lightstreamerLogger`](README.md#loggingloggerslightstreamerlogger): Logs major activities of the Lightstreamer Broker.
+- [`lightstreamerMonitorText`](README.md#loggingloggerslightstreamermonitortext) and [`lightstreamerMonitorTAB`](README.md#loggingloggerslightstreamermonitortab): Log load statistics in text and tabular formats, respectively.
+- [`lightstreamerHealthCheck`](README.md#loggingloggerslightstreamerhealthcheck): Logs health check requests.
+- [`lightstreamerProxyAdapters`](README.md#loggingloggerslightstreamerproxyadapters): Logs activities of Proxy Data and Metadata Adapters.
+
+For each logger, you can configure the following settings:
+
+- `level`: Specifies the logging level. Available levels are `OFF`, `FATAL`, `ERROR`, `WARN`, `INFO`, `DEBUG`, and `TRACE`.
+- `appenders`: Lists the appenders used to log messages. Each entry must reference an appender defined in the [`logging.appenders`](README.md#loggingappenders) section.
+
+Example configuration:
+```yaml
+logging:
+  loggers:
+    lightstreamerMonitorText:
+      appenders:
+        - dailyRolling
+      level: DEBUG
+
+    lightstreamerLogger:
+      level: TRACE
+...
+```
+
+#### Subloggers
+
+The [`logging.loggers.lightstreamerLogger.subLoggers`](README.md#loggingloggerslightstreamerloggersubloggers) section allows you to define logging levels for subloggers of `lightstreamerLogger`. Subloggers inherit appenders from their parent logger.
+
+Example configuration:
+```yaml
+logging:
+  loggers:
+    lightstreamerLogger:
+      level: INFO
+      subLoggers:
+        lightstreamerLogger.io: DEBUG
+        lightstreamerLogger.io.ssl: DEBUG
+...
+```
+
+#### Other Loggers
+
+The default configuration includes loggers for third-party libraries used by the Lightstreamer Broker. These loggers are pre-configured to handle typical scenarios and generally do not require modification. However, you can adjust their settings if specific logging behavior is needed.
+
+Refer to the comments in the [values.yaml](charts/lightstreamer/values.yaml#L1039) file for more details about these loggers and their default configurations.
+
+Example configuration:
+```yaml
+logging:
+  loggers:
+    java.sql:
+      appenders:
+        - console
+      level: WARN
+
+    org.jboss.logging:
+      appenders:
+        - console
+      level: WARN
+...
+```
+
+#### Extra Loggers
+
+To accommodate custom logging requirements, you can define additional loggers in the `extraLoggers` section. This is particularly useful for logging activities specific to your deployment or application.
+
+Each custom logger can specify its own appenders and logging level, allowing for fine-grained control over logging behavior.
+
+Example configuration:
+```yaml
+extraLoggers:
+  myLogger:
+    appenders:
+      - console
+    level: INFO
+...
+```
+
+#### Appenders
+
+The [`logging.appenders`](README.md#loggingappenders) section defines the appenders available for use by loggers. The default configuration includes:
+
+- [`dailyRolling`](charts/lightstreamer/values.yaml#L660): A daily rolling file appender, which uses the `DailyRollingFile` type.
+- [`console`](charts/lightstreamer/values.yaml#L681): A console appender, which sues the `Console` type.
+
+You can customize these appenders or define new ones.
+
+Example of defining a new appender:
+```yaml
+logging:
+  appenders:
+    ...
+    anotherConsoleAppender:
+      type: Console
+      pattern: "[My Custom Appender]|%-27.27t|%m%"
+...
+```
+
+To use the new appender, reference it in a logger configuration:
+```yaml
+logging:
+  loggers:
+    lightstreamerLogger:
+      level: INFO
+      appenders:
+        - anotherConsoleAppender
+...
+```
+
+##### Log to Persistent Storage
+
+To persist log files, you can configure the `DailyRollingFile` appender to write to a Kubernetes volume. Here's how to set it up:
+
+1. **Define a Volume**
+  
+   First, configure a volume in the `deployment.extraVolumes` section. You can use various volume types:
+
+   ```yaml
+   deployment:
+     extraVolumes:
+       # Using emptyDir (temporary storage)
+       - name: log-volume
+         emptyDir: {}
+       
+       # Or using PersistentVolumeClaim (permanent storage)
+       - name: log-volume
+         persistentVolumeClaim:
+           claimName: lightstreamer-logs-pvc
+   ```
+
+2. **Configure the Appender**
+   
+   Then, configure your logging appender to use the volume:
+
+   ```yaml
+   logging:
+     appenders:
+       dailyRollingAppender:
+         type: DailyRollingFile
+         # Log file format
+         pattern: "%d{ISO8601}|%-5p|%-20.20c{1}|%m%n"
+         
+         # Log file settings
+         fileName: "lightstreamer.log"
+         fileNamePattern: "lightstreamer-%d{yyyy-MM-dd}.log"
+         
+         # Volume reference
+         volumeRef: log-volume
+         
+         # Retention settings (optional)
+         maxHistory: 30
+         totalSizeCap: "3GB"
+   ```
+
+### Dashboard Configuration
+
+The Lightstreamer Dashboard provides a web interface for monitoring and managing your Lightstreamer instance. To configure the dashboard:
+
+```yaml
+dashboard:
+  enabled: true
+  # Configure authentication
+  auth:
+    username: admin
+    passwordSecretRef:
+      name: dashboard-password
+      key: password
+  # Configure access restrictions
+  allowedAddresses:
+    - "10.0.0.0/8"
+    - "172.16.0.0/12"
+```
+
+### JMX Configuration
+
+Enable JMX monitoring and configure connection settings:
+
+```yaml
+jmx:
+  enabled: true
+  port: 7777
+  # Optional SSL configuration
+  ssl:
+    enabled: true
+    keystoreRef: jmxKeystore
+
+  # Access control
+  auth:
+    enabled: true
+    passwordSecretRef:
+      name: jmx-password
+      key: password
+```
+
+### Health Check Configuration
+
+Configure readiness and liveness probes for Kubernetes health checks:
+
+```yaml
+healthcheck:
+  # Readiness probe
+  readiness:
+    enabled: true
+    path: "/health/readiness"
+    port: 8080
+    initialDelaySeconds: 30
+    periodSeconds: 10
+
+  # Liveness probe
+  liveness:
+    enabled: true
+    path: "/health/liveness"
+    port: 8080
+    initialDelaySeconds: 60
+    periodSeconds: 20
+```
 
 ## Configure Licensing
-  
+
 
 
 
