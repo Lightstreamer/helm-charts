@@ -97,9 +97,10 @@ servers:
 > ...
 > ```
 
-### Multiple Servers
+### Multiple Server Sockets
 
-Lightstreamer Broker supports managing multiple server sockets. You can define multiple server socket configurations by adding entries under the `servers` section in your values file.
+Lightstreamer Broker supports managing multiple server sockets.
+You can define multiple server socket configurations by adding entries under the `servers` section in your values file.
 Each configuration must specify a unique name and port.
 
 Example configuration:
@@ -226,7 +227,8 @@ To configure TLS/SSL settings for a server socket configuration, perform the fol
 
 ### Logging
 
-The provided logging settings are designed to meet the needs of most production environments. However, you can customize the configuration to suit specific requirements.
+The provided logging settings are designed to meet the needs of most production environments.
+However, you can customize the configuration to suit specific requirements.
 
 #### Primary Loggers
 
@@ -380,11 +382,86 @@ To persist log files, you can configure the `DailyRollingFile` appender to write
          
          # Volume reference
          volumeRef: log-volume
-         
-         # Retention settings (optional)
-         maxHistory: 30
-         totalSizeCap: "3GB"
    ```
+### License
+
+The [`license`](README.md#license) section allows you to setup the edition and license type of the Lightstreamer Broker.
+
+You can configure two kinds of editions:
+
+- `COMMUNITY`
+- `ENTERPRISE`
+
+The `COMMUNITY` does not require a license key and can be used - with different feature restrictions (e.g, lack of TLS support, max downstream message rate limited to 1 message/sec, support for only one etc.) - for free for any purpose - including production (see the [Software License Agreement for full details](https://lightstreamer.com/distros/ls-server/7.4.6/Lightstreamer%20Software%20License%20Agreement.pdf)).
+
+To deploy Lightstreamer Broker with the COMMUNITY EDITION:
+
+```sh
+$ helm install lightstreamer lightstreamer/lightstreamer \
+  --set license.edition=COMMUNITY \
+  --namespace lightstreamer \
+  --create-namespace
+```
+
+#### Configuring the Enterprise Edition
+
+The default values configure the `ENTERPRISE` edition with the embedded _Demo_ license, which can be used for evaluation, development, and testing, but not for production. The Demo license has a limit of maximum 20 users' sessions at the same time. If you need to evaluate Lightstreamer without this limit, or need any information on the other license types, please contact **_info@lightstreamer.com_**.
+
+To configure the `ENTERPRISE` edition with a customer license key:
+
+1. Set [`license.edition`](README.md#licenseedition) to `ENTERPRISE`.
+
+2. Set [`license.enterprise.licenseType`](README.md#licenseenterpriselicensetype) with the license type.
+
+3. Set [`license.enterprise.contractId`](README.md#licenseenterprisecontractid) with the identifier of the contract in place.
+
+4. Set [`license.enterprise.licenseValidation`](README.md#licenseenterpriselicensevalidation) according with the license type:
+
+   - `ONLINE`: Enables the cloud-based validation for license of types `EVALUATION`, `STARTUP`, `PRODUCTION`, `HOT-STANDBY`, `NON-PRODUCTION-FULL`, `NON-PRODUCTION-LIMITED`.
+
+     This setting requires to specify the password used of the online licenses through the `onlinePasswordSecretRef` setting:
+
+     1. Create a secret containing the online password:
+
+        ```sh
+        kubectl create secret generic <online-password-secret-name> --from-literal=online-password=<online-password> --namespace <namespace>
+        ```
+
+     2. Configure `onlinePasswordSecretRef`:
+
+        ```yaml
+        license:
+          enterprise:
+          ...
+           onlinePasswordSecretRef:
+             name: <online-password-secret-name> # The name used at step 1
+             key: online-password                # The secret key as specified at step 1
+        ...
+        ``` 
+   - `FILE`: Enabled the file-based validation for license of types `PRODUCTION`, `HOT-STANDBY`, `NON-PRODUCTION-FULL`, `NON-PRODUCTION-LIMITED`.
+
+     This setting requires to specify a license file through the `filePathSecretRef` setting.
+
+     1. Create a secret containing the license file:
+
+        ```sh
+        kubectl create secret generic <license-secret-name> --from-file=license.lic=<path/to/license/file> --namespace <namespace>
+        ```
+
+     2. Configure ``filePathSecretRef`:
+
+        ```yaml
+        license:
+          enterprise:
+            ...
+            filePathSecretRef`:
+              name: <license-secret-name> # The name used at step 1
+              key: license.lic            # The secret key as specified at step 1
+        ...
+        ```
+
+Check out all the remaining settings in the [_License settings_](README.md#license) section of the Lightstreamer Helm chart specification.
+ 
 
 ### Dashboard Configuration
 
@@ -448,9 +525,3 @@ healthcheck:
     initialDelaySeconds: 60
     periodSeconds: 20
 ```
-
-## Configure Licensing
-
-
-
-
