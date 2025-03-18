@@ -385,83 +385,92 @@ To persist log files, you can configure the `DailyRollingFile` appender to write
    ```
 ### License
 
-The [`license`](README.md#license) section allows you to setup the edition and license type of the Lightstreamer Broker.
+The [`license`](README.md#license) section configures the edition and license type for the Lightstreamer Broker.
 
-You can configure two kinds of editions:
+Tow editions are available:
 
-- `COMMUNITY`
-- `ENTERPRISE`
+- `COMMUNITY`: Free edition with feature restrictions
+- `ENTERPRISE`: Full-featured commercial edition
 
-The `COMMUNITY` does not require a license key and can be used - with different feature restrictions (e.g, lack of TLS support, max downstream message rate limited to 1 message/sec, support for only one etc.) - for free for any purpose - including production (see the [Software License Agreement for full details](https://lightstreamer.com/distros/ls-server/7.4.6/Lightstreamer%20Software%20License%20Agreement.pdf)).
+#### Community Edition
 
-To deploy Lightstreamer Broker with the COMMUNITY EDITION:
+The `COMMUNITY` edition can be used for free but has the following limitations:
 
-```sh
-$ helm install lightstreamer lightstreamer/lightstreamer \
-  --set license.edition=COMMUNITY \
-  --namespace lightstreamer \
-  --create-namespace
-```
+- No TLS/SSL support
+- Maximum downstream message rate of 1 message/sec
+- Limited features compared to Enterprise edition
 
-#### Configuring the Enterprise Edition
+See the [Software License Agreement](https://lightstreamer.com/distros/ls-server/7.4.6/Lightstreamer%20Software%20License%20Agreement.pdf) for complete details
 
-The default values configure the `ENTERPRISE` edition with the embedded _Demo_ license, which can be used for evaluation, development, and testing, but not for production. The Demo license has a limit of maximum 20 users' sessions at the same time. If you need to evaluate Lightstreamer without this limit, or need any information on the other license types, please contact **_info@lightstreamer.com_**.
+To configure the Community edition:
 
-To configure the `ENTERPRISE` edition with a customer license key:
+1. Set `license.edition` to `COMMUNITY`
+2. Set `license.enabledCommunityEditionClientApi` with the Client API to use with the free license
 
-1. Set [`license.edition`](README.md#licenseedition) to `ENTERPRISE`.
+#### Enterprise Edition
 
-2. Set [`license.enterprise.licenseType`](README.md#licenseenterpriselicensetype) with the license type.
+The default configuration uses the `ENTERPRISE` edition with a _Demo_ license that:
 
-3. Set [`license.enterprise.contractId`](README.md#licenseenterprisecontractid) with the identifier of the contract in place.
+- Can be used for evaluation, development and testing (not production)
+- Has a limit of 20 concurrent user sessions
 
-4. Set [`license.enterprise.licenseValidation`](README.md#licenseenterpriselicensevalidation) according with the license type:
+Contact *_info@lightstreamer.com_* for evaluation without session limits or for production licenses
 
-   - `ONLINE`: Enables the cloud-based validation for license of types `EVALUATION`, `STARTUP`, `PRODUCTION`, `HOT-STANDBY`, `NON-PRODUCTION-FULL`, `NON-PRODUCTION-LIMITED`.
+To configure the `ENTERPRISE` edition with a customer license:
 
-     This setting requires to specify the password used of the online licenses through the `onlinePasswordSecretRef` setting:
+1. Set [`license.edition`](README.md#licenseedition) to `ENTERPRISE`
 
-     1. Create a secret containing the online password:
+2. Set [`license.enterprise.licenseType`](README.md#licenseenterpriselicensetype) to specify license type
 
-        ```sh
-        kubectl create secret generic <online-password-secret-name> --from-literal=online-password=<online-password> --namespace <namespace>
-        ```
+3. Set [`license.enterprise.contractId`](README.md#licenseenterprisecontractid) with your contract identifier
 
-     2. Configure `onlinePasswordSecretRef`:
+4. Configure license validation using one of these methods:
 
-        ```yaml
-        license:
-          enterprise:
-          ...
-           onlinePasswordSecretRef:
-             name: <online-password-secret-name> # The name used at step 1
-             key: online-password                # The secret key as specified at step 1
-        ...
-        ``` 
-   - `FILE`: Enabled the file-based validation for license of types `PRODUCTION`, `HOT-STANDBY`, `NON-PRODUCTION-FULL`, `NON-PRODUCTION-LIMITED`.
+   **Online Validation**
+   
+   For license types: `EVALUATION`, `STARTUP`, `PRODUCTION`, `HOT-STANDBY`, `NON-PRODUCTION-FULL`, `NON-PRODUCTION-LIMITED`
 
-     This setting requires to specify a license file through the `filePathSecretRef` setting.
+   1. Create password secret:
+   ```sh
+   kubectl create secret generic <online-password-secret-name> \
+     --from-literal=online-password=<online-password> \
+     --namespace <namespace>
+   ```
 
-     1. Create a secret containing the license file:
+   2. Configure [`license.enterprise.onlinePasswordSecretRef`](README.md#licenseenterpriseonlinepasswordsecretref):
+   ```yaml
+   license:
+     enterprise:
+       ...
+       onlinePasswordSecretRef:
+         name: <online-password-secret-name>  # Secret name from step 1
+         key: online-password                 # Secret key from step 1
+   ...
+   ```
 
-        ```sh
-        kubectl create secret generic <license-secret-name> --from-file=license.lic=<path/to/license/file> --namespace <namespace>
-        ```
+   **File-based Validation**
+   
+   For license types: `PRODUCTION`, `HOT-STANDBY`, `NON-PRODUCTION-FULL`, `NON-PRODUCTION-LIMITED`
 
-     2. Configure ``filePathSecretRef`:
+   1. Create license file secret:
+   ```sh
+   kubectl create secret generic <license-secret-name> \
+     --from-file=license.lic=<path/to/license/file> \
+     --namespace <namespace> 
+   ```
 
-        ```yaml
-        license:
-          enterprise:
-            ...
-            filePathSecretRef`:
-              name: <license-secret-name> # The name used at step 1
-              key: license.lic            # The secret key as specified at step 1
-        ...
-        ```
+   2. Configure [`license.enterprise.filePathSecretRef`](README.md#licenseenterprisefilepathsecretref):
+   ```yaml
+   license:
+     enterprise:
+       ...
+       filePathSecretRef:
+         name: <license-secret-name>  # Secret name from step 1
+         key: license.lic            # Secret key from step 1
+   ...
+   ```
 
-Check out all the remaining settings in the [_License settings_](README.md#license) section of the Lightstreamer Helm chart specification.
- 
+See the [License settings](README.md#license) section for additional configuration options. 
 
 ### Dashboard Configuration
 
