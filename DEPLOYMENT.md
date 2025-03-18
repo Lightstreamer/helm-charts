@@ -88,7 +88,7 @@ servers:
     port: 8080
 ```
 
-> [IMPORTANT!]: If you do not want to include the default server socket configuration (`defaultServer`) in the deployment, explicitly disable it as follows:
+> [!IMPORTANT]: If you do not want to include the default server socket configuration (`defaultServer`) in the deployment, explicitly disable it as follows:
 > ```yaml
 > servers:
 >   defaultServer:
@@ -126,7 +126,7 @@ servers:
     port: 8083
 ```
 
-> [TIP!] Ensure that any unused server configurations are explicitly disabled by setting their `enabled` flag to `false`. For example:
+> [!TIP] Ensure that any unused server configurations are explicitly disabled by setting their `enabled` flag to `false`. For example:
 > ```yaml
 > servers:
 >   unusedServer:
@@ -345,7 +345,7 @@ To persist log files, you can configure the `DailyRollingFile` appender to write
 
 1. **Define a Volume**
   
-   First, configure a volume in the `deployment.extraVolumes` section. You can use various volume types:
+   Configure a volume in the `deployment.extraVolumes` section. You can use various volume types:
 
    ```yaml
    deployment:
@@ -362,7 +362,7 @@ To persist log files, you can configure the `DailyRollingFile` appender to write
 
 2. **Configure the Appender**
    
-   Then, configure your logging appender to use the volume:
+   Configure your logging appender to use the volume:
 
    ```yaml
    logging:
