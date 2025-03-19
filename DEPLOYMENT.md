@@ -31,7 +31,7 @@ Follow these steps to deploy the Lightstreamer Broker:
 
 This will deploy the Lightstreamer Broker to your Kubernetes cluster with the default configuration.
 
-For more detailed configuration options, refer to the [Lightstreamer Helm Chart documentation](https://github.com/Lightstreamer/helm-charts/tree/main/charts/lightstreamer).
+For more detailed configuration options, refer to the [Lightstreamer Helm Chart Specification](https://github.com/Lightstreamer/helm-charts/tree/main/charts/lightstreamer).
 
 ## Customize Lightstreamer Broker
 
@@ -88,8 +88,7 @@ servers:
     port: 8080
 ```
 
-> [!IMPORTANT]
-> If you do not want to include the default server socket configuration (`defaultServer`) in the deployment, explicitly disable it as follows:
+> [IMPORTANT!]: If you do not want to include the default server socket configuration (`defaultServer`) in the deployment, explicitly disable it as follows:
 > ```yaml
 > servers:
 >   defaultServer:
@@ -97,10 +96,9 @@ servers:
 > ...
 > ```
 
-### Multiple Server Sockets
+### Multiple Servers
 
-Lightstreamer Broker supports managing multiple server sockets.
-You can define multiple server socket configurations by adding entries under the `servers` section in your values file.
+Lightstreamer Broker supports managing multiple server sockets. You can define multiple server socket configurations by adding entries under the `servers` section in your values file.
 Each configuration must specify a unique name and port.
 
 Example configuration:
@@ -128,15 +126,14 @@ servers:
     port: 8083
 ```
 
-> [!TIP]
-> Ensure that any unused server configurations are explicitly disabled by setting their `enabled` flag to `false`. For example:
+> [TIP!] Ensure that any unused server configurations are explicitly disabled by setting their `enabled` flag to `false`. For example:
 > ```yaml
 > servers:
 >   unusedServer:
 >     enabled: false
 > ```
 
-### TLS/SSL
+### Config TLS/SSL
 
 To configure TLS/SSL settings for a server socket configuration, perform the following actions:
 
@@ -227,8 +224,7 @@ To configure TLS/SSL settings for a server socket configuration, perform the fol
 
 ### Logging
 
-The provided logging settings are designed to meet the needs of most production environments.
-However, you can customize the configuration to suit specific requirements.
+The provided logging settings are designed to meet the needs of most production environments. However, you can customize the configuration to suit specific requirements.
 
 #### Primary Loggers
 
@@ -276,9 +272,7 @@ logging:
 
 #### Other Loggers
 
-The default configuration includes loggers for third-party libraries used by the Lightstreamer Broker. These loggers are pre-configured to handle typical scenarios and generally do not require modification. However, you can adjust their settings if specific logging behavior is needed.
-
-Refer to the comments in the [values.yaml](charts/lightstreamer/values.yaml#L1039) file for more details about these loggers and their default configurations.
+The default configuration includes loggers for third-party libraries used by the Broker. These loggers typically do not require modification. Refer to the comments in the [values.yaml](charts/lightstreamer/values.yaml#L1039) file for more details.
 
 Example configuration:
 ```yaml
@@ -298,9 +292,7 @@ logging:
 
 #### Extra Loggers
 
-To accommodate custom logging requirements, you can define additional loggers in the `extraLoggers` section. This is particularly useful for logging activities specific to your deployment or application.
-
-Each custom logger can specify its own appenders and logging level, allowing for fine-grained control over logging behavior.
+To define additional loggers, add entries to the `extraLoggers` section. This is useful for custom logging requirements.
 
 Example configuration:
 ```yaml
@@ -316,8 +308,8 @@ extraLoggers:
 
 The [`logging.appenders`](README.md#loggingappenders) section defines the appenders available for use by loggers. The default configuration includes:
 
-- [`dailyRolling`](charts/lightstreamer/values.yaml#L660): A daily rolling file appender, which uses the `DailyRollingFile` type.
-- [`console`](charts/lightstreamer/values.yaml#L681): A console appender, which sues the `Console` type.
+- [`dailyRolling`](charts/lightstreamer/values.yaml#L660): A daily rolling file appender.
+- [`console`](charts/lightstreamer/values.yaml#L681): A console appender.
 
 You can customize these appenders or define new ones.
 
@@ -342,135 +334,6 @@ logging:
         - anotherConsoleAppender
 ...
 ```
-
-##### Log to Persistent Storage
-
-To persist log files, you can configure the `DailyRollingFile` appender to write to a Kubernetes volume. Here's how to set it up:
-
-1. **Define a Volume**
-  
-   Configure a volume in the `deployment.extraVolumes` section. You can use various volume types:
-
-   ```yaml
-   deployment:
-     extraVolumes:
-       # Using emptyDir (temporary storage)
-       - name: log-volume
-         emptyDir: {}
-       
-       # Or using PersistentVolumeClaim (permanent storage)
-       - name: log-volume
-         persistentVolumeClaim:
-           claimName: lightstreamer-logs-pvc
-   ```
-
-2. **Configure the Appender**
-   
-   Configure your logging appender to use the volume:
-
-   ```yaml
-   logging:
-     appenders:
-       dailyRollingAppender:
-         type: DailyRollingFile
-         # Log file format
-         pattern: "%d{ISO8601}|%-5p|%-20.20c{1}|%m%n"
-         
-         # Log file settings
-         fileName: "lightstreamer.log"
-         fileNamePattern: "lightstreamer-%d{yyyy-MM-dd}.log"
-         
-         # Volume reference
-         volumeRef: log-volume
-   ```
-### License
-
-The [`license`](README.md#license) section configures the edition and license type for the Lightstreamer Broker.
-
-Tow editions are available:
-
-- `COMMUNITY`: Free edition with feature restrictions
-- `ENTERPRISE`: Full-featured commercial edition
-
-#### Community Edition
-
-The `COMMUNITY` edition can be used for free but has the following limitations:
-
-- No TLS/SSL support
-- Maximum downstream message rate of 1 message/sec
-- Limited features compared to Enterprise edition
-
-See the [Software License Agreement](https://lightstreamer.com/distros/ls-server/7.4.6/Lightstreamer%20Software%20License%20Agreement.pdf) for complete details
-
-To configure the Community edition:
-
-1. Set `license.edition` to `COMMUNITY`
-2. Set `license.enabledCommunityEditionClientApi` with the Client API to use with the free license
-
-#### Enterprise Edition
-
-The default configuration uses the `ENTERPRISE` edition with a _Demo_ license that:
-
-- Can be used for evaluation, development and testing (not production)
-- Has a limit of 20 concurrent user sessions
-
-Contact *_info@lightstreamer.com_* for evaluation without session limits or for production licenses
-
-To configure the `ENTERPRISE` edition with a customer license:
-
-1. Set [`license.edition`](README.md#licenseedition) to `ENTERPRISE`
-
-2. Set [`license.enterprise.licenseType`](README.md#licenseenterpriselicensetype) to specify license type
-
-3. Set [`license.enterprise.contractId`](README.md#licenseenterprisecontractid) with your contract identifier
-
-4. Configure license validation using one of these methods:
-
-   **Online Validation**
-   
-   For license types: `EVALUATION`, `STARTUP`, `PRODUCTION`, `HOT-STANDBY`, `NON-PRODUCTION-FULL`, `NON-PRODUCTION-LIMITED`
-
-   1. Create password secret:
-   ```sh
-   kubectl create secret generic <online-password-secret-name> \
-     --from-literal=online-password=<online-password> \
-     --namespace <namespace>
-   ```
-
-   2. Configure [`license.enterprise.onlinePasswordSecretRef`](README.md#licenseenterpriseonlinepasswordsecretref):
-   ```yaml
-   license:
-     enterprise:
-       ...
-       onlinePasswordSecretRef:
-         name: <online-password-secret-name>  # Secret name from step 1
-         key: online-password                 # Secret key from step 1
-   ...
-   ```
-
-   **File-based Validation**
-   
-   For license types: `PRODUCTION`, `HOT-STANDBY`, `NON-PRODUCTION-FULL`, `NON-PRODUCTION-LIMITED`
-
-   1. Create license file secret:
-   ```sh
-   kubectl create secret generic <license-secret-name> \
-     --from-file=license.lic=<path/to/license/file> \
-     --namespace <namespace> 
-   ```
-
-   2. Configure [`license.enterprise.filePathSecretRef`](README.md#licenseenterprisefilepathsecretref):
-   ```yaml
-   license:
-     enterprise:
-       ...
-       filePathSecretRef:
-         name: <license-secret-name>  # Secret name from step 1
-         key: license.lic            # Secret key from step 1
-   ...
-   ```
-
-See the [License settings](README.md#license) section for additional configuration options. 
 
 ### Dashboard Configuration
 
@@ -534,3 +397,9 @@ healthcheck:
     initialDelaySeconds: 60
     periodSeconds: 20
 ```
+
+## Configure Licensing
+
+
+
+
