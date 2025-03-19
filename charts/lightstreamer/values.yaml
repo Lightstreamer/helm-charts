@@ -678,13 +678,6 @@ logging:
       # -- (string) Optional. The reference to a volume to use for the log file.
       volumeRef:
 
-    # anotherDailyRolling:
-    #   type: DailyRollingFile
-    #   pattern: "%d{\"dd-MMM-yy HH:mm:ss,SSS\"}|%-5.5(%p%marker)|%-19.19c{19}|%-27.27t|%m%n"
-    #   fileName: "anotherlogfile.log"
-    #   fileNamePattern: "anotherlogfile-%d{yyyy-MM-dd}.log"
-    #   volumeRef: custom-logs
-
     console:
       type: Console
       pattern: "%d{\"yyyy-MM-dd HH:mm:ss,SSS\"}|%-5.5(%p%marker)|%m%n"
@@ -715,7 +708,7 @@ logging:
     lightstreamerMonitorText:
 
       # -- Optional. List of references to the appenders defined in
-      # `.logging.appenders`.
+      # `logging.appenders`.
       appenders:
         - console
 
@@ -729,7 +722,7 @@ logging:
     lightstreamerMonitorTAB:
 
       # -- Optional. List of references to the appenders defined in
-      # `.logging.appenders`.
+      # `logging.appenders`.
       appenders:
         - console
 
@@ -757,7 +750,7 @@ logging:
     lightstreamerLogger:
 
       # -- Optional. List of references to the appenders defined in
-      # `.logging.appenders`.
+      # `logging.appenders`.
       appenders:
         - console
 
@@ -1010,7 +1003,7 @@ logging:
     lightstreamerHealthCheck:
 
       # -- Optional. List of references to the appenders defined in
-      # `.logging.appenders`.
+      # `logging.appenders`.
       appenders:
         - console
 
@@ -1028,13 +1021,31 @@ logging:
     lightstreamerProxyAdapters:
 
       # -- Optional. List of references to the appenders defined in
-      # `.logging.appenders`.
+      # `logging.appenders`.
       appenders:
         - console
 
       # -- Optional. The level of the logger.
       # @default -- DEBUG
       level: INFO
+
+    # Log from third-party libraries used internally by the Server.
+    # All the log produced by these libraries is routed, by keeping the category 
+    # names, to the JDK's `java.util.logging` system first, then routed to 
+    # Logback.
+    # Hence, this log can be consumed by defining the loggers below.
+    # 
+    # If any Adapter should log through the java.util.logging support on the 
+    # same categories, (either directly, or by using the same JDK services, or
+    # through some third-party library), this log will be shared with the Server 
+    # log.
+    # 
+    # If, for any reason, it is required that the configuration of the 
+    # java.util.logging system for some of these categories is done elsewhere, 
+    # then the mappings done here can be disabled at startup, by just removing or 
+    # commenting out the corresponding loggers below, or by setting them to 
+    # level OFF.
+    # Disabling the mapping may also prevent inefficiency for heavy loggers.
 
     # These loggers are related to Hibernate, a component used by the MPN Module
     # for its persistence with the database. In case of need, please refer to
@@ -1062,7 +1073,6 @@ logging:
 
     # These loggers are related to other third-party libraries used internally
     # by the Server.
-
     org.apache.http:
       appenders:
         - console
@@ -1146,6 +1156,7 @@ logging:
         - console
       level: "OFF"
 
+  # -- Optional. Additional loggers.
   # Put here any additional loggers you want to configure.
   extraLoggers:
     # anotherLogger:
@@ -1572,11 +1583,11 @@ servers:
       # It can be used to supply client certificates that should be accepted,
       # in addition to those with a valid certificate chain, for instance while
       # testing with self-signed certificates.
-      # See the `keystores.myServerKeystore` settings for general details on
-      # keystore configuration.
-      # Note that the further constraints reported there with regard to
-      # accessing the certificates in a JKS keystore don't hold in this
-      # case, where the latter is used as a truststore.
+      # See  `keystoreRef` and `keystores.myServerKeystore` for further details 
+      # about keystore configuration.
+      # Note that the further constraints reported there with regard to 
+      # accessing the certificates in a JKS keystore don't hold in this case,
+      # where the latter is used as a truststore.
       # Moreover, the handling of keystore replacement doesn't apply here.
       truststoreRef:
 
@@ -3132,7 +3143,7 @@ mpn:
     keystores:
 
       # -- Keystore configuration for the app.
-      # myAppKeystore:
+      myAppKeystore:
 
         # -- Mandatory. The secret name and the key where the keystore file is
         # stored.
@@ -5467,7 +5478,7 @@ connectors:
         logger:
 
           # -- Mandatory. List of references to the appenders defined in
-          # `kafkaConnector.logging.appenders`.
+          # `connectors.kafkaConnector.logging.appenders`.
           appenders:
             - stdout
 
