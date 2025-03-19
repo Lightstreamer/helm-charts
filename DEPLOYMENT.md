@@ -4,21 +4,25 @@ This guide provides step-by-step instructions on how to deploy the Lightstreamer
 
 ## Table of Contents
 - [Prerequisites](#prerequisites)
-- [Installation Steps](#installation-steps)
+- [Deployment Steps](#deployment-steps)
 - [Customize Lightstreamer Broker](#customize-lightstreamer-broker)
+  - [License](#license)
+    - [Community Edition](#community-edition)
+    - [Enterprise Edition](#enterprise-edition)
   - [Configure a New Server Socket Configuration](#configure-a-new-server-socket-configuration)
   - [Multiple Servers](#multiple-servers)
-  - [Config TLS/SSL](#config-tlsssl)
+  - [TLS/SSL](#config-tlsssl)
   - [Logging](#logging)
     - [Primary Loggers](#primary-loggers)
     - [Subloggers](#subloggers)
     - [Other Loggers](#other-loggers)
     - [Extra Loggers](#extra-loggers)
     - [Appenders](#appenders)
-  - [Dashboard Configuration](#dashboard-configuration)
-  - [JMX Configuration](#jmx-configuration)
-  - [Health Check Configuration](#health-check-configuration)
-- [Configure Licensing](#configure-licensing)
+      - [Log to Persistent Storage](#log-to-persistent-storage)
+  - [Monitoring](#monitoring)
+    - [Dashboard](#dashboard-configuration)
+    - [JMX](#jmx-configuration)
+    - [Health Checks](#health-check-configuration)
 
 ## Prerequisites
 
@@ -113,6 +117,92 @@ For more details about general chart customization, refer to the [official Helm 
 
 In the following sections, we will guide you on how to customize the values of the Lightstreamer Helm chart to configure the most critical aspects of deploying a Lightstreamer Broker to Kubernetes.
 
+### License
+
+The [`license`](README.md#license) section configures the edition and license type for the Lightstreamer Broker.
+
+Two editions are available:
+
+- **Community**: Free edition with feature restrictions
+- **Enterprise**: Full-featured commercial edition
+
+#### Community Edition
+
+The Community edition can be used for free but has the following limitations:
+
+- No TLS/SSL support
+- Maximum downstream message rate of 1 message/sec
+- Limited features compared to Enterprise edition
+
+See the [Software License Agreement](https://lightstreamer.com/distros/ls-server/7.4.6/Lightstreamer%20Software%20License%20Agreement.pdf) for complete details.
+
+To configure the Community edition:
+
+1. Set `license.edition` to `COMMUNITY`
+2. Set `license.enabledCommunityEditionClientApi` with the Client API to use with the free license
+
+#### Enterprise Edition
+
+The default configuration uses the Enterprise edition with a _Demo_ license that:
+
+* Can be used for evaluation, development and testing (not production)
+* Has a limit of 20 concurrent user sessions
+
+Contact *_info@lightstreamer.com_* for evaluation without session limits or for production licenses
+
+To configure the `ENTERPRISE` edition with a customer license:
+
+1. Set [`license.edition`](README.md#licenseedition) to `ENTERPRISE`
+2. Set [`license.enterprise.licenseType`](README.md#licenseenterpriselicensetype) to specify license type
+3. Set [`license.enterprise.contractId`](README.md#licenseenterprisecontractid) with your contract identifier
+4. Configure license validation using one of these methods:
+
+   **Online Validation**
+   
+   For license types: `EVALUATION`, `STARTUP`, `PRODUCTION`, `HOT-STANDBY`, `NON-PRODUCTION-FULL`, `NON-PRODUCTION-LIMITED`
+
+   1. Create password secret:
+   ```sh
+   kubectl create secret generic <online-password-secret-name> \
+     --from-literal=online-password=<online-password> \
+     --namespace <namespace>
+   ```
+
+   2. Configure [`license.enterprise.onlinePasswordSecretRef`](README.md#licenseenterpriseonlinepasswordsecretref):
+   ```yaml
+   license:
+     enterprise:
+       ...
+       onlinePasswordSecretRef:
+         name: <online-password-secret-name>  # Secret name from step 1
+         key: online-password                 # Secret key from step 1
+   ...
+   ```
+
+   **File-based Validation**
+   
+   For license types: `PRODUCTION`, `HOT-STANDBY`, `NON-PRODUCTION-FULL`, `NON-PRODUCTION-LIMITED`
+
+   1. Create license file secret:
+   ```sh
+   kubectl create secret generic <license-secret-name> \
+     --from-file=license.lic=<path/to/license/file> \
+     --namespace <namespace> 
+   ```
+
+   2. Configure [`license.enterprise.filePathSecretRef`](README.md#licenseenterprisefilepathsecretref):
+   ```yaml
+   license:
+     enterprise:
+       ...
+       filePathSecretRef:
+         name: <license-secret-name>  # Secret name from step 1
+         key: license.lic            # Secret key from step 1
+   ...
+   ```
+
+See the [License settings](README.md#license) section for additional configuration options. 
+
 ### Configure a New Server Socket Configuration
 
 To configure a new server socket, add a new entry to the [`servers`](README.md#servers) section with the following mandatory settings:
@@ -177,7 +267,7 @@ servers:
 >     enabled: false
 > ```
 
-### Config TLS/SSL
+### TLS/SSL
 
 To configure TLS/SSL settings for a server socket configuration, perform the following actions:
 
@@ -379,6 +469,47 @@ logging:
 ...
 ```
 
+##### Log to Persistent Storage
+
+To persist log files, you can configure the `DailyRollingFile` appender to write to a Kubernetes volume. Here's how to set it up:
+
+1. **Define a Volume**
+  
+   Configure a volume in the `deployment.extraVolumes` section. You can use various volume types:
+
+   ```yaml
+   deployment:
+     extraVolumes:
+       # Using emptyDir (temporary storage)
+       - name: log-volume
+         emptyDir: {}
+       
+       # Or using PersistentVolumeClaim (permanent storage)
+       - name: log-volume
+         persistentVolumeClaim:
+           claimName: lightstreamer-logs-pvc
+   ```
+
+2. **Configure the Appender**
+   
+   Configure your logging appender to use the volume:
+
+   ```yaml
+   logging:
+     appenders:
+       dailyRollingAppender:
+         type: DailyRollingFile
+         # Log file format
+         pattern: "%d{ISO8601}|%-5p|%-20.20c{1}|%m%n"
+         
+         # Log file settings
+         fileName: "lightstreamer.log"
+         fileNamePattern: "lightstreamer-%d{yyyy-MM-dd}.log"
+         
+         # Volume reference
+         volumeRef: log-volume
+   ```
+
 ### Dashboard Configuration
 
 The Lightstreamer Dashboard provides a web interface for monitoring and managing your Lightstreamer instance. To configure the dashboard:
@@ -441,9 +572,5 @@ healthcheck:
     initialDelaySeconds: 60
     periodSeconds: 20
 ```
-
-## Configure Licensing
-
-
-
+````
 
