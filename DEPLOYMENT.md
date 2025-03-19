@@ -2,34 +2,78 @@
 
 This guide provides step-by-step instructions on how to deploy the Lightstreamer Broker to a Kubernetes cluster using the Lightstreamer Helm Chart.
 
+## Table of Contents
+- [Prerequisites](#prerequisites)
+- [Installation Steps](#installation-steps)
+- [Customize Lightstreamer Broker](#customize-lightstreamer-broker)
+  - [Configure a New Server Socket Configuration](#configure-a-new-server-socket-configuration)
+  - [Multiple Servers](#multiple-servers)
+  - [Config TLS/SSL](#config-tlsssl)
+  - [Logging](#logging)
+    - [Primary Loggers](#primary-loggers)
+    - [Subloggers](#subloggers)
+    - [Other Loggers](#other-loggers)
+    - [Extra Loggers](#extra-loggers)
+    - [Appenders](#appenders)
+  - [Dashboard Configuration](#dashboard-configuration)
+  - [JMX Configuration](#jmx-configuration)
+  - [Health Check Configuration](#health-check-configuration)
+- [Configure Licensing](#configure-licensing)
+
 ## Prerequisites
 
 Before you begin, ensure that you have the following prerequisites:
 
-- A running Kubernetes cluster
-- Helm installed on your local machine
-- Access to the Lightstreamer Helm Chart repository
+- **Kubernetes**
+  
+  Access to a running Kubernetes cluster version 1.23.5 or newer. [Install Kubernetes](https://kubernetes.io/docs/setup/)
 
-## Installation Steps
+- **Helm**
+  
+  Helm client version 3.8.0 or newer installed on your local machine. [Install Helm](https://helm.sh/docs/intro/install/)
 
-Follow these steps to deploy the Lightstreamer Broker:
+- **kubectl**
+  
+  kubectl version 1.23.5 or newer, compatible with your cluster version. kubectl is needed to interact with your Kubernetes cluster. [Install kubectl](https://kubernetes.io/docs/tasks/tools/)
+
+## Deployment Steps
+
+Follow these steps to deploy the Lightstreamer Broker to your Kubernetes cluser:
 
 1. **Add the Lightstreamer Helm repository:**
+
     ```sh
-    $ helm repo add lightstreamer https://lightstreamer.github.io/helm-charts
+    helm repo add lightstreamer https://lightstreamer.github.io/helm-charts
     ```
 
 2. **Update your Helm repositories:**
+
     ```sh
-    $ helm repo update
+    helm repo update
     ```
 
 3. **Install the Lightstreamer Helm Chart:**
+
     ```sh
-    $ helm install lightstreamer-app lightstreamer/lightstreamer --namespace lightstreamer --create-namespace
+    helm install lightstreamer lightstreamer/lightstreamer \
+        --namespace <namespace> \
+        --create-namespace
     ```
 
-This will deploy the Lightstreamer Broker to your Kubernetes cluster with the default configuration.
+4. **Wait for the Lightstreamer Broker to be ready:**
+
+    ```sh
+    kubectl rollout status deployment lightstreamer --namespace <namespace> --watch
+    ```
+
+    Expected output upon the broker is ready:
+    
+    ```sh
+    deployment "lightstreamer" successfully rolled out
+    ```
+
+
+This will deploy the Lightstreamer Broker and other related components with the default configuration.
 
 For more detailed configuration options, refer to the [Lightstreamer Helm Chart Specification](https://github.com/Lightstreamer/helm-charts/tree/main/charts/lightstreamer).
 
@@ -40,7 +84,7 @@ You can customize the deployment by overriding the default values in two differe
 1. Use the `--set` option to specify overrides on the command line:
   
    ```sh
-   $ helm install lightstreamer lightstreamer/lightstreamer \
+   helm install lightstreamer lightstreamer/lightstreamer \
      --set servers.defaultServer.name="My Lightstreamer HTTP Server" \
      --namespace lightstreamer \
      --create-namespace
@@ -59,7 +103,7 @@ You can customize the deployment by overriding the default values in two differe
    - Run the helm command:
 
      ```sh
-     $ helm install lightstreamer lightstreamer/lightstreamer \
+     helm install lightstreamer lightstreamer/lightstreamer \
        --values default-server.yaml \
        --namespace lightstreamer \
        --create-namespace
