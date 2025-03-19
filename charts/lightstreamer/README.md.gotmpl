@@ -4,13 +4,14 @@
 
 {{- define "chart.description" -}}
 
-This Helm chart specification provides a structured and efficient way to deploy and manage Lightstreamer on Kubernetes. 
+This Helm chart provides a structured and efficient way to deploy and manage Lightstreamer Broker on Kubernetes. 
 
 By leveraging Helm's templating capabilities, this chart simplifies the configuration and deployment process, 
-ensuring that Lightstreamer can be easily integrated into your Kubernetes environment.
+ensuring that Lightstreamer Broker can be easily integrated into your Kubernetes environment.
 
-This page covers installation instructions, settings, and default values, making it easier for developers and operators 
-to understand and configure Lightstreamer.
+This page documents the configuration settings and default values for the chart.
+
+For installation instructions, custom configuration, and deployment guidance, see the [deployment documentation](DEPLOYMENT.md).
 
 {{- end -}}
 
@@ -35,8 +36,11 @@ to understand and configure Lightstreamer.
 
 ## Settings
 
-To improve readability and navigation, the documentation has been divided into smaller sections, 
-each focusing on a specific aspect of the Helm chart:
+This chart offers extensive configuration options organized into logical sections for easy reference and management. 
+Each setting is documented with its description, default value, and configuration examples where applicable.
+
+To improve readability and navigation, the configuration documentation has been divided into the following sections, 
+each focusing on a specific aspect of the Lightstreamer deployment:
 
 {{ range $section := $sections }}
 - [{{ . | kebabcase | replace "-" " " | title }}]({{ printf "#%s-settings" (. | kebabcase )}})
@@ -75,15 +79,6 @@ each focusing on a specific aspect of the Helm chart:
 {{ template "chart.homepageLine" . }}
 
 {{ template "chart.sourcesSection" . }}
-
-## Installing the Chart
-
-To install the chart with the release name `lightstreamer-app`:
-
-```console
-$ helm repo add lightstreamer https://lightstreamer.github.io/helm-charts
-$ helm install lightstreamer-app lightstreamer/lightstreamer -n lightstreamer --create-namespace
-```
 
 {{ template "chart.requirementsSection" . }}
 
