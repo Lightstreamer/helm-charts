@@ -599,7 +599,7 @@ management:
       keystoreRef: rmiKeystore # Reference to a keystore
 ```
 
-> [WARNING!]
+> [WARN!]
 > Make sure to enable TLS/SSL communication in a production deployment.
 
 See the [`management.jmx.rmiConnector.sslConfig`](README.md#managementjmxrmiconnectorsslconfig) section of the _Lightstreamer Helm Chart specification_ for additional TLS/SSL configuration options for the RMI connector. 
@@ -626,7 +626,7 @@ management:
         - rmi-user-2-secret
 ```
 
-> [WARNING!]
+> [WARN!]
 > Make sure to enable authenticated access in a production deployment.
 
 ### Dashboard Configuration
