@@ -537,7 +537,7 @@ The default configuration enables an RMI connector listening on TCP port `8888`.
 ```sh
 kubectl get pods -l app.kubernetes.io/name=lightstreamer -o jsonpath="{.items[0].spec.containers[0].ports}" --namespace <namespace> | jq
 ```
-> [!TIP!]
+> [!TIP]
 > Notice the usage of the [`jq`](https://jqlang.org/) tool to simplify the processing of json outputs.
 
 Expected output:
