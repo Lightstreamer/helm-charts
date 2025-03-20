@@ -20,21 +20,22 @@ This guide provides step-by-step instructions on how to deploy the Lightstreamer
     - [Appenders](#appenders)
       - [Log to Persistent Storage](#log-to-persistent-storage)
   - [JMX](#jmx)
+    - [RMI Connector](#rmi-connector)
 
 ## Prerequisites
 
 Before you begin, ensure that you have the following prerequisites:
 
 - **Kubernetes**
-  
+
   Access to a running Kubernetes cluster version 1.23.5 or newer. [Install Kubernetes](https://kubernetes.io/docs/setup/)
 
 - **Helm**
-  
+
   Helm client version 3.8.0 or newer installed on your local machine. [Install Helm](https://helm.sh/docs/intro/install/)
 
 - **kubectl**
-  
+
   kubectl version 1.23.5 or newer, compatible with your cluster version. kubectl is needed to interact with your Kubernetes cluster. [Install kubectl](https://kubernetes.io/docs/tasks/tools/)
 
 ## Deployment Steps
@@ -68,7 +69,7 @@ Follow these steps to deploy the Lightstreamer Broker to your Kubernetes cluster
     ```
 
     Expected output upon the broker is ready:
-    
+
     ```sh
     deployment "lightstreamer" successfully rolled out
     ```
@@ -83,7 +84,7 @@ For more detailed configuration options, refer to the [Lightstreamer Helm Chart 
 You can customize the deployment by overriding the default values in two different ways:
 
 1. Use the `--set` option to specify overrides on the command line:
-  
+
    ```sh
    helm install lightstreamer lightstreamer/lightstreamer \
      --set servers.defaultServer.name="My Lightstreamer HTTP Server" \
@@ -92,15 +93,15 @@ You can customize the deployment by overriding the default values in two differe
    ```
 
 2. Use the `--values` to specify one or more YAMLs file with overrides. For example:
-   
+
    - Edit the file `default-server.yaml` as follows:
-  
+
      ```yaml
      servers:
        defaultServer:
          name: "My Lightstreamer HTTP Server"
      ```
-   
+
    - Run the helm command:
 
      ```sh
@@ -163,7 +164,7 @@ To configure the `ENTERPRISE` edition with a customer license:
 4. Configure license validation using one of these methods:
 
    **Online Validation**
-   
+
    For license types: `EVALUATION`, `STARTUP`, `PRODUCTION`, `HOT-STANDBY`, `NON-PRODUCTION-FULL`, `NON-PRODUCTION-LIMITED`
 
    1. Create password secret:
@@ -185,14 +186,14 @@ To configure the `ENTERPRISE` edition with a customer license:
    ```
 
    **File-based Validation**
-   
+
    For license types: `PRODUCTION`, `HOT-STANDBY`, `NON-PRODUCTION-FULL`, `NON-PRODUCTION-LIMITED`
 
    1. Create license file secret:
    ```sh
    kubectl create secret generic <license-secret-name> \
      --from-file=license.lic=<path/to/license/file> \
-     --namespace <namespace> 
+     --namespace <namespace>
    ```
 
    2. Configure [`license.enterprise.filePathSecretRef`](README.md#licenseenterprisefilepathsecretref):
@@ -206,7 +207,7 @@ To configure the `ENTERPRISE` edition with a customer license:
    ...
    ```
 
-See the [License settings](README.md#license) section of the _Lightstreamer Helm Chart specification_ for additional configuration options. 
+See the [License settings](README.md#license) section of the _Lightstreamer Helm Chart specification_ for additional configuration options.
 
 ### Server Socket
 
@@ -257,7 +258,7 @@ servers:
   httpServer2:
     enabled: true
     name: "HTTP Server 2"
-    port: 8082   
+    port: 8082
 
   # Server socket listening on port 8083
   httpServer3:
@@ -279,7 +280,7 @@ servers:
 To configure TLS/SSL settings for a server socket configuration, perform the following actions:
 
 - Set the [`enableHttps`](README.md#serversdefaultserverenablehttps) flag of the target server configuration to `true`:
-  
+
   ```yaml
   servers:
     defaultServer:
@@ -288,7 +289,7 @@ To configure TLS/SSL settings for a server socket configuration, perform the fol
   ```
 
 - Configure a keystore:
-  
+
   1. Create a secret containing the keystore:
 
      ```sh
@@ -310,7 +311,7 @@ To configure TLS/SSL settings for a server socket configuration, perform the fol
        serverKeystore:
          # The keystore type, here we assume JKS
          type: JKS
-        
+
          keystoreFileSecretRef:
            name: <keystore-secret-name> # The name used at step 1
            key: server.keystore         # The secret key as specified at step 1
@@ -319,11 +320,11 @@ To configure TLS/SSL settings for a server socket configuration, perform the fol
            name: <keystore-password-secret-name> # The name used at step 2
            key: password                         # The secret key as specified at step 2
      ```
-    
+
 - If required, configure a truststore by repeating similar actions of the previous section:
 
   1. Create the truststore secrets:
-  
+
      ```sh
      $ kubectl create secret generic <truststore-secret-name> --from-file=server.truststore=<path/to/truststore> --namespace <namespace>
      $ kubectl create secret generic <truststore-password-secret-name> --from-literal=password=<truststore-password> --namespace <namespace>
@@ -336,18 +337,18 @@ To configure TLS/SSL settings for a server socket configuration, perform the fol
        serverTruststore:
          # The truststore type, here we assume JKS
          type: JKS
-      
+
          keystoreFileSecretRef:
-           name: <truststore-secret-name> 
-           key: server.truststore          
+           name: <truststore-secret-name>
+           key: server.truststore
 
          keystorePasswordSecretRef:
-           name: <truststore-password-secret-name> 
-           key: password                           
+           name: <truststore-password-secret-name>
+           key: password
      ```
 
 - Configure the [`sslConfig`](README.md#serversdefaultserversslconfig) section:
-  
+
   ```yaml
   servers:
     defaultServer:
@@ -363,7 +364,7 @@ To configure TLS/SSL settings for a server socket configuration, perform the fol
         ...
   ```
 See the servers.defaultServer.sslConfig
-See the [License settings](README.md#license) section of the _Lightstreamer Helm Chart specification_ for additional configuration options. 
+See the [License settings](README.md#license) section of the _Lightstreamer Helm Chart specification_ for additional configuration options.
 
 ### Logging
 
@@ -451,8 +452,8 @@ extraLoggers:
 
 The [`logging.appenders`](README.md#loggingappenders) section defines the appenders available for use by loggers. The default configuration includes:
 
-- [`dailyRolling`](charts/lightstreamer/values.yaml#L660): A daily rolling file appender.
-- [`console`](charts/lightstreamer/values.yaml#L681): A console appender.
+- [`dailyRolling`](charts/lightstreamer/values.yaml#L660): A daily rolling file appender
+- [`console`](charts/lightstreamer/values.yaml#L681): A console appender
 
 You can customize these appenders or define new ones.
 
@@ -483,7 +484,7 @@ logging:
 To persist log files, you can configure the `DailyRollingFile` appender to write to a Kubernetes volume. Here's how to set it up:
 
 1. **Define a Volume**
-  
+
    Configure a volume in the `deployment.extraVolumes` section. You can use various volume types:
 
    ```yaml
@@ -492,7 +493,7 @@ To persist log files, you can configure the `DailyRollingFile` appender to write
        # Using emptyDir (temporary storage)
        - name: log-volume
          emptyDir: {}
-       
+
        # Or using PersistentVolumeClaim (permanent storage)
        - name: log-volume
          persistentVolumeClaim:
@@ -500,7 +501,7 @@ To persist log files, you can configure the `DailyRollingFile` appender to write
    ```
 
 2. **Configure the Appender**
-   
+
    Configure your logging appender to use the volume:
 
    ```yaml
@@ -510,11 +511,11 @@ To persist log files, you can configure the `DailyRollingFile` appender to write
          type: DailyRollingFile
          # Log file format
          pattern: "%d{ISO8601}|%-5p|%-20.20c{1}|%m%n"
-         
+
          # Log file settings
          fileName: "lightstreamer.log"
          fileNamePattern: "lightstreamer-%d{yyyy-MM-dd}.log"
-         
+
          # Volume reference
          volumeRef: log-volume
    ```
@@ -536,7 +537,8 @@ The default configuration enables an RMI connector listening on TCP port `8888`.
 ```sh
 kubectl get pods -l app.kubernetes.io/name=lightstreamer -o jsonpath="{.items[0].spec.containers[0].ports}" --namespace <namespace> | jq
 ```
->[TIP!] Notice the usage of the [`jq`](https://jqlang.org/) tool to simplify the processing of json outputs.
+>[TIP!]
+>Notice the usage of the [`jq`](https://jqlang.org/) tool to simplify the processing of json outputs.
 
 Expected output:
 ```json
@@ -565,7 +567,7 @@ management:
         enableSsl: true        # Optional TLS/SSL enablement
       keystoreRef: rmiKeystore # Reference to a keystore
 ```
-  
+
 In the above configuration, the optional [`enableSsl`](README.md#managementjmxrmiconnectorportenablessl) flag has been turned on to enable TLS/SSL communication, which in addition requires you to configure (or reuse) a keystore and reference it (as already explained in the [_TLS/SSL_](#tlsssl) section).
 
 #### Authentication
