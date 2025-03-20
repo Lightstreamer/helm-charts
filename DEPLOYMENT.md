@@ -21,6 +21,8 @@ This guide provides step-by-step instructions on how to deploy the Lightstreamer
       - [Log to Persistent Storage](#log-to-persistent-storage)
   - [JMX](#jmx)
     - [RMI Connector](#rmi-connector)
+      - [TLS/SSL](#tlsssl-1)
+      - [Authentication](#authentication)
 
 ## Prerequisites
 
@@ -221,7 +223,7 @@ To configure the `ENTERPRISE` edition with a customer license:
    ...
    ```
 
-See the [License settings](README.md#license) section of the _Lightstreamer Helm Chart specification_ for additional configuration options.
+See the [License settings](README.md#license) section of the _Lightstreamer Helm Chart specification_ for additional license configuration options.
 
 ### Server Socket
 
@@ -377,12 +379,13 @@ To configure TLS/SSL settings for a server socket configuration, perform the fol
         # Other settings
         ...
   ```
-See the servers.defaultServer.sslConfig
-See the [License settings](README.md#license) section of the _Lightstreamer Helm Chart specification_ for additional configuration options.
+See the [`servers.defaultServer.sslConfig`](README.md#serversdefaultserversslconfig) section of the _Lightstreamer Helm Chart specification_ for additional TLS/SLS configuration options.
 
 ### Logging
 
 The provided logging settings are designed to meet the needs of most production environments. However, you can customize the configuration to suit specific requirements.
+
+See the [_Logging_](README.md#logging) section of the _Lightstreamer Helm Chart specification_ for full details about logging configuration.
 
 #### Primary Loggers
 
@@ -552,7 +555,7 @@ The default configuration enables an RMI connector listening on TCP port `8888`.
 kubectl get pods -l app.kubernetes.io/name=lightstreamer -o jsonpath="{.items[0].spec.containers[0].ports}" --namespace <namespace> | jq
 ```
 > [!TIP]
-> Notice the usage of the [`jq`](https://jqlang.org/) tool to simplify the processing of json outputs.
+> Notice the usage of the [`jq`](https://jqlang.org/) tool to simplify the processing of JSON outputs.
 
 Expected output:
 ```json
@@ -582,23 +585,43 @@ management:
       keystoreRef: rmiKeystore # Reference to a keystore
 ```
 
-In the above configuration, the optional [`enableSsl`](README.md#managementjmxrmiconnectorportenablessl) flag has been turned on to enable TLS/SSL communication, which in addition requires you to configure (or reuse) a keystore and reference it (as already explained in the [_TLS/SSL_](#tlsssl) section).
+In the above configuration,  flag has been turned on to enable TLS/SSL communication, which in addition requires you to configure (or reuse) a keystore and reference it (as already explained in the [_TLS/SSL_](#tlsssl) section).
+
+##### TLS/SSL
+
+To enable TLS/SSL communication, turn on the optional [`enableSsl`](README.md#managementjmxrmiconnectorportenablessl) flag and reference a keystore trough [`keystoreRef`](README.md#managementjmxrmiconnectorsslconfigkeystoreref) (as already explained in the [_TLS/SSL_](#tlsssl) ):
+
+```yaml
+management:
+  jmx:
+    rmiConnector:
+      port:
+        value: 9999
+        enableSsl: true        # Optional TLS/SSL enablement
+      keystoreRef: rmiKeystore # Reference to a keystore
+```
 
 ##### Authentication
 
-To configure RMI connector access with authentication, you have to provide the list of secrets containing the credentials of the authorized users: For example
+To restrict access to authorized users, first create the relative secrets (every one including the mandatory keys `user` and `password`). For example:
 
 ```sh
-kubectl create secret generic rmi-user-1-secret --from-literal=user=<user-1> --from-literal=password='<user1-password>' -n lightstreamer
-kubectl create secret generic rmi-user-2-secret --from-literal=user='user_changeme1' --from-literal=password='password_changeme2' -n lightstreamer
+kubectl create secret generic rmi-user-1-secret --from-literal=user=<user-1> --from-literal=password='<user1-password>' --namespace <namespace>
+kubectl create secret generic rmi-user-2-secret --from-literal=user=<user-2>' --from-literal=password='<user2-password>' --namespace <namespace>
 ```
 
+Then, disable public access turning off the [`management.jmx.rmiConnector.enablePublicAccess`](README.md#managementjmxrmiconnectorenablepublicaccess) flag and populate the [`management.jmx.rmiConnector.credentialsSecrets`](README.md#managementjmxrmiconnectorcredentialssecrets) list with the references to the secrets.
 
-1. Set [`management.jmx.rmiConnector.enablePublicAccess`](README.md#managementjmxrmiconnectorenablepublicaccess) to `false`:
-
-2. Create a secret for every enabled authorized user:
-
-3. Set with 
+Example:
+```yaml
+management:
+  jmx:
+    rmiConnector:
+      enablePublicAccess: false # Requires authenticated RMI connector access
+      credentialsSecrets:       # List of secrets
+        - rmi-user-1-secret     
+        - rmi-user-2-secret
+```
 
 
 ### Dashboard Configuration
