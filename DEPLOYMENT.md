@@ -158,9 +158,9 @@ Contact *_info@lightstreamer.com_* for evaluation without session limits or for 
 
 To configure the `ENTERPRISE` edition with a customer license:
 
-1. Set [`license.edition`](README.md#licenseedition) to `ENTERPRISE`
-2. Set [`license.enterprise.licenseType`](README.md#licenseenterpriselicensetype) to specify license type
-3. Set [`license.enterprise.contractId`](README.md#licenseenterprisecontractid) with your contract identifier
+1. Set [`license.edition`](README.md#licenseedition) to `ENTERPRISE`.
+2. Set [`license.enterprise.licenseType`](README.md#licenseenterpriselicensetype) to specify license type.
+3. Set [`license.enterprise.contractId`](README.md#licenseenterprisecontractid) with your contract identifier.
 4. Configure license validation using one of these methods:
 
    **Online Validation**
@@ -174,11 +174,18 @@ To configure the `ENTERPRISE` edition with a customer license:
      --namespace <namespace>
    ```
 
-   2. Configure [`license.enterprise.onlinePasswordSecretRef`](README.md#licenseenterpriseonlinepasswordsecretref):
+   2. Set [`license.enterprise.licenseValidation`](README.md#licenseenterpriselicensevalidation) to `ONLINE`.
+   
+   3. Configure [`license.enterprise.onlinePasswordSecretRef`](README.md#licenseenterpriseonlinepasswordsecretref) with the name and the key of the secret generated at step 1.
+
+   Example configuration:
    ```yaml
    license:
+     edition: ENTERPRISE
      enterprise:
-       ...
+       licenseType: <license-type>
+       contractId: <contract-id>
+       licenseValidation: ONLINE              # Use the online-based validation
        onlinePasswordSecretRef:
          name: <online-password-secret-name>  # Secret name from step 1
          key: online-password                 # Secret key from step 1
@@ -196,14 +203,21 @@ To configure the `ENTERPRISE` edition with a customer license:
      --namespace <namespace>
    ```
 
-   2. Configure [`license.enterprise.filePathSecretRef`](README.md#licenseenterprisefilepathsecretref):
+   2. Set [`license.enterprise.licenseValidation`](README.md#licenseenterpriselicensevalidation) to `FILE`. 
+
+   3. Configure [`license.enterprise.filePathSecretRef`](README.md#licenseenterprisefilepathsecretref) with the name and the key of the secret generated at step 1.
+
+   Example configuration:
    ```yaml
    license:
+     edition: ENTERPRISE
      enterprise:
-       ...
+       licenseType: <license-type>
+       contractId: <contract-id>
+       licenseValidation: FILE        # Use the file-based validation
        filePathSecretRef:
          name: <license-secret-name>  # Secret name from step 1
-         key: license.lic            # Secret key from step 1
+         key: license.lic             # Secret key from step 1
    ...
    ```
 
@@ -570,7 +584,21 @@ management:
 
 In the above configuration, the optional [`enableSsl`](README.md#managementjmxrmiconnectorportenablessl) flag has been turned on to enable TLS/SSL communication, which in addition requires you to configure (or reuse) a keystore and reference it (as already explained in the [_TLS/SSL_](#tlsssl) section).
 
-#### Authentication
+##### Authentication
+
+To configure RMI connector access with authentication, you have to provide the list of secrets containing the credentials of the authorized users: For example
+
+```sh
+kubectl create secret generic rmi-user-1-secret --from-literal=user=<user-1> --from-literal=password='<user1-password>' -n lightstreamer
+kubectl create secret generic rmi-user-2-secret --from-literal=user='user_changeme1' --from-literal=password='password_changeme2' -n lightstreamer
+```
+
+
+1. Set [`management.jmx.rmiConnector.enablePublicAccess`](README.md#managementjmxrmiconnectorenablepublicaccess) to `false`:
+
+2. Create a secret for every enabled authorized user:
+
+3. Set with 
 
 
 ### Dashboard Configuration
