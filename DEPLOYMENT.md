@@ -573,7 +573,7 @@ Expected output:
 ]
 ```
 
-The following example shows how to customize the RMI Connector through the [`management.jmx.rmiConnector.port`](README.md#managementjmxrmiconnectorport) settings:
+The following example shows how to customize the RMI Connector listening port through the [`management.jmx.rmiConnector.port`](README.md#managementjmxrmiconnectorport) setting:
 
 ```yaml
 management:
@@ -581,15 +581,13 @@ management:
     rmiConnector:
       port:
         value: 9999
-        enableSsl: true        # Optional TLS/SSL enablement
-      keystoreRef: rmiKeystore # Reference to a keystore
 ```
 
-In the above configuration,  flag has been turned on to enable TLS/SSL communication, which in addition requires you to configure (or reuse) a keystore and reference it (as already explained in the [_TLS/SSL_](#tlsssl) section).
+See the [`management.jmx.rmiConnector`](README.md#managementjmxrmiconnector) section of the _Lightstreamer Helm Chart specification_ for full details about other configurable RMI connector settings.
 
 ##### TLS/SSL
 
-To enable TLS/SSL communication, turn on the optional [`enableSsl`](README.md#managementjmxrmiconnectorportenablessl) flag and reference a keystore trough [`keystoreRef`](README.md#managementjmxrmiconnectorsslconfigkeystoreref) (as already explained in the [_TLS/SSL_](#tlsssl) ):
+To enable TLS/SSL communication, turn on the optional [`management.jmx.rmiConnector.port.enableSsl`](README.md#managementjmxrmiconnectorportenablessl) flag and reference a keystore trough [`management.jmx.rmiConnector.keystoreRef`](README.md#managementjmxrmiconnectorsslconfigkeystoreref) (as already explained in the [_TLS/SSL_](#tlsssl) ):
 
 ```yaml
 management:
@@ -597,9 +595,14 @@ management:
     rmiConnector:
       port:
         value: 9999
-        enableSsl: true        # Optional TLS/SSL enablement
+        enableSsl: true        # Enables TLS/SSL communication
       keystoreRef: rmiKeystore # Reference to a keystore
 ```
+
+> [WARNING!]
+> Make sure to enable TLS/SSL communication in a production deployment.
+
+See the [`management.jmx.rmiConnector.sslConfig`](README.md#managementjmxrmiconnectorsslconfig) section of the _Lightstreamer Helm Chart specification_ for additional TLS/SSL configuration options for the RMI connector. 
 
 ##### Authentication
 
@@ -623,10 +626,12 @@ management:
         - rmi-user-2-secret
 ```
 
+> [WARNING!]
+> Make sure to enable authenticated access in a production deployment.
 
 ### Dashboard Configuration
 
-The Lightstreamer Dashboard provides a web interface for monitoring and managing your Lightstreamer instance. To configure the dashboard:
+The Lightstreamer Dashboard provides a web interface for monitoring and managing a Lightstreamer instance. To configure the dashboard:
 
 ```yaml
 dashboard:
