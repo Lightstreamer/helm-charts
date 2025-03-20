@@ -648,6 +648,495 @@ license:
     # or without a proxy.
     networkInterface:
 
+# -- Mandatory. Map of HTTP/S server socket configurations.
+# Every key in the map defines a specific listening socket configuration, which
+# can then be referenced through the whole configuration.
+# Defining multiple listening socket allows the coexistence of private and
+# public ports. This allows the use of multiple address for accessing the Server
+# via TLS/SSL, because different HTTPS sockets can use different keystores.
+# In particular this is the case when the Server is behind load balancer and
+# the `cluster.controlLinkAddress` setting is leveraged to ensure that all
+# requests issued by the same client are dispatched to the same Server instance.
+servers:
+
+  # -- At least one must be provided. An HTTP server socket configuration.
+  defaultServer:
+
+    # -- Optional. Enables this socket configuration.
+    # @default -- false
+    enabled: true
+
+    # -- Mandatory. The name of the HTTP/S server. Note that it is notified to
+    # the client upon connection and it is made available to application code
+    # by the Unified Client SDKs through the `serverSocketName` property in the
+    # `ConnectionDetails` class. It must be an ASCII string with no control
+    # characters and it must be unique among all server configurations.
+    # The name must be unique among all server configurations.
+    name: "Lightstreamer HTTP Server"
+
+    # -- Mandatory. Listening TCP port.
+    port: 8080
+
+    # -- Optional. Enables the HTTPS protocol.
+    # HTTPS service is an optional feature, available depending on Edition and
+    # License Type. To know what features are enabled by your license, please
+    # see the License `tab` of the Monitoring Dashboard (by default, available
+    # at `/dashboard`).
+    # See `sslConfig` for general details on TLS/SSL configuration.
+    # @default -- false
+
+    enableHttps: false
+
+    # -- (int) Optional. Size of the system buffer for incoming TCP connections
+    # Overrides the default system setting.
+    # @default -- the system setting
+    backlog:
+
+    # -- (string) Optional. Provides meta-information on how this listening
+    # socket will be used, according with the deployment configuration.
+    # This can inform the Server of a restricted set of requests expected on
+    # the port, which may improve the internal backpressure mechanisms.
+    #
+    # If set to `CREATE_ONLY`, declares that the port is only devoted to `S`
+    # connections, according with the provided Clustering.pdf document.
+    #
+    # If set to `CONTROL_ONLY`, declares that the port is only devoted to `CR`
+    # connections,according with the provided Clustering.pdf document. The
+    # Server will enforce the restriction.
+    #
+    # If set to `PRIORITY`, requests issued to this port will follow a fast
+    # track. In particular, they will be never enqueued to the SERVER thread
+    # pool, but only the `ACCEPT` pool; and they will not be subject to any
+    # backpressure-related limitation (like `load.acceptPoolMaxQueue`). This
+    # should ensure that the requests will be fulfilled as soon as possible,
+    # even when the Server is overloaded. Such priority port is, therefore,
+    # ideal for opening the Monitoring Dashboard to inspect overload issues in
+    # place. It can also be used to open sessions on a custom Adapter Set, but,
+    # in that case, any thread pool specifically defined for the Adapters will
+    # be entered, with possible enqueueing. Anyway, such port is only meant for
+    # internal use and it is recommended not to leave it publicly accessible.
+    # Furthermore, in case of HTTPS server socket (`enableHttps` set to `true`)
+    # TLS-handshake-related tasks will not be enqueued to the
+    # `TLS-SSL HANDSHAKE` or `TLS-SSL AUTHENTICATION` thread pool, but only to
+    # a dedicated pool.
+    # If set to `GENERAL_PURPOSE`, the port can be used for any kind of request.
+    # It can always be set in case of doubts. Note that ports can be
+    # `CREATE_ONLY` or `CONTROL_ONLY` only depending on client behavior. For
+    # clients based on LS SDK libraries, this is related to the use of the
+    # `cluster.controlLinkAddress` setting. Usage examples are provided in the
+    # Clustering.pdf document.
+    # @default -- "GENERAL_PURPOSE"
+    portType:
+
+    # -- Optional. Settings that allow some control over the HTTP headers of
+    # the provided responses. Header lines can only be added to those used by
+    # the Server, either by specifying their value or by copying them from the
+    # request.
+    # Multiple rules can be defined; their order is ignored.
+    # In any case of replicated header fields, multiple lines will be inserted;
+    # it is assumed that multiple occurrences are allowed for those fields.
+    # No syntax and consistency checks are performed on the resulting HTTP
+    # headers; only custom or non-critical fields should be used.
+    # The header names involved are always converted to lower case.
+    responseHttpHeaders:
+
+      # -- Optional. Requests to look for any header lines for the specified
+      # field name on the HTTP request header and to copy them to the HTTP
+      # response header.
+      # @default -- []
+      echo:
+        # - "cookie"
+
+      # -- Optional. Requests to add to the HTTP response header a line with
+      # the specified `name` (mandatory) and `value` (optional).
+      # The suggested setting for _X-Accel-Buffering_ may help to enable
+      # streaming support when proxies of several types are involved.
+      add:
+        - name: "X-Accel-Buffering"
+          value: "no"
+        # - name: "my-header"
+        #   value: "MyValue"
+
+    # -- (string) Optional. Can be used on a multihomed host to specify the IP
+    # address to bind the server socket to.
+    # @default -- accept connections on any/all local addresses
+    listeningInterface:
+
+    # -- Optional. Settings that allow for better recognition of the remote
+    # address of the connected clients. This can be done in two ways:
+    #
+    # - By taking advantage of the `X-Forwarded-For` HTTP header, that
+    #   intermediate HTTP proxies and level-7 Load Balancers usually set to
+    #   supply connection routing information in an incremental way (this is
+    #   done through the `skipLocalForwards` setting).
+    #
+    # - By receiving the routed address directly from a TCP reverse proxy or
+    #   level-4 Load Balancer through the Proxy Protocol, when the proxy is
+    #   configured to do so (this is done through the `enableProxyProtocol`
+    #   setting).
+    #
+    # The two techniques can also coexist, but, in that case, the address
+    # through the proxy protocol would always be considered as the real client
+    # address and all addresses in the chain specified in `X-Forwarded-For`
+    # would be considered as written by client-side proxies.
+    # The address determined in this way will be used in all cases in which the
+    # client address is reported or checked. For logging purposes, the
+    # connection endpoint will still be written, but the real remote address,
+    # if available and different, will be added.
+    # The detected address may also be sent to the clients, depending on the
+    # Client SDK in use.
+    # If not specified, all settings at their defaults will be used.
+    clientIdentification:
+
+      # -- Optional. If set to `true`, prevents the determined address from
+      # being sent to the clients. In fact, the address is notified to the
+      # client upon connection and it is made available to application code by
+      # the most recent Unified Client SDKs through the `clientIp` property in
+      # the `ConnectionDetails` class.
+      # For instance, the flag can and should be set to `true` in case the
+      # identification of the remote address is not properly tuned and the
+      # determined address may be a local one.
+      # @default -- false
+      enablePrivate:
+
+      # -- Optional. If set to `true`, instructs the Server that the connection
+      # endpoint is a reverse proxy or load balancer that sends client address
+      # information through the Proxy Protocol. The received address and port
+      # will be used as the real client address and port.
+      # In particular, they will appear in all log lines for this client (but
+      # for the `lightstreamerLogger.connections` logger).
+      # On the other hand, the reported protocol will always refer to the
+      # actual connection.
+      # There is no dynamic detection of the proxy protocol; hence, if enabled,
+      # all connections to this port must use it (for instance, any health check
+      # requests should be configured properly on the proxy) and, if not, no
+      # connection can speak the proxy protocol, otherwise the outcome would be
+      # unspecified.
+      # On the other hand, if enabled, both proxy protocol version 1 and 2 are
+      # handled; only information for normal TCP connections is considered.
+      # @default -- false
+      enableProxyProtocol:
+
+      # -- (int) Optional. Timeout applied while reading for information
+      # through the proxy protocol, when enabled. Note that a reverse proxy or
+      # load balancer speaking the proxy protocol is bound to send information
+      # immediately after connection start; so the timeout can only apply to
+      # cases of wrong configuration, local network issues or illegal access to
+      # this port.
+      # For this reason, the read is performed directly in the `ACCEPT` thread
+      # pool and this setting protects that pool against such unlikely events.
+      # @default -- 1000
+      proxyProtocolTimeoutMillis:
+
+      # -- (int) Optional, but nonzero values forbidden if
+      # `enableProxyProtocol` is set to `true`. Number of entries in the
+      # `X-Forwarded-For` header that are expected to be supplied on each HTTP
+      # request (including Websocket handshake) by the intermediate nodes (e.g.
+      # reverse proxies, load balancers) that stand in the local environment.
+      # If N entries are expected from local nodes, this means that the
+      # Nth-nearest entry corresponds to the node connected to the farthest
+      # local intermediate node, hence to the client. So, that entry will be
+      # used as the real client address. In particular, it will appear in all
+      # log lines that refer to the involved HTTP request or Websocket.
+      # If set to `0` or left at the default, all entries in `X-Forwarded-For`
+      # will be considered as written by client-side proxies, hence the
+      # connection endpoint address will be used (unless, of course,
+      # `enableProxyProtocol` is set to `true`, which overrides the behavior).
+      # Note that a similar correction for port and protocol is not applied;
+      # hence, when an address corrected through a nonzero setting is reported,
+      # any port and protocol associated will still refer to the actual
+      # connection.
+      # @default -- 0
+      skipLocalForwards:
+
+      # -- Optional. If set to `true`, causes the list of entries of the
+      # `X-Forwarded-For` header, when available, to be added to log lines
+      # related to the involved HTTP request or Websocket.
+      # If `skipLocalForwards` is nonzero, only the entries farther than the
+      # determined "real" remote address are included.
+      # These entries are expected to be written by client-side proxies.
+      # @default -- false
+      enableForwardsLogging:
+
+    # -- Mandatory if `enableHttps` is `true`. TLS/SSL settings for this socket
+    # configuration.
+    sslConfig:
+      # -- Optional. If defined, overrides the default JVM's Security Provider
+      # configured in the java.security file of the JDK installation. This
+      # allows the use of different Security Providers dedicated to single
+      # listening ports.
+      # When configuring a Security Provider, the related libraries should be
+      # added to the Server classpath. This is not needed for the Conscrypt
+      # provider, which is already available in the Server distribution (but
+      # note that the library includes native code that only targets the main
+      # platforms).
+      # @default -- the default JVM's Security Provider
+      tlsProvider:
+
+      # -- Mandatory. The reference to a keystore configuration (defined in
+      # `keystores`). The access to the included certificates is subject to the
+      # following constraints:
+      # - Only the first certificated found in the keystore ca be sent to the 
+      # client.
+      # - The password for the keystore and the password of the included 
+      # certificate should be the same.
+      # - The support of keystore contents may depend on the Security Provider
+      # in use; for instance, keystores with dual RSA/ECC certificates are not
+      # fully supported by the Conscrypt provider.
+      # See the `keystores.myServerKeystore` settings for general details on
+      # keystore configuration.
+      keystoreRef: myServerKeystore
+
+      # -- Optional, but forbidden if `removeCipherSuites` is used.
+      # Specifies all the cipher suites allowed for the TLS/SSL interaction,
+      # provided that they are included, with the specified name, in the set of
+      # "supported" cipher suites of the underlying Security Provider.
+      # The default set of the "supported" cipher suites is logged at startup
+      # by the `lightstreamerLogger.io.ssl` logger at `DEBUG` level.
+      # If not used, the `removeCipherSuites` setting is considered; hence, if
+      # `removeCipherSuites` is also not used, all cipher suites enabled by the
+      # Security Provider will be available.
+      # The order in which the cipher suites are specified can be enforced as
+      # the server-side preference order (see
+      # `enforceServerCipherSuitePreference`).
+      # @default -- []
+      allowCipherSuites:
+        # - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+
+      # -- Optional, but forbidden if `allowCipherSuites` is used.
+      # Pattern to be matched against the names of the enabled cipher suites in
+      # order to remove the matching ones from the enabled cipher suites set.
+      # Any pattern in java.util.regex.Pattern format can be specified.
+      # This allows for customization of the choice of the cipher suites to be
+      # used for incoming https connections (note that restricting the set of
+      # available cipher suites may cause some client requests to be rejected).
+      # When this setting is used, the server-side preference order of the
+      # cipher suites is determined by the underlying Security Provider.
+      # Note that the selection is operated on the default set of the cipher
+      # suites "enabled" by the Security Provider, not on the wider set of the
+      # "supported" cipher suites. The default set of the "enabled" cipher
+      # suites is logged at startup by the `lightstreamerLogger.io.ssl` logger
+      # at `DEBUG` level.
+      # @default -- []
+      removeCipherSuites:
+        # - TLS_RSA_
+
+      # -- Optional. Determines which side should express the preference when
+      # multiple cipher suites are in common between server and client.
+      # Note, however, that the underlying Security Provider may ignore this
+      # setting. This is the case, for instance, of the Conscrypt provider.
+      enforceServerCipherSuitePreference:
+
+        # -- Optional. If set to `true`, the Server will choose the cipher
+        # suite based on its preference order, specified through `order`.
+        # If set to `false`, the Server will get a cipher suite based on the
+        # preference order specified by the client. For instance, the client
+        # might privilege faster, but weaker, suites.
+        # @default -- false
+        enabled: true
+
+        # -- (string) Optional. Preference order for choosing the cipher suite.
+        # If set to `JVM`, ordering is delegated to the underlying Security
+        # Provider, which, usually, prioritizes the strongest suites.
+        # If set to `config` (which is allowed only if `allowCipherSuites` is
+        # used), the order in which the `allowCipherSuites` elements are
+        # specified determines the preference order.
+        # @default -- JVM
+        order: "JVM"
+
+      # -- Optional. If set to `false`, causes any client-initiated TLS
+      # renegotiation request to be refused by closing the connection. This
+      # policy may be evaluated in a trade-off between encryption strength and
+      # performance risks.
+      # Note that, with the default SunJSSE Security Provider, a better way to
+      # achieve the same at a global JVM level is by setting the dedicated
+      # `jdk.tls.rejectClientInitiatedRenegotiation` JVM property to `true`.
+      # @default -- true
+      enableTlsRenegotiation:
+
+      # -- Optional, but forbidden if `removeProtocols` is used.
+      # Specifies one or more protocols allowed for the TLS/SSL interaction,
+      # among the ones supported by the underlying Security Provider.
+      # For Oracle JVMs, the available names are the "SSLContext Algorithms"
+      # listed here:
+      # https://docs.oracle.com/en/java/javase/17/docs/specs/security/standard-names.html#sslcontext-algorithms
+      # If not specified, the `removeProtocols` setting is considered; hence,
+      # if `removeProtocols` is also not used, all protocols enabled by the
+      # Security Provider will be available.
+      # @default -- []
+      allowProtocols:
+        # - TLSv1.2
+        # - TLSv1.3
+
+      # -- Optional, but forbidden if `allowProtocols` is used.
+      # Pattern to be matched against the names of the enabled TLS/SSL
+      # protocols in order to remove the matching ones from the enabled
+      # protocols set.
+      # Any pattern in java.util.regex.Pattern format can be specified.
+      # This allows for customization of the choice of the TLS/SSL protocols to
+      # be used for an incoming https connection (note that reducing the set of
+      # available protocols may cause some client requests to be refused).
+      # Note that the selection is operated on the default set of the protocols
+      # "enabled" by the Security Provider, not on the wider set of the
+      # "supported" protocols. The default set of the "enabled" protocols is
+      # logged at startup by the `lightstreamerLogger.io.ssl` logger at DEBUG
+      # level.
+      # @default -- []
+      removeProtocols:
+        - SSL
+        - TLSv1$
+        - TLSv1.1
+
+      # -- Optional. Instructs the underlying Security Provider on whether to
+      # use stateless (when `true`) or stateful (when `false`) session
+      # resumption on this port, if supported (possibly depending on the
+      # protocol version in use).
+      # Note that stateful resumption implies the management of a TLS session
+      # cache, whereas stateless resumption is slightly more demanding in terms
+      # of CPU and bandwidth.
+      # Note, however, that this setting is currently supported only if the
+      # Conscrypt Security Provider is used. For instance, with the default
+      # SunJSSE Security Provider, the use of stateful or stateless resumption
+      # can only be configured at global JVM level, through the
+      # `jdk.tls.server.enableSessionTicketExtension` JVM property.
+      # If not specified, the type of resumption will be decided by the
+      # underlying Security Provider, based on its own configuration.
+      # @default -- the underlying Security Provider's configuration
+      enableStatelessTlsSessionResumption:
+
+      # -- Optional. Size of the cache used by the TLS implementation to handle
+      # TLS session resumptions when stateful resumption is configured (see
+      # `enableStatelessTlsSessionResumption`).
+      # A value of `0` means no size limit.
+      # Note, however, that the underlying Security Provider may ignore this
+      # setting (possibly depending on the protocol version in use).
+      # If not specified, the cache size is decided by the underlying Security
+      # Provider. For the default SunJSSE, it is `20480` TLS sessions, unless
+      # configured through the `javax.net.ssl.sessionCacheSize` JVM property.
+      # @default -- decided by the underlying Security Provider's configuration
+      tlsSessionCacheSize:
+
+      # -- Optional. Maximum time in which a TLS session is kept available to
+      # the client for resumption. This holds for both stateless and stateful
+      # TLS resumption (see `enableStatelessTlsSessionResumption`).
+      # In the latter case, the session also has to be kept in a cache.
+      # A value of `0` means no time limit.
+      # Note, however, that the underlying Security Provider may ignore this
+      # setting (possibly depending on the protocol version in use).
+      # If not specified, the maximum time is decided by the underlying
+      # Security Provider. For the default SunJSSE, it is `86400` seconds,
+      # unless configured through the `jdk.tls.server.sessionTicketTimeout` JVM
+      # property.
+      # @default -- decided by the underlying Security Provider's configuration
+      tlsSessionTimeoutSeconds:
+
+      # -- Optional. If set to `true`, tries to improve the TLS session
+      # resumption feature by providing the underlying Security Provider with
+      # information on the client IPs and ports. This makes sense only if
+      # client IPs can be determined (see `servers.{}.clientIdentification`).
+      # @default -- false
+      enableClientHintsForTlsSessionResumption:
+
+      # -- Optional. If enabled, the client must provide the Metadata Adapter
+      # with the "principal" included in the client TLS/SSL certificate, when
+      # available.
+      # If set to `true`, upon each client connection, the availability of a
+      # client TLS/SSL certificate is checked. If available, the included
+      # identification data will be supplied upon calls to `notifyUser`.
+      # If set to `false`, no certificate information is supplied to
+      # `notifyUser` and no check is done on the client certificate.
+      # Note that a check on the client certificate can also be requested
+      # through `enableMandatoryClientAuth`.
+      # @default -- false
+      enableClientAuth:
+
+      # -- Optional. Request to only allow clients provided with a valid
+      # TLS/SSL certificate.
+      # If set to `true`, upon each client connection, a valid TLS/SSL
+      # certificate is requested to the client in order to accept the
+      # connection.
+      # If set to `false`, no check is done on the client certificate.
+      # Note that a certificate can also be requested to the client as a
+      # consequence of `enableClientAuth`.
+      # @default -- false
+      enableMandatoryClientAuth:
+
+      # -- Mandatory if at least one of `enableClientAuth` and
+      # `enableMandatoryClientAuth` is set to `true`. The reference to a
+      # keystore to be used by the HTTPS service to accept client certificates.
+      # It can be used to supply client certificates that should be accepted,
+      # in addition to those with a valid certificate chain, for instance while
+      # testing with self-signed certificates.
+      # See  `keystoreRef` and `keystores.myServerKeystore` for further details 
+      # about keystore configuration.
+      # Note that the further constraints reported there with regard to 
+      # accessing the certificates in a JKS keystore don't hold in this case,
+      # where the latter is used as a truststore.
+      # Moreover, the handling of keystore replacement doesn't apply here.
+      truststoreRef:
+
+# -- Keystores definition.
+keystores:
+
+  # -- Keystore definition used by HTTPS server socket configurations and
+  # other settings that require a keystore.
+  # The default values used here reference the JKS keystore file
+  # `myserver.keystore`, which is provided out of the box (and stored in the
+  # `myserver-keystore-secret` secret, along with the password stored in the
+  # `myserver-keypass-secret` secret), and obviously contains an invalid
+  # certificate. In order to use it for your experiments, remember to add a
+  # security exception to your browser.
+  myServerKeystore:
+
+    # -- (string) Optional. The keystore type.
+    # The currently supported types are:
+    # - `JKS`, which is the Sun/Oracle's custom keystore type, whose support is
+    #    made available by every Java installation.
+    # - `PKCS12`, which is supported by all recent Java installations.
+    # - `PKCS11`, which as a bridge to an external PKCS11 implementation;
+    #   this is an experimental extension; contact Lightstreamer Support for
+    #   details.
+    # @default -- JKS
+    type: JKS
+
+    # -- Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key
+    # where the keystore file is stored.
+    keystoreFileSecretRef:
+      name: myserver-keystore-secret
+      key: myserver.keystore
+
+    # -- Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key
+    # where keystore password is stored.
+    keystorePasswordSecretRef:
+      name: myserver-keypass-secret
+      key: myserver.keypass
+
+  # -- Example of Keystore definition used by Kafka connector configurations.
+  myKafkaConnectorKeystore:
+
+    # -- (string) Optional. The keystore type.
+    # The currently supported types are:
+    # - `JKS`, which is the Sun/Oracle's custom keystore type, whose support is
+    #   made available by every Java installation.
+    # - `PKCS12`, which is supported by all recent Java installations.
+    # @default -- JKS
+    # type: JKS
+    # -- Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key
+    # where the keystore file is stored.
+    # keystoreFileSecretRef:
+      # name: kafka-connector-keystore-secret
+      # key: kafka-connector.keystore.jks
+    # -- Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key
+    # where the keystore password is stored.
+    # keystorePasswordSecretRef:
+      # name: kafka-connector-keypass-secret
+      # key: kafka-connector.keypass
+    # -- Optional. Secret name and key where the password of the private key
+    # in the keystore is stored.
+    # keyPasswordSecretRef:
+      # name: kafka-connector-private-key-pass-secret
+      # key: kafka-connector.private.key.pass
+
 # -- Mandatory. Logging configuration for Lightstreamer Server.
 logging:
 
@@ -1164,761 +1653,6 @@ logging:
     #     - console
     #   level: INFO
 
-# -- Mandatory. Map of HTTP/S server socket configurations.
-# Every key in the map defines a specific listening socket configuration, which
-# can then be referenced through the whole configuration.
-# Defining multiple listening socket allows the coexistence of private and
-# public ports. This allows the use of multiple address for accessing the Server
-# via TLS/SSL, because different HTTPS sockets can use different keystores.
-# In particular this is the case when the Server is behind load balancer and
-# the `cluster.controlLinkAddress` setting is leveraged to ensure that all
-# requests issued by the same client are dispatched to the same Server instance.
-servers:
-
-  # -- At least one must be provided. An HTTP server socket configuration.
-  defaultServer:
-
-    # -- Optional. Enables this socket configuration.
-    # @default -- false
-    enabled: true
-
-    # -- Mandatory. The name of the HTTP/S server. Note that it is notified to
-    # the client upon connection and it is made available to application code
-    # by the Unified Client SDKs through the `serverSocketName` property in the
-    # `ConnectionDetails` class. It must be an ASCII string with no control
-    # characters and it must be unique among all server configurations.
-    # The name must be unique among all server configurations.
-    name: "Lightstreamer HTTP Server"
-
-    # -- Mandatory. Listening TCP port.
-    port: 8080
-
-    # -- Optional. Enables the HTTPS protocol.
-    # HTTPS service is an optional feature, available depending on Edition and
-    # License Type. To know what features are enabled by your license, please
-    # see the License `tab` of the Monitoring Dashboard (by default, available
-    # at `/dashboard`).
-    # See `sslConfig` for general details on TLS/SSL configuration.
-    # @default -- false
-
-    enableHttps: false
-
-    # -- (int) Optional. Size of the system buffer for incoming TCP connections
-    # Overrides the default system setting.
-    # @default -- the system setting
-    backlog:
-
-    # -- (string) Optional. Provides meta-information on how this listening
-    # socket will be used, according with the deployment configuration.
-    # This can inform the Server of a restricted set of requests expected on
-    # the port, which may improve the internal backpressure mechanisms.
-    #
-    # If set to `CREATE_ONLY`, declares that the port is only devoted to `S`
-    # connections, according with the provided Clustering.pdf document.
-    #
-    # If set to `CONTROL_ONLY`, declares that the port is only devoted to `CR`
-    # connections,according with the provided Clustering.pdf document. The
-    # Server will enforce the restriction.
-    #
-    # If set to `PRIORITY`, requests issued to this port will follow a fast
-    # track. In particular, they will be never enqueued to the SERVER thread
-    # pool, but only the `ACCEPT` pool; and they will not be subject to any
-    # backpressure-related limitation (like `load.acceptPoolMaxQueue`). This
-    # should ensure that the requests will be fulfilled as soon as possible,
-    # even when the Server is overloaded. Such priority port is, therefore,
-    # ideal for opening the Monitoring Dashboard to inspect overload issues in
-    # place. It can also be used to open sessions on a custom Adapter Set, but,
-    # in that case, any thread pool specifically defined for the Adapters will
-    # be entered, with possible enqueueing. Anyway, such port is only meant for
-    # internal use and it is recommended not to leave it publicly accessible.
-    # Furthermore, in case of HTTPS server socket (`enableHttps` set to `true`)
-    # TLS-handshake-related tasks will not be enqueued to the
-    # `TLS-SSL HANDSHAKE` or `TLS-SSL AUTHENTICATION` thread pool, but only to
-    # a dedicated pool.
-    # If set to `GENERAL_PURPOSE`, the port can be used for any kind of request.
-    # It can always be set in case of doubts. Note that ports can be
-    # `CREATE_ONLY` or `CONTROL_ONLY` only depending on client behavior. For
-    # clients based on LS SDK libraries, this is related to the use of the
-    # `cluster.controlLinkAddress` setting. Usage examples are provided in the
-    # Clustering.pdf document.
-    # @default -- "GENERAL_PURPOSE"
-    portType:
-
-    # -- Optional. Settings that allow some control over the HTTP headers of
-    # the provided responses. Header lines can only be added to those used by
-    # the Server, either by specifying their value or by copying them from the
-    # request.
-    # Multiple rules can be defined; their order is ignored.
-    # In any case of replicated header fields, multiple lines will be inserted;
-    # it is assumed that multiple occurrences are allowed for those fields.
-    # No syntax and consistency checks are performed on the resulting HTTP
-    # headers; only custom or non-critical fields should be used.
-    # The header names involved are always converted to lower case.
-    responseHttpHeaders:
-
-      # -- Optional. Requests to look for any header lines for the specified
-      # field name on the HTTP request header and to copy them to the HTTP
-      # response header.
-      # @default -- []
-      echo:
-        # - "cookie"
-
-      # -- Optional. Requests to add to the HTTP response header a line with
-      # the specified `name` (mandatory) and `value` (optional).
-      # The suggested setting for _X-Accel-Buffering_ may help to enable
-      # streaming support when proxies of several types are involved.
-      add:
-        - name: "X-Accel-Buffering"
-          value: "no"
-        # - name: "my-header"
-        #   value: "MyValue"
-
-    # -- (string) Optional. Can be used on a multihomed host to specify the IP
-    # address to bind the server socket to.
-    # @default -- accept connections on any/all local addresses
-    listeningInterface:
-
-    # -- Optional. Settings that allow for better recognition of the remote
-    # address of the connected clients. This can be done in two ways:
-    #
-    # - By taking advantage of the `X-Forwarded-For` HTTP header, that
-    #   intermediate HTTP proxies and level-7 Load Balancers usually set to
-    #   supply connection routing information in an incremental way (this is
-    #   done through the `skipLocalForwards` setting).
-    #
-    # - By receiving the routed address directly from a TCP reverse proxy or
-    #   level-4 Load Balancer through the Proxy Protocol, when the proxy is
-    #   configured to do so (this is done through the `enableProxyProtocol`
-    #   setting).
-    #
-    # The two techniques can also coexist, but, in that case, the address
-    # through the proxy protocol would always be considered as the real client
-    # address and all addresses in the chain specified in `X-Forwarded-For`
-    # would be considered as written by client-side proxies.
-    # The address determined in this way will be used in all cases in which the
-    # client address is reported or checked. For logging purposes, the
-    # connection endpoint will still be written, but the real remote address,
-    # if available and different, will be added.
-    # The detected address may also be sent to the clients, depending on the
-    # Client SDK in use.
-    # If not specified, all settings at their defaults will be used.
-    clientIdentification:
-
-      # -- Optional. If set to `true`, prevents the determined address from
-      # being sent to the clients. In fact, the address is notified to the
-      # client upon connection and it is made available to application code by
-      # the most recent Unified Client SDKs through the `clientIp` property in
-      # the `ConnectionDetails` class.
-      # For instance, the flag can and should be set to `true` in case the
-      # identification of the remote address is not properly tuned and the
-      # determined address may be a local one.
-      # @default -- false
-      enablePrivate:
-
-      # -- Optional. If set to `true`, instructs the Server that the connection
-      # endpoint is a reverse proxy or load balancer that sends client address
-      # information through the Proxy Protocol. The received address and port
-      # will be used as the real client address and port.
-      # In particular, they will appear in all log lines for this client (but
-      # for the `lightstreamerLogger.connections` logger).
-      # On the other hand, the reported protocol will always refer to the
-      # actual connection.
-      # There is no dynamic detection of the proxy protocol; hence, if enabled,
-      # all connections to this port must use it (for instance, any health check
-      # requests should be configured properly on the proxy) and, if not, no
-      # connection can speak the proxy protocol, otherwise the outcome would be
-      # unspecified.
-      # On the other hand, if enabled, both proxy protocol version 1 and 2 are
-      # handled; only information for normal TCP connections is considered.
-      # @default -- false
-      enableProxyProtocol:
-
-      # -- (int) Optional. Timeout applied while reading for information
-      # through the proxy protocol, when enabled. Note that a reverse proxy or
-      # load balancer speaking the proxy protocol is bound to send information
-      # immediately after connection start; so the timeout can only apply to
-      # cases of wrong configuration, local network issues or illegal access to
-      # this port.
-      # For this reason, the read is performed directly in the `ACCEPT` thread
-      # pool and this setting protects that pool against such unlikely events.
-      # @default -- 1000
-      proxyProtocolTimeoutMillis:
-
-      # -- (int) Optional, but nonzero values forbidden if
-      # `enableProxyProtocol` is set to `true`. Number of entries in the
-      # `X-Forwarded-For` header that are expected to be supplied on each HTTP
-      # request (including Websocket handshake) by the intermediate nodes (e.g.
-      # reverse proxies, load balancers) that stand in the local environment.
-      # If N entries are expected from local nodes, this means that the
-      # Nth-nearest entry corresponds to the node connected to the farthest
-      # local intermediate node, hence to the client. So, that entry will be
-      # used as the real client address. In particular, it will appear in all
-      # log lines that refer to the involved HTTP request or Websocket.
-      # If set to `0` or left at the default, all entries in `X-Forwarded-For`
-      # will be considered as written by client-side proxies, hence the
-      # connection endpoint address will be used (unless, of course,
-      # `enableProxyProtocol` is set to `true`, which overrides the behavior).
-      # Note that a similar correction for port and protocol is not applied;
-      # hence, when an address corrected through a nonzero setting is reported,
-      # any port and protocol associated will still refer to the actual
-      # connection.
-      # @default -- 0
-      skipLocalForwards:
-
-      # -- Optional. If set to `true`, causes the list of entries of the
-      # `X-Forwarded-For` header, when available, to be added to log lines
-      # related to the involved HTTP request or Websocket.
-      # If `skipLocalForwards` is nonzero, only the entries farther than the
-      # determined "real" remote address are included.
-      # These entries are expected to be written by client-side proxies.
-      # @default -- false
-      enableForwardsLogging:
-
-    # -- Mandatory if `enableHttps` is `true`. TLS/SSL settings for this socket
-    # configuration.
-    sslConfig:
-      # -- Optional. If defined, overrides the default JVM's Security Provider
-      # configured in the java.security file of the JDK installation. This
-      # allows the use of different Security Providers dedicated to single
-      # listening ports.
-      # When configuring a Security Provider, the related libraries should be
-      # added to the Server classpath. This is not needed for the Conscrypt
-      # provider, which is already available in the Server distribution (but
-      # note that the library includes native code that only targets the main
-      # platforms).
-      # @default -- the default JVM's Security Provider
-      tlsProvider:
-
-      # -- Mandatory. The reference to a keystore configuration (defined in
-      # `keystores`). The access to the included certificates is subject to the
-      # following constraints:
-      # - Only the first certificated found in the keystore ca be sent to the 
-      # client.
-      # - The password for the keystore and the password of the included 
-      # certificate should be the same.
-      # - The support of keystore contents may depend on the Security Provider
-      # in use; for instance, keystores with dual RSA/ECC certificates are not
-      # fully supported by the Conscrypt provider.
-      # See the `keystores.myServerKeystore` settings for general details on
-      # keystore configuration.
-      keystoreRef: myServerKeystore
-
-      # -- Optional, but forbidden if `removeCipherSuites` is used.
-      # Specifies all the cipher suites allowed for the TLS/SSL interaction,
-      # provided that they are included, with the specified name, in the set of
-      # "supported" cipher suites of the underlying Security Provider.
-      # The default set of the "supported" cipher suites is logged at startup
-      # by the `lightstreamerLogger.io.ssl` logger at `DEBUG` level.
-      # If not used, the `removeCipherSuites` setting is considered; hence, if
-      # `removeCipherSuites` is also not used, all cipher suites enabled by the
-      # Security Provider will be available.
-      # The order in which the cipher suites are specified can be enforced as
-      # the server-side preference order (see
-      # `enforceServerCipherSuitePreference`).
-      # @default -- []
-      allowCipherSuites:
-        # - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
-
-      # -- Optional, but forbidden if `allowCipherSuites` is used.
-      # Pattern to be matched against the names of the enabled cipher suites in
-      # order to remove the matching ones from the enabled cipher suites set.
-      # Any pattern in java.util.regex.Pattern format can be specified.
-      # This allows for customization of the choice of the cipher suites to be
-      # used for incoming https connections (note that restricting the set of
-      # available cipher suites may cause some client requests to be rejected).
-      # When this setting is used, the server-side preference order of the
-      # cipher suites is determined by the underlying Security Provider.
-      # Note that the selection is operated on the default set of the cipher
-      # suites "enabled" by the Security Provider, not on the wider set of the
-      # "supported" cipher suites. The default set of the "enabled" cipher
-      # suites is logged at startup by the `lightstreamerLogger.io.ssl` logger
-      # at `DEBUG` level.
-      # @default -- []
-      removeCipherSuites:
-        # - TLS_RSA_
-
-      # -- Optional. Determines which side should express the preference when
-      # multiple cipher suites are in common between server and client.
-      # Note, however, that the underlying Security Provider may ignore this
-      # setting. This is the case, for instance, of the Conscrypt provider.
-      enforceServerCipherSuitePreference:
-
-        # -- Optional. If set to `true`, the Server will choose the cipher
-        # suite based on its preference order, specified through `order`.
-        # If set to `false`, the Server will get a cipher suite based on the
-        # preference order specified by the client. For instance, the client
-        # might privilege faster, but weaker, suites.
-        # @default -- false
-        enabled: true
-
-        # -- (string) Optional. Preference order for choosing the cipher suite.
-        # If set to `JVM`, ordering is delegated to the underlying Security
-        # Provider, which, usually, prioritizes the strongest suites.
-        # If set to `config` (which is allowed only if `allowCipherSuites` is
-        # used), the order in which the `allowCipherSuites` elements are
-        # specified determines the preference order.
-        # @default -- JVM
-        order: "JVM"
-
-      # -- Optional. If set to `false`, causes any client-initiated TLS
-      # renegotiation request to be refused by closing the connection. This
-      # policy may be evaluated in a trade-off between encryption strength and
-      # performance risks.
-      # Note that, with the default SunJSSE Security Provider, a better way to
-      # achieve the same at a global JVM level is by setting the dedicated
-      # `jdk.tls.rejectClientInitiatedRenegotiation` JVM property to `true`.
-      # @default -- true
-      enableTlsRenegotiation:
-
-      # -- Optional, but forbidden if `removeProtocols` is used.
-      # Specifies one or more protocols allowed for the TLS/SSL interaction,
-      # among the ones supported by the underlying Security Provider.
-      # For Oracle JVMs, the available names are the "SSLContext Algorithms"
-      # listed here:
-      # https://docs.oracle.com/en/java/javase/17/docs/specs/security/standard-names.html#sslcontext-algorithms
-      # If not specified, the `removeProtocols` setting is considered; hence,
-      # if `removeProtocols` is also not used, all protocols enabled by the
-      # Security Provider will be available.
-      # @default -- []
-      allowProtocols:
-        # - TLSv1.2
-        # - TLSv1.3
-
-      # -- Optional, but forbidden if `allowProtocols` is used.
-      # Pattern to be matched against the names of the enabled TLS/SSL
-      # protocols in order to remove the matching ones from the enabled
-      # protocols set.
-      # Any pattern in java.util.regex.Pattern format can be specified.
-      # This allows for customization of the choice of the TLS/SSL protocols to
-      # be used for an incoming https connection (note that reducing the set of
-      # available protocols may cause some client requests to be refused).
-      # Note that the selection is operated on the default set of the protocols
-      # "enabled" by the Security Provider, not on the wider set of the
-      # "supported" protocols. The default set of the "enabled" protocols is
-      # logged at startup by the `lightstreamerLogger.io.ssl` logger at DEBUG
-      # level.
-      # @default -- []
-      removeProtocols:
-        - SSL
-        - TLSv1$
-        - TLSv1.1
-
-      # -- Optional. Instructs the underlying Security Provider on whether to
-      # use stateless (when `true`) or stateful (when `false`) session
-      # resumption on this port, if supported (possibly depending on the
-      # protocol version in use).
-      # Note that stateful resumption implies the management of a TLS session
-      # cache, whereas stateless resumption is slightly more demanding in terms
-      # of CPU and bandwidth.
-      # Note, however, that this setting is currently supported only if the
-      # Conscrypt Security Provider is used. For instance, with the default
-      # SunJSSE Security Provider, the use of stateful or stateless resumption
-      # can only be configured at global JVM level, through the
-      # `jdk.tls.server.enableSessionTicketExtension` JVM property.
-      # If not specified, the type of resumption will be decided by the
-      # underlying Security Provider, based on its own configuration.
-      # @default -- the underlying Security Provider's configuration
-      enableStatelessTlsSessionResumption:
-
-      # -- Optional. Size of the cache used by the TLS implementation to handle
-      # TLS session resumptions when stateful resumption is configured (see
-      # `enableStatelessTlsSessionResumption`).
-      # A value of `0` means no size limit.
-      # Note, however, that the underlying Security Provider may ignore this
-      # setting (possibly depending on the protocol version in use).
-      # If not specified, the cache size is decided by the underlying Security
-      # Provider. For the default SunJSSE, it is `20480` TLS sessions, unless
-      # configured through the `javax.net.ssl.sessionCacheSize` JVM property.
-      # @default -- decided by the underlying Security Provider's configuration
-      tlsSessionCacheSize:
-
-      # -- Optional. Maximum time in which a TLS session is kept available to
-      # the client for resumption. This holds for both stateless and stateful
-      # TLS resumption (see `enableStatelessTlsSessionResumption`).
-      # In the latter case, the session also has to be kept in a cache.
-      # A value of `0` means no time limit.
-      # Note, however, that the underlying Security Provider may ignore this
-      # setting (possibly depending on the protocol version in use).
-      # If not specified, the maximum time is decided by the underlying
-      # Security Provider. For the default SunJSSE, it is `86400` seconds,
-      # unless configured through the `jdk.tls.server.sessionTicketTimeout` JVM
-      # property.
-      # @default -- decided by the underlying Security Provider's configuration
-      tlsSessionTimeoutSeconds:
-
-      # -- Optional. If set to `true`, tries to improve the TLS session
-      # resumption feature by providing the underlying Security Provider with
-      # information on the client IPs and ports. This makes sense only if
-      # client IPs can be determined (see `servers.{}.clientIdentification`).
-      # @default -- false
-      enableClientHintsForTlsSessionResumption:
-
-      # -- Optional. If enabled, the client must provide the Metadata Adapter
-      # with the "principal" included in the client TLS/SSL certificate, when
-      # available.
-      # If set to `true`, upon each client connection, the availability of a
-      # client TLS/SSL certificate is checked. If available, the included
-      # identification data will be supplied upon calls to `notifyUser`.
-      # If set to `false`, no certificate information is supplied to
-      # `notifyUser` and no check is done on the client certificate.
-      # Note that a check on the client certificate can also be requested
-      # through `enableMandatoryClientAuth`.
-      # @default -- false
-      enableClientAuth:
-
-      # -- Optional. Request to only allow clients provided with a valid
-      # TLS/SSL certificate.
-      # If set to `true`, upon each client connection, a valid TLS/SSL
-      # certificate is requested to the client in order to accept the
-      # connection.
-      # If set to `false`, no check is done on the client certificate.
-      # Note that a certificate can also be requested to the client as a
-      # consequence of `enableClientAuth`.
-      # @default -- false
-      enableMandatoryClientAuth:
-
-      # -- Mandatory if at least one of `enableClientAuth` and
-      # `enableMandatoryClientAuth` is set to `true`. The reference to a
-      # keystore to be used by the HTTPS service to accept client certificates.
-      # It can be used to supply client certificates that should be accepted,
-      # in addition to those with a valid certificate chain, for instance while
-      # testing with self-signed certificates.
-      # See  `keystoreRef` and `keystores.myServerKeystore` for further details 
-      # about keystore configuration.
-      # Note that the further constraints reported there with regard to 
-      # accessing the certificates in a JKS keystore don't hold in this case,
-      # where the latter is used as a truststore.
-      # Moreover, the handling of keystore replacement doesn't apply here.
-      truststoreRef:
-
-# -- Keystores definition.
-keystores:
-
-  # -- Keystore definition used by HTTPS server socket configurations and
-  # other settings that require a keystore.
-  # The default values used here reference the JKS keystore file
-  # `myserver.keystore`, which is provided out of the box (and stored in the
-  # `myserver-keystore-secret` secret, along with the password stored in the
-  # `myserver-keypass-secret` secret), and obviously contains an invalid
-  # certificate. In order to use it for your experiments, remember to add a
-  # security exception to your browser.
-  myServerKeystore:
-
-    # -- (string) Optional. The keystore type.
-    # The currently supported types are:
-    # - `JKS`, which is the Sun/Oracle's custom keystore type, whose support is
-    #    made available by every Java installation.
-    # - `PKCS12`, which is supported by all recent Java installations.
-    # - `PKCS11`, which as a bridge to an external PKCS11 implementation;
-    #   this is an experimental extension; contact Lightstreamer Support for
-    #   details.
-    # @default -- JKS
-    type: JKS
-
-    # -- Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key
-    # where the keystore file is stored.
-    keystoreFileSecretRef:
-      name: myserver-keystore-secret
-      key: myserver.keystore
-
-    # -- Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key
-    # where keystore password is stored.
-    keystorePasswordSecretRef:
-      name: myserver-keypass-secret
-      key: myserver.keypass
-
-  # -- Example of Keystore definition used by Kafka connector configurations.
-  myKafkaConnectorKeystore:
-
-    # -- (string) Optional. The keystore type.
-    # The currently supported types are:
-    # - `JKS`, which is the Sun/Oracle's custom keystore type, whose support is
-    #   made available by every Java installation.
-    # - `PKCS12`, which is supported by all recent Java installations.
-    # @default -- JKS
-    # type: JKS
-    # -- Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key
-    # where the keystore file is stored.
-    # keystoreFileSecretRef:
-      # name: kafka-connector-keystore-secret
-      # key: kafka-connector.keystore.jks
-    # -- Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key
-    # where the keystore password is stored.
-    # keystorePasswordSecretRef:
-      # name: kafka-connector-keypass-secret
-      # key: kafka-connector.keypass
-    # -- Optional. Secret name and key where the password of the private key
-    # in the keystore is stored.
-    # keyPasswordSecretRef:
-      # name: kafka-connector-private-key-pass-secret
-      # key: kafka-connector.private.key.pass
-
-# -- Mandatory. Global socket configuration.
-globalSocket:
-
-  # -- (int) Mandatory. Longest inactivity time accepted while waiting for a
-  # slow request to be received. If this value is exceeded, the socket is
-  # closed. Reusable HTTP connections are also closed if they are not reused
-  # for longer than this time.
-  # The time actually considered may be approximated and may be a few seconds
-  # higher, for internal performance reasons.
-  # A `0` value suppresses the check.
-  readTimeoutMillis: 20000
-
-  # -- (int) Optional. Longest inactivity time accepted while waiting for a
-  # slow operation during a TLS/SSL handshake. This involves both reads,
-  # writes, and encryption tasks managed by the `TLS-SSL HANDSHAKE` or
-  # `TLS-SSL AUTHENTICATION` internal pools. If this value is exceeded, the
-  # socket is closed.
-  # The time actually considered may be approximated and may be a few seconds
-  # higher, for internal performance reasons.
-  # A `0` value suppresses the check.
-  # @default -- 4000
-  handshakeTimeoutMillis:
-
-  # -- (int) Optional. Maximum length in bytes accepted for a request.
-  # For an HTTP GET request, the limit applies to the whole request, including
-  # the headers.
-  # For an HTTP POST request, the limit applies to the header part and the body
-  # part separately.
-  # For a request over a WebSocket, the limit applies to the request message
-  # payload.
-  # @default -- unlimited length
-  requestLimit: 50000
-
-  # -- Optional. Longest operation time accepted while writing data on a
-  # socket. If this value is exceeded, the socket is closed. Note that this may
-  # also affect very slow clients.
-  # The time actually considered may be approximated and may be a few seconds
-  # higher, for internal performance reasons.
-  # If missing or `0`, the check is suppressed.
-  # @default -- the check is suppressed
-  writeTimeoutMillis: 120000
-
-  # -- (string) Optional. Enables the use of the full HTTP 1.1 syntax for all
-  # the responses, upon HTTP 1.1 requests.
-  # If set to `1.1`, HTTP 1.1 is always used, when possible.
-  # If set to `1.0`, HTTP 1.0 is always used; this is possible for all HTTP
-  # requests, but it will prevent WebSocket support.
-  # If set to `AUTO`, HTTP 1.0 is used, unless HTTP 1.1 is required in order to
-  # support specific response features.
-  # @default -- 1.1
-  useHttpVersion:
-
-  # -- Optional. WebSocket support configuration.
-  webSocket:
-
-    # -- Optional. Enables the WebSocket support.
-    # If set to `true`, the Server accepts requests for initiating a WebSocket
-    # interaction through a custom protocol.
-    # If set to `false`, the Server refuses requests for WebSocket interaction.
-    # Disabling WebSocket support may be needed when the local network
-    # infrastructure (for instance the Load Balancer) does not handle WebSocket
-    # communication correctly and the WebSocket transport is not already
-    # disabled on the client side through the Lightstreamer Client Library in
-    # use. The Client Library, upon the Server refusal, will resort to HTTP
-    # streaming without any additional delay to session establishment.
-    # @default -- true
-    enabled:
-
-    # -- (int) Optional. Maximum time the Server is allowed to wait before
-    # answering to a client "ping" request. In case a client sends very
-    # frequent "ping" requests, only the "pong" associated with the most recent
-    # request received is sent, while the previous requests will be ignored.
-    # Note that the above is possible also when `0` is specified.
-    # @default -- 0
-    maxPongDelayMillis:
-
-    # -- (int) Optional. Maximum time the Server is allowed to wait for the
-    # client "close" frame, in case the Server is sending its own close" frame
-    # first, in order to try to close the connection in a clean way.
-    # @default -- no timeout is set and the global `global.readTimeoutMillis`
-    # applies.
-    maxClosingWaitMillis:
-
-    # -- Optional. Maximum payload size allowed for an outbound frame.
-    # When larger updates have to be sent, the related WebSocket messages will
-    # be split into multiple frames.
-    # The Server may enforce a lower limit for this setting.
-    # @default -- 16384
-    maxOutboundFrameSize:
-
-# -- Optional. Security configuration.
-security:
-
-  # -- Optional. Disabling of the protection for JavaScript pages, supplied by
-  # the Server, that carry user data.
-  # JavaScript pages can be supplied upon requests by old versions of the Web
-  # and Node.js (Unified API) Client Libraries, whereas recent versions no
-  # longer make use of this kind of pages. The protection prevents such pages
-  # from being imported in a _<script>_ block and, as a consequence, from being
-  # directly executed within a hosting page regardless of its origin.
-  # This protection allows the Server to fully comply with the prescriptions to
-  # prevent the so-called "JavaScript Hijacking".
-  # If set to `true`, the protection is enabled.
-  # If set to `false`, the protection is disabled. It can be set in order to
-  # support communication between the application front-end pages and
-  # Lightstreamer Server in specific use cases; see the Client Guide for the
-  # Web (Unified API) Client SDK earlier than 8.0.0 for details. It can also be
-  # set in order to ensure compatibility with even older Web Client Libraries
-  # (version 4.1 build 1308 or previous). Note, however, that basic protection
-  # against JavaScript Hijacking can still be granted, simply by ensuring that
-  # request authorization is never based on information got from the request
-  # cookies. This already holds for any session-related request other than
-  # session-creation ones, for which the request URL is always checked against
-  # the Server-generated session ID. For session-creation requests, this
-  # depends on the Metadata Adapter implementation, but can be enforced by
-  # setting `enableForwardCookies` to `false`.
-  # @default -- true
-  enableProtectedJs: false
-
-  # -- Optional. Use this setting to enable the forwarding of the cookies to
-  # the Metadata Adapter through the `httpHeaders` argument of the `notifyUser`
-  # method.
-  # Please note that in any case cookies should not be used to authenticate
-  # users, otherwise, having `enableProtectedJs` set to `false` and/or a too
-  # permissive policy in the `crossDomainPolicy` will expose the server to CSRF
-  # attacks.
-  # If set to `true`, cookies are forwarded to the Metadata Adapter.
-  # If set to `false`, cookies are hidden from the Metadata Adapter.
-  # @default -- false
-  enableCookiesForwarding: false
-
-  # -- Optional. List of origins to be allowed by the browsers to consume
-  # responses to requests sent to this Server through cross-origin XHR or
-  # through WebSockets; in fact, when a requesting page asks for streaming data
-  # in this way, the browser should specify the page origin through the
-  # `Origin` HTTP header, to give the Server a chance to accept or refuse the
-  # request. This is the most common way streaming data is requested by the Web
-  # (Unified API) Client Library. You can see the Client Guide for the Web
-  # (Unified API) Client SDK earlier than 8.0.0 for details on all the possible
-  # use cases.
-  # If a request origin is not matched against any of the configured rules, a
-  # Websocket initiation request will be refused, whereas a HTTP request will
-  # not be denied (i.e.: a 200 OK will be returned) but the response body will
-  # be left empty, in accordance with the CORS specifications.
-  # If no origin is specified by the user-agent, the request will always be
-  # accepted.
-  # Note that sending the Origin header is a client-side duty. In fact, most
-  # modern browsers, upon a request for a cross-origin XHR or WebSocket by a
-  # page, will send the Origin header, while older browsers will directly fail
-  # to send the request. Non-browser clients usually don't have to perform
-  # origin checks; so they don't send the Origin header and thus their requests
-  # are always authorized.
-  crossDomainPolicy:
-
-    # -- Optional. In case an HTTP OPTIONS request is sent to authorize future
-    # requests, the server allows the client to store the result of such
-    # OPTIONS for the specified number of seconds. Thus a previously authorized
-    # client may not give up its authorization, even if the related origin is
-    # removed from the list and the server is restarted, until its
-    # authorization expires.
-    # @default -- 3600
-    optionsMaxAgeSeconds: 3600
-
-    # -- Optional. In case the client wishes to send custom headers to the
-    # server, it requires approval from the server itself. This setting
-    # permits to specify a comma separated list of extra headers to be allowed
-    # in the client requests. Note that a space is expected after each comma
-    # (e.g.: `acceptExtraHeaders: "custom-header1, custom-header2"`).
-    # @default -- ""
-    acceptExtraHeaders:
-
-    # -- Optional. Specify if the server should authorize the client to send
-    # its credentials on a CORS request. This setting does not impact the
-    # user/password sent over the Lightstreamer protocol, but, if set to
-    # `false`, might prevent, or force a fallback connection, on clients
-    # sending CORS requests carrying cookies, http-basic-authentication or
-    # client-side certificates.
-    # @default -- false
-    acceptCredentials: true
-
-    # -- Optional. List of Origin allowed to consume responses to cross-origin
-    # requests.
-    allowAccessFrom:
-
-      # -- Optional. Defines a rule against which Origin headers will be
-      # checked.
-      fromEveryWhere:
-
-        # -- Mandatory. A valid scheme name (usually http or https) or `*`; the
-        # latter matches both http and https scheme, but it doesn't match other
-        # schemes.
-        scheme: "*"
-
-        # -- Mandatory. A valid host name, IPv4 or IPv6 representing, an
-        # authorized Origin. Also a `*` is accepted with the meaning of
-        # "any host or IP".
-        # If a host name is specified it can be prefixed with a wildcard as long
-        # as at least the second level domain is explicitly specified (i.e.:
-        # `*.my-domain.com` and `*.sites.my-domain.com` are valid entries while
-        # `*.com` is not).
-        host: "*"
-
-        # -- Mandatory. A a valid port or `*` to specify any port.
-        port: "*"
-
-      # fromWwwMyDomain:
-      #   scheme: https
-      #   host: "www.my-domain.com"
-      #   port: 443
-      # fromMyDomain:
-      #   scheme: https
-      #   host: "*.my-domain.com"
-      #   port: 443
-      # fromLocal:
-      #   scheme: https
-      #   host: "192.168.0.101"
-      #   port: "*"
-      # fromHttpsIpv6:
-      #   scheme: https
-      #   host: "2001:0db8:aaaa:0000:0000:dddd:eeee:0000"
-      #   port: 443
-      # fromIpvs:
-      #   scheme: "*"
-      #   host: "2001:0db8:aaaa::dddd:eeee:0"
-      #   port: "*"
-
-    # -- Optional. List of Origin domains or subdomains to be allowed by the
-    # browsers to access data on HTML pages supplied by this Server.
-    # This was one of the ways used by the Web (Unified API) Client SDK earlier
-    # than 8.0.0 to request streaming data; see the Client Guide for these Web
-    # (Unified API) Client SDK versions for details on which use cases involve
-    # accessing data through HTML pages.
-    # In this kind of requests, the requesting page should be allowed by the
-    # browser to access data contained in the Server-originated page only if
-    # both pages declare a common subdomain. So, the page should declare a
-    # subdomain as its `document.domain` property and will ask the Server to
-    # declare the same subdomain on the response page.
-    # In that case, the Server will be allowed to set the requested subdomain
-    # as the `document.domain` property of the data page only if configured
-    # here, otherwise the whole request will be refused.
-    # On the other hand, if no setting is provided, then this check is
-    # disabled. Note that, in any case, the consistency of the declared
-    # subdomain with the url used to request the data page must be ensured by
-    # the browser.
-    # If the requesting page doesn't specify any subdomain for the response,
-    # the request will always be allowed; in this case, a same-domain access to
-    # the Server data page will be performed by the browser.
-    # @default -- []
-  allowedDomains:
-    # - "my-domain.com"
-    # - "my-alt-domain.com"
-
-  # -- (string) Optional. Server identification policy to be used for all server
-  # responses. Upon any HTTP request, the Server identifies itself through the
-  # `Server` HTTP response header. However, omitting version information may
-  # make external attacks more difficult.
-  # If set to `FULL`, the Server identifies itself as:
-  # `Lightstreamer Server/X.Y.Z build BBBB (Lightstreamer Push Server -
-  # www.lightstreamer.com) EEEEEE edition`.
-  # If set to `MINIMAL`, the Server identifies itself, depending on the
-  # Edition: for Enterprise edition, as `Lightstreamer Server`; for Community
-  # edition, as `Lightstreamer Server (Lightstreamer Push Server -
-  # www.lightstreamer.com) COMMUNITY edition`.
-  # @default -- FULL
-  serverIdentificationPolicy:
-
 # -- Mandatory. Logging and management configuration.
 management:
 
@@ -2005,13 +1739,16 @@ management:
     # default, available at `/dashboard`).
     rmiConnector:
 
-      # -- Mandatory. TCP port on which the RMI connector will be available.
-      # This is the port that has to be specified in the client access url.
-      # The optional `enableSsl` setting, when set to `true`, enables
-      # TLS/SSL communication. Note that this case is not managed by some JMX
-      # clients, like jconsole.
+      # -- Mandatory. TCP port configuration.
       port:
+        
+        # -- Mandatory.  TCP port on which the RMI connector will be available
+        # This is the port that has to be specified in the client access url.
         value: 8888
+
+        # -- Optional. If set to `true`, enables TLS/SSL communication. Note 
+        # that this case is not managed by some JMX clients, like jconsole.
+        # @default -- false
         enableSsl: false
 
       # -- Optional. TCP port that will be used by the RMI connector for its
@@ -2348,6 +2085,272 @@ management:
     # for which health check requests can be issued.
     # @default -- []
     availableOnServers:
+
+# -- Mandatory. Global socket configuration.
+globalSocket:
+
+  # -- (int) Mandatory. Longest inactivity time accepted while waiting for a
+  # slow request to be received. If this value is exceeded, the socket is
+  # closed. Reusable HTTP connections are also closed if they are not reused
+  # for longer than this time.
+  # The time actually considered may be approximated and may be a few seconds
+  # higher, for internal performance reasons.
+  # A `0` value suppresses the check.
+  readTimeoutMillis: 20000
+
+  # -- (int) Optional. Longest inactivity time accepted while waiting for a
+  # slow operation during a TLS/SSL handshake. This involves both reads,
+  # writes, and encryption tasks managed by the `TLS-SSL HANDSHAKE` or
+  # `TLS-SSL AUTHENTICATION` internal pools. If this value is exceeded, the
+  # socket is closed.
+  # The time actually considered may be approximated and may be a few seconds
+  # higher, for internal performance reasons.
+  # A `0` value suppresses the check.
+  # @default -- 4000
+  handshakeTimeoutMillis:
+
+  # -- (int) Optional. Maximum length in bytes accepted for a request.
+  # For an HTTP GET request, the limit applies to the whole request, including
+  # the headers.
+  # For an HTTP POST request, the limit applies to the header part and the body
+  # part separately.
+  # For a request over a WebSocket, the limit applies to the request message
+  # payload.
+  # @default -- unlimited length
+  requestLimit: 50000
+
+  # -- Optional. Longest operation time accepted while writing data on a
+  # socket. If this value is exceeded, the socket is closed. Note that this may
+  # also affect very slow clients.
+  # The time actually considered may be approximated and may be a few seconds
+  # higher, for internal performance reasons.
+  # If missing or `0`, the check is suppressed.
+  # @default -- the check is suppressed
+  writeTimeoutMillis: 120000
+
+  # -- (string) Optional. Enables the use of the full HTTP 1.1 syntax for all
+  # the responses, upon HTTP 1.1 requests.
+  # If set to `1.1`, HTTP 1.1 is always used, when possible.
+  # If set to `1.0`, HTTP 1.0 is always used; this is possible for all HTTP
+  # requests, but it will prevent WebSocket support.
+  # If set to `AUTO`, HTTP 1.0 is used, unless HTTP 1.1 is required in order to
+  # support specific response features.
+  # @default -- 1.1
+  useHttpVersion:
+
+  # -- Optional. WebSocket support configuration.
+  webSocket:
+
+    # -- Optional. Enables the WebSocket support.
+    # If set to `true`, the Server accepts requests for initiating a WebSocket
+    # interaction through a custom protocol.
+    # If set to `false`, the Server refuses requests for WebSocket interaction.
+    # Disabling WebSocket support may be needed when the local network
+    # infrastructure (for instance the Load Balancer) does not handle WebSocket
+    # communication correctly and the WebSocket transport is not already
+    # disabled on the client side through the Lightstreamer Client Library in
+    # use. The Client Library, upon the Server refusal, will resort to HTTP
+    # streaming without any additional delay to session establishment.
+    # @default -- true
+    enabled:
+
+    # -- (int) Optional. Maximum time the Server is allowed to wait before
+    # answering to a client "ping" request. In case a client sends very
+    # frequent "ping" requests, only the "pong" associated with the most recent
+    # request received is sent, while the previous requests will be ignored.
+    # Note that the above is possible also when `0` is specified.
+    # @default -- 0
+    maxPongDelayMillis:
+
+    # -- (int) Optional. Maximum time the Server is allowed to wait for the
+    # client "close" frame, in case the Server is sending its own close" frame
+    # first, in order to try to close the connection in a clean way.
+    # @default -- no timeout is set and the global `global.readTimeoutMillis`
+    # applies.
+    maxClosingWaitMillis:
+
+    # -- Optional. Maximum payload size allowed for an outbound frame.
+    # When larger updates have to be sent, the related WebSocket messages will
+    # be split into multiple frames.
+    # The Server may enforce a lower limit for this setting.
+    # @default -- 16384
+    maxOutboundFrameSize:
+
+# -- Optional. Security configuration.
+security:
+
+  # -- Optional. Disabling of the protection for JavaScript pages, supplied by
+  # the Server, that carry user data.
+  # JavaScript pages can be supplied upon requests by old versions of the Web
+  # and Node.js (Unified API) Client Libraries, whereas recent versions no
+  # longer make use of this kind of pages. The protection prevents such pages
+  # from being imported in a _<script>_ block and, as a consequence, from being
+  # directly executed within a hosting page regardless of its origin.
+  # This protection allows the Server to fully comply with the prescriptions to
+  # prevent the so-called "JavaScript Hijacking".
+  # If set to `true`, the protection is enabled.
+  # If set to `false`, the protection is disabled. It can be set in order to
+  # support communication between the application front-end pages and
+  # Lightstreamer Server in specific use cases; see the Client Guide for the
+  # Web (Unified API) Client SDK earlier than 8.0.0 for details. It can also be
+  # set in order to ensure compatibility with even older Web Client Libraries
+  # (version 4.1 build 1308 or previous). Note, however, that basic protection
+  # against JavaScript Hijacking can still be granted, simply by ensuring that
+  # request authorization is never based on information got from the request
+  # cookies. This already holds for any session-related request other than
+  # session-creation ones, for which the request URL is always checked against
+  # the Server-generated session ID. For session-creation requests, this
+  # depends on the Metadata Adapter implementation, but can be enforced by
+  # setting `enableForwardCookies` to `false`.
+  # @default -- true
+  enableProtectedJs: false
+
+  # -- Optional. Use this setting to enable the forwarding of the cookies to
+  # the Metadata Adapter through the `httpHeaders` argument of the `notifyUser`
+  # method.
+  # Please note that in any case cookies should not be used to authenticate
+  # users, otherwise, having `enableProtectedJs` set to `false` and/or a too
+  # permissive policy in the `crossDomainPolicy` will expose the server to CSRF
+  # attacks.
+  # If set to `true`, cookies are forwarded to the Metadata Adapter.
+  # If set to `false`, cookies are hidden from the Metadata Adapter.
+  # @default -- false
+  enableCookiesForwarding: false
+
+  # -- Optional. List of origins to be allowed by the browsers to consume
+  # responses to requests sent to this Server through cross-origin XHR or
+  # through WebSockets; in fact, when a requesting page asks for streaming data
+  # in this way, the browser should specify the page origin through the
+  # `Origin` HTTP header, to give the Server a chance to accept or refuse the
+  # request. This is the most common way streaming data is requested by the Web
+  # (Unified API) Client Library. You can see the Client Guide for the Web
+  # (Unified API) Client SDK earlier than 8.0.0 for details on all the possible
+  # use cases.
+  # If a request origin is not matched against any of the configured rules, a
+  # Websocket initiation request will be refused, whereas a HTTP request will
+  # not be denied (i.e.: a 200 OK will be returned) but the response body will
+  # be left empty, in accordance with the CORS specifications.
+  # If no origin is specified by the user-agent, the request will always be
+  # accepted.
+  # Note that sending the Origin header is a client-side duty. In fact, most
+  # modern browsers, upon a request for a cross-origin XHR or WebSocket by a
+  # page, will send the Origin header, while older browsers will directly fail
+  # to send the request. Non-browser clients usually don't have to perform
+  # origin checks; so they don't send the Origin header and thus their requests
+  # are always authorized.
+  crossDomainPolicy:
+
+    # -- Optional. In case an HTTP OPTIONS request is sent to authorize future
+    # requests, the server allows the client to store the result of such
+    # OPTIONS for the specified number of seconds. Thus a previously authorized
+    # client may not give up its authorization, even if the related origin is
+    # removed from the list and the server is restarted, until its
+    # authorization expires.
+    # @default -- 3600
+    optionsMaxAgeSeconds: 3600
+
+    # -- Optional. In case the client wishes to send custom headers to the
+    # server, it requires approval from the server itself. This setting
+    # permits to specify a comma separated list of extra headers to be allowed
+    # in the client requests. Note that a space is expected after each comma
+    # (e.g.: `acceptExtraHeaders: "custom-header1, custom-header2"`).
+    # @default -- ""
+    acceptExtraHeaders:
+
+    # -- Optional. Specify if the server should authorize the client to send
+    # its credentials on a CORS request. This setting does not impact the
+    # user/password sent over the Lightstreamer protocol, but, if set to
+    # `false`, might prevent, or force a fallback connection, on clients
+    # sending CORS requests carrying cookies, http-basic-authentication or
+    # client-side certificates.
+    # @default -- false
+    acceptCredentials: true
+
+    # -- Optional. List of Origin allowed to consume responses to cross-origin
+    # requests.
+    allowAccessFrom:
+
+      # -- Optional. Defines a rule against which Origin headers will be
+      # checked.
+      fromEveryWhere:
+
+        # -- Mandatory. A valid scheme name (usually http or https) or `*`; the
+        # latter matches both http and https scheme, but it doesn't match other
+        # schemes.
+        scheme: "*"
+
+        # -- Mandatory. A valid host name, IPv4 or IPv6 representing, an
+        # authorized Origin. Also a `*` is accepted with the meaning of
+        # "any host or IP".
+        # If a host name is specified it can be prefixed with a wildcard as long
+        # as at least the second level domain is explicitly specified (i.e.:
+        # `*.my-domain.com` and `*.sites.my-domain.com` are valid entries while
+        # `*.com` is not).
+        host: "*"
+
+        # -- Mandatory. A a valid port or `*` to specify any port.
+        port: "*"
+
+      # fromWwwMyDomain:
+      #   scheme: https
+      #   host: "www.my-domain.com"
+      #   port: 443
+      # fromMyDomain:
+      #   scheme: https
+      #   host: "*.my-domain.com"
+      #   port: 443
+      # fromLocal:
+      #   scheme: https
+      #   host: "192.168.0.101"
+      #   port: "*"
+      # fromHttpsIpv6:
+      #   scheme: https
+      #   host: "2001:0db8:aaaa:0000:0000:dddd:eeee:0000"
+      #   port: 443
+      # fromIpvs:
+      #   scheme: "*"
+      #   host: "2001:0db8:aaaa::dddd:eeee:0"
+      #   port: "*"
+
+    # -- Optional. List of Origin domains or subdomains to be allowed by the
+    # browsers to access data on HTML pages supplied by this Server.
+    # This was one of the ways used by the Web (Unified API) Client SDK earlier
+    # than 8.0.0 to request streaming data; see the Client Guide for these Web
+    # (Unified API) Client SDK versions for details on which use cases involve
+    # accessing data through HTML pages.
+    # In this kind of requests, the requesting page should be allowed by the
+    # browser to access data contained in the Server-originated page only if
+    # both pages declare a common subdomain. So, the page should declare a
+    # subdomain as its `document.domain` property and will ask the Server to
+    # declare the same subdomain on the response page.
+    # In that case, the Server will be allowed to set the requested subdomain
+    # as the `document.domain` property of the data page only if configured
+    # here, otherwise the whole request will be refused.
+    # On the other hand, if no setting is provided, then this check is
+    # disabled. Note that, in any case, the consistency of the declared
+    # subdomain with the url used to request the data page must be ensured by
+    # the browser.
+    # If the requesting page doesn't specify any subdomain for the response,
+    # the request will always be allowed; in this case, a same-domain access to
+    # the Server data page will be performed by the browser.
+    # @default -- []
+  allowedDomains:
+    # - "my-domain.com"
+    # - "my-alt-domain.com"
+
+  # -- (string) Optional. Server identification policy to be used for all server
+  # responses. Upon any HTTP request, the Server identifies itself through the
+  # `Server` HTTP response header. However, omitting version information may
+  # make external attacks more difficult.
+  # If set to `FULL`, the Server identifies itself as:
+  # `Lightstreamer Server/X.Y.Z build BBBB (Lightstreamer Push Server -
+  # www.lightstreamer.com) EEEEEE edition`.
+  # If set to `MINIMAL`, the Server identifies itself, depending on the
+  # Edition: for Enterprise edition, as `Lightstreamer Server`; for Community
+  # edition, as `Lightstreamer Server (Lightstreamer Push Server -
+  # www.lightstreamer.com) COMMUNITY edition`.
+  # @default -- FULL
+  serverIdentificationPolicy:
 
 # -- Mandatory. Push session configuration.
 pushSession:
