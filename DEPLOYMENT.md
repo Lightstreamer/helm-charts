@@ -9,9 +9,9 @@ This guide provides step-by-step instructions on how to deploy the Lightstreamer
   - [License](#license)
     - [Community Edition](#community-edition)
     - [Enterprise Edition](#enterprise-edition)
-  - [Configure a New Server Socket Configuration](#configure-a-new-server-socket-configuration)
-  - [Multiple Servers](#multiple-servers)
-  - [TLS/SSL](#config-tlsssl)
+  - [Server Socket](#server-socket)
+    - [Multiple Servers](#multiple-servers)
+    - [TLS/SSL](#tlsssl)
   - [Logging](#logging)
     - [Primary Loggers](#primary-loggers)
     - [Subloggers](#subloggers)
@@ -19,10 +19,7 @@ This guide provides step-by-step instructions on how to deploy the Lightstreamer
     - [Extra Loggers](#extra-loggers)
     - [Appenders](#appenders)
       - [Log to Persistent Storage](#log-to-persistent-storage)
-  - [Monitoring](#monitoring)
-    - [Dashboard](#dashboard-configuration)
-    - [JMX](#jmx-configuration)
-    - [Health Checks](#health-check-configuration)
+  - [JMX](#jmx)
 
 ## Prerequisites
 
@@ -42,7 +39,7 @@ Before you begin, ensure that you have the following prerequisites:
 
 ## Deployment Steps
 
-Follow these steps to deploy the Lightstreamer Broker to your Kubernetes cluser:
+Follow these steps to deploy the Lightstreamer Broker to your Kubernetes cluster:
 
 1. **Add the Lightstreamer Helm repository:**
 
@@ -141,6 +138,14 @@ To configure the Community edition:
 1. Set `license.edition` to `COMMUNITY`
 2. Set `license.enabledCommunityEditionClientApi` with the Client API to use with the free license
 
+Example:
+
+```yaml
+license:
+  edition: COMMUNITY
+  enabledCommunityEditionClientApi:  "javascript_client"
+```
+
 #### Enterprise Edition
 
 The default configuration uses the Enterprise edition with a _Demo_ license that:
@@ -201,9 +206,9 @@ To configure the `ENTERPRISE` edition with a customer license:
    ...
    ```
 
-See the [License settings](README.md#license) section for additional configuration options. 
+See the [License settings](README.md#license) section of the _Lightstreamer Helm Chart specification_ for additional configuration options. 
 
-### Configure a New Server Socket Configuration
+### Server Socket
 
 To configure a new server socket, add a new entry to the [`servers`](README.md#servers) section with the following mandatory settings:
 
@@ -230,7 +235,7 @@ servers:
 > ...
 > ```
 
-### Multiple Servers
+#### Multiple Servers
 
 Lightstreamer Broker supports managing multiple server sockets. You can define multiple server socket configurations by adding entries under the `servers` section in your values file.
 Each configuration must specify a unique name and port.
@@ -267,11 +272,11 @@ servers:
 >     enabled: false
 > ```
 
-### TLS/SSL
+#### TLS/SSL
 
 To configure TLS/SSL settings for a server socket configuration, perform the following actions:
 
-- Set the [`enableHttps`](README.md#serversdefaultserverenablehttps) flag of the target server configuration to `true`
+- Set the [`enableHttps`](README.md#serversdefaultserverenablehttps) flag of the target server configuration to `true`:
   
   ```yaml
   servers:
@@ -355,6 +360,8 @@ To configure TLS/SSL settings for a server socket configuration, perform the fol
         # Other settings
         ...
   ```
+See the servers.defaultServer.sslConfig
+See the [License settings](README.md#license) section of the _Lightstreamer Helm Chart specification_ for additional configuration options. 
 
 ### Logging
 
@@ -365,7 +372,7 @@ The provided logging settings are designed to meet the needs of most production 
 The [`logging.loggers`](README.md#loggingloggers) section defines the primary loggers used by the Lightstreamer Broker:
 
 - [`lightstreamerLogger`](README.md#loggingloggerslightstreamerlogger): Logs major activities of the Lightstreamer Broker.
-- [`lightstreamerMonitorText`](README.md#loggingloggerslightstreamermonitortext) and [`lightstreamerMonitorTAB`](README.md#loggingloggerslightstreamermonitortab): Log load statistics in text and tabular formats, respectively.
+- [`lightstreamerMonitorText`](README.md#loggingloggerslightstreamermonitortext) and [`lightstreamerMonitorTAB`](README.md#loggingloggerslightstreamermonitortab): Log statistics in text and tabular formats, respectively.
 - [`lightstreamerHealthCheck`](README.md#loggingloggerslightstreamerhealthcheck): Logs health check requests.
 - [`lightstreamerProxyAdapters`](README.md#loggingloggerslightstreamerproxyadapters): Logs activities of Proxy Data and Metadata Adapters.
 
@@ -510,6 +517,58 @@ To persist log files, you can configure the `DailyRollingFile` appender to write
          volumeRef: log-volume
    ```
 
+### JMX
+
+The Lightstreamer Broker exposes a comprehensive set of monitoring metrics and management operations through JMX (Java Management Extensions). This is an optional feature that may not be included in your license.
+
+JMX support is designed to integrate with monitoring and management tools via two protocols:
+- _JMXMP_: A pure TCP-based protocol
+- _RMI_: The standard Java Remote Method Invocation protocol
+
+See the [JMX API documentation](https://lightstreamer.com/ls-jmx-sdk/latest/api/index.html) for details on available metrics and operations.
+
+#### RMI Connector
+
+The default configuration enables an RMI connector listening on TCP port `8888`. You can verify this by checking the pod's exposed ports:
+
+```sh
+kubectl get pods -l app.kubernetes.io/name=lightstreamer -o jsonpath="{.items[0].spec.containers[0].ports}" --namespace <namespace> | jq
+```
+>[TIP!] Notice the usage of the [`jq`](https://jqlang.org/) tool to simplify the processing of json outputs.
+
+Expected output:
+```json
+[
+  {
+    "containerPort": 8080,
+    "name": "default-server",
+    "protocol": "TCP"
+  },
+  {
+    "containerPort": 8888,
+    "name": "jmx-port",
+    "protocol": "TCP"
+  }
+]
+```
+
+The following example shows how to customize the RMI Connector through the [`management.jmx.rmiConnector.port`](README.md#managementjmxrmiconnectorport) settings:
+
+```yaml
+management:
+  jmx:
+    rmiConnector:
+      port:
+        value: 9999
+        enableSsl: true        # Optional TLS/SSL enablement
+      keystoreRef: rmiKeystore # Reference to a keystore
+```
+  
+In the above configuration, the optional [`enableSsl`](README.md#managementjmxrmiconnectorportenablessl) flag has been turned on to enable TLS/SSL communication, which in addition requires you to configure (or reuse) a keystore and reference it (as already explained in the [_TLS/SSL_](#tlsssl) section).
+
+#### Authentication
+
+
 ### Dashboard Configuration
 
 The Lightstreamer Dashboard provides a web interface for monitoring and managing your Lightstreamer instance. To configure the dashboard:
@@ -527,27 +586,6 @@ dashboard:
   allowedAddresses:
     - "10.0.0.0/8"
     - "172.16.0.0/12"
-```
-
-### JMX Configuration
-
-Enable JMX monitoring and configure connection settings:
-
-```yaml
-jmx:
-  enabled: true
-  port: 7777
-  # Optional SSL configuration
-  ssl:
-    enabled: true
-    keystoreRef: jmxKeystore
-
-  # Access control
-  auth:
-    enabled: true
-    passwordSecretRef:
-      name: jmx-password
-      key: password
 ```
 
 ### Health Check Configuration
