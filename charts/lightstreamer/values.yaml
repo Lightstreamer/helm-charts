@@ -1756,9 +1756,9 @@ management:
       # access url, but it may have to be considered for firewall settings.
       # The optional `enableSsl` setting, when set to `false`, enables TLS/SSL
       # communication by the connector; TLS/SSL at this level is supported by
-      # some JMX clients, like jconsole, that don't supportTLS/SSL on the main
+      # some JMX clients, like jconsole, that don't support TLS/SSL on the main
       # port.
-      # @default -- the same as config used in `rmiConnector.port`
+      # @default -- the same as configured for `rmiConnector.port`
       dataPort:
         # value: 4444
         # enableSsl: false
@@ -1812,59 +1812,64 @@ management:
       # @default -- accept connections on any/all local addresses
       listeningInterface:
 
-      # -- Mandatory if either `port.enableSsl` or `dataPort.enableSsl` is set
-      # to true. The reference to a keystore configuration (defined in
-      # `keystores`) to be used in case TLS/SSL is enabled for part or all of
-      # the communication.
-      # See the `keystores.myServerKeystore` for general details on keystore
-      # configuration. These include the runtime replacement of the keystore,
-      # with one difference: if the load of the new keystore fails, the RMI
-      # Connector may be left unreachable.
-      keystoreRef:
+      # -- Mandatory if `rmiConnector.enableSsl` or 
+      # `rmiConnector.dataPort.enableSsl` is set to `true`. TLS/SSL settings for
+      # the RMI connector.
+      sslConfig:
+      
+        # -- Mandatory, The reference to a keystore configuration (defined in
+        # `keystores`) to be used in case TLS/SSL is enabled for part or all of
+        # the communication.
+        # See the `keystores.myServerKeystore` for general details on keystore
+        # configuration. These include the runtime replacement of the keystore,
+        # with one difference: if the load of the new keystore fails, the RMI
+        # Connector may be left unreachable.
+        keystoreRef:
 
-      # -- (list) Optional, but forbidden if `removeCipherSuites` is used.
-      # Specifies all the cipher suites allowed for the interaction, in case
-      # TLS/SSL is enabled for part or all the communication.
-      # See notes for `servers.{}.sslConfig.allowCipherSuites`.
-      # @default -- []
-      allowCipherSuites:
-        # - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+        # -- (list) Optional, but forbidden if `removeCipherSuites` is used.
+        # Specifies all the cipher suites allowed for the interaction, in case
+        # TLS/SSL is enabled for part or all the communication.
+        # See notes for `servers.{}.sslConfig.allowCipherSuites`.
+        # @default -- []
+        allowCipherSuites:
+          # - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
 
-      # -- (list) Optional, but forbidden if `allowCipherSuites` is used.
-      # Pattern to be matched against the names of the enabled cipher suites in
-      # order to remove the matching ones from the enabled cipher suites set to
-      # be used in case TLS/SSL is enabled for part or all the communication.
-      # See notes for `servers.{}.sslConfig.removeCipherSuites`.
-      # @default -- []
-      removeCipherSuites:
-        # - TLS_RSA_
+        # -- (list) Optional, but forbidden if `allowCipherSuites` is used.
+        # Pattern to be matched against the names of the enabled cipher suites 
+        # in order to remove the matching ones from the enabled cipher suites 
+        # set to be used in case TLS/SSL is enabled for part or all the 
+        # communication.
+        # See notes for `servers.{}.sslConfig.removeCipherSuites`.
+        # @default -- []
+        removeCipherSuites:
+          # - TLS_RSA_
 
-      # -- Optional. Determines which side should express the preference when
-      # multiple cipher suites are in common between server and client (in case
-      # TLS/SSL is enabled for part or all the communication).
-      # See notes for
-      # `servers.{}.sslConfig.enforceServerCipherSuitePreference`.
-      enforceServerCipherSuitePreference:
-        enabled: true
-        order: "JVM"
+        # -- Optional. Determines which side should express the preference when
+        # multiple cipher suites are in common between server and client (in 
+        # case TLS/SSL is enabled for part or all the communication).
+        # See notes for
+        # `servers.{}.sslConfig.enforceServerCipherSuitePreference`.
+        enforceServerCipherSuitePreference:
+          enabled: true
+          order: "JVM"
 
-      # -- (list) Optional, but forbidden if `removeProtocols` is used.
-      # Specifies one or more protocols allowed for the TLS/SSL interaction, in
-      # case TLS/SSL is enabled for part or all the communication.
-      # See notes for `servers.{}.sslConfig.allowProtocols`.
-      allowProtocols:
-        # - TLSv1.2
-        # - TLSv1.3
+        # -- (list) Optional, but forbidden if `removeProtocols` is used.
+        # Specifies one or more protocols allowed for the TLS/SSL interaction, 
+        # in case TLS/SSL is enabled for part or all the communication.
+        # See notes for `servers.{}.sslConfig.allowProtocols`.
+        allowProtocols:
+          # - TLSv1.2
+          # - TLSv1.3
 
-      # -- (list) Optional, but forbidden if `allowProtocols` is used. Pattern
-      # to be matched against the names of the enabled TLS/SSL protocols in
-      # order to remove the matching ones from the enabled protocols set to be
-      # used in case TLS/SSL is enabled for part or all the communication.
-      # See notes for `servers.{}.sslConfig.removeProtocols`.
-      removeProtocols:
-        - SSL
-        - TLSv1$
-        - TLSv1.1
+        # -- (list) Optional, but forbidden if `allowProtocols` is used. Pattern
+        # to be matched against the names of the enabled TLS/SSL protocols in
+        # order to remove the matching ones from the enabled protocols set to be
+        # used in case TLS/SSL is enabled for part or all the communication.
+        # See notes for `servers.{}.sslConfig.removeProtocols`.
+        removeProtocols:
+          - SSL
+          - TLSv1$
+          - TLSv1.1
 
       # -- Optional. Enables the RMI connector access without credentials.
       # If set to `true`, requests to the RMI connector are always allowed.
