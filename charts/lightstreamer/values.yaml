@@ -885,7 +885,7 @@ servers:
       # fully supported by the Conscrypt provider.
       # See the `keystores.myServerKeystore` settings for general details on
       # keystore configuration.
-      keystoreRef: myServerKeystore
+      keystoreRef:
 
       # -- Optional, but forbidden if `removeCipherSuites` is used.
       # Specifies all the cipher suites allowed for the TLS/SSL interaction,
@@ -933,7 +933,7 @@ servers:
         # preference order specified by the client. For instance, the client
         # might privilege faster, but weaker, suites.
         # @default -- false
-        enabled: true
+        enabled:
 
         # -- (string) Optional. Preference order for choosing the cipher suite.
         # If set to `JVM`, ordering is delegated to the underlying Security
@@ -942,7 +942,7 @@ servers:
         # used), the order in which the `allowCipherSuites` elements are
         # specified determines the preference order.
         # @default -- JVM
-        order: "JVM"
+        order:
 
       # -- Optional. If set to `false`, causes any client-initiated TLS
       # renegotiation request to be refused by closing the connection. This
@@ -983,9 +983,9 @@ servers:
       # level.
       # @default -- []
       removeProtocols:
-        - SSL
-        - TLSv1$
-        - TLSv1.1
+        # - SSL
+        # - TLSv1$
+        # - TLSv1.1
 
       # -- Optional. Instructs the underlying Security Provider on whether to
       # use stateless (when `true`) or stateful (when `false`) session
@@ -1784,7 +1784,7 @@ management:
       # If set to `false`, disables the test, but this setting can be
       # overridden by setting jmx.enableStoppingServiceCheck to `true`.
       # @default -- true
-      enableTestPorts: true
+      enableTestPorts:
 
       # -- (int) Optional. Timeout to be posed on the connection attempts
       # through the RMI Connector. If `0`, no timeout will be posed.
@@ -1876,7 +1876,7 @@ management:
       # If set to `false`, requests to the RMI connector are subject to user
       # authentication; the allowed users are set in the "user" elements.
       # @default -- false
-      enablePublicAccess: yes
+      enablePublicAccess: true
 
       # -- (list) Optional, but ineffective if `enablePublicAccess` is set to
       # `true`. The reference to the secrets containing the credentials of the
