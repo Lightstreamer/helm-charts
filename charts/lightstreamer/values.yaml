@@ -1782,7 +1782,7 @@ management:
       # startup will fail. If successful and the "stop" script is launched in
       # the same environment of the Server, the script should work.
       # If set to `false`, disables the test, but this setting can be
-      # overridden by setting jmx.enableStoppingServiceCheck to `true`.
+      # overridden by setting `jmx.enableStoppingServiceCheck` to `true`.
       # @default -- true
       enableTestPorts:
 
@@ -1850,8 +1850,8 @@ management:
         # See notes for
         # `servers.{}.sslConfig.enforceServerCipherSuitePreference`.
         enforceServerCipherSuitePreference:
-          enabled: true
-          order: "JVM"
+          # enabled: true
+          # order: "JVM"
 
         # -- (list) Optional, but forbidden if `removeProtocols` is used.
         # Specifies one or more protocols allowed for the TLS/SSL interaction, 
@@ -1867,9 +1867,9 @@ management:
         # used in case TLS/SSL is enabled for part or all the communication.
         # See notes for `servers.{}.sslConfig.removeProtocols`.
         removeProtocols:
-          - SSL
-          - TLSv1$
-          - TLSv1.1
+          # - SSL
+          # - TLSv1$
+          # - TLSv1.1
 
       # -- Optional. Enables the RMI connector access without credentials.
       # If set to `true`, requests to the RMI connector are always allowed.
@@ -1939,19 +1939,19 @@ management:
     # @default -- true
     enableLongListProperties: false
 
-  # -- Optional. Startup check that the conditions for the correct working of
-  # the provided "stop" script are met (see `jmx`).
-  # If set to `true`, the startup will wait if the JMX RMI connector is not
-  # configured or the `ServerMBean` cannot be started. This also enforces the
-  # check of the JMX port reachability (see `rmiConnector.enableTestPorts`
-  # and the remarks on the test effectiveness); if the test fails, the
-  # startup will also fail.
-  # If set to `false`, no check is made that the "stop" script should work.
-  # This may not be a problem, because the Server can be stopped in other
-  # ways. The provided installation scripts also close the Server without
-  # resorting to the "stop" script.
-  # @default -- false
-  enableStoppingServiceCheck:
+    # -- Optional. Startup check that the conditions for the correct working of
+    # the provided "stop" script are met (see `jmx`).
+    # If set to `true`, the startup will wait if the JMX RMI connector is not
+    # configured or the `ServerMBean` cannot be started. This also enforces the
+    # check of the JMX port reachability (see `rmiConnector.enableTestPorts`
+    # and the remarks on the test effectiveness); if the test fails, the
+    # startup will also fail.
+    # If set to `false`, no check is made that the "stop" script should work.
+    # This may not be a problem, because the Server can be stopped in other
+    # ways. The provided installation scripts also close the Server without
+    # resorting to the "stop" script.
+    # @default -- false
+    enableStoppingServiceCheck:
 
   # -- Optional. Configuration of the Monitoring Dashboard.
   # The dashboard is a webapp whose pages are embedded in Lightstreamer Server
