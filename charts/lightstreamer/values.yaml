@@ -217,8 +217,8 @@ deployment:
         timeoutSeconds:
         terminationGracePeriodSeconds:
 
-      # -- Mandatory if enabled is set to `true` and `startup.healthCheck` is not
-      # specified. Default startup probe configuration to be used if no
+      # -- Mandatory if enabled is set to `true` and `startup.healthCheck` is 
+      # not specified. Default startup probe configuration to be used if no
       # `probes.startup.healthCheck` is specified.
       # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
       default:
@@ -230,12 +230,12 @@ deployment:
   # See https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/.
   resources: {}
 
-  # -- List of commands to run before the Lightstreamer Server starts.
+  # -- List of commands to run before the Lightstreamer Broker starts.
   # You can use it to perform any custom initialization.
   # For example, you can use it to copy configuration files or to source
   # environment variables from external files.
   preCommands:
-    # - echo "Launching Lightstreamer Server"
+    # - echo "Launching the Lightstreamer Broker"
 
   # -- Additional selectors.
   additionalSelectors: {}
@@ -383,12 +383,12 @@ autoscaling:
   targetMemoryUtilizationPercentage:
 
 # -- Mandatory. Configure the edition, the optional features, and the type of
-# license that should be used to run Lightstreamer Server.
+# license that should be used to run the Lightstreamer Broker.
 license:
 
   # -- (string) Mandatory. Lightstreamer edition to use.
   # To know full details, open the Welcome Page or the Monitoring Dashboard
-  # (Edition tab) of your running Lightstreamer Server.
+  # (Edition tab) of your running the Lightstreamer Broker.
   # Possible values: `COMMUNITY`, `ENTERPRISE`.
   edition: ENTERPRISE
 
@@ -549,7 +549,7 @@ license:
         # -- Mandatory. Generic Client API.
         enableGenericClient: false
 
-  # -- Optional. Periodically check whether any Lightstreamer Server update is
+  # -- Optional. Periodically check whether any Lightstreamer Broker update is
   # available. In such case, a notification is written to the log file.
   # If set to `true`, perform automatic update check. The following host name
   # must be reachable on port 443: https://service.lightstreamer.com/.
@@ -1137,7 +1137,7 @@ keystores:
       # name: kafka-connector-private-key-pass-secret
       # key: kafka-connector.private.key.pass
 
-# -- Mandatory. Logging configuration for Lightstreamer Server.
+# -- Mandatory. Logging configuration for the Lightstreamer Broker.
 logging:
 
   # -- Mandatory. Appenders configuration.
@@ -1341,8 +1341,8 @@ logging:
 
         # -- Optional. Logging of parsing and elaboration of client requests
         # At `DEBUG` level, client request details are reported.
-        # All logs from this logger and its subloggers report the IP and port
-        # of the involved connection.
+        # All logs from this logger and its subloggers report the IP and port of
+        # the involved connection.
         # @default -- inherited from lightstreamerLogger
         lightstreamerLogger.requests: INFO
 
@@ -1531,8 +1531,8 @@ logging:
     # 
     # If, for any reason, it is required that the configuration of the 
     # java.util.logging system for some of these categories is done elsewhere, 
-    # then the mappings done here can be disabled at startup, by just removing or 
-    # commenting out the corresponding loggers below, or by setting them to 
+    # then the mappings done here can be disabled at startup, by just removing 
+    # or commenting out the corresponding loggers below, or by setting them to 
     # level OFF.
     # Disabling the mapping may also prevent inefficiency for heavy loggers.
 
@@ -1723,7 +1723,7 @@ management:
   jmx:
 
     # -- Mandatory (if you wish to use the provided "stop" script).
-    # Enables the standard RMI connector.
+    # Enables the standard RMI Connector.
     # The remote MBean server will be accessible through this url:
     # `service:jmx:rmi:///jndi/rmi://<host>:<port>/lsjmx`.
     # If full JMX features is not available, only the `Server` MBean is supplied
@@ -1742,7 +1742,7 @@ management:
       # -- Mandatory. TCP port configuration.
       port:
         
-        # -- Mandatory.  TCP port on which the RMI connector will be available
+        # -- Mandatory.  TCP port on which the RMI Connector will be available
         # This is the port that has to be specified in the client access url.
         value: 8888
 
@@ -1751,7 +1751,7 @@ management:
         # @default -- false
         enableSsl: false
 
-      # -- Optional. TCP port that will be used by the RMI connector for its
+      # -- Optional. TCP port that will be used by the RMI Connector for its
       # own communication stuff. The port has not to be specified in the client
       # access url, but it may have to be considered for firewall settings.
       # The optional `enableSsl` setting, when set to `false`, enables TLS/SSL
@@ -1814,7 +1814,7 @@ management:
 
       # -- Mandatory if `rmiConnector.enableSsl` or 
       # `rmiConnector.dataPort.enableSsl` is set to `true`. TLS/SSL settings for
-      # the RMI connector.
+      # the RMI Connector.
       sslConfig:
       
         # -- Mandatory, The reference to a keystore configuration (defined in
@@ -1871,16 +1871,16 @@ management:
           # - TLSv1$
           # - TLSv1.1
 
-      # -- Optional. Enables the RMI connector access without credentials.
-      # If set to `true`, requests to the RMI connector are always allowed.
-      # If set to `false`, requests to the RMI connector are subject to user
+      # -- Optional. Enables the RMI Connector access without credentials.
+      # If set to `true`, requests to the RMI Connector are always allowed.
+      # If set to `false`, requests to the RMI Connector are subject to user
       # authentication; the allowed users are set in the "user" elements.
       # @default -- false
       enablePublicAccess: true
 
       # -- (list) Optional, but ineffective if `enablePublicAccess` is set to
       # `true`. The reference to the secrets containing the credentials of the
-      # users enabled to access the RMI connector.
+      # users enabled to access the RMI Connector.
       # Every secret must contains the keys `user` and `password`.
       # If `enablePublicAccess` is set to `false`, at least one set of
       # credentials should be supplied in order to allow access through the
@@ -1941,7 +1941,7 @@ management:
 
     # -- Optional. Startup check that the conditions for the correct working of
     # the provided "stop" script are met (see `jmx`).
-    # If set to `true`, the startup will wait if the JMX RMI connector is not
+    # If set to `true`, the startup will wait if the JMX RMI Connector is not
     # configured or the `ServerMBean` cannot be started. This also enforces the
     # check of the JMX port reachability (see `rmiConnector.enableTestPorts`
     # and the remarks on the test effectiveness); if the test fails, the
@@ -1954,11 +1954,11 @@ management:
     enableStoppingServiceCheck:
 
   # -- Optional. Configuration of the Monitoring Dashboard.
-  # The dashboard is a webapp whose pages are embedded in Lightstreamer Server
-  # and supplied by the internal web server. The main page has several tabs,
-  # which provide basic monitoring statistics in graphical form; the last one
-  # shows the newly introduced JMX Tree, which enables JMX data viewing and
-  # management from the browser.
+  # The Monitoring Dashboard is a webapp whose pages are embedded in the 
+  # Lightstreamer Broker and supplied by the internal web server. The main page 
+  # has several tabs, which provide basic monitoring statistics in graphical 
+  # form; the last one shows the newly introduced JMX Tree, which enables JMX 
+  # data viewing and management from the browser.
   # The Dashboard leans on an internal Adapter Set, named "MONITOR".
   # The following settings configure access restrictions to Monitoring Dashboard
   # pages.
@@ -2026,9 +2026,9 @@ management:
     # all server sockets.
     # If set to `true`, requests to the Monitoring Dashboard can be issued
     # through all the defined server sockets.
-    # If set to `false`, requests to the Monitoring Dashboard can be issued
-    # only through the server sockets specified in the `availableOnServers`
-    # setting, if any; otherwise, requests to the dashboard url will get a
+    # If set to `false`, requests to the Monitoring Dashboard can be issued only
+    # through the server sockets specified in the `availableOnServers` setting,
+    # if any; otherwise, requests to the dashboard url will get a 
     # "page not found" error. If no `availableOnServers` setting is defined,
     # requests to the Monitoring Dashboard will not be possible in any way.
     # Disabling the Dashboard on a server socket causes the internal "MONITOR"
@@ -2104,8 +2104,8 @@ globalSocket:
   readTimeoutMillis: 20000
 
   # -- (int) Optional. Longest inactivity time accepted while waiting for a
-  # slow operation during a TLS/SSL handshake. This involves both reads,
-  # writes, and encryption tasks managed by the `TLS-SSL HANDSHAKE` or
+  # slow operation during a TLS/SSL handshake. This involves both reads, writes,
+  # and encryption tasks managed by the `TLS-SSL HANDSHAKE` or 
   # `TLS-SSL AUTHENTICATION` internal pools. If this value is exceeded, the
   # socket is closed.
   # The time actually considered may be approximated and may be a few seconds
@@ -2124,9 +2124,9 @@ globalSocket:
   # @default -- unlimited length
   requestLimit: 50000
 
-  # -- Optional. Longest operation time accepted while writing data on a
-  # socket. If this value is exceeded, the socket is closed. Note that this may
-  # also affect very slow clients.
+  # -- Optional. Longest operation time accepted while writing data on a socket.
+  # If this value is exceeded, the socket is closed. Note that this may also 
+  # affect very slow clients.
   # The time actually considered may be approximated and may be a few seconds
   # higher, for internal performance reasons.
   # If missing or `0`, the check is suppressed.
@@ -2170,8 +2170,7 @@ globalSocket:
     # -- (int) Optional. Maximum time the Server is allowed to wait for the
     # client "close" frame, in case the Server is sending its own close" frame
     # first, in order to try to close the connection in a clean way.
-    # @default -- no timeout is set and the global `global.readTimeoutMillis`
-    # applies.
+    # @default -- no timeout is set and the global `global.readTimeoutMillis` applies.
     maxClosingWaitMillis:
 
     # -- Optional. Maximum payload size allowed for an outbound frame.
@@ -2195,8 +2194,8 @@ security:
   # prevent the so-called "JavaScript Hijacking".
   # If set to `true`, the protection is enabled.
   # If set to `false`, the protection is disabled. It can be set in order to
-  # support communication between the application front-end pages and
-  # Lightstreamer Server in specific use cases; see the Client Guide for the
+  # support communication between the application front-end pages and the
+  # Lightstreamer Broker in specific use cases; see the Client Guide for the
   # Web (Unified API) Client SDK earlier than 8.0.0 for details. It can also be
   # set in order to ensure compatibility with even older Web Client Libraries
   # (version 4.1 build 1308 or previous). Note, however, that basic protection
@@ -2350,10 +2349,11 @@ security:
   # If set to `FULL`, the Server identifies itself as:
   # `Lightstreamer Server/X.Y.Z build BBBB (Lightstreamer Push Server -
   # www.lightstreamer.com) EEEEEE edition`.
-  # If set to `MINIMAL`, the Server identifies itself, depending on the
-  # Edition: for Enterprise edition, as `Lightstreamer Server`; for Community
-  # edition, as `Lightstreamer Server (Lightstreamer Push Server -
-  # www.lightstreamer.com) COMMUNITY edition`.
+  # If set to `MINIMAL`, the Server identifies itself, depending on the 
+  # Edition: 
+  # - for Enterprise edition, as `Lightstreamer Server`; 
+  # - for Community edition, as `Lightstreamer Server (Lightstreamer Push Server 
+  # - www.lightstreamer.com) COMMUNITY edition`.
   # @default -- FULL
   serverIdentificationPolicy:
 
@@ -3316,7 +3316,7 @@ webServer:
 
   # -- Optional. Enables the processing of the `/crossdomain.xml` URL, required
   # by the Flash player in order to allow pages from a different host to
-  # request data to Lightstreamer Server host.
+  # request data to Lightstreamer Broker host.
   # See the "WebSite Controls" section on
   # http://www.adobe.com/devnet/flashplayer/articles/flash_player_9_security.pdf
   # for details on the contents of the document to be returned.
@@ -3346,7 +3346,7 @@ webServer:
 
   # -- Optional. Enables the processing of the `/clientaccesspolicy.xml` URL,
   # required by the Silverlight runtime in order to allow pages from a
-  # different host to request data to Lightstreamer Server host.
+  # different host to request data to Lightstreamer Broker host.
   # See http://msdn.microsoft.com/en-us/library/cc838250(VS.95).aspx#crossdomain_communication
   # for details on the contents of the document to be returned.
   # If set to `true`, the Server accepts requests for
@@ -3728,7 +3728,7 @@ load:
 
 # -- Optional. Map of Adapter Set configurations.
 # Every key in the map defines a specific the configuration of an Adapter Set
-# pluggable into Lightstreamer Server.
+# pluggable into the Lightstreamer Broker.
 adapters:
 
   # -- Optional. An Adapter Set configuration.
@@ -4106,7 +4106,7 @@ adapters:
 
       # -- One of this or `inProcessMetadataAdapter` must be provided.
       # Configuration of the Proxy Metadata Adapter, which is embedded in
-      # Lightstreamer Server and available out of the box.
+      # the Lightstreamer Broker and available out of the box.
       # The Proxy Metadata Adapter communicates with its remote counterpart
       # through standard TCP sockets. It listens on a configurable port (see
       # `requestReplyPort` setting) and waits its counterpart to connect.
@@ -4385,12 +4385,12 @@ adapters:
 
         # -- (int) Optional, but effective only if `enableRobustAdapter` is set
         # to `true`. The timeout for the first connection attempt. Upon
-        # the Proxy Adapter initialization at Lightstreamer Server startup, if
-        # a remote server connection is not available, Lightstreamer Server
-        # startup can be delayed until this timeout expires.
+        # the Proxy Adapter initialization at the Lightstreamer Broker startup, 
+        # if a remote server connection is not available, the Lightstreamer 
+        # Broker startup can be delayed until this timeout expires.
         # A negative value stands for an unlimited timeout.
-        # Note that, when Lightstreamer Server startup completes, as long as a
-        # connection to a remote server is still missing, all client requests
+        # Note that, when the Lightstreamer Broker startup completes, as long as 
+        # a connection to a remote server is still missing, all client requests
         # will be refused.
         # @default -- -1
         firstConnectionTimeoutMillis:
@@ -4689,7 +4689,7 @@ adapters:
 
         # -- One of this or `inProcessDataAdapter` must be provided.
         # Configuration of the Proxy Data Adapter, which is embedded in
-        # Lightstreamer Server and available out of the box.
+        # the Lightstreamer Broker and available out of the box.
         # The Proxy Data Adapter communicates with its remote counterpart
         # through standard TCP sockets. It listens on a configurable port (see
         # `requestReplyPort` setting) and waits for its counterpart to connect.
@@ -4847,16 +4847,16 @@ adapters:
 
           # -- (int) Optional, but effective only if `enableRobustAdapter` is
           # set to `true`. The timeout for the first connection attempt. Upon
-          # the Proxy Adapter initialization at Lightstreamer Server startup, if
-          # remote server connection is not available,
-          # Lightstreamer Server startup can be delayed until this timeout
+          # the Proxy Adapter initialization at the Lightstreamer Broker 
+          # startup, if remote server connection is not available, the
+          # Lightstreamer Broker startup can be delayed until this timeout
           # expires.
           # A negative value stands for an unlimited timeout.
-          # Note that, when Lightstreamer Server startup completes, as long as a
-          # connection to a remote server is still missing, all subscription
-          # requests will get an empty snapshot; then, when the connection is
-          # established, the data flow will be restored according to the
-          # `eventsRecovery` setting.
+          # Note that, when the Lightstreamer Broker startup completes, as long 
+          # as a connection to a remote server is still missing, all 
+          # subscription requests will get an empty snapshot; then, when the 
+          # connection is established, the data flow will be restored according 
+          # to the `eventsRecovery` setting.
           # @default -- 0
           firstConnectionTimeoutMillis:
 
@@ -5149,7 +5149,7 @@ connectors:
         name: "K8S-QuickStart"
 
         # -- Enables the connection.
-        # If set to `false`, the Lightstreamer Server automatically denies all
+        # If set to `false`, the Lightstreamer Broker automatically denies all
         # subscription requests for this connection.
         # @default -- false
         enabled:
