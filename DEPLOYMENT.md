@@ -27,6 +27,7 @@ This guide provides step-by-step instructions on how to deploy the Lightstreamer
     - [Authentication](#authentication-1)
     - [Availability on specific server](#availability-on-specific-server)
     - [Custom Dashboard URL path](#custom-dashboard-url-path)
+    - [Hands-on example](#hands-on-example)
 
 ## Prerequisites
 
@@ -707,3 +708,14 @@ management:
     urlPath: /monitoring  # Custom dashboard path
 ```
 
+#### Hands-on example
+
+The [examples/dashboard](examples/dashboard/) directory provides a complete example of Dashboard configuration that shows how to:
+
+- Configure a dedicated HTTPS server socket for secure Dashboard access
+- Set up user authentication with different permission levels
+- Customize the Dashboard URL path
+
+See the [`management.dashboard`](README.md#managementdashboard) section of the _Helm Lightstreamer Chart specification_ for full details about available Monitoring Dashboard settings.
+
+See the [`management.dashboard`](README.md#managementdashboard) section of the _Helm Lightstreamer Chart specification_ for full details about the Monitoring Dashboard settings.
