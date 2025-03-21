@@ -327,7 +327,11 @@ Render the Lightstreamer configuration file.
   {{- end }}
 
   {{- if $enableHttps }}
-    {{- with .sslConfig }}
+    {{- $sslConfig := .sslConfig | default dict }}
+    {{ if $sslConfig | empty }} 
+      {{ printf "servers.%s.sslConfig must be set set" $serverKey | fail }}
+    {{ end }}
+    {{- with  $sslConfig }}
         <!-- Optional. If defined, overrides the default JVM's Security Provider
              configured in the java.security file of the JDK installation. This allows
              the use of different Security Providers dedicated to single listening ports.
@@ -366,7 +370,7 @@ Render the Lightstreamer configuration file.
                are not fully supported by the Conscrypt provider.
              Instructions on how to setup a JKS keystore are provided in the
              TLS/SSL Certificates document. -->
-      {{- with required "sslConfig.keystoreRef must be set" .keystoreRef }}
+      {{- with required (printf "servers.%s.sslConfig.keystoreRef must be set" $serverKey) .keystoreRef }}
         {{- include "lightstreamer.configuration.keystore" (list $.Values.keystores .)  | nindent 8 }}
       {{- end }}
 
@@ -438,7 +442,7 @@ Render the Lightstreamer configuration file.
       {{- with .enforceServerCipherSuitePreference }}
         {{- if .order }}
           {{- if not (mustHas .order (list "JVM" "config")) }}
-            {{- fail "sslConfig.enforceServerCipherSuitePreference must be one of: \"JVM\", \"config\"" }}
+            {{- fail printf ("server.%s.sslConfig.enforceServerCipherSuitePreference must be one of: \"JVM\", \"config\"" $serverKey) }}
           {{- end }}
         {{- end }}
         <enforce_server_cipher_suite_preference{{ if not (quote .order | empty) }} order={{ .order | quote }}{{ end }}>{{ .enabled | default false | ternary "Y" "N" }}</enforce_server_cipher_suite_preference>
@@ -635,8 +639,6 @@ Render the Lightstreamer configuration file.
         </truststore>
         -->
       {{- end }}
-    {{- else }}
-      {{- fail "sslConfig must be set" }}
     {{- end }}
   {{- end }}
 
@@ -1160,7 +1162,7 @@ Render the Lightstreamer configuration file.
       {{- end }}
 
             <!-- Optional. A hostname by which the RMI Server can be reached from
-                 all the clients. In fact, the RMI Connector, for its own
+                 all the clients. In fact, the RMI connector, for its own
                  communication stuff, does not use the hostname specified in the
                  client access url, but needs an explicit server-side configuration.
                  Note that, if you wish to use the provided "stop" script, the
@@ -1197,7 +1199,7 @@ Render the Lightstreamer configuration file.
       {{- end }}
 
             <!-- Optional. Timeout to be posed on the connection attempts through
-                 the RMI Connector. If 0, no timeout will be posed.
+                 the RMI connector. If 0, no timeout will be posed.
                  The setting affects:
                  - The reachability test (if enabled through <test_ports>).
                  - The connector setup operation; in fact this operation may involve
@@ -1205,7 +1207,7 @@ Render the Lightstreamer configuration file.
                    the setup from being successful. If the configured hostname were
                    not visible locally, the setup might take long time; by setting
                    a timeout, the operation would not block the whole Server startup.
-                   However, the RMI Connector (and the "stop" script) might not be
+                   However, the RMI connector (and the "stop" script) might not be
                    available immediately after the startup, and any late failure
                    preventing the connector setup would be ignored.
                  On the other hand, the setting is ignored by the "stop" script.
@@ -1239,31 +1241,24 @@ Render the Lightstreamer configuration file.
                  See the <keystore> block inside <https_server> for general
                  details on keystore configuration. These include the runtime
                  replacement of the keystore, with one difference:
-                 if the load of the new keystore fails, the RMI Connector
+                 if the load of the new keystore fails, the RMI connector
                  may be left unreachable.
                  Default: if the block is missing, any settings provided to the
                  "javax.net.ssl.keyStore" and "javax.net.ssl.keyStorePassword"
                  JVM properties will apply. -->
       {{- if or .port.enableSsl (.dataPort).enableSsl }}
-        {{- with required "management.jmx.rmiConnector.keystoreRef must be set" .keystoreRef }}
+      {{- with required (printf "management.jmx.rmiConnector.sslConfig must be set") .sslConfig }}
+        {{- with required "management.jmx.rmiConnector.sslConfig.keystoreRef must be set" .keystoreRef }}
           {{- include "lightstreamer.configuration.keystore" (list $.Values.keystores .) | nindent 12 }}
         {{- end }}
-      {{- else }}
-            <!--
-            <keystore type="JKS">
-                <keystore_file>./myserver.keystore</keystore_file>
-                <keystore_password type="file">./myserver.keypass</keystore_password>
-            </keystore>
-            -->
-      {{- end }}
 
             <!-- Optional and cumulative, but forbidden if <remove_cipher_suites> is used.
                  Specifies all the cipher suites allowed for the interaction, in case
                  TLS/SSL is enabled for part or all the communication.
                  See notes for <allow_cipher_suite> under <https_server>. -->
-      {{- range .allowCipherSuites }}
+        {{- range .allowCipherSuites }}
             <allow_cipher_suite>{{ . }}</allow_cipher_suite>
-      {{- else }}
+        {{- else }}
             <!--
             <allow_cipher_suite>TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384</allow_cipher_suite>
             -->
@@ -1273,53 +1268,53 @@ Render the Lightstreamer configuration file.
             <!--
             <allow_cipher_suite>........</allow_cipher_suite>
             -->
-      {{- end }}
+        {{- end }}
 
             <!-- Optional and cumulative, but forbidden if <allow_cipher_suite> is used.
                  Pattern to be matched against the names of the enabled cipher suites
                  in order to remove the matching ones from the enabled cipher suites set
                  to be used in case TLS/SSL is enabled for part or all the communication.
                  See notes for <remove_cipher_suites> under <https_server>. -->
-      {{- range .removeCipherSuites }}
+        {{- range .removeCipherSuites }}
             <remove_cipher_suites>{{ . }}</remove_cipher_suites>
-      {{- else }}
+        {{- else }}
             <!--
             <remove_cipher_suites>TLS_RSA_</remove_cipher_suites>
             -->
-      {{- end }}
+        {{- end }}
 
             <!-- Optional. Determines which side should express the preference when
                  multiple cipher suites are in common between server and client
                  (in case TLS/SSL is enabled for part or all the communication).
                  See notes for <enforce_server_cipher_suite_preference> under <https_server>.
                  Default: N. -->
-      {{- with .enforceServerCipherSuitePreference }}
-        {{- if .order }}
-          {{- if not (mustHas .order (list "JVM" "config")) }}
-            {{- fail "rmiConnector.enforceServerCipherSuitePreference must be set with a valid value" }}
+        {{- with .enforceServerCipherSuitePreference }}
+          {{- if .order }}
+            {{- if not (mustHas .order (list "JVM" "config")) }}
+              {{- fail "management.jmx.rmiConnector.sslConfig.enforceServerCipherSuitePreference must be set with a valid value" }}
+            {{- end }}
           {{- end }}
-        {{- end }}
             <enforce_server_cipher_suite_preference{{ if not (quote .order | empty) }} order={{ .order | quote }}{{ end }}>{{ .enabled | default false | ternary "Y" "N" }}</enforce_server_cipher_suite_preference>
-      {{- else }}
+        {{- else }}
             <!--
             <enforce_server_cipher_suite_preference order="JVM">Y</enforce_server_cipher_suite_preference>
             -->
-      {{- end }}
+        {{- end }}
 
             <!-- Optional and cumulative, but forbidden if <remove_protocols> is used.
                  Specifies one or more protocols allowed for the TLS/SSL interaction,
                  in case TLS/SSL is enabled for part or all the communication.
                  See notes for <allow_protocol> under <https_server>. -->
-      {{- range .allowProtocols }}
+        {{- range .allowProtocols }}
             <allow_protocol>{{ . }}</allow_protocol>
-      {{- else }}
+        {{- else }}
             <!--
             <allow_protocol>TLSv1.2</allow_protocol>
             -->
             <!--
             <allow_protocol>TLSv1.3</allow_protocol>
             -->
-      {{- end }}
+        {{- end }}
 
             <!-- Optional and cumulative, but forbidden if <allow_protocol> is used.
                  Pattern to be matched against the names of the enabled TLS/SSL
@@ -1327,13 +1322,15 @@ Render the Lightstreamer configuration file.
                  protocols set to be used in case TLS/SSL is enabled for part
                  or all the communication.
                  See notes for <remove_protocols> under <https_server>. -->
-      {{- range .removeProtocols }}
+        {{- range .removeProtocols }}
             <remove_protocols>{{ . }}</remove_protocols>
-      {{- else }}
+        {{- else }}
             <!--
             <remove_protocols>SSL</remove_protocols>
             -->
-      {{- end }}
+        {{- end }}
+      {{- end }} {{/* sslConfig */}}
+      {{- end }} {{/* or .port.enableSsl (.dataPort).enableSsl */}}
 
             <!-- Optional. Enabling of the RMI connector access without credentials.
                  Can be one of the following:
@@ -1462,12 +1459,12 @@ Render the Lightstreamer configuration file.
               in other ways. The provided installation scripts also close
               the Server without resorting to the "stop" script.
          Default: N. -->
-  {{- if (quote .enableStoppingServiceCheck | empty) }}
+  {{- if (quote (.jmx).enableStoppingServiceCheck | empty) }}
     <!--
     <ensure_stopping_service>Y</ensure_stopping_service>
     -->
   {{- else }}
-    <ensure_stopping_service>{{ .enableStoppingServiceCheck | ternary "Y" "N" }}</ensure_stopping_service>
+    <ensure_stopping_service>{{ .jmx.enableStoppingServiceCheck | ternary "Y" "N" }}</ensure_stopping_service>
   {{- end }}
 
     <!-- Optional. Configuration of the Monitoring Dashboard.
