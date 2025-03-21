@@ -40,7 +40,7 @@ Before you begin, ensure that you have the following prerequisites:
 
   kubectl version 1.23.5 or newer, compatible with your cluster version. kubectl is needed to interact with your Kubernetes cluster. [Install kubectl](https://kubernetes.io/docs/tasks/tools/)
 
-## Deployment Steps
+## Deployment steps
 
 Follow these steps to deploy the Lightstreamer Broker to your Kubernetes cluster:
 
@@ -126,7 +126,7 @@ Two editions are available:
 - **Community**: Free edition with feature restrictions
 - **Enterprise**: Full-featured commercial edition
 
-#### Community Edition
+#### Community edition
 
 The Community edition can be used for free but has the following limitations:
 
@@ -149,7 +149,7 @@ license:
   enabledCommunityEditionClientApi:  "javascript_client"
 ```
 
-#### Enterprise Edition
+#### Enterprise edition
 
 The default configuration uses the Enterprise edition with a _Demo_ license that:
 
@@ -225,7 +225,7 @@ To configure the `ENTERPRISE` edition with a customer license:
 
 See the [License settings](README.md#license) section of the _Lightstreamer Helm Chart specification_ for additional license configuration options.
 
-### Server Socket
+### Server socket
 
 To configure a new server socket, add a new entry to the [`servers`](README.md#servers) section with the following mandatory settings:
 
@@ -253,7 +253,7 @@ servers:
 > ...
 > ```
 
-#### Multiple Servers
+#### Multiple servers
 
 Lightstreamer Broker supports managing multiple server sockets. You can define multiple server socket configurations by adding entries under the `servers` section in your values file.
 Each configuration must specify a unique name and port.
@@ -387,7 +387,7 @@ The provided logging settings are designed to meet the needs of most production 
 
 See the [_Logging_](README.md#logging) section of the _Lightstreamer Helm Chart specification_ for full details about logging configuration.
 
-#### Primary Loggers
+#### Primary loggers
 
 The [`logging.loggers`](README.md#loggingloggers) section defines the primary loggers used by the Lightstreamer Broker:
 
@@ -431,7 +431,7 @@ logging:
 ...
 ```
 
-#### Other Loggers
+#### Other loggers
 
 The default configuration includes loggers for third-party libraries used by the Broker. These loggers typically do not require modification. Refer to the comments in the [values.yaml](charts/lightstreamer/values.yaml#L1039) file for more details.
 
@@ -451,7 +451,7 @@ logging:
 ...
 ```
 
-#### Extra Loggers
+#### Extra loggers
 
 To define additional loggers, add entries to the `extraLoggers` section. This is useful for custom logging requirements.
 
@@ -496,11 +496,11 @@ logging:
 ...
 ```
 
-##### Log to Persistent Storage
+##### Log to persistent storage
 
 To persist log files, you can configure the `DailyRollingFile` appender to write to a Kubernetes volume. Here's how to set it up:
 
-1. **Define a Volume**
+1. **Define a volume**
 
    Configure a volume in the `deployment.extraVolumes` section. You can use various volume types:
 
@@ -517,7 +517,7 @@ To persist log files, you can configure the `DailyRollingFile` appender to write
            claimName: lightstreamer-logs-pvc
    ```
 
-2. **Configure the Appender**
+2. **Configure the appender**
 
    Configure your logging appender to use the volume:
 
@@ -549,7 +549,7 @@ See the [JMX API documentation](https://lightstreamer.com/ls-jmx-sdk/latest/api/
 
 #### RMI Connector
 
-The default configuration enables an RMI connector listening on TCP port `8888`. You can verify this by checking the pod's exposed ports:
+The default configuration enables an RMI Connector listening on TCP port `8888`. You can verify this by checking the pod's exposed ports:
 
 ```sh
 kubectl get pods -l app.kubernetes.io/name=lightstreamer -o jsonpath="{.items[0].spec.containers[0].ports}" --namespace <namespace> | jq
@@ -583,7 +583,7 @@ management:
         value: 9999
 ```
 
-See the [`management.jmx.rmiConnector`](README.md#managementjmxrmiconnector) section of the _Lightstreamer Helm Chart specification_ for full details about other configurable RMI connector settings.
+See the [`management.jmx.rmiConnector`](README.md#managementjmxrmiconnector) section of the _Lightstreamer Helm Chart specification_ for full details about other configurable RMI Connector settings.
 
 ##### TLS/SSL
 
@@ -602,7 +602,7 @@ management:
 > [!WARNING]
 > Make sure to enable TLS/SSL communication in a production deployment.
 
-See the [`management.jmx.rmiConnector.sslConfig`](README.md#managementjmxrmiconnectorsslconfig) section of the _Lightstreamer Helm Chart specification_ for additional TLS/SSL configuration options for the RMI connector. 
+See the [`management.jmx.rmiConnector.sslConfig`](README.md#managementjmxrmiconnectorsslconfig) section of the _Lightstreamer Helm Chart specification_ for additional TLS/SSL configuration options for the RMI Connector. 
 
 ##### Authentication
 
@@ -620,7 +620,7 @@ Example:
 management:
   jmx:
     rmiConnector:
-      enablePublicAccess: false # Requires authenticated RMI connector access
+      enablePublicAccess: false # Requires authenticated RMI Connector access
       credentialsSecrets:       # List of secrets
         - rmi-user-1-secret     
         - rmi-user-2-secret
@@ -629,9 +629,12 @@ management:
 > [!WARNING]
 > Make sure to enable authenticated access in a production deployment.
 
-### Dashboard Configuration
+### Dashboard
 
-The Lightstreamer Dashboard provides a web interface for monitoring and managing a Lightstreamer instance. To configure the dashboard:
+The embedded _Monitoring Dashboard_ is a handy tool to watch the status of the Lightstreamer Broker in real time and to administer the Lightstreamer Broker via the embedded JMX web client
+The Lightstreamer Dashboard provides a web interface for monitoring and managing a Lightstreamer instance. 
+
+To configure the dashboard:
 
 ```yaml
 dashboard:
