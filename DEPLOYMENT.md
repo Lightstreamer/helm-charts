@@ -23,6 +23,10 @@ This guide provides step-by-step instructions on how to deploy the Lightstreamer
     - [RMI Connector](#rmi-connector)
       - [TLS/SSL](#tlsssl-1)
       - [Authentication](#authentication)
+  - [Monitoring Dashboard](#monitoring-dashboard)
+    - [Authentication](#authentication-1)
+    - [Availability on specific server](#availability-on-specific-server)
+    - [Custom Dashboard URL path](#custom-dashboard-url-path)
 
 ## Prerequisites
 
@@ -629,49 +633,77 @@ management:
 > [!WARNING]
 > Make sure to enable authenticated access in a production deployment.
 
-### Dashboard
+### Monitoring Dashboard
 
-The embedded _Monitoring Dashboard_ is a handy tool to watch the status of the Lightstreamer Broker in real time and to administer the Lightstreamer Broker via the embedded JMX web client
-The Lightstreamer Dashboard provides a web interface for monitoring and managing a Lightstreamer instance. 
+The _Monitoring Dashboard_ provides a web interface for monitoring and managing a Lightstreamer Broker instance. It includes several tabs showing basic monitoring statistics in graphical form and a JMX Tree view that enables data viewing and management operations from the browser.
 
-To configure the dashboard:
+Since the Dashboard enables remote management, including server shutdown, it is critical to secure access in a production environment by applying the following recommended actions:
+
+- Require authentication for Dashboard access.
+- Create users with different levels of access to the JMX Tree.
+- Restrict the Dashboard to HTTPS servers only (if TLS/SSL is allowed by our license)
+- Customize the dashboard URL path.
+
+#### Authentication
+
+To restrict access, create Kubernetes secrets for Dashboard users and configure authentication:
+
+1. Create secrets for Dashboard users:
+
+   ```sh
+   # Create secret for the first dashboard user
+   kubectl create secret generic dashboard-user1-secret \
+     --from-literal=user=admin \
+     --from-literal=password='secretpass' \
+     --namespace <namespace>
+ 
+   # Create secret for the second dashboard user
+   kubectl create secret generic dashboard-user2-secret \
+     --from-literal=user=monitor \
+     --from-literal=password='monitorpass' \
+     --namespace <namespace>
+   ```
+ 
+   > [!IMPORTANT]
+   > Secrets must include the the mandatory keys `user` and `password`.
+
+2. Configure authentication:
+
+   ```yaml
+   management:
+     dashboard:
+       enablePublicAccess: false  # Disable public access
+       enableJmxTree: true        # Globally enable JMX Tree view
+   
+       credentials:
+         - secretRef: dashboard-user1-secret
+           enableJmxTreeVisibility: true  # Allow JMX Tree access
+         - secretRef: dashboard-user2-secret
+           enableJmxTreeVisibility: false # Restrict JMX Tree access
+   ```
+
+#### Availability on specific server
+
+To limit the Dashboard's availability to specific servers, configure the following in the Helm chart values:
 
 ```yaml
-dashboard:
-  enabled: true
-  # Configure authentication
-  auth:
-    username: admin
-    passwordSecretRef:
-      name: dashboard-password
-      key: password
-  # Configure access restrictions
-  allowedAddresses:
-    - "10.0.0.0/8"
-    - "172.16.0.0/12"
+management:
+  dashboard:
+    enableAvailabilityOnAllServers: false  # Disable availability on all servers
+
+    availableOnServers:
+      - serverRef: httpsServer         # Reference to a socket configuration defined the servers section
+        enableJmxTreeVisibility: true  # Allow JMX Tree access
 ```
 
-### Health Check Configuration
+#### Custom Dashboard URL path
 
-Configure readiness and liveness probes for Kubernetes health checks:
+To change the default Dashboard url:
 
 ```yaml
-healthcheck:
-  # Readiness probe
-  readiness:
-    enabled: true
-    path: "/health/readiness"
-    port: 8080
-    initialDelaySeconds: 30
-    periodSeconds: 10
-
-  # Liveness probe
-  liveness:
-    enabled: true
-    path: "/health/liveness"
-    port: 8080
-    initialDelaySeconds: 60
-    periodSeconds: 20
+management:
+  dashboard:
+    ...
+    urlPath: /monitoring  # Custom dashboard path
 ```
-````
 
