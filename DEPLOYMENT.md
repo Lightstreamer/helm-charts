@@ -664,8 +664,8 @@ To restrict access, create Kubernetes secrets for Dashboard users and configure 
      --namespace <namespace>
    ```
  
-   > [!IMPORTANT]
-   > Secrets must include the the mandatory keys `user` and `password`.
+  > [!IMPORTANT]
+  > Secrets must include the the mandatory keys `user` and `password`.
 
 2. Configure authentication:
 
