@@ -81,7 +81,7 @@ Override the default name of the chart
  
 ### [license](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L387)
      
-Mandatory. Configure the edition, the optional features, and the type of license that should be used to run Lightstreamer Server.
+Mandatory. Configure the edition, the optional features, and the type of license that should be used to run the Lightstreamer Broker.
 
 **Default:**
 
@@ -90,12 +90,12 @@ Mandatory. Configure the edition, the optional features, and the type of license
 ```
 ### [license.edition](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L393)
      
-Mandatory. Lightstreamer edition to use. To know full details, open the Welcome Page or the Monitoring Dashboard (Edition tab) of your running Lightstreamer Server. Possible values: `COMMUNITY`, `ENTERPRISE`.
+Mandatory. Lightstreamer edition to use. To know full details, open the Welcome Page or the Monitoring Dashboard (Edition tab) of your running the Lightstreamer Broker. Possible values: `COMMUNITY`, `ENTERPRISE`.
 
 **Default:** `"ENTERPRISE"`
 ### [license.enableAutomaticUpdateCheck](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L558)
      
-Optional. Periodically check whether any Lightstreamer Server update is available. In such case, a notification is written to the log file. If set to `true`, perform automatic update check. The following host name must be reachable on port 443: https://service.lightstreamer.com/. If set to `false`, do not perform an automatic update check.
+Optional. Periodically check whether any Lightstreamer Broker update is available. In such case, a notification is written to the log file. If set to `true`, perform automatic update check. The following host name must be reachable on port 443: https://service.lightstreamer.com/. If set to `false`, do not perform an automatic update check.
 
 **Default:** `true`
 ### [license.enabledCommunityEditionClientApi](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L409)
@@ -376,7 +376,7 @@ Mandatory. Map of HTTP/S server socket configurations. Every key in the map defi
 **Default:**
 
 ```
-{"defaultServer":{"backlog":null,"clientIdentification":{"enableForwardsLogging":null,"enablePrivate":null,"enableProxyProtocol":null,"proxyProtocolTimeoutMillis":null,"skipLocalForwards":null},"enableHttps":false,"enabled":true,"listeningInterface":null,"name":"Lightstreamer HTTP Server","port":8080,"portType":null,"responseHttpHeaders":{"add":[{"name":"X-Accel-Buffering","value":"no"}],"echo":null},"sslConfig":{"allowCipherSuites":null,"allowProtocols":null,"enableClientAuth":null,"enableClientHintsForTlsSessionResumption":null,"enableMandatoryClientAuth":null,"enableStatelessTlsSessionResumption":null,"enableTlsRenegotiation":null,"enforceServerCipherSuitePreference":{"enabled":true,"order":"JVM"},"keystoreRef":"myServerKeystore","removeCipherSuites":null,"removeProtocols":["SSL","TLSv1$","TLSv1.1"],"tlsProvider":null,"tlsSessionCacheSize":null,"tlsSessionTimeoutSeconds":null,"truststoreRef":null}}}
+{"defaultServer":{"backlog":null,"clientIdentification":{"enableForwardsLogging":null,"enablePrivate":null,"enableProxyProtocol":null,"proxyProtocolTimeoutMillis":null,"skipLocalForwards":null},"enableHttps":false,"enabled":true,"listeningInterface":null,"name":"Lightstreamer HTTP Server","port":8080,"portType":null,"responseHttpHeaders":{"add":[{"name":"X-Accel-Buffering","value":"no"}],"echo":null},"sslConfig":{"allowCipherSuites":null,"allowProtocols":null,"enableClientAuth":null,"enableClientHintsForTlsSessionResumption":null,"enableMandatoryClientAuth":null,"enableStatelessTlsSessionResumption":null,"enableTlsRenegotiation":null,"enforceServerCipherSuitePreference":{"enabled":null,"order":null},"keystoreRef":null,"removeCipherSuites":null,"removeProtocols":null,"tlsProvider":null,"tlsSessionCacheSize":null,"tlsSessionTimeoutSeconds":null,"truststoreRef":null}}}
 ```
 ### [servers.defaultServer](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L663)
      
@@ -385,7 +385,7 @@ At least one must be provided. An HTTP server socket configuration.
 **Default:**
 
 ```
-{"backlog":null,"clientIdentification":{"enableForwardsLogging":null,"enablePrivate":null,"enableProxyProtocol":null,"proxyProtocolTimeoutMillis":null,"skipLocalForwards":null},"enableHttps":false,"enabled":true,"listeningInterface":null,"name":"Lightstreamer HTTP Server","port":8080,"portType":null,"responseHttpHeaders":{"add":[{"name":"X-Accel-Buffering","value":"no"}],"echo":null},"sslConfig":{"allowCipherSuites":null,"allowProtocols":null,"enableClientAuth":null,"enableClientHintsForTlsSessionResumption":null,"enableMandatoryClientAuth":null,"enableStatelessTlsSessionResumption":null,"enableTlsRenegotiation":null,"enforceServerCipherSuitePreference":{"enabled":true,"order":"JVM"},"keystoreRef":"myServerKeystore","removeCipherSuites":null,"removeProtocols":["SSL","TLSv1$","TLSv1.1"],"tlsProvider":null,"tlsSessionCacheSize":null,"tlsSessionTimeoutSeconds":null,"truststoreRef":null}}
+{"backlog":null,"clientIdentification":{"enableForwardsLogging":null,"enablePrivate":null,"enableProxyProtocol":null,"proxyProtocolTimeoutMillis":null,"skipLocalForwards":null},"enableHttps":false,"enabled":true,"listeningInterface":null,"name":"Lightstreamer HTTP Server","port":8080,"portType":null,"responseHttpHeaders":{"add":[{"name":"X-Accel-Buffering","value":"no"}],"echo":null},"sslConfig":{"allowCipherSuites":null,"allowProtocols":null,"enableClientAuth":null,"enableClientHintsForTlsSessionResumption":null,"enableMandatoryClientAuth":null,"enableStatelessTlsSessionResumption":null,"enableTlsRenegotiation":null,"enforceServerCipherSuitePreference":{"enabled":null,"order":null},"keystoreRef":null,"removeCipherSuites":null,"removeProtocols":null,"tlsProvider":null,"tlsSessionCacheSize":null,"tlsSessionTimeoutSeconds":null,"truststoreRef":null}}
 ```
 ### [servers.defaultServer.backlog](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L693)
      
@@ -486,7 +486,7 @@ Mandatory if `enableHttps` is `true`. TLS/SSL settings for this socket configura
 **Default:**
 
 ```
-{"allowCipherSuites":null,"allowProtocols":null,"enableClientAuth":null,"enableClientHintsForTlsSessionResumption":null,"enableMandatoryClientAuth":null,"enableStatelessTlsSessionResumption":null,"enableTlsRenegotiation":null,"enforceServerCipherSuitePreference":{"enabled":true,"order":"JVM"},"keystoreRef":"myServerKeystore","removeCipherSuites":null,"removeProtocols":["SSL","TLSv1$","TLSv1.1"],"tlsProvider":null,"tlsSessionCacheSize":null,"tlsSessionTimeoutSeconds":null,"truststoreRef":null}
+{"allowCipherSuites":null,"allowProtocols":null,"enableClientAuth":null,"enableClientHintsForTlsSessionResumption":null,"enableMandatoryClientAuth":null,"enableStatelessTlsSessionResumption":null,"enableTlsRenegotiation":null,"enforceServerCipherSuitePreference":{"enabled":null,"order":null},"keystoreRef":null,"removeCipherSuites":null,"removeProtocols":null,"tlsProvider":null,"tlsSessionCacheSize":null,"tlsSessionTimeoutSeconds":null,"truststoreRef":null}
 ```
 ### [servers.defaultServer.sslConfig.allowCipherSuites](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L903)
      
@@ -531,7 +531,7 @@ Optional. If set to `false`, causes any client-initiated TLS renegotiation reque
      
 Optional. Determines which side should express the preference when multiple cipher suites are in common between server and client. Note, however, that the underlying Security Provider may ignore this setting. This is the case, for instance, of the Conscrypt provider.
 
-**Default:** `{"enabled":true,"order":"JVM"}`
+**Default:** `{"enabled":null,"order":null}`
 ### [servers.defaultServer.sslConfig.enforceServerCipherSuitePreference.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L936)
      
 Optional. If set to `true`, the Server will choose the cipher suite based on its preference order, specified through `order`. If set to `false`, the Server will get a cipher suite based on the preference order specified by the client. For instance, the client might privilege faster, but weaker, suites.
@@ -546,7 +546,7 @@ Optional. Preference order for choosing the cipher suite. If set to `JVM`, order
      
 Mandatory. The reference to a keystore configuration (defined in `keystores`). The access to the included certificates is subject to the following constraints: - Only the first certificated found in the keystore ca be sent to the  client. - The password for the keystore and the password of the included  certificate should be the same. - The support of keystore contents may depend on the Security Provider in use; for instance, keystores with dual RSA/ECC certificates are not fully supported by the Conscrypt provider. See the `keystores.myServerKeystore` settings for general details on keystore configuration.
 
-**Default:** `"myServerKeystore"`
+**Default:** `nil`
 ### [servers.defaultServer.sslConfig.removeCipherSuites](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L921)
      
 Optional, but forbidden if `allowCipherSuites` is used. Pattern to be matched against the names of the enabled cipher suites in order to remove the matching ones from the enabled cipher suites set. Any pattern in java.util.regex.Pattern format can be specified. This allows for customization of the choice of the cipher suites to be used for incoming https connections (note that restricting the set of available cipher suites may cause some client requests to be rejected). When this setting is used, the server-side preference order of the cipher suites is determined by the underlying Security Provider. Note that the selection is operated on the default set of the cipher suites "enabled" by the Security Provider, not on the wider set of the "supported" cipher suites. The default set of the "enabled" cipher suites is logged at startup by the `lightstreamerLogger.io.ssl` logger at `DEBUG` level.
@@ -637,7 +637,7 @@ Optional. The keystore type. The currently supported types are: - `JKS`, which i
  
 ### [logging](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1141)
      
-Mandatory. Logging configuration for Lightstreamer Server.
+Mandatory. Logging configuration for the Lightstreamer Broker.
 
 **Default:**
 
@@ -1022,7 +1022,7 @@ Mandatory. Logging and management configuration.
 **Default:**
 
 ```
-{"asyncProcessingThresholdMillis":60000,"collectorMillis":2000,"dashboard":{"availableOnServers":[{"enableJmxTreeVisibility":null,"serverRef":null}],"credentials":[{"enableJmxTreeVisibility":null,"secretRef":null}],"enableAvailabilityOnAllServers":true,"enableHostnameLookup":null,"enableJmxTree":true,"enablePublicAccess":null,"urlPath":null},"enablePasswordVisibilityOnRequestLog":null,"enableStoppingServiceCheck":null,"healthCheck":{"availableOnServers":null,"enableAvailabilityOnAllServers":true},"jmx":{"enableLongListProperties":false,"jmxmpConnector":{"enabled":null,"port":null},"rmiConnector":{"credentialsSecrets":null,"dataPort":null,"enablePublicAccess":"yes","enableTestPorts":true,"hostName":null,"listeningInterface":null,"port":{"enableSsl":false,"value":8888},"sslConfig":{"allowCipherSuites":null,"allowProtocols":null,"enforceServerCipherSuitePreference":{"enabled":true,"order":"JVM"},"keystoreRef":null,"removeCipherSuites":null,"removeProtocols":["SSL","TLSv1$","TLSv1.1"]},"testTimeoutMillis":5000},"sessionMbeanAvailability":null},"maxTaskWaitMillis":null,"noLoggingIpAddresses":null,"unexpectedWaitThresholdMillis":0}
+{"asyncProcessingThresholdMillis":60000,"collectorMillis":2000,"dashboard":{"availableOnServers":[{"enableJmxTreeVisibility":null,"serverRef":null}],"credentials":[{"enableJmxTreeVisibility":null,"secretRef":null}],"enableAvailabilityOnAllServers":true,"enableHostnameLookup":null,"enableJmxTree":true,"enablePublicAccess":null,"urlPath":null},"enablePasswordVisibilityOnRequestLog":null,"healthCheck":{"availableOnServers":null,"enableAvailabilityOnAllServers":true},"jmx":{"enableLongListProperties":false,"enableStoppingServiceCheck":null,"jmxmpConnector":{"enabled":null,"port":null},"rmiConnector":{"credentialsSecrets":null,"dataPort":null,"enablePublicAccess":true,"enableTestPorts":null,"hostName":null,"listeningInterface":null,"port":{"enableSsl":false,"value":8888},"sslConfig":{"allowCipherSuites":null,"allowProtocols":null,"enforceServerCipherSuitePreference":null,"keystoreRef":null,"removeCipherSuites":null,"removeProtocols":null},"testTimeoutMillis":5000},"sessionMbeanAvailability":null},"maxTaskWaitMillis":null,"noLoggingIpAddresses":null,"unexpectedWaitThresholdMillis":0}
 ```
 ### [management.asyncProcessingThresholdMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1697)
      
@@ -1036,7 +1036,7 @@ Mandatory. Sampling time for internal load statistics (Server Monitor). These st
 **Default:** `2000`
 ### [management.dashboard](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1980)
      
-Optional. Configuration of the Monitoring Dashboard. The dashboard is a webapp whose pages are embedded in Lightstreamer Server and supplied by the internal web server. The main page has several tabs, which provide basic monitoring statistics in graphical form; the last one shows the newly introduced JMX Tree, which enables JMX data viewing and management from the browser. The Dashboard leans on an internal Adapter Set, named "MONITOR". The following settings configure access restrictions to Monitoring Dashboard pages. ***IMPORTANT***. The Monitoring Dashboard enables data viewing and management, including shutting down the Server from a remote browser. We recommend configuring the credentials and restricting the Monitoring Monitoring Dashboard access to HTTPS server sockets through the settings below. Further restrictions can be applied to the JMX Tree only. See PRODUCTION_SECURITY_NOTES.TXT for a full check-list. Note that basic monitoring statistics are also available to any Lightstreamer application; in fact, an instance of a special internal monitoring Data Adapter can be embedded in any custom Adapter Set, by specifying "MONITOR" in place of the Data Adapter class name. For a listing of the supplied items, see the General Concepts document. The `dashboard.enableHostnameLookup` setting below also affects the monitoring Data Adapter. On the other hand, access restrictions to a monitoring Data Adapter instance embedded in a custom Adapter Set is only managed by the custom Metadata Adapter included.
+Optional. Configuration of the Monitoring Dashboard. The Monitoring Dashboard is a webapp whose pages are embedded in the  Lightstreamer Broker and supplied by the internal web server. The main page  has several tabs, which provide basic monitoring statistics in graphical  form; the last one shows the newly introduced JMX Tree, which enables JMX  data viewing and management from the browser. The Dashboard leans on an internal Adapter Set, named "MONITOR". The following settings configure access restrictions to Monitoring Dashboard pages. ***IMPORTANT***. The Monitoring Dashboard enables data viewing and management, including shutting down the Server from a remote browser. We recommend configuring the credentials and restricting the Monitoring Monitoring Dashboard access to HTTPS server sockets through the settings below. Further restrictions can be applied to the JMX Tree only. See PRODUCTION_SECURITY_NOTES.TXT for a full check-list. Note that basic monitoring statistics are also available to any Lightstreamer application; in fact, an instance of a special internal monitoring Data Adapter can be embedded in any custom Adapter Set, by specifying "MONITOR" in place of the Data Adapter class name. For a listing of the supplied items, see the General Concepts document. The `dashboard.enableHostnameLookup` setting below also affects the monitoring Data Adapter. On the other hand, access restrictions to a monitoring Data Adapter instance embedded in a custom Adapter Set is only managed by the custom Metadata Adapter included.
 
 **Default:**
 
@@ -1069,7 +1069,7 @@ The reference to the secret containing the credentials of the user enabled to ac
 **Default:** `nil`
 ### [management.dashboard.enableAvailabilityOnAllServers](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2038)
      
-Optional. Enables the access to the Monitoring Dashboard pages through all server sockets. If set to `true`, requests to the Monitoring Dashboard can be issued through all the defined server sockets. If set to `false`, requests to the Monitoring Dashboard can be issued only through the server sockets specified in the `availableOnServers` setting, if any; otherwise, requests to the dashboard url will get a "page not found" error. If no `availableOnServers` setting is defined, requests to the Monitoring Dashboard will not be possible in any way. Disabling the Dashboard on a server socket causes the internal "MONITOR" Adapter Set to also become unavailable from that socket. This does not affect in any way the special "MONITOR" Data Adapter.
+Optional. Enables the access to the Monitoring Dashboard pages through all server sockets. If set to `true`, requests to the Monitoring Dashboard can be issued through all the defined server sockets. If set to `false`, requests to the Monitoring Dashboard can be issued only through the server sockets specified in the `availableOnServers` setting, if any; otherwise, requests to the dashboard url will get a  "page not found" error. If no `availableOnServers` setting is defined, requests to the Monitoring Dashboard will not be possible in any way. Disabling the Dashboard on a server socket causes the internal "MONITOR" Adapter Set to also become unavailable from that socket. This does not affect in any way the special "MONITOR" Data Adapter.
 
 **Default:** `false`
 ### [management.dashboard.enableHostnameLookup](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2069)
@@ -1095,11 +1095,6 @@ Optional. URL path to map the Monitoring Dashboard pages to. An absolute path mu
 ### [management.enablePasswordVisibilityOnRequestLog](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1673)
      
 Optional. Enables the inclusion of the user password in the log of the client requests for new sessions, performed by the `lightstreamerLogger.requests` logger at `INFO` level. If set to `true`, the whole request is logged. If set to `false`, the request is logged, but for the value of the `LS_password` request parameter. Note that the whole request may still be logged by some loggers, but only at `DEBUG` level, which is never enabled in the default configuration.
-
-**Default:** `false`
-### [management.enableStoppingServiceCheck](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1954)
-     
-Optional. Startup check that the conditions for the correct working of the provided "stop" script are met (see `jmx`). If set to `true`, the startup will wait if the JMX RMI connector is not configured or the `ServerMBean` cannot be started. This also enforces the check of the JMX port reachability (see `rmiConnector.enableTestPorts` and the remarks on the test effectiveness); if the test fails, the startup will also fail. If set to `false`, no check is made that the "stop" script should work. This may not be a problem, because the Server can be stopped in other ways. The provided installation scripts also close the Server without resorting to the "stop" script.
 
 **Default:** `false`
 ### [management.healthCheck](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2078)
@@ -1128,13 +1123,18 @@ Mandatory (if you wish to use the provided "stop" script). JMX preferences and e
 **Default:**
 
 ```
-{"enableLongListProperties":false,"jmxmpConnector":{"enabled":null,"port":null},"rmiConnector":{"credentialsSecrets":null,"dataPort":null,"enablePublicAccess":"yes","enableTestPorts":true,"hostName":null,"listeningInterface":null,"port":{"enableSsl":false,"value":8888},"sslConfig":{"allowCipherSuites":null,"allowProtocols":null,"enforceServerCipherSuitePreference":{"enabled":true,"order":"JVM"},"keystoreRef":null,"removeCipherSuites":null,"removeProtocols":["SSL","TLSv1$","TLSv1.1"]},"testTimeoutMillis":5000},"sessionMbeanAvailability":null}
+{"enableLongListProperties":false,"enableStoppingServiceCheck":null,"jmxmpConnector":{"enabled":null,"port":null},"rmiConnector":{"credentialsSecrets":null,"dataPort":null,"enablePublicAccess":true,"enableTestPorts":null,"hostName":null,"listeningInterface":null,"port":{"enableSsl":false,"value":8888},"sslConfig":{"allowCipherSuites":null,"allowProtocols":null,"enforceServerCipherSuitePreference":null,"keystoreRef":null,"removeCipherSuites":null,"removeProtocols":null},"testTimeoutMillis":5000},"sessionMbeanAvailability":null}
 ```
 ### [management.jmx.enableLongListProperties](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1940)
      
 Optional. Enables all properties provided by the various MBeans. This flag could potentially cause MBeans to return extremely long lists. In fact, various JMX agents extract the property values from the MBeans altogether; but extremely long values may clutter the agent and prevent also the acquisition of other properties. This issue may also affect the JMX Tree. For all these properties, corresponding operations are also provided. If set to `true`, all list properties are enabled; in some cases, their value may be an extremely long list; consider, for instance, `CurrentSessionList` in the `ResourceMBean`. If set to `false`, properties that can, potentially, return extremely long lists won't yield the correct value, but just a reminder text; for instance, this applies to `CurrentSessionList` in the `ResourceMBean`.
 
 **Default:** `true`
+### [management.jmx.enableStoppingServiceCheck](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1954)
+     
+Optional. Startup check that the conditions for the correct working of the provided "stop" script are met (see `jmx`). If set to `true`, the startup will wait if the JMX RMI Connector is not configured or the `ServerMBean` cannot be started. This also enforces the check of the JMX port reachability (see `rmiConnector.enableTestPorts` and the remarks on the test effectiveness); if the test fails, the startup will also fail. If set to `false`, no check is made that the "stop" script should work. This may not be a problem, because the Server can be stopped in other ways. The provided installation scripts also close the Server without resorting to the "stop" script.
+
+**Default:** `false`
 ### [management.jmx.jmxmpConnector](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1899)
      
 Optional. JMXMP connector configuration. The connector is supported by the Server only if Sun/Oracle's JMXMP implementation library is added to the Server classpath; see `README.TXT` in the JMX SDK for details. The remote server will be accessible through the url: `service:jmx:jmxmp://<host>:<jmxmpConnector.port>`.
@@ -1152,21 +1152,21 @@ Mandatory if enabled is set to `true`. TCP port on which Sun/Oracle's JMXMP conn
 **Default:** `nil`
 ### [management.jmx.rmiConnector](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1740)
      
-Mandatory (if you wish to use the provided "stop" script). Enables the standard RMI connector. The remote MBean server will be accessible through this url: `service:jmx:rmi:///jndi/rmi://<host>:<port>/lsjmx`. If full JMX features is not available, only the `Server` MBean is supplied and only the Server shutdown operation is available. The JVM platform MBean server is also exposed and it is accessible through the url: `service:jmx:rmi:///jndi/rmi://<host>:<port>/jmxrmi`. Note that the configuration of the connector applies to both cases; hence, access to the JVM platform MBean server from this connector is not configured through the `com.sun.management.jmxremote` JVM properties. Also note that TLS/SSL is an optional feature, available depending on Edition and License Type. To know what features are enabled by your license, please see the `License` tab of the Monitoring Dashboard (by default, available at `/dashboard`).
+Mandatory (if you wish to use the provided "stop" script). Enables the standard RMI Connector. The remote MBean server will be accessible through this url: `service:jmx:rmi:///jndi/rmi://<host>:<port>/lsjmx`. If full JMX features is not available, only the `Server` MBean is supplied and only the Server shutdown operation is available. The JVM platform MBean server is also exposed and it is accessible through the url: `service:jmx:rmi:///jndi/rmi://<host>:<port>/jmxrmi`. Note that the configuration of the connector applies to both cases; hence, access to the JVM platform MBean server from this connector is not configured through the `com.sun.management.jmxremote` JVM properties. Also note that TLS/SSL is an optional feature, available depending on Edition and License Type. To know what features are enabled by your license, please see the `License` tab of the Monitoring Dashboard (by default, available at `/dashboard`).
 
 **Default:**
 
 ```
-{"credentialsSecrets":null,"dataPort":null,"enablePublicAccess":"yes","enableTestPorts":true,"hostName":null,"listeningInterface":null,"port":{"enableSsl":false,"value":8888},"sslConfig":{"allowCipherSuites":null,"allowProtocols":null,"enforceServerCipherSuitePreference":{"enabled":true,"order":"JVM"},"keystoreRef":null,"removeCipherSuites":null,"removeProtocols":["SSL","TLSv1$","TLSv1.1"]},"testTimeoutMillis":5000}
+{"credentialsSecrets":null,"dataPort":null,"enablePublicAccess":true,"enableTestPorts":null,"hostName":null,"listeningInterface":null,"port":{"enableSsl":false,"value":8888},"sslConfig":{"allowCipherSuites":null,"allowProtocols":null,"enforceServerCipherSuitePreference":null,"keystoreRef":null,"removeCipherSuites":null,"removeProtocols":null},"testTimeoutMillis":5000}
 ```
 ### [management.jmx.rmiConnector.credentialsSecrets](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1891)
      
-Optional, but ineffective if `enablePublicAccess` is set to `true`. The reference to the secrets containing the credentials of the users enabled to access the RMI connector. Every secret must contains the keys `user` and `password`. If `enablePublicAccess` is set to `false`, at least one set of credentials should be supplied in order to allow access through the connector. This is also needed if you wish to use the provided "stop" script; the script will always use the first user supplied.
+Optional, but ineffective if `enablePublicAccess` is set to `true`. The reference to the secrets containing the credentials of the users enabled to access the RMI Connector. Every secret must contains the keys `user` and `password`. If `enablePublicAccess` is set to `false`, at least one set of credentials should be supplied in order to allow access through the connector. This is also needed if you wish to use the provided "stop" script; the script will always use the first user supplied.
 
 **Default:** `[]`
 ### [management.jmx.rmiConnector.dataPort](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1762)
      
-Optional. TCP port that will be used by the RMI connector for its own communication stuff. The port has not to be specified in the client access url, but it may have to be considered for firewall settings. The optional `enableSsl` setting, when set to `false`, enables TLS/SSL communication by the connector; TLS/SSL at this level is supported by some JMX clients, like jconsole, that don't support TLS/SSL on the main port.
+Optional. TCP port that will be used by the RMI Connector for its own communication stuff. The port has not to be specified in the client access url, but it may have to be considered for firewall settings. The optional `enableSsl` setting, when set to `false`, enables TLS/SSL communication by the connector; TLS/SSL at this level is supported by some JMX clients, like jconsole, that don't support TLS/SSL on the main port.
 
 **Default:**
 
@@ -1175,12 +1175,12 @@ the same as configured for rmiConnector.port
 ```
 ### [management.jmx.rmiConnector.enablePublicAccess](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1879)
      
-Optional. Enables the RMI connector access without credentials. If set to `true`, requests to the RMI connector are always allowed. If set to `false`, requests to the RMI connector are subject to user authentication; the allowed users are set in the "user" elements.
+Optional. Enables the RMI Connector access without credentials. If set to `true`, requests to the RMI Connector are always allowed. If set to `false`, requests to the RMI Connector are subject to user authentication; the allowed users are set in the "user" elements.
 
 **Default:** `false`
 ### [management.jmx.rmiConnector.enableTestPorts](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1787)
      
-Optional. Enables a preliminary test on the reachability of the RMI Server through the configured hostname. Note that the reachability is not needed for the Server itself, so the test is only for the benefit of other clients, including the "stop" script; but, since other clients may be run in different environments, the outcome of this test may not be significant. If set to `true`, enables the test; if the test fails, the whole Server startup will fail. If successful and the "stop" script is launched in the same environment of the Server, the script should work. If set to `false`, disables the test, but this setting can be overridden by setting jmx.enableStoppingServiceCheck to `true`.
+Optional. Enables a preliminary test on the reachability of the RMI Server through the configured hostname. Note that the reachability is not needed for the Server itself, so the test is only for the benefit of other clients, including the "stop" script; but, since other clients may be run in different environments, the outcome of this test may not be significant. If set to `true`, enables the test; if the test fails, the whole Server startup will fail. If successful and the "stop" script is launched in the same environment of the Server, the script should work. If set to `false`, disables the test, but this setting can be overridden by setting `jmx.enableStoppingServiceCheck` to `true`.
 
 **Default:** `true`
 ### [management.jmx.rmiConnector.hostName](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1773)
@@ -1213,17 +1213,17 @@ Optional. If set to `true`, enables TLS/SSL communication. Note  that this case 
 **Default:** `false`
 ### [management.jmx.rmiConnector.port.value](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1747)
      
-Mandatory.  TCP port on which the RMI connector will be available This is the port that has to be specified in the client access url.
+Mandatory.  TCP port on which the RMI Connector will be available This is the port that has to be specified in the client access url.
 
 **Default:** `8888`
 ### [management.jmx.rmiConnector.sslConfig](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1818)
      
-Mandatory if `rmiConnector.enableSsl` or  `rmiConnector.dataPort.enableSsl` is set to `true`. TLS/SSL settings for the RMI connector.
+Mandatory if `rmiConnector.enableSsl` or  `rmiConnector.dataPort.enableSsl` is set to `true`. TLS/SSL settings for the RMI Connector.
 
 **Default:**
 
 ```
-{"allowCipherSuites":null,"allowProtocols":null,"enforceServerCipherSuitePreference":{"enabled":true,"order":"JVM"},"keystoreRef":null,"removeCipherSuites":null,"removeProtocols":["SSL","TLSv1$","TLSv1.1"]}
+{"allowCipherSuites":null,"allowProtocols":null,"enforceServerCipherSuitePreference":null,"keystoreRef":null,"removeCipherSuites":null,"removeProtocols":null}
 ```
 ### [management.jmx.rmiConnector.sslConfig.allowCipherSuites](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1834)
      
@@ -1239,7 +1239,7 @@ Optional, but forbidden if `removeProtocols` is used. Specifies one or more prot
      
 Optional. Determines which side should express the preference when multiple cipher suites are in common between server and client (in  case TLS/SSL is enabled for part or all the communication). See notes for `servers.{}.sslConfig.enforceServerCipherSuitePreference`.
 
-**Default:** `{"enabled":true,"order":"JVM"}`
+**Default:** `nil`
 ### [management.jmx.rmiConnector.sslConfig.keystoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1827)
      
 Mandatory, The reference to a keystore configuration (defined in `keystores`) to be used in case TLS/SSL is enabled for part or all of the communication. See the `keystores.myServerKeystore` for general details on keystore configuration. These include the runtime replacement of the keystore, with one difference: if the load of the new keystore fails, the RMI Connector may be left unreachable.
@@ -1254,7 +1254,7 @@ Optional, but forbidden if `allowCipherSuites` is used. Pattern to be matched ag
      
 Optional, but forbidden if `allowProtocols` is used. Pattern to be matched against the names of the enabled TLS/SSL protocols in order to remove the matching ones from the enabled protocols set to be used in case TLS/SSL is enabled for part or all the communication. See notes for `servers.{}.sslConfig.removeProtocols`.
 
-**Default:** `["SSL","TLSv1$","TLSv1.1"]`
+**Default:** `nil`
 ### [management.jmx.rmiConnector.testTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1803)
      
 Optional. Timeout to be posed on the connection attempts through the RMI Connector. If `0`, no timeout will be posed. The setting affects: - The reachability test (if enabled through `enableTestPorts`). - The connector setup operation; in fact this operation may involve a   connection attempt, whose failure, however, would not prevent the   setup from being successful. If the configured hostname were not   visible locally, the setup might take long time; by setting a timeout   the operation would not block the whole Server startup.   However, the RMI Connector (and the "stop" script) might not be   available immediately after the startup, and any late failure   preventing the connector setup would be ignored. On the other hand, the setting is ignored by the "stop" script.
@@ -1293,7 +1293,7 @@ Mandatory. Global socket configuration.
 ```
 ### [globalSocket.handshakeTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2115)
      
-Optional. Longest inactivity time accepted while waiting for a slow operation during a TLS/SSL handshake. This involves both reads, writes, and encryption tasks managed by the `TLS-SSL HANDSHAKE` or `TLS-SSL AUTHENTICATION` internal pools. If this value is exceeded, the socket is closed. The time actually considered may be approximated and may be a few seconds higher, for internal performance reasons. A `0` value suppresses the check.
+Optional. Longest inactivity time accepted while waiting for a slow operation during a TLS/SSL handshake. This involves both reads, writes, and encryption tasks managed by the `TLS-SSL HANDSHAKE` or  `TLS-SSL AUTHENTICATION` internal pools. If this value is exceeded, the socket is closed. The time actually considered may be approximated and may be a few seconds higher, for internal performance reasons. A `0` value suppresses the check.
 
 **Default:** `4000`
 ### [globalSocket.readTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2104)
@@ -1325,16 +1325,16 @@ Optional. WebSocket support configuration.
 Optional. Enables the WebSocket support. If set to `true`, the Server accepts requests for initiating a WebSocket interaction through a custom protocol. If set to `false`, the Server refuses requests for WebSocket interaction. Disabling WebSocket support may be needed when the local network infrastructure (for instance the Load Balancer) does not handle WebSocket communication correctly and the WebSocket transport is not already disabled on the client side through the Lightstreamer Client Library in use. The Client Library, upon the Server refusal, will resort to HTTP streaming without any additional delay to session establishment.
 
 **Default:** `true`
-### [globalSocket.webSocket.maxClosingWaitMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2175)
+### [globalSocket.webSocket.maxClosingWaitMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2174)
      
-Optional. Maximum time the Server is allowed to wait for the client "close" frame, in case the Server is sending its own close" frame first, in order to try to close the connection in a clean way. applies.
+Optional. Maximum time the Server is allowed to wait for the client "close" frame, in case the Server is sending its own close" frame first, in order to try to close the connection in a clean way.
 
 **Default:**
 
 ```
-no timeout is set and the global global.readTimeoutMillis
+no timeout is set and the global global.readTimeoutMillis applies.
 ```
-### [globalSocket.webSocket.maxOutboundFrameSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2182)
+### [globalSocket.webSocket.maxOutboundFrameSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2181)
      
 Optional. Maximum payload size allowed for an outbound frame. When larger updates have to be sent, the related WebSocket messages will be split into multiple frames. The Server may enforce a lower limit for this setting.
 
@@ -1346,12 +1346,12 @@ Optional. Maximum time the Server is allowed to wait before answering to a clien
 **Default:** `0`
 ### [globalSocket.writeTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2134)
      
-Optional. Longest operation time accepted while writing data on a socket. If this value is exceeded, the socket is closed. Note that this may also affect very slow clients. The time actually considered may be approximated and may be a few seconds higher, for internal performance reasons. If missing or `0`, the check is suppressed.
+Optional. Longest operation time accepted while writing data on a socket. If this value is exceeded, the socket is closed. Note that this may also  affect very slow clients. The time actually considered may be approximated and may be a few seconds higher, for internal performance reasons. If missing or `0`, the check is suppressed.
 
 **Default:** `the check is suppressed`
 ## Security settings
  
-### [security](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2185)
+### [security](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2184)
      
 Optional. Security configuration.
 
@@ -1360,7 +1360,7 @@ Optional. Security configuration.
 ```
 {"allowedDomains":null,"crossDomainPolicy":{"acceptCredentials":true,"acceptExtraHeaders":null,"allowAccessFrom":{"fromEveryWhere":{"host":"*","port":"*","scheme":"*"}},"optionsMaxAgeSeconds":3600},"enableCookiesForwarding":false,"enableProtectedJs":false,"serverIdentificationPolicy":null}
 ```
-### [security.crossDomainPolicy](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2246)
+### [security.crossDomainPolicy](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2245)
      
 Optional. List of origins to be allowed by the browsers to consume responses to requests sent to this Server through cross-origin XHR or through WebSockets; in fact, when a requesting page asks for streaming data in this way, the browser should specify the page origin through the `Origin` HTTP header, to give the Server a chance to accept or refuse the request. This is the most common way streaming data is requested by the Web (Unified API) Client Library. You can see the Client Guide for the Web (Unified API) Client SDK earlier than 8.0.0 for details on all the possible use cases. If a request origin is not matched against any of the configured rules, a Websocket initiation request will be refused, whereas a HTTP request will not be denied (i.e.: a 200 OK will be returned) but the response body will be left empty, in accordance with the CORS specifications. If no origin is specified by the user-agent, the request will always be accepted. Note that sending the Origin header is a client-side duty. In fact, most modern browsers, upon a request for a cross-origin XHR or WebSocket by a page, will send the Origin header, while older browsers will directly fail to send the request. Non-browser clients usually don't have to perform origin checks; so they don't send the Origin header and thus their requests are always authorized.
 
@@ -1369,17 +1369,17 @@ Optional. List of origins to be allowed by the browsers to consume responses to 
 ```
 {"acceptCredentials":true,"acceptExtraHeaders":null,"allowAccessFrom":{"fromEveryWhere":{"host":"*","port":"*","scheme":"*"}},"optionsMaxAgeSeconds":3600}
 ```
-### [security.crossDomainPolicy.acceptCredentials](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2272)
+### [security.crossDomainPolicy.acceptCredentials](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2271)
      
 Optional. Specify if the server should authorize the client to send its credentials on a CORS request. This setting does not impact the user/password sent over the Lightstreamer protocol, but, if set to `false`, might prevent, or force a fallback connection, on clients sending CORS requests carrying cookies, http-basic-authentication or client-side certificates.
 
 **Default:** `false`
-### [security.crossDomainPolicy.acceptExtraHeaders](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2263)
+### [security.crossDomainPolicy.acceptExtraHeaders](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2262)
      
 Optional. In case the client wishes to send custom headers to the server, it requires approval from the server itself. This setting permits to specify a comma separated list of extra headers to be allowed in the client requests. Note that a space is expected after each comma (e.g.: `acceptExtraHeaders: "custom-header1, custom-header2"`).
 
 **Default:** `""`
-### [security.crossDomainPolicy.allowAccessFrom](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2276)
+### [security.crossDomainPolicy.allowAccessFrom](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2275)
      
 Optional. List of Origin allowed to consume responses to cross-origin requests.
 
@@ -1388,44 +1388,44 @@ Optional. List of Origin allowed to consume responses to cross-origin requests.
 ```
 {"fromEveryWhere":{"host":"*","port":"*","scheme":"*"}}
 ```
-### [security.crossDomainPolicy.allowAccessFrom.fromEveryWhere](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2280)
+### [security.crossDomainPolicy.allowAccessFrom.fromEveryWhere](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2279)
      
 Optional. Defines a rule against which Origin headers will be checked.
 
 **Default:** `{"host":"*","port":"*","scheme":"*"}`
-### [security.crossDomainPolicy.allowAccessFrom.fromEveryWhere.host](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2294)
+### [security.crossDomainPolicy.allowAccessFrom.fromEveryWhere.host](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2293)
      
 Mandatory. A valid host name, IPv4 or IPv6 representing, an authorized Origin. Also a `*` is accepted with the meaning of "any host or IP". If a host name is specified it can be prefixed with a wildcard as long as at least the second level domain is explicitly specified (i.e.: `*.my-domain.com` and `*.sites.my-domain.com` are valid entries while `*.com` is not).
 
 **Default:** `"*"`
-### [security.crossDomainPolicy.allowAccessFrom.fromEveryWhere.port](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2297)
+### [security.crossDomainPolicy.allowAccessFrom.fromEveryWhere.port](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2296)
      
 Mandatory. A a valid port or `*` to specify any port.
 
 **Default:** `"*"`
-### [security.crossDomainPolicy.allowAccessFrom.fromEveryWhere.scheme](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2285)
+### [security.crossDomainPolicy.allowAccessFrom.fromEveryWhere.scheme](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2284)
      
 Mandatory. A valid scheme name (usually http or https) or `*`; the latter matches both http and https scheme, but it doesn't match other schemes.
 
 **Default:** `"*"`
-### [security.crossDomainPolicy.optionsMaxAgeSeconds](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2255)
+### [security.crossDomainPolicy.optionsMaxAgeSeconds](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2254)
      
 Optional. In case an HTTP OPTIONS request is sent to authorize future requests, the server allows the client to store the result of such OPTIONS for the specified number of seconds. Thus a previously authorized client may not give up its authorization, even if the related origin is removed from the list and the server is restarted, until its authorization expires.
 
 **Default:** `3600`
-### [security.enableCookiesForwarding](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2223)
+### [security.enableCookiesForwarding](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2222)
      
 Optional. Use this setting to enable the forwarding of the cookies to the Metadata Adapter through the `httpHeaders` argument of the `notifyUser` method. Please note that in any case cookies should not be used to authenticate users, otherwise, having `enableProtectedJs` set to `false` and/or a too permissive policy in the `crossDomainPolicy` will expose the server to CSRF attacks. If set to `true`, cookies are forwarded to the Metadata Adapter. If set to `false`, cookies are hidden from the Metadata Adapter.
 
 **Default:** `false`
-### [security.enableProtectedJs](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2211)
+### [security.enableProtectedJs](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2210)
      
-Optional. Disabling of the protection for JavaScript pages, supplied by the Server, that carry user data. JavaScript pages can be supplied upon requests by old versions of the Web and Node.js (Unified API) Client Libraries, whereas recent versions no longer make use of this kind of pages. The protection prevents such pages from being imported in a _<script>_ block and, as a consequence, from being directly executed within a hosting page regardless of its origin. This protection allows the Server to fully comply with the prescriptions to prevent the so-called "JavaScript Hijacking". If set to `true`, the protection is enabled. If set to `false`, the protection is disabled. It can be set in order to support communication between the application front-end pages and Lightstreamer Server in specific use cases; see the Client Guide for the Web (Unified API) Client SDK earlier than 8.0.0 for details. It can also be set in order to ensure compatibility with even older Web Client Libraries (version 4.1 build 1308 or previous). Note, however, that basic protection against JavaScript Hijacking can still be granted, simply by ensuring that request authorization is never based on information got from the request cookies. This already holds for any session-related request other than session-creation ones, for which the request URL is always checked against the Server-generated session ID. For session-creation requests, this depends on the Metadata Adapter implementation, but can be enforced by setting `enableForwardCookies` to `false`.
+Optional. Disabling of the protection for JavaScript pages, supplied by the Server, that carry user data. JavaScript pages can be supplied upon requests by old versions of the Web and Node.js (Unified API) Client Libraries, whereas recent versions no longer make use of this kind of pages. The protection prevents such pages from being imported in a _<script>_ block and, as a consequence, from being directly executed within a hosting page regardless of its origin. This protection allows the Server to fully comply with the prescriptions to prevent the so-called "JavaScript Hijacking". If set to `true`, the protection is enabled. If set to `false`, the protection is disabled. It can be set in order to support communication between the application front-end pages and the Lightstreamer Broker in specific use cases; see the Client Guide for the Web (Unified API) Client SDK earlier than 8.0.0 for details. It can also be set in order to ensure compatibility with even older Web Client Libraries (version 4.1 build 1308 or previous). Note, however, that basic protection against JavaScript Hijacking can still be granted, simply by ensuring that request authorization is never based on information got from the request cookies. This already holds for any session-related request other than session-creation ones, for which the request URL is always checked against the Server-generated session ID. For session-creation requests, this depends on the Metadata Adapter implementation, but can be enforced by setting `enableForwardCookies` to `false`.
 
 **Default:** `true`
 ### [security.serverIdentificationPolicy](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2358)
      
-Optional. Server identification policy to be used for all server responses. Upon any HTTP request, the Server identifies itself through the `Server` HTTP response header. However, omitting version information may make external attacks more difficult. If set to `FULL`, the Server identifies itself as: `Lightstreamer Server/X.Y.Z build BBBB (Lightstreamer Push Server - www.lightstreamer.com) EEEEEE edition`. If set to `MINIMAL`, the Server identifies itself, depending on the Edition: for Enterprise edition, as `Lightstreamer Server`; for Community edition, as `Lightstreamer Server (Lightstreamer Push Server - www.lightstreamer.com) COMMUNITY edition`.
+Optional. Server identification policy to be used for all server responses. Upon any HTTP request, the Server identifies itself through the `Server` HTTP response header. However, omitting version information may make external attacks more difficult. If set to `FULL`, the Server identifies itself as: `Lightstreamer Server/X.Y.Z build BBBB (Lightstreamer Push Server - www.lightstreamer.com) EEEEEE edition`. If set to `MINIMAL`, the Server identifies itself, depending on the  Edition:  - for Enterprise edition, as `Lightstreamer Server`;  - for Community edition, as `Lightstreamer Server (Lightstreamer Push Server  - www.lightstreamer.com) COMMUNITY edition`.
 
 **Default:** `FULL`
 ## Push Session settings
@@ -2004,12 +2004,12 @@ Optional. Size of the resource contents below which compression is not applied, 
 **Default:** `8192`
 ### [webServer.enableFlexCrossdomain](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3338)
      
-Optional. Enables the processing of the `/crossdomain.xml` URL, required by the Flash player in order to allow pages from a different host to request data to Lightstreamer Server host. See the "WebSite Controls" section on http://www.adobe.com/devnet/flashplayer/articles/flash_player_9_security.pdf for details on the contents of the document to be returned. If set to `true`, the Server accepts requests for `/crossdomain.xml`; the file configured through the `webServer.flexCrossdomainPath` setting is returned. Enabling internal web server (through `webServer.enabled`) is not needed; note that if the internal web server is enabled, the processing of the `/crossdomain.xml` URL is different than the processing of the other URLs. If set to `false`, no special processing for the `/crossdomain.xml` requests is performed. Note that if the internal web server is enabled, then the processing of the `/crossdomain.xml` URL is performed as for any other URL (i.e. a file named `crossdomain.xml` is looked for in the directory configured as the root for URL path mapping). Note that `/crossdomain.xml` is also used by the Silverlight runtime when `/clientaccesspolicy.xml` is not provided.
+Optional. Enables the processing of the `/crossdomain.xml` URL, required by the Flash player in order to allow pages from a different host to request data to Lightstreamer Broker host. See the "WebSite Controls" section on http://www.adobe.com/devnet/flashplayer/articles/flash_player_9_security.pdf for details on the contents of the document to be returned. If set to `true`, the Server accepts requests for `/crossdomain.xml`; the file configured through the `webServer.flexCrossdomainPath` setting is returned. Enabling internal web server (through `webServer.enabled`) is not needed; note that if the internal web server is enabled, the processing of the `/crossdomain.xml` URL is different than the processing of the other URLs. If set to `false`, no special processing for the `/crossdomain.xml` requests is performed. Note that if the internal web server is enabled, then the processing of the `/crossdomain.xml` URL is performed as for any other URL (i.e. a file named `crossdomain.xml` is looked for in the directory configured as the root for URL path mapping). Note that `/crossdomain.xml` is also used by the Silverlight runtime when `/clientaccesspolicy.xml` is not provided.
 
 **Default:** `false`
 ### [webServer.enableSilverlightAccessPolicy](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3369)
      
-Optional. Enables the processing of the `/clientaccesspolicy.xml` URL, required by the Silverlight runtime in order to allow pages from a different host to request data to Lightstreamer Server host. See http://msdn.microsoft.com/en-us/library/cc838250(VS.95).aspx#crossdomain_communication for details on the contents of the document to be returned. If set to `true`, the Server accepts requests for `/clientaccesspolicy.xml`; the file configured through the `webServer.silverlightAccessPolicyPath` setting is returned. Enabling internal web server (through `webServer.enabled`) is not needed; note that if the internal web server is enabled, the processing of the `/clientaccesspolicy.xml` URLis different than the processing of the other URLs. If set to `false`, no special processing for the `/clientaccesspolicy.xml` requests is performed. Note that if the internal web server is enabled, then the processing of the `/clientaccesspolicy.xml` URL is performed as for any other URL (i.e. a file named `clientaccesspolicy.xml` is looked for in the directory configured as the root for URL path mapping). Note that `/crossdomain.xml` is also used by the Silverlight runtime when `/clientaccesspolicy.xml` is not provided.
+Optional. Enables the processing of the `/clientaccesspolicy.xml` URL, required by the Silverlight runtime in order to allow pages from a different host to request data to Lightstreamer Broker host. See http://msdn.microsoft.com/en-us/library/cc838250(VS.95).aspx#crossdomain_communication for details on the contents of the document to be returned. If set to `true`, the Server accepts requests for `/clientaccesspolicy.xml`; the file configured through the `webServer.silverlightAccessPolicyPath` setting is returned. Enabling internal web server (through `webServer.enabled`) is not needed; note that if the internal web server is enabled, the processing of the `/clientaccesspolicy.xml` URLis different than the processing of the other URLs. If set to `false`, no special processing for the `/clientaccesspolicy.xml` requests is performed. Note that if the internal web server is enabled, then the processing of the `/clientaccesspolicy.xml` URL is performed as for any other URL (i.e. a file named `clientaccesspolicy.xml` is looked for in the directory configured as the root for URL path mapping). Note that `/crossdomain.xml` is also used by the Silverlight runtime when `/clientaccesspolicy.xml` is not provided.
 
 **Default:** `false`
 ### [webServer.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3267)
@@ -2252,7 +2252,7 @@ Optional. Number of threads used to parallelize the implementation of the intern
  
 ### [adapters](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3732)
      
-Optional. Map of Adapter Set configurations. Every key in the map defines a specific the configuration of an Adapter Set pluggable into Lightstreamer Server.
+Optional. Map of Adapter Set configurations. Every key in the map defines a specific the configuration of an Adapter Set pluggable into the Lightstreamer Broker.
 
 **Default:**
 
@@ -2357,7 +2357,7 @@ Optional, but mandatory if multiple Data Adapters (either proxy or in-process) a
 **Default:** `DEFAULT`
 ### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4698)
      
-One of this or `inProcessDataAdapter` must be provided. Configuration of the Proxy Data Adapter, which is embedded in Lightstreamer Server and available out of the box. The Proxy Data Adapter communicates with its remote counterpart through standard TCP sockets. It listens on a configurable port (see `requestReplyPort` setting) and waits for its counterpart to connect. `inProcessDataAdapter` takes precedence over this setting if both are provided.
+One of this or `inProcessDataAdapter` must be provided. Configuration of the Proxy Data Adapter, which is embedded in the Lightstreamer Broker and available out of the box. The Proxy Data Adapter communicates with its remote counterpart through standard TCP sockets. It listens on a configurable port (see `requestReplyPort` setting) and waits for its counterpart to connect. `inProcessDataAdapter` takes precedence over this setting if both are provided.
 
 **Default:**
 
@@ -2416,7 +2416,7 @@ Optional, but effective only if `enableRobustAdapter` is set to `true`. The stra
 **Default:** `leave_hole`
 ### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.firstConnectionTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4861)
      
-Optional, but effective only if `enableRobustAdapter` is set to `true`. The timeout for the first connection attempt. Upon the Proxy Adapter initialization at Lightstreamer Server startup, if remote server connection is not available, Lightstreamer Server startup can be delayed until this timeout expires. A negative value stands for an unlimited timeout. Note that, when Lightstreamer Server startup completes, as long as a connection to a remote server is still missing, all subscription requests will get an empty snapshot; then, when the connection is established, the data flow will be restored according to the `eventsRecovery` setting.
+Optional, but effective only if `enableRobustAdapter` is set to `true`. The timeout for the first connection attempt. Upon the Proxy Adapter initialization at the Lightstreamer Broker  startup, if remote server connection is not available, the Lightstreamer Broker startup can be delayed until this timeout expires. A negative value stands for an unlimited timeout. Note that, when the Lightstreamer Broker startup completes, as long  as a connection to a remote server is still missing, all  subscription requests will get an empty snapshot; then, when the  connection is established, the data flow will be restored according  to the `eventsRecovery` setting.
 
 **Default:** `0`
 ### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.keepaliveHintMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5026)
@@ -2727,7 +2727,7 @@ Optional and specific for adapters that inherit from `com.lightstreamer.adapters
 **Default:** `nil`
 ### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4115)
      
-One of this or `inProcessMetadataAdapter` must be provided. Configuration of the Proxy Metadata Adapter, which is embedded in Lightstreamer Server and available out of the box. The Proxy Metadata Adapter communicates with its remote counterpart through standard TCP sockets. It listens on a configurable port (see `requestReplyPort` setting) and waits its counterpart to connect. `inProcessMetadataAdapter` takes precedence over this setting if both are provided.
+One of this or `inProcessMetadataAdapter` must be provided. Configuration of the Proxy Metadata Adapter, which is embedded in the Lightstreamer Broker and available out of the box. The Proxy Metadata Adapter communicates with its remote counterpart through standard TCP sockets. It listens on a configurable port (see `requestReplyPort` setting) and waits its counterpart to connect. `inProcessMetadataAdapter` takes precedence over this setting if both are provided.
 
 **Default:**
 
@@ -2815,7 +2815,7 @@ Optional. If set to `true`, ensures that all Table (i.e. Subscription) notificat
 **Default:** `false`
 ### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.firstConnectionTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4396)
      
-Optional, but effective only if `enableRobustAdapter` is set to `true`. The timeout for the first connection attempt. Upon the Proxy Adapter initialization at Lightstreamer Server startup, if a remote server connection is not available, Lightstreamer Server startup can be delayed until this timeout expires. A negative value stands for an unlimited timeout. Note that, when Lightstreamer Server startup completes, as long as a connection to a remote server is still missing, all client requests will be refused.
+Optional, but effective only if `enableRobustAdapter` is set to `true`. The timeout for the first connection attempt. Upon the Proxy Adapter initialization at the Lightstreamer Broker startup,  if a remote server connection is not available, the Lightstreamer  Broker startup can be delayed until this timeout expires. A negative value stands for an unlimited timeout. Note that, when the Lightstreamer Broker startup completes, as long as  a connection to a remote server is still missing, all client requests will be refused.
 
 **Default:** `-1`
 ### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.keepaliveHintMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4600)
@@ -3153,7 +3153,7 @@ Mandatory. The Kafka Cluster bootstrap server endpoint expressed as the list of 
 **Default:** `"broker:9092"`
 ### [connectors.kafkaConnector.connections.quickStart.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5155)
      
-Enables the connection. If set to `false`, the Lightstreamer Server automatically denies all subscription requests for this connection.
+Enables the connection. If set to `false`, the Lightstreamer Broker automatically denies all subscription requests for this connection.
 
 **Default:** `false`
 ### [connectors.kafkaConnector.connections.quickStart.fields](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5447)
