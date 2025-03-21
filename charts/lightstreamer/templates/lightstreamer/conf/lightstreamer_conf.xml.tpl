@@ -1113,7 +1113,7 @@ Render the Lightstreamer configuration file.
   {{- with .jmx }}
 
         <!-- Mandatory (if you wish to use the provided "stop" script).
-             Enables the standard RMI connector.
+             Enables the standard RMI Connector.
              The remote MBean server will be accessible through this url:
              "service:jmx:rmi:///jndi/rmi://<host>:<port>/lsjmx".
              If full JMX features is not available, only the "Server" MBean
@@ -1132,7 +1132,7 @@ Render the Lightstreamer configuration file.
         <rmi_connector>
     {{- with .rmiConnector }}
 
-            <!-- Mandatory for this block. TCP port on which the RMI connector will
+            <!-- Mandatory for this block. TCP port on which the RMI Connector will
                  be available. This is the port that has to be specified in the
                  client access url.
                  The optional "ssl" attribute, when set to "Y", enables TLS/SSL
@@ -1141,7 +1141,7 @@ Render the Lightstreamer configuration file.
        {{- $port := required "management.jmx.rmiConnector.port must be set" .port }}
             <port{{- if not (quote $port.enableSsl | empty) }} ssl={{ $port.enableSsl | ternary "Y" "N" | quote }}{{- end }}>{{ int (required "management.jmx.rmiConnector.port.value must be set" $port.value) }}</port>
 
-            <!-- Optional. TCP port that will be used by the RMI connector for
+            <!-- Optional. TCP port that will be used by the RMI Connector for
                  its own communication stuff. The port has not to be specified
                  in the client access url, but it may have to be considered for
                  firewall settings.
@@ -1162,7 +1162,7 @@ Render the Lightstreamer configuration file.
       {{- end }}
 
             <!-- Optional. A hostname by which the RMI Server can be reached from
-                 all the clients. In fact, the RMI connector, for its own
+                 all the clients. In fact, the RMI Connector, for its own
                  communication stuff, does not use the hostname specified in the
                  client access url, but needs an explicit server-side configuration.
                  Note that, if you wish to use the provided "stop" script, the
@@ -1199,7 +1199,7 @@ Render the Lightstreamer configuration file.
       {{- end }}
 
             <!-- Optional. Timeout to be posed on the connection attempts through
-                 the RMI connector. If 0, no timeout will be posed.
+                 the RMI Connector. If 0, no timeout will be posed.
                  The setting affects:
                  - The reachability test (if enabled through <test_ports>).
                  - The connector setup operation; in fact this operation may involve
@@ -1207,7 +1207,7 @@ Render the Lightstreamer configuration file.
                    the setup from being successful. If the configured hostname were
                    not visible locally, the setup might take long time; by setting
                    a timeout, the operation would not block the whole Server startup.
-                   However, the RMI connector (and the "stop" script) might not be
+                   However, the RMI Connector (and the "stop" script) might not be
                    available immediately after the startup, and any late failure
                    preventing the connector setup would be ignored.
                  On the other hand, the setting is ignored by the "stop" script.
@@ -1241,7 +1241,7 @@ Render the Lightstreamer configuration file.
                  See the <keystore> block inside <https_server> for general
                  details on keystore configuration. These include the runtime
                  replacement of the keystore, with one difference:
-                 if the load of the new keystore fails, the RMI connector
+                 if the load of the new keystore fails, the RMI Connector
                  may be left unreachable.
                  Default: if the block is missing, any settings provided to the
                  "javax.net.ssl.keyStore" and "javax.net.ssl.keyStorePassword"
@@ -1332,10 +1332,10 @@ Render the Lightstreamer configuration file.
       {{- end }} {{/* sslConfig */}}
       {{- end }} {{/* or .port.enableSsl (.dataPort).enableSsl */}}
 
-            <!-- Optional. Enabling of the RMI connector access without credentials.
+            <!-- Optional. Enabling of the RMI Connector access without credentials.
                  Can be one of the following:
-                 - Y: requests to the RMI connector are always allowed;
-                 - N: requests to the RMI connector are subject to user authentication;
+                 - Y: requests to the RMI Connector are always allowed;
+                 - N: requests to the RMI Connector are subject to user authentication;
                       the allowed users are set in the "user" elements.
                  Default: N. -->
       {{- if (quote .enablePublicAccess | empty) }}
@@ -1347,7 +1347,7 @@ Render the Lightstreamer configuration file.
       {{- end }}
 
             <!-- Optional and cumulative (but ineffective if "public" is set to "Y").
-                 Credentials of the users enabled to access the RMI connector.
+                 Credentials of the users enabled to access the RMI Connector.
                  Both "id" and "password" attributes are mandatory.
                  If "public" is set to "N", at least one set of credentials should
                  be supplied in order to allow access through the connector.
@@ -1449,7 +1449,7 @@ Render the Lightstreamer configuration file.
     <!-- Optional. Startup check that the conditions for the correct working
          of the provided "stop" script are met (see the <jmx> block).
          Can be one of the following:
-         - Y: If the JMX RMI connector is not configured or the ServerMBean
+         - Y: If the JMX RMI Connector is not configured or the ServerMBean
               cannot be started, the startup will fail.
               This also enforces the check of the JMX port reachability
               (see <test_ports> and the remarks on the test effectiveness);
