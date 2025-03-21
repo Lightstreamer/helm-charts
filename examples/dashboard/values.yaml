@@ -1,0 +1,40 @@
+servers:
+  # Define a dedicated server socket for the Dashboard on HTTPS
+  dashboardHttpsServer:
+    name: "Dashboard Lightstreamer HTTP Server"
+    enabled: true
+    enableHttps: true
+    port: 8081
+    sslConfig:
+      keystoreRef: myServerKeystore
+
+service:
+  ports:
+    # Define a service port for the implicit defaultServer socket
+    - port: 8080
+      targetPort: defaultServer
+      name: default-service
+
+    # Define an additional service port for the Dashboard
+    - port: 8081
+      targetPort: dashboardHttpsServer
+      name: dashboard-service
+
+management:
+  dashboard:
+    enablePublicAccess: false  # Disable public access
+    enableJmxTree: true        # Globally enable JMX Tree view
+
+    credentials:
+      - secretRef: dashboard-user1-secret
+        enableJmxTreeVisibility: true  # Allow JMX Tree access
+      - secretRef: dashboard-user2-secret
+        enableJmxTreeVisibility: false # Restrict JMX Tree access
+
+    enableAvailabilityOnAllServers: false  # Disable availability on all servers
+
+    availableOnServers:
+      - serverRef: dashboardHttpsServer # Reference to the dedicated server socket configuration
+        enableJmxTreeVisibility: true   # Allow JMX Tree access
+
+    urlPath: /monitoring  # Custom dashboard path
