@@ -717,5 +717,3 @@ The [examples/dashboard](examples/dashboard/) directory provides a complete exam
 - Customize the Dashboard URL path
 
 See the [`management.dashboard`](README.md#managementdashboard) section of the _Helm Lightstreamer Chart specification_ for full details about available Monitoring Dashboard settings.
-
-See the [`management.dashboard`](README.md#managementdashboard) section of the _Helm Lightstreamer Chart specification_ for full details about the Monitoring Dashboard settings.
