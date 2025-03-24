@@ -28,7 +28,7 @@ This guide provides step-by-step instructions on how to deploy the Lightstreamer
     - [Availability on specific server](#availability-on-specific-server)
     - [Custom Dashboard URL path](#custom-dashboard-url-path)
     - [Hands-on example](#hands-on-example)
-  - [Adapters](#adapter-set)
+  - [Adapters](#adapters)
     - [In-process Adapters](#in-process-adapters)
       - [`common` ClassLoader](#common-classloader)
       - [`dedicated` ClassLoader](#dedicated-classloader)
