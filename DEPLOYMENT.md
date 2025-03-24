@@ -28,6 +28,12 @@ This guide provides step-by-step instructions on how to deploy the Lightstreamer
     - [Availability on specific server](#availability-on-specific-server)
     - [Custom Dashboard URL path](#custom-dashboard-url-path)
     - [Hands-on example](#hands-on-example)
+  - [Adapters](#adapter-set)
+    - [In-process Adapters](#in-process-adapters)
+      - [`common` ClassLoader](#common-classloader)
+      - [`dedicated` ClassLoader](#dedicated-classloader)
+      - [`log-enabled` ClassLoader](#log-enabled-classloader)
+      - [Summary of ClassLoader types](#summary-of-classloader-types)
 
 ## Prerequisites
 
@@ -666,7 +672,7 @@ To restrict access, create Kubernetes secrets for Dashboard users and configure 
    ```
  
   > [!IMPORTANT]
-  > Secrets must include the the mandatory keys `user` and `password`.
+  > Secrets must include the mandatory keys `user` and `password`.
 
 2. Configure authentication:
 
@@ -717,3 +723,216 @@ The [examples/dashboard](examples/dashboard/) directory provides a complete exam
 - Customize the Dashboard URL path
 
 See the [`management.dashboard`](README.md#managementdashboard) section of the _Helm Lightstreamer Chart specification_ for full details about available Monitoring Dashboard settings.
+
+### Adapters
+
+The Adapters are a crucial components in the Lightstreamer architecture that connect the Lightstreamer Broker to your backend systems. Each Adapter Set consists of:
+
+- A **Metadata Adapter**: Handles client authentication, authorization, and item validation
+- One or more **Data Adapters**: Handle real-time data by fetching, transforming, and publishing updates
+
+Lightstreamer Adapters can be implemented in two ways:
+- **In-Process Adapters**: Java classes running within the Lightstreamer Broker's JVM
+- **Remote Adapters**: External processes communicating with the Lightstreamer Broker through the Remote Server API
+
+To define an Adapter Set, add a new configuration to `adapters` section with the following mandatory settings:
+
+- [`id`](README.md#adaptersmyadaptersetid): A unique id for the adapter set
+- [`metadataProvider`](README.md#adaptersmyadaptersetmetadataprovider): A Metadata Adapter configuration
+- [`dataProviders`](README.md#adaptersmyadaptersetmetadataprovider): One or more Data Adapter configurationA Metadata Adapter configuration
+
+Moreover, set the [`enabled`](README.md#adaptersmyadaptersetenabled) flag to `true` to include the adapter set in in the deployment.
+
+Example configuration:
+
+```yaml
+adapters:
+  # Define an Adapter Set configuration
+  myAdapterSet:
+    
+    enabled: true
+
+    id: "MY_ADAPTER_SET"
+
+    metadataProvider:
+    ...
+
+    dataProviders:
+    ...
+    
+```
+
+#### In-process Adapters
+
+You can configure in-process Metadata Adapters and Data Adapters by populating the following sections in your Helm chart values:
+
+- [`metadataProvider.inProcessMetadataAdapter`](README.md#adaptersmyadaptersetmetadataproviderinprocessmetadataadapter)
+- [`dataProviders.<dataProviderName>.inProcessDataAdapter`](README.md#adaptersmyadaptersetdataprovidersmydataproviderinprocessdataadapter)
+
+These sections share the following key settings:
+
+- `adapterClass`: The fully qualified name of the Java class implementing the Adapter.
+
+- `installDir`:  The optional location in the provisioning source of top-level directory containing the `lib` and/or `classes` folders.
+
+- `classLoader`: The type of ClassLoader to use for loading the Adapter's classes, how explained in the subsequent sections.
+
+##### `common` ClassLoader
+
+When the `classLoader` is set to `common`, the _Adapter Set ClassLoader_ is used. 
+This ClassLoader load classes included in the `lib` and `classes` subfolders from three different sources:
+
+1. The Adapter Set's directory:
+
+   ```sh
+   my-adapter-set/
+   ├── classes # Common classes
+   └── lib     # Common jar files
+   ```
+   
+   Example configuration:
+   ```yaml
+   adapters:
+     myAdapterSet:
+       metadataProvider:
+         inProcessMetadataAdapter:
+           adapterClass: com.mycompany.adapters.metadata.MyMetadataAdapter
+           classLoader: common 
+           ...
+       dataProviders:
+         myDataProvider:
+           inProcessDataAdapter:
+             adapterClass: com.mycompany.adapters.data.MyDataAdapter
+             classLoader: common
+            ...
+   ```
+
+2. The specified `installDir`:
+
+   ```sh
+   my-adapter-set/
+   ├── classes # Common classes
+   ├── lib     # Common jar files
+   └── metadata    # MetadataAdapter-specific resources
+       ├── classes 
+       └── lib     
+   └── data        # DataAdapter-specific resources
+       ├── classes 
+       └── lib     
+   ```
+
+   Example configuration:
+   ```yaml
+   adapters:
+     myAdapterSet:
+       metadataProvider:
+         inProcessMetadataAdapter:
+           adapterClass: com.mycompany.adapters.metadata.MyMetadataAdapter
+           installDir: metadata # MetadataAdapter-specific resources
+           classLoader: common
+           ...
+       dataProviders:
+         myDataProvider:
+           inProcessDataAdapter:
+             adapterClass: com.mycompany.adapters.metadata.MyMetadataAdapter
+             installDir: data # DataAdapter-specific resources
+             classLoader: common
+             ...
+   ```
+
+3. The Lightstreamer Broker's `shared` folder:
+   The Adapter Set ClassLoader inherits from a global ClassLoader, which includes classes and resources from the `shared` folder of the Lightstreamer Broker deployment. This allows multiple Adapter Sets to share common resources.
+
+   ```mermaid
+   flowchart BT
+     A1[Adapter Set ClassLoader]-->G[Global ClassLoader] 
+     A2[Adapter Set ClassLoader]-->G[Global ClassLoader] 
+     A3[Adapter Set ClassLoader]-->G[Global ClassLoader]  
+   ```
+    
+   Example shared directory structure:
+   ```sh
+   /lightstreamer/shared/
+   ├── classes # Globally shared classes
+   └── lib     # Globally shared jar files
+   ```
+
+#### `dedicated` ClassLoader
+
+When the `classLoader` is set to `dedicated`, a dedicated ClassLoader is assigned to the Adapter. This ClassLoader includes classes from the `<installDir>/lib` and `<installDir>/classes` folders. The `installDir` setting is mandatory in this case.
+
+```mermaid
+flowchart BT
+    A1[Adapter Set ClassLoader]-->G[Global ClassLoader] 
+    A2[Adapter Set ClassLoader]-->G[Global ClassLoader] 
+    D1[Dedicated ClassLoader]-->A1
+    D2[Dedicated ClassLoader]-->A1
+    D3[Dedicated ClassLoader]-->A2
+```   
+
+Example configuration:
+
+```sh
+adapters/my-adapter-set/
+├── classes     # Common classes loaded by the Adapter Set ClassLoader
+├── lib         # Common jar files loaded by the Adapter Set ClassLoader
+└── metadata    
+    ├── classes # Classes and resources loaded by the dedicated MetadataAdapter's ClassLoader
+    └── lib     # Jar files loaded by the dedicated MetadataAdapter's ClassLoader
+└── data        
+    ├── classes # Classes and resources loaded by the dedicated DataAdapter's ClassLoader
+    └── lib     # Jar files loaded by the dedicated DataAdapters's ClassLoader
+```
+
+The following example:
+
+```yaml
+adapters:
+  myAdapterSet:
+    metadataProvider:
+      inProcessMetadataAdapter:
+        adapterClass: com.mycompany.adapters.metadata.MyMetadataAdapter
+        installDir: metadata 
+        classLoader: dedicated
+        ...
+    dataProviders:
+      myDataProvider:
+        inProcessDataAdapter:
+          adapterClass: com.mycompany.adapters.metadata.MyMetadataAdapter
+          installDir: data 
+          classLoader: dedicated 
+          ...
+```
+
+##### `log-enabled` ClassLoader
+
+When the `classLoader` is set to `log-enabled`, the Adapter is assigned a dedicated ClassLoader which also includes the `slf4j` library used by the Lightstreamer Broker.
+This implies that the Adapter the Broker's logging configuration. 
+The ClassLoader does not inherit from the Adapter Set ClassLoader, hence the Adapter cannot share classes with other Adapters.
+
+Example configuration:
+```yaml
+adapters:
+  myAdapterSet:
+    metadataProvider:
+      inProcessMetadataAdapter:
+        adapterClass: com.mycompany.adapters.metadata.MyMetadataAdapter
+        classLoader: log-enabled
+    dataProviders:
+      myDataProvider:
+        inProcessDataAdapter:
+          adapterClass: com.mycompany.adapters.data.MyDataAdapter
+          classLoader: log-enabled
+```
+
+##### Summary of ClassLoader types
+
+| ClassLoader Type | Description                                                                                     | Use Case                                                                 |
+|------------------|-------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------|
+| `common`         | Uses the Adapter Set ClassLoader, which includes all classes in the `lib` and `classes` folders | Suitable for simple setups where all adapters share the same resources   |
+| `dedicated`      | Assigns a dedicated ClassLoader to the Adapter, inheriting from the Adapter Set ClassLoader     | Useful when adapters require isolated resources or specific dependencies |
+| `log-enabled`    | Includes the `slf4j` library and shares the Broker's logging configuration                     | Suitable for adapters that need to integrate with the Broker's logging   |
+
+By carefully organizing your Adapter Set's directory structure and selecting the appropriate `classLoader` type, you can optimize resource sharing and ensure proper isolation between adapters.
+
+##### Proxy Adapters
