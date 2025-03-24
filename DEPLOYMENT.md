@@ -841,6 +841,7 @@ This ClassLoader load classes included in the `lib` and `classes` subfolders fro
    ```
 
 3. The Lightstreamer Broker's `shared` folder:
+
    The Adapter Set ClassLoader inherits from a global ClassLoader, which includes classes and resources from the `shared` folder of the Lightstreamer Broker deployment. This allows multiple Adapter Sets to share common resources.
 
    ```mermaid
