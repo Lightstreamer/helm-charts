@@ -69,7 +69,7 @@ Follow these steps to deploy the Lightstreamer Broker to your Kubernetes cluster
     helm repo update
     ```
 
-3. **Install the Lightstreamer Helm Chart:**
+3. **Install the Lightstreamer Helm chart:**
 
     ```sh
     helm install lightstreamer lightstreamer/lightstreamer \
@@ -728,16 +728,20 @@ See the [`management.dashboard`](README.md#managementdashboard) section of the _
 
 ### Adapters
 
-The Adapters are a crucial components in the Lightstreamer architecture that connect the Lightstreamer Broker to your backend systems. Each Adapter Set consists of:
+Lightstreamer Adapters are custom server-side components attached to the Lightstreamer Broker, whose role is to interface the Lightstreamer Kernel with any data source, as well as to implement custom authentication and authorization logic. 
+
+Each Adapter Set consists of:
 
 - A **Metadata Adapter**: Handles client authentication, authorization, and item validation
-- One or more **Data Adapters**: Handle real-time data by fetching, transforming, and publishing updates
+- One or more **Data Adapters**: Receive data from back-end systems and forward it to the Kernel for delivery to users
 
 Lightstreamer Adapters can be implemented in two ways:
 - **In-Process Adapters**: Java classes running within the Lightstreamer Broker's JVM
 - **Remote Adapters**: External processes communicating with the Lightstreamer Broker through the Remote Server API
 
-To define an Adapter Set, add a new configuration to `adapters` section with the following mandatory settings:
+See the _The Adapters_ chapter of the [_General Concepts_](https://lightstreamer.com/ls-server/latest/docs/General%20Concepts.pdf) document to learn more about Lightstreamer Adapters.
+
+To define an Adapter Set, add a new configuration to [`adapters`](README.md#adapters) section with the following mandatory settings:
 
 - [`id`](README.md#adaptersmyadaptersetid): A unique id for the adapter set
 - [`metadataProvider`](README.md#adaptersmyadaptersetmetadataprovider): A Metadata Adapter configuration
@@ -777,18 +781,19 @@ Adapter Sets can be provisioned using different methods, configured through the 
 
 1. Embed the Adapter Set's resources in the image
 
-   - Prepare a custom Lightstreamer-based container image by copying the adapter's resources to into the `/lightstreamer/adapters` directory of the image:
+   - Build a custom Lightstreamer-based container image by copying the adapter's resources to into the `/lightstreamer/adapters` directory of the image:
    
      ```yaml
+     # Dockerfile example
      FROM lightstreamer
      COPY myadapter /lightstreamer/adapters/myadapter
      ...
      
      ```
-   > [!IMPORTANT]
-   > Do not include the usual adapters.xml file, which is normally required to deploy an Adapter Set in a non-Kubernetes environment, as the file will be dynamically rendered according to the provided configuration in the Helm Chart values.
+
+     **IMPORTANT** Do not include the usual `adapters.xml` file, which is normally required to deploy an Adapter Set in a non-Kubernetes environment, as the file will be dynamically rendered according to the provided configuration in the Helm chart values.
    
-   - Update the [`image.repository`](README.md#imagerepository) with the reference to the new image:
+   - Update [`image.repository`](README.md#imagerepository) with the reference to the new image:
 
      ```yaml
      image:
@@ -801,7 +806,7 @@ Adapter Sets can be provisioned using different methods, configured through the 
      adapters:
        myAdapterSet:
          provisioning:
-           fromPathInImage: "/lightstreamer/adapters/myadapter"
+           fromPathInImage: /lightstreamer/adapters/myadapter
      ...
      ```
    
@@ -822,7 +827,7 @@ Adapter Sets can be provisioned using different methods, configured through the 
 
      and populate it with the Adapter Set's resources (excluding any `adapters.xml` file).
 
-   - Configure the [`provisioning.fromPath`](README.md#adaptersmyadaptersetprovisioningfrompathinimage) setting of the Adapter Set definition with the name of the volume and optionally the full path of the deployment folder in the volume:
+   - Configure the [`provisioning.fromPath`](README.md#adaptersmyadaptersetprovisioningfrompathinimage) setting of the Adapter Set definition with the reference to the volume and optionally the deployment full path in the volume:
      
      ```yaml
      adapters:
@@ -837,6 +842,7 @@ Adapter Sets can be provisioned using different methods, configured through the 
      At startup, the resources will be copied to the designated Adapter Set folder under the `/lightstreamer/deployed_adapters` directory in the container.
 
 ##### Configure Metadata Adapters and Data Adapters
+
 You can configure in-process Metadata Adapters and Data Adapters by populating the following sections in your Helm chart values:
 
 - [`metadataProvider.inProcessMetadataAdapter`](README.md#adaptersmyadaptersetmetadataproviderinprocessmetadataadapter)
@@ -849,7 +855,6 @@ These sections share the following key settings:
 - `installDir`:  The optional location in the provisioning source of top-level directory containing the `lib` and/or `classes` folders.
 
 - `classLoader`: The type of ClassLoader to use for loading the Adapter's classes, how explained in the subsequent sections.
-
 
 ###### `common` ClassLoader
 
@@ -867,10 +872,10 @@ This ClassLoader load classes included in the `lib` and `classes` subfolders fro
    Example configuration:
    ```yaml
    adapters:
-     myAdapterSet:
+     exampleAdapterSet:
        metadataProvider:
          inProcessMetadataAdapter:
-           adapterClass: com.mycompany.adapters.metadata.MyMetadataAdapter
+           adapterClass: com.lightstreamer.adapters.example.first.
            classLoader: common 
            ...
        dataProviders:
@@ -979,7 +984,7 @@ adapters:
           ...
 ```
 
-##### `log-enabled` ClassLoader
+###### `log-enabled` ClassLoader
 
 When the `classLoader` is set to `log-enabled`, the Adapter is assigned a dedicated ClassLoader which also includes the `slf4j` library used by the Lightstreamer Broker.
 This implies that the Adapter the Broker's logging configuration. 
