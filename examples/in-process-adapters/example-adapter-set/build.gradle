@@ -1,0 +1,61 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.myadapters'
+version = '1.0.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.lightstreamer:ls-adapter-inprocess:8.0.0'
+}
+
+task dataAdapter(type: Jar) {
+    from sourceSets.main.output
+    include '**/data/*.class'
+    archiveBaseName = 'data'
+}
+
+task metaDataAdapter(type: Jar) {
+    from sourceSets.main.output
+    include '**/meta/*.class'
+    archiveBaseName = 'meta'
+}
+
+task commons(type: Jar) {
+    from sourceSets.main.output
+    include '**/commons/*.class'
+    archiveBaseName = 'commons'
+}
+
+task shared(type: Jar) {
+    from sourceSets.main.output
+    include '**/shared/*.class'
+    archiveBaseName = 'shared'
+}
+
+task second(type: Jar) {
+    from sourceSets.main.output
+    include '**/second/*.class'
+    archiveBaseName = 'second-adapter'
+}
+
+task firstAdapter(type: Jar) {
+    from sourceSets.main.output
+    include '**/first/**/*.class'
+    archiveBaseName = 'first-adapter'
+}
+
+jar {
+    exclude '**/shared/*.class'
+    exclude '**/first/*.class'
+}
+
+task deploy(type: Copy) {
+    description = "Deploys the adapter's resources to the build directory"
+    from firstAdapter
+    into layout.buildDirectory.dir('example-adapter-set/lib')
+}
