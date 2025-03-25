@@ -30,10 +30,12 @@ This guide provides step-by-step instructions on how to deploy the Lightstreamer
     - [Hands-on example](#hands-on-example)
   - [Adapters](#adapters)
     - [In-process Adapters](#in-process-adapters)
-      - [`common` ClassLoader](#common-classloader)
-      - [`dedicated` ClassLoader](#dedicated-classloader)
-      - [`log-enabled` ClassLoader](#log-enabled-classloader)
-      - [Summary of ClassLoader types](#summary-of-classloader-types)
+      - [Provisioning](#provisioning)
+      - [Configure Metadata Adapters and Data Adapters](#configure-metadata-adapters-and-data-adapters)
+        - [`common` ClassLoader](#common-classloader)
+        - [`dedicated` ClassLoader](#dedicated-classloader)
+        - [`log-enabled` ClassLoader](#log-enabled-classloader)
+        - [Summary of ClassLoader types](#summary-of-classloader-types)
 
 ## Prerequisites
 
