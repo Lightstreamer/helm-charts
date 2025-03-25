@@ -764,6 +764,77 @@ adapters:
 
 #### In-process Adapters
 
+To configure in-process Metadata Adapter, you have to accomplish the following steps:
+
+1. Provision the Adapter Set's resources.
+3. Configure Metadata Adapter and Data Adapter(s).
+
+##### Provisioning
+
+Adapter Sets can be provisioned using different methods, configured through the [`provisioning`](README.md#adaptersmyadaptersetprovisioning) section:
+
+1. Embed the Adapter Set's resources in the image
+
+   - Prepare a custom Lightstreamer-based container image by copying the adapter's resources to into the `/lightstreamer/adapters` directory of the image:
+   
+     ```yaml
+     FROM lightstreamer
+     COPY myadapter /lightstreamer/adapters/myadapter
+     ...
+     
+     ```
+   > [!IMPORTANT]
+   > Do not include the usual adapters.xml file, which is normally required to deploy an Adapter Set in a non-Kubernetes environment, as the file will be dynamically rendered according to the provided configuration in the Helm Chart values.
+   
+   - Update the [`image.repository`](README.md#imagerepository) with the reference to the new image:
+
+     ```yaml
+     image:
+       repository: lightstreamer
+     ```
+   
+   - Configure the [`provisioning.fromPathInImage`](README.md#adaptersmyadaptersetprovisioningfrompathinimage) setting of the Adapter Set definition with the full path of the deployment folder:
+     
+     ```yaml
+     adapters:
+       myAdapterSet:
+         provisioning:
+           fromPathInImage: "/lightstreamer/adapters/myadapter"
+     ...
+     ```
+   
+   At startup, the the resources will be copied path will be mounted at the `/lightstreamer/deployed_adapters` directory in the container.
+
+2. Deploy the Adapter Set's resource to a persistent storage
+
+   - Configure a volume in the `deployment.extraVolumes` section:
+
+     ```yaml
+     deployment:
+       extraVolumes:
+         # Using PersistentVolumeClaim (permanent storage)
+         - name: adapters-volume
+           persistentVolumeClaim:
+             claimName: lightstreamer-adapters-pvc
+     ```
+
+     and populate it with the Adapter Set's resources (excluding any `adapters.xml` file).
+
+   - Configure the [`provisioning.fromPath`](README.md#adaptersmyadaptersetprovisioningfrompathinimage) setting of the Adapter Set definition with the name of the volume and optionally the full path of the deployment folder in the volume:
+     
+     ```yaml
+     adapters:
+       myAdapterSet:
+         provisioning:
+           fromVolume:
+             name: adapters-volume
+             path: path/to/adapter/set
+     ...
+     ```
+
+     At startup, the resources will be copied to the designated Adapter Set folder under the `/lightstreamer/deployed_adapters` directory in the container.
+
+##### Configure Metadata Adapters and Data Adapters
 You can configure in-process Metadata Adapters and Data Adapters by populating the following sections in your Helm chart values:
 
 - [`metadataProvider.inProcessMetadataAdapter`](README.md#adaptersmyadaptersetmetadataproviderinprocessmetadataadapter)
@@ -777,7 +848,8 @@ These sections share the following key settings:
 
 - `classLoader`: The type of ClassLoader to use for loading the Adapter's classes, how explained in the subsequent sections.
 
-##### `common` ClassLoader
+
+###### `common` ClassLoader
 
 When the `classLoader` is set to `common`, the _Adapter Set ClassLoader_ is used. 
 This ClassLoader load classes included in the `lib` and `classes` subfolders from three different sources:
@@ -813,10 +885,10 @@ This ClassLoader load classes included in the `lib` and `classes` subfolders fro
    my-adapter-set/
    ├── classes # Common classes
    ├── lib     # Common jar files
-   └── metadata    # MetadataAdapter-specific resources
+   └── metadata    # Metadata Adapter-specific resources
        ├── classes 
        └── lib     
-   └── data        # DataAdapter-specific resources
+   └── data        # Data Adapter-specific resources
        ├── classes 
        └── lib     
    ```
@@ -828,14 +900,14 @@ This ClassLoader load classes included in the `lib` and `classes` subfolders fro
        metadataProvider:
          inProcessMetadataAdapter:
            adapterClass: com.mycompany.adapters.metadata.MyMetadataAdapter
-           installDir: metadata # MetadataAdapter-specific resources
+           installDir: metadata # Metadata Adapter-specific resources
            classLoader: common
            ...
        dataProviders:
          myDataProvider:
            inProcessDataAdapter:
              adapterClass: com.mycompany.adapters.metadata.MyMetadataAdapter
-             installDir: data # DataAdapter-specific resources
+             installDir: data # Data Adapter-specific resources
              classLoader: common
              ...
    ```
@@ -858,7 +930,7 @@ This ClassLoader load classes included in the `lib` and `classes` subfolders fro
    └── lib     # Globally shared jar files
    ```
 
-#### `dedicated` ClassLoader
+###### `dedicated` ClassLoader
 
 When the `classLoader` is set to `dedicated`, a dedicated ClassLoader is assigned to the Adapter. This ClassLoader includes classes from the `<installDir>/lib` and `<installDir>/classes` folders. The `installDir` setting is mandatory in this case.
 
@@ -878,11 +950,11 @@ adapters/my-adapter-set/
 ├── classes     # Common classes loaded by the Adapter Set ClassLoader
 ├── lib         # Common jar files loaded by the Adapter Set ClassLoader
 └── metadata    
-    ├── classes # Classes and resources loaded by the dedicated MetadataAdapter's ClassLoader
-    └── lib     # Jar files loaded by the dedicated MetadataAdapter's ClassLoader
+    ├── classes # Classes and resources loaded by the dedicated Metadata Adapter's ClassLoader
+    └── lib     # Jar files loaded by the dedicated Metadata Adapter's ClassLoader
 └── data        
-    ├── classes # Classes and resources loaded by the dedicated DataAdapter's ClassLoader
-    └── lib     # Jar files loaded by the dedicated DataAdapters's ClassLoader
+    ├── classes # Classes and resources loaded by the dedicated Data Adapter's ClassLoader
+    └── lib     # Jar files loaded by the dedicated Data Adapters's ClassLoader
 ```
 
 The following example:
@@ -926,7 +998,7 @@ adapters:
           classLoader: log-enabled
 ```
 
-##### Summary of ClassLoader types
+###### Summary of ClassLoader types
 
 | ClassLoader Type | Description                                                                                     | Use Case                                                                 |
 |------------------|-------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------|
