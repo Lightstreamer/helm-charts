@@ -89,7 +89,7 @@ Render the Lightstreamer configuration file.
     <{{ $elementType }}_server name={{ .name | quote }}>
 
         <!-- Mandatory for this block. Listening TCP port. -->
-        <port>{{ int (required (printf "servers.%s.port must be set" $serverKey) .port) }}</port>
+        <port>{{ int .port }}</port>
 
         <!-- Optional. Size of the system buffer for incoming TCP connections
              (backlog). Overrides the default system setting. -->
