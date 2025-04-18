@@ -322,7 +322,7 @@ service:
 
       # -- Optional, but mandatory if more than one port is defined. The name of
       # the service port.
-      name: lightstreamer-service
+      name: default-service
 
   # -- The load balancer implementation when the `type` is set to `LoadBalancer`.
   # See https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-class.
@@ -333,8 +333,7 @@ service:
 ingress:
 
   # -- Enables the Ingress.
-  # @default -- false
-  enabled: true
+  enabled: false
 
   # -- Additional Ingress annotations.
   annotations: {}
@@ -405,7 +404,6 @@ license:
   # `blackberry_client` (for BlackBerry clients), `javame_client` (for Java ME
   # clients), `flash_client` (for Flash clients), `generic_client` (for custom
   # clients based on the Lightstreamer protocol).
-  # @default -- javascript_client
   enabledCommunityEditionClientApi: "javascript_client"
 
   # -- Mandatory if `edition` is set to `ENTERPRISE`. Configure the `ENTERPRISE`
@@ -459,7 +457,6 @@ license:
     # reachable on port 443.
     # If not enabled, audit logs must be delivered manually if required by
     # license terms.
-    # @default -- true
     enableAutomaticAuditLogUpload: true
 
     # -- Optional. Configure the optional features.
@@ -471,8 +468,7 @@ license:
       # required feature is not allowed by the license in use, the server will
       # not start.
       # If set to `false`, use the feature set specified by the license in use.
-      # @default -- false
-      enableRestrictedFeaturesSet: true
+      enableRestrictedFeaturesSet: false
 
       # -- Mandatory if `enableRestrictedFeaturesSet` is set to `true`. Set of
       # features to enable. If a required feature is not allowed by the license
@@ -554,8 +550,7 @@ license:
   # If set to `true`, perform automatic update check. The following host name
   # must be reachable on port 443: https://service.lightstreamer.com/.
   # If set to `false`, do not perform an automatic update check.
-  # @default -- true
-  enableAutomaticUpdateCheck:
+  enableAutomaticUpdateCheck: true
 
   # -- Optional. Configure a proxy server for outbound Internet access, if
   # necessary.
@@ -618,19 +613,16 @@ license:
 
     # -- Optional. Configure one or multiple proxy auto-configuration (PAC),
     # files for simpler proxy configuration.
-    # @default -- []
     pacFiles:
 
       # -- Optional. List of PAC file URLs to be used for proxy configuration.
-      # @default -- []
-      fileUrls:
+      fileUrls: []
         # - "http://intra.mycompany.com/company_pac_file1.pac"
         # - "http://intra.mycompany.com/company_pac_file2.pac"
 
       # -- Optional. List of configmap names and keys where the PAC files are
       # stored.
-      # @default -- []
-      filePaths:
+      filePaths: []
         # - name: pack-configmap
         #   key: pac-file1.pac
         # - name: pack-configmap
@@ -641,8 +633,7 @@ license:
     # -- Optional. If no proxy configuration is provided or the configured
     # proxies are unreachable, an automatic proxy discovery attempt is made (via
     # system environment check and WPAD).
-    # @default -- false
-    enableProxyAutodiscovery:
+    enableProxyAutodiscovery: false
 
     # -- Optional. Specifies a NIC to use to access the external services, with
     # or without a proxy.
@@ -663,7 +654,7 @@ servers:
   defaultServer:
 
     # -- Optional. Enables this socket configuration.
-    # @default -- false
+    # If not specified, the default value is `false`.
     enabled: true
 
     # -- Mandatory. The name of the HTTP/S server. Note that it is notified to
@@ -683,8 +674,7 @@ servers:
     # see the License `tab` of the Monitoring Dashboard (by default, available
     # at `/dashboard`).
     # See `sslConfig` for general details on TLS/SSL configuration.
-    # @default -- false
-
+    # If not specified, the default value is `false`.
     enableHttps: false
 
     # -- (int) Optional. Size of the system buffer for incoming TCP connections
@@ -725,8 +715,7 @@ servers:
     # clients based on LS SDK libraries, this is related to the use of the
     # `cluster.controlLinkAddress` setting. Usage examples are provided in the
     # Clustering.pdf document.
-    # @default -- "GENERAL_PURPOSE"
-    portType:
+    portType: GENERAL_PURPOSE
 
     # -- Optional. Settings that allow some control over the HTTP headers of
     # the provided responses. Header lines can only be added to those used by
@@ -743,8 +732,7 @@ servers:
       # -- Optional. Requests to look for any header lines for the specified
       # field name on the HTTP request header and to copy them to the HTTP
       # response header.
-      # @default -- []
-      echo:
+      echo: []
         # - "cookie"
 
       # -- Optional. Requests to add to the HTTP response header a line with
@@ -786,6 +774,7 @@ servers:
     # The detected address may also be sent to the clients, depending on the
     # Client SDK in use.
     # If not specified, all settings at their defaults will be used.
+    # @default -- {}
     clientIdentification:
 
       # -- Optional. If set to `true`, prevents the determined address from
@@ -796,8 +785,7 @@ servers:
       # For instance, the flag can and should be set to `true` in case the
       # identification of the remote address is not properly tuned and the
       # determined address may be a local one.
-      # @default -- false
-      enablePrivate:
+      enablePrivate: false
 
       # -- Optional. If set to `true`, instructs the Server that the connection
       # endpoint is a reverse proxy or load balancer that sends client address
@@ -814,8 +802,7 @@ servers:
       # unspecified.
       # On the other hand, if enabled, both proxy protocol version 1 and 2 are
       # handled; only information for normal TCP connections is considered.
-      # @default -- false
-      enableProxyProtocol:
+      enableProxyProtocol: false
 
       # -- (int) Optional. Timeout applied while reading for information
       # through the proxy protocol, when enabled. Note that a reverse proxy or
@@ -827,26 +814,8 @@ servers:
       # pool and this setting protects that pool against such unlikely events.
       # @default -- 1000
       proxyProtocolTimeoutMillis:
-
-      # -- (int) Optional, but nonzero values forbidden if
-      # `enableProxyProtocol` is set to `true`. Number of entries in the
-      # `X-Forwarded-For` header that are expected to be supplied on each HTTP
-      # request (including Websocket handshake) by the intermediate nodes (e.g.
-      # reverse proxies, load balancers) that stand in the local environment.
-      # If N entries are expected from local nodes, this means that the
-      # Nth-nearest entry corresponds to the node connected to the farthest
-      # local intermediate node, hence to the client. So, that entry will be
-      # used as the real client address. In particular, it will appear in all
-      # log lines that refer to the involved HTTP request or Websocket.
-      # If set to `0` or left at the default, all entries in `X-Forwarded-For`
-      # will be considered as written by client-side proxies, hence the
-      # connection endpoint address will be used (unless, of course,
-      # `enableProxyProtocol` is set to `true`, which overrides the behavior).
-      # Note that a similar correction for port and protocol is not applied;
-      # hence, when an address corrected through a nonzero setting is reported,
-      # any port and protocol associated will still refer to the actual
-      # connection.
-      # @default -- 0
+      
+      # defaultServer.clientIdentification.skipLocalForwards -- TEST TEST TEST
       skipLocalForwards:
 
       # -- Optional. If set to `true`, causes the list of entries of the
@@ -1001,7 +970,8 @@ servers:
       # `jdk.tls.server.enableSessionTicketExtension` JVM property.
       # If not specified, the type of resumption will be decided by the
       # underlying Security Provider, based on its own configuration.
-      # @default -- the underlying Security Provider's configuration
+      # If not specified, decided by the underlying Security Provider's 
+      # configuration.
       enableStatelessTlsSessionResumption:
 
       # -- Optional. Size of the cache used by the TLS implementation to handle
@@ -1013,7 +983,8 @@ servers:
       # If not specified, the cache size is decided by the underlying Security
       # Provider. For the default SunJSSE, it is `20480` TLS sessions, unless
       # configured through the `javax.net.ssl.sessionCacheSize` JVM property.
-      # @default -- decided by the underlying Security Provider's configuration
+      # If not specified, decided by the underlying Security Provider's 
+      # configuration.
       tlsSessionCacheSize:
 
       # -- Optional. Maximum time in which a TLS session is kept available to
@@ -1027,7 +998,8 @@ servers:
       # Security Provider. For the default SunJSSE, it is `86400` seconds,
       # unless configured through the `jdk.tls.server.sessionTicketTimeout` JVM
       # property.
-      # @default -- decided by the underlying Security Provider's configuration
+      # If not specified, decided by the underlying Security Provider's 
+      # configuration.
       tlsSessionTimeoutSeconds:
 
       # -- Optional. If set to `true`, tries to improve the TLS session
@@ -1317,7 +1289,7 @@ logging:
         # the proxy protocol, when enabled.
         # At `DEBUG` level, details of all information received are reported.
         # @default -- inherited from `lightstreamerLogger.connections`
-        lightstreamerLogger.connections.proxy: INFO
+        # lightstreamerLogger.connections.proxy: INFO
 
         # -- Optional. Logging of internal web server activity; it also logs
         # requests for static resources related to push requests.
@@ -2111,8 +2083,8 @@ globalSocket:
   # The time actually considered may be approximated and may be a few seconds
   # higher, for internal performance reasons.
   # A `0` value suppresses the check.
-  # @default -- 4000
-  handshakeTimeoutMillis:
+  # If not specified, the default is `4000`.
+  handshakeTimeoutMillis: 4000
 
   # -- (int) Optional. Maximum length in bytes accepted for a request.
   # For an HTTP GET request, the limit applies to the whole request, including
@@ -2121,7 +2093,7 @@ globalSocket:
   # part separately.
   # For a request over a WebSocket, the limit applies to the request message
   # payload.
-  # @default -- unlimited length
+  # If not specified, the check is suppressed.
   requestLimit: 50000
 
   # -- Optional. Longest operation time accepted while writing data on a socket.
@@ -2129,8 +2101,7 @@ globalSocket:
   # affect very slow clients.
   # The time actually considered may be approximated and may be a few seconds
   # higher, for internal performance reasons.
-  # If missing or `0`, the check is suppressed.
-  # @default -- the check is suppressed
+  # If not specified or `0`, the check is suppressed.
   writeTimeoutMillis: 120000
 
   # -- (string) Optional. Enables the use of the full HTTP 1.1 syntax for all
@@ -2140,8 +2111,8 @@ globalSocket:
   # requests, but it will prevent WebSocket support.
   # If set to `AUTO`, HTTP 1.0 is used, unless HTTP 1.1 is required in order to
   # support specific response features.
-  # @default -- 1.1
-  useHttpVersion:
+  # If not specified, the default is `1.1`.
+  useHttpVersion: "1.1"
 
   # -- Optional. WebSocket support configuration.
   webSocket:
@@ -2157,20 +2128,20 @@ globalSocket:
     # use. The Client Library, upon the Server refusal, will resort to HTTP
     # streaming without any additional delay to session establishment.
     # @default -- true
-    enabled:
+    enabled: true
 
     # -- (int) Optional. Maximum time the Server is allowed to wait before
     # answering to a client "ping" request. In case a client sends very
     # frequent "ping" requests, only the "pong" associated with the most recent
     # request received is sent, while the previous requests will be ignored.
     # Note that the above is possible also when `0` is specified.
-    # @default -- 0
-    maxPongDelayMillis:
+    maxPongDelayMillis: 0
 
     # -- (int) Optional. Maximum time the Server is allowed to wait for the
     # client "close" frame, in case the Server is sending its own close" frame
     # first, in order to try to close the connection in a clean way.
-    # @default -- no timeout is set and the global `global.readTimeoutMillis` applies.
+    # If not specified, no timeout is set and the global 
+    # `global.readTimeoutMillis` applies.
     maxClosingWaitMillis:
 
     # -- Optional. Maximum payload size allowed for an outbound frame.
@@ -3749,7 +3720,7 @@ adapters:
 
       # -- (string) The path to the Adapter Set resources in the image,
       # e.g.: `/lightstreamer/adapters/my-adapter-set`. At startup, the path
-      # will me mounted at the designated Adapter Set folder under 
+      # will be me mounted at the designated Adapter Set folder under 
       # the `/lightstreamer/deployed_adapters` directory in the container.
       fromPathInImage:
 
@@ -3813,7 +3784,7 @@ adapters:
 
       # -- One of this or `proxyMetadataAdapter` must be provided. Configuration
       # of an in-process Metadata Adapter.
-      # If boh `inProcessMetadataAdapter` and `proxyMetadataAdapter` are
+      # If both `inProcessMetadataAdapter` and `proxyMetadataAdapter` are
       # provided, this setting takes precedence.
       inProcessMetadataAdapter:
 
