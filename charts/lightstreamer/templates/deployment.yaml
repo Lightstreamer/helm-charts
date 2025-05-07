@@ -77,7 +77,7 @@ spec:
           {{- /* START CONTAINER PORTS */ -}}
           {{- range $serverKey, $server := .Values.servers }}
             {{- if $server.enabled }}
-            - name: {{ include "lightstreamer.configuration.serverPortName" $serverKey }}
+            - name: {{ include "lightstreamer.configuration.servers.serverPortName" $serverKey }}
               containerPort: {{ $server.port }}
               protocol: TCP
             {{- end }}

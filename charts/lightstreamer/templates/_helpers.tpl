@@ -103,8 +103,8 @@ Create the Service target port.
 {{- $ := index . 0}}
 {{- $serverKeyName := "service.ports[].targetPort" }}
 {{- $serverKey := index . 1 }}
-{{- include "lightstreamer.configuration.validateServerRef" (list $ $serverKeyName $serverKey) }}
-{{- include "lightstreamer.configuration.serverPortName" $serverKey -}}
+{{- include "lightstreamer.configuration.servers.validateServerRef" (list $ $serverKeyName $serverKey) }}
+{{- include "lightstreamer.configuration.servers.serverPortName" $serverKey -}}
 {{- end }}
 
 {{/*
@@ -115,8 +115,8 @@ Create the port used health check.
 {{- $probeName := index . 1 }}
 {{- $serverKeyName := printf "deployment.probes.%s.healthCheck.serverRef" $probeName }}
 {{- $serverKey := (index . 2).serverRef }}
-{{- include "lightstreamer.configuration.validateServerRef" (list $ $serverKeyName $serverKey) }}
-{{- include "lightstreamer.configuration.serverPortName" $serverKey -}}
+{{- include "lightstreamer.configuration.servers.validateServerRef" (list $ $serverKeyName $serverKey) }}
+{{- include "lightstreamer.configuration.servers.serverPortName" $serverKey -}}
 {{- end }}
 
 {{/*
@@ -163,7 +163,7 @@ Render all the probes for the deployment descriptor.
 Validate all the server configurations, ensuring that at least one enabled
 server exists and no duplicated names or ports are used.
 */}}
-{{- define "lightstreamer.configuration.validateAllServers" }}
+{{- define "lightstreamer.configuration.servers.validateAllServers" }}
 {{- $usedNames := list }}
 {{- $usedPorts := list }}
 {{- range $serverKey, $server :=.Values.servers }}
@@ -179,8 +179,10 @@ server exists and no duplicated names or ports are used.
     {{- $usedNames = append $usedNames $serverName }}
 
     {{- /* Check the server ports */ -}}
-    {{- $serverPort := required (printf "servers.%s.port must be set" $serverKey) (int $server.port) }}
+    {{- $serverPort := required (printf "servers.%s.port must be set" $serverKey) $server.port }}
+    {{ kindOf $server.port }}
     {{- if has $serverPort $usedPorts }}
+      {{ .Values.servers }}
       {{- fail (printf "servers.%s.port \"%d\" already used" $serverKey $serverPort ) }}
     {{- end }}
     {{- $usedPorts = append $usedPorts $serverPort }}
@@ -194,7 +196,7 @@ server exists and no duplicated names or ports are used.
 {{/*
 Validate a server configuration reference, ensuring that the server exists and is enabled.
 */}}
-{{- define "lightstreamer.configuration.validateServerRef" }}
+{{- define "lightstreamer.configuration.servers.validateServerRef" }}
 {{- $ := index . 0 }}
 {{- $serverKeyName := index . 1 }}
 {{- $serverKey := required (printf "%s must be set" $serverKeyName) (index . 2) }}
@@ -207,7 +209,7 @@ Validate a server configuration reference, ensuring that the server exists and i
 {{/*
 Create the port reference for a server configuration.
 */}}
-{{- define "lightstreamer.configuration.serverPortName" -}}
+{{- define "lightstreamer.configuration.servers.serverPortName" -}}
 {{ . | kebabcase | trunc 15 | trimSuffix "-" }}
 {{- end }}
 

@@ -70,7 +70,7 @@ Render the Lightstreamer configuration file.
   ===============================
 -->
 
-{{- include "lightstreamer.configuration.validateAllServers" . -}}
+{{- include "lightstreamer.configuration.servers.validateAllServers" . -}}
 {{- range $serverKey, $server :=.Values.servers }}
   {{- if $server.enabled }}
     <!-- Optional and cumulative (but at least one from <http_server> and
@@ -231,8 +231,15 @@ Render the Lightstreamer configuration file.
              and the determined address may be a local one.
              If the whole block is omitted, this just means that all settings
              are at their defaults. -->
-  {{- with .clientIdentification }}
-        <client_identification{{- if not (quote .enablePrivate | empty) }} private={{ .enablePrivate | ternary "Y" "N" | quote }}{{- end }}>
+  {{- $clientIdentificationDefaults := dict }}
+  {{- $_:= set $clientIdentificationDefaults "enablePrivate" true }}
+  {{- $_:= set $clientIdentificationDefaults "enableProxyProtocol" false }}
+  {{- $_:= set $clientIdentificationDefaults "proxyProtocolTimeoutMillis" 1000 }}
+  {{- $_:= set $clientIdentificationDefaults "skipLocalForwards" 0 }}
+  {{- $_:= set $clientIdentificationDefaults "enableForwardsLogging" false }}
+  {{- $clientIdentification := merge .clientIdentification $clientIdentificationDefaults }}
+  {{- with $clientIdentification }}
+        <client_identification private={{ .enablePrivate | ternary "Y" "N" | quote }}>
 
             <!-- Optional. If Y, instructs the Server that the connection endpoint
                  is a reverse proxy or load balancer that sends client address
@@ -250,13 +257,7 @@ Render the Lightstreamer configuration file.
                  On the other hand, if Y, both proxy protocol version 1 and 2 are
                  handled; only information for normal TCP connections is considered.
                  Default: N. -->
-    {{- if not (quote .enableProxyProtocol | empty) }}
-            <proxy_protocol_enabled>{{ .enableProxyProtocol | ternary "Y" "N"}}</proxy_protocol_enabled>
-    {{- else }}
-            <!--
-            <proxy_protocol_enabled>Y</proxy_protocol_enabled>
-            -->
-    {{- end }}
+            <proxy_protocol_enabled>{{ .enableProxyProtocol | ternary "Y" "N" }}</proxy_protocol_enabled>
 
             <!-- Optional. Timeout applied while reading for information through
                  the proxy protocol, when enabled. Note that a reverse proxy or
@@ -268,13 +269,7 @@ Render the Lightstreamer configuration file.
                  thread pool and this setting protects that pool against such
                  unlikely events.
                  Default: 1000. -->
-    {{- if not (quote .proxyProtocolTimeoutMillis | empty) }}
             <proxy_protocol_timeout_millis>{{ int .proxyProtocolTimeoutMillis }}</proxy_protocol_timeout_millis>
-    {{- else }}
-            <!--
-            <proxy_protocol_timeout_millis>3000</proxy_protocol_timeout_millis>
-            -->
-    {{- end }}
 
             <!-- Optional, but nonzero values forbidden if "proxy_protocol_enabled"
                  is Y. Number of entries in the X-Forwarded-For header that are
@@ -296,13 +291,7 @@ Render the Lightstreamer configuration file.
                  reported, any port and protocol associated will still refer to the
                  actual connection.
                  Default: 0. -->
-    {{- if not (quote .skipLocalForwards | empty) }}
             <skip_local_forwards>{{ int .skipLocalForwards }}</skip_local_forwards>
-    {{- else }}
-            <!--
-            <skip_local_forwards>2</skip_local_forwards>
-            -->
-    {{- end }}
 
             <!-- Optional. If Y, causes the list of entries of the X-Forwarded-For
                  header, when available, to be added to log lines related to the
@@ -311,27 +300,18 @@ Render the Lightstreamer configuration file.
                  than the determined "real" remote address are included.
                  These entries are expected to be written by client-side proxies.
                  Default: N. -->
-    {{- if not (quote .enableForwardsLogging | empty) }}
             <log_forwards>{{ .enableForwardsLogging | ternary "Y" "N" }}</log_forwards>
-    {{- else }}
-            <!--
-            <log_forwards>Y</log_forwards>
-            -->
-    {{- end }}
         </client_identification>
-  {{- else }}
-        <!--
-        <client_identification private="N">
-        </client_identification>
-        -->
   {{- end }}
 
   {{- if $enableHttps }}
-    {{- $sslConfig := .sslConfig | default dict }}
+    {{- /*$sslConfigDefaults = dict "allowCipherSuites" [] "removeCipherSuites" [] "enableTlsRenegotiation" true "allowProtocols" [] "removeProtocols" [] "enableClientHintsForTlsSessionResumption" false "enableClientAuth" false "enableMandatoryClientAuth" false */ -}}
+    {{- /* $sslConfig := merge .sslConfig | $sslConfigDefaults */ -}}
+    {{- $sslConfig := .sslConfig }}
     {{ if $sslConfig | empty }} 
-      {{ printf "servers.%s.sslConfig must be set set" $serverKey | fail }}
+      {{ printf "servers.%s.sslConfig must be set" $serverKey | fail }}
     {{ end }}
-    {{- with  $sslConfig }}
+    {{- with $sslConfig }}
         <!-- Optional. If defined, overrides the default JVM's Security Provider
              configured in the java.security file of the JDK installation. This allows
              the use of different Security Providers dedicated to single listening ports.
@@ -1190,12 +1170,12 @@ Render the Lightstreamer configuration file.
                  - N: Disables the test, but this setting can be overridden by
                       setting <ensure_stopping_service> to Y.
                  Default: Y. -->
-      {{- if (quote .enableTestPorts | empty) }}
+      {{- if (quote .enablePortTest | empty) }}
             <!--
             <test_ports>Y</test_ports>
             -->
       {{- else }}
-            <test_ports>{{ .enableTestPorts | ternary "Y" "N" }}</test_ports>
+            <test_ports>{{ .enablePortTest | ternary "Y" "N" }}</test_ports>
       {{- end }}
 
             <!-- Optional. Timeout to be posed on the connection attempts through
@@ -1585,7 +1565,7 @@ Render the Lightstreamer configuration file.
              basis; it is only effective if <jmxtree_enabled> is set to "Y". -->
     {{- if not .enableAvailabilityOnAllServers }}
       {{- range $index, $value := .availableOnServers }}
-        {{- include "lightstreamer.configuration.validateServerRef" (list $ (printf "management.dashboard.availableOnServers[%d].serverRef" (int $index)) $value.serverRef) }}
+        {{- include "lightstreamer.configuration.servers.validateServerRef" (list $ (printf "management.dashboard.availableOnServers[%d].serverRef" (int $index)) $value.serverRef) }}
         <available_on_server name={{ (get $.Values.servers $value.serverRef).name | quote }}{{- if not (quote $value.enableJmxTreeVisibility | empty) }} jmxtree_visible={{ $value.enableJmxTreeVisibility | ternary "Y" "N" | quote }}{{- end }} />
       {{- else }}
         <!--
@@ -1663,7 +1643,7 @@ Render the Lightstreamer configuration file.
              that can be identified through the mandatory "name" attribute. -->
     {{- if not .enableAvailabilityOnAllServers }}
       {{- range $index, $value := .availableOnServers }}
-        {{- include "lightstreamer.configuration.validateServerRef" (list $ (printf "management.healthCheck.availableOnServers[%d].serverRef" (int $index)) $value.serverRef) }}
+        {{- include "lightstreamer.configuration.servers.validateServerRef" (list $ (printf "management.healthCheck.availableOnServers[%d].serverRef" (int $index)) $value.serverRef) }}
         <available_on_server name={{ (get $.Values.servers $value.serverRef).name | quote }} />
       {{- else }}
         <!--
