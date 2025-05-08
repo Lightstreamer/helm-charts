@@ -691,14 +691,9 @@ Render the Lightstreamer configuration file.
          - AUTO: HTTP 1.0 is used, unless HTTP 1.1 is required in order to
                  support specific response features.
          Default: Y. -->
-  {{- if .useHttpVersion }}
-    {{- $versions := dict "1.1" "Y" "1.0" "N" "AUTO" "AUTO" }}
-    <use_http_11>{{ required "globalSocket.useHttpVersion must be set with a valid value" (get $versions .useHttpVersion) }}</use_http_11>
-  {{- else }}
     <!--
     <use_http_11>Y</use_http_11>
     -->
-  {{- end }}
 
     <!-- Optional. WebSocket support configuration. The support is enabled
          by default. -->
@@ -718,13 +713,9 @@ Render the Lightstreamer configuration file.
              additional delay to session establishment.
              Default: Y. -->
   {{- with .webSocket }}
-    {{- if not (quote .enabled | empty) }}
-        <enabled>{{ .enabled | ternary "Y" "N" }}</enabled>
-    {{- else }}
         <!--
         <enabled>N</enabled>
         -->
-    {{- end }}
 
         <!-- Optional. Maximum time the Server is allowed to wait before
              answering to a client "ping" request. In case a client sends
@@ -1825,13 +1816,9 @@ Render the Lightstreamer configuration file.
          length for the Server is still mandatory and the setting is obeyed
          in order to put a limit to the response length.
          Default: Y. -->
-    {{- if .useChunkedEncoding }}
-    <use_chunked_encoding>{{ .useChunkedEncoding }}</use_chunked_encoding>
-    {{- else }}
     <!--
     <use_chunked_encoding>Y</use_chunked_encoding>
     -->
-    {{- end }}
 
     <!-- Optional. Enabling the use of the "gzip" content encoding,
          as defined by the HTTP 1.1 specifications, for sending the resource
@@ -2828,13 +2815,9 @@ Render the Lightstreamer configuration file.
              Note that "/crossdomain.xml" is also used by the Silverlight
              runtime when "/clientaccesspolicy.xml" is not provided.
              Default: N. -->
-        {{- if (quote .enableFlexCrossdomain | empty) }}
         <!--
         <flex_crossdomain_enabled>Y</flex_crossdomain_enabled>
         -->
-        {{- else}}
-        <flex_crossdomain_enabled>{{ .enableFlexCrossdomain | ternary "Y" "N" }}</flex_crossdomain_enabled>
-        {{- end }}
 
         <!-- Mandatory when "flex_crossdomain_enabled" is set as "Y".
              Path of the file to be returned upon requests for the
@@ -2842,13 +2825,9 @@ Render the Lightstreamer configuration file.
              "flex_crossdomain_enabled" is not set as "Y".
              The file content should be encoded with the iso-8859-1 charset.
              The file path is relative to the conf directory. -->
-        {{- if .flexCrossdomainPath }}
-        <flex_crossdomain_path>{{ .flexCrossdomainPath }}</flex_crossdomain_path>
-        {{- else }}
         <!--
         <flex_crossdomain_path>./flexcrossdomain.xml</flex_crossdomain_path>
         -->
-        {{- end }}
 
         <!-- Optional. Enables the processing of the "/clientaccesspolicy.xml"
              URL, required by the Silverlight runtime in order to allow pages
