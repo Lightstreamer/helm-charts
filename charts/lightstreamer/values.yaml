@@ -589,9 +589,9 @@ license:
         # Possible values: `http`, `https`.
         scheme:
 
-        # -- Mandatory if proxy authentication is required. The name of the
-        # secret containing the credentials. The secret must contain the keys
-        # `user` and `password`.
+        # -- (string) Mandatory if proxy authentication is required. The name of 
+        # the secret containing the credentials. The secret must contain the 
+        # keys `user` and `password`.
         credentialsSecretRef:
 
     # -- Optional. List of SOCKS Proxy Server configurations.
@@ -612,9 +612,9 @@ license:
         # Possible values: `SOCKS4`, `SOCKS4a`, `SOCKS5`.
         version:
 
-        # -- Mandatory if proxy authentication is required. The name of the
-        # secret containing the credentials. The secret must contain the keys
-        # `user` and `password`.
+        # -- (string) Mandatory if proxy authentication is required. The name of 
+        # the secret containing the credentials. The secret must contain the 
+        # keys `user` and `password`.
         credentialsSecretRef:
 
     # -- Optional. Configure one or multiple proxy auto-configuration (PAC),
@@ -646,8 +646,8 @@ license:
     networkInterface:
 
 # -- Mandatory. Map of HTTP/S server socket configurations.
-# Every key in the map defines a specific listening socket configuration, which
-# can then be referenced through the whole configuration.
+# Every entry in the map defines a specific listening socket configuration, 
+# which can then be referenced through the whole configuration.
 # Defining multiple listening socket allows the coexistence of private and
 # public ports. This allows the use of multiple address for accessing the Server
 # via TLS/SSL, because different HTTPS sockets can use different keystores.
@@ -655,7 +655,6 @@ license:
 # the `cluster.controlLinkAddress` setting is leveraged to ensure that all
 # requests issued by the same client are dispatched to the same Server instance.
 # At least one enabled server socket configuration must be provided. 
-# 
 servers:
 
   # -- The default HTTP server socket configuration.
@@ -1013,8 +1012,6 @@ servers:
       # Security Provider. For the default SunJSSE, it is `86400` seconds,
       # unless configured through the `jdk.tls.server.sessionTicketTimeout` JVM
       # property.
-      # If not specified, decided by the underlying Security Provider's 
-      # configuration.
       tlsSessionTimeoutSeconds:
 
       # -- Optional. If set to `true`, tries to improve the TLS session
@@ -1059,7 +1056,9 @@ servers:
       # Moreover, the handling of keystore replacement doesn't apply here.
       truststoreRef:
 
-# -- Map of Keystores definition.
+# -- Map of Keystores definition. Every entry in the map defines a specific
+# keystore configuration, which can then be referenced through the whole
+# configuration.
 keystores:
 
   # -- Example of Keystore definition used by HTTPS server socket configurations 
@@ -1103,7 +1102,8 @@ keystores:
 # -- Mandatory. Logging configuration for the Lightstreamer Broker.
 logging:
 
-  # -- Mandatory. Appenders configuration.
+  # -- Mandatory. Map of appenders configuration. Every entry in the map
+  # defines a specific appender configuration. 
   # Every logger must refer to one or more appenders defined here.
   appenders:
 
@@ -1606,7 +1606,7 @@ management:
   # are monitored and a warning is logged whenever their execution takes more
   # than this time.
   # A `0` value disables the check.
-  unexpectedWaitThresholdMillis: 1000
+  unexpectedWaitThresholdMillis: 0
 
   # -- (int) Optional. Threshold time for long asynchronous processing alerts.
   # Data and Metadata Adapter calls, even when performed through asynchronous
@@ -1721,7 +1721,6 @@ management:
       #   available immediately after the startup, and any late failure
       #   preventing the connector setup would be ignored.
       # On the other hand, the setting is ignored by the "stop" script.
-      # @default -- 0
       testTimeoutMillis: 5000
 
       # -- (string) Optional. Can be used on a multihomed host to specify the
@@ -1796,7 +1795,6 @@ management:
       # If set to `true`, requests to the RMI Connector are always allowed.
       # If set to `false`, requests to the RMI Connector are subject to user
       # authentication; the allowed users are set in the "user" elements.
-      # @default -- false
       enablePublicAccess: true
 
       # -- Optional, but ineffective if `enablePublicAccess` is set to
@@ -1908,7 +1906,6 @@ management:
     # If set to `false`, the Server ignores requests for JMX Tree pages,
     # regardless of the credentials supplied and the server socket in use; the
     # dashboard tab will just show a "disabled page" notification.
-    # @default -- false
     enableJmxTree: true
 
     # -- Optional. Enables the access to the Monitoring Dashboard pages without
@@ -1931,16 +1928,15 @@ management:
     # @default -- []
     credentials:
 
-      - # -- The reference to the secret containing the credentials of the user
-        # enabled to access the Monitoring Dashboard.
+      - # -- (string) Mandatory. The reference to the secret containing the 
+        # credentials of the user enabled to access the Monitoring Dashboard.
         # The secret must contain the keys `user` and `password`.
         secretRef:
 
         # -- Optional, but effective only if `dashboard.enableJmxTree` is set to
         # `true`. Allows for restriction of the access to the JMX Tree on a
         # user basis.
-        # @default -- true
-        enableJmxTreeVisibility:
+        enableJmxTreeVisibility: true
 
     # -- Optional. Enables the access to the Monitoring Dashboard pages through
     # all server sockets.
@@ -1959,6 +1955,7 @@ management:
     # -- Optional, but ineffective if `enableAvailabilityOnAllServers` is set
     # to `true`. List of server socket configurations (defined in `servers.{}`)
     # for which requests to the Monitoring Dashboard will be allowed.
+    # @default -- []
     availableOnServers:
 
       - # -- Mandatory. The reference to the allowed server socket
@@ -1968,8 +1965,7 @@ management:
         # -- Optional, but effective only if `dashboard.enableJmxTree` is set to
         # `true`. Allows for restriction of the access to the JMX Tree on a TCP
         # port basis.
-        # @default -- true
-        enableJmxTreeVisibility:
+        enableJmxTreeVisibility: true
 
     # -- (string) Optional. URL path to map the Monitoring Dashboard pages to.
     # An absolute path must be specified.
@@ -2052,30 +2048,8 @@ globalSocket:
   # If not specified or `0`, the check is suppressed.
   writeTimeoutMillis: 120000
 
-  # -- (string) Optional. Enables the use of the full HTTP 1.1 syntax for all
-  # the responses, upon HTTP 1.1 requests.
-  # If set to `1.1`, HTTP 1.1 is always used, when possible.
-  # If set to `1.0`, HTTP 1.0 is always used; this is possible for all HTTP
-  # requests, but it will prevent WebSocket support.
-  # If set to `AUTO`, HTTP 1.0 is used, unless HTTP 1.1 is required in order to
-  # support specific response features.
-  # If not specified, the default is `1.1`.
-  useHttpVersion: "1.1"
-
   # -- Optional. WebSocket support configuration.
   webSocket:
-
-    # -- Optional. Enables the WebSocket support.
-    # If set to `true`, the Server accepts requests for initiating a WebSocket
-    # interaction through a custom protocol.
-    # If set to `false`, the Server refuses requests for WebSocket interaction.
-    # Disabling WebSocket support may be needed when the local network
-    # infrastructure (for instance the Load Balancer) does not handle WebSocket
-    # communication correctly and the WebSocket transport is not already
-    # disabled on the client side through the Lightstreamer Client Library in
-    # use. The Client Library, upon the Server refusal, will resort to HTTP
-    # streaming without any additional delay to session establishment.
-    enabled: true
 
     # -- (int) Optional. Maximum time the Server is allowed to wait before
     # answering to a client "ping" request. In case a client sends very
@@ -2088,15 +2062,14 @@ globalSocket:
     # client "close" frame, in case the Server is sending its own close" frame
     # first, in order to try to close the connection in a clean way.
     # If not specified, no timeout is set and the global 
-    # `global.readTimeoutMillis` applies.
+    # `globalSocket.readTimeoutMillis` value applies.
     maxClosingWaitMillis:
 
-    # -- Optional. Maximum payload size allowed for an outbound frame.
+    # -- (int) Optional. Maximum payload size allowed for an outbound frame.
     # When larger updates have to be sent, the related WebSocket messages will
     # be split into multiple frames.
     # The Server may enforce a lower limit for this setting.
-    # @default -- 16384
-    maxOutboundFrameSize:
+    maxOutboundFrameSize: 16384
 
 # -- Optional. Security configuration.
 security:
@@ -2124,7 +2097,6 @@ security:
   # the Server-generated session ID. For session-creation requests, this
   # depends on the Metadata Adapter implementation, but can be enforced by
   # setting `enableForwardCookies` to `false`.
-  # @default -- true
   enableProtectedJs: false
 
   # -- Optional. Use this setting to enable the forwarding of the cookies to
@@ -2139,10 +2111,10 @@ security:
   # @default -- false
   enableCookiesForwarding: false
 
-  # -- Optional. List of origins to be allowed by the browsers to consume
-  # responses to requests sent to this Server through cross-origin XHR or
-  # through WebSockets; in fact, when a requesting page asks for streaming data
-  # in this way, the browser should specify the page origin through the
+  # -- Optional. Configuration of the origins to be allowed by the browsers to 
+  # consume responses to requests sent to this Server through cross-origin XHR 
+  # or through WebSockets; in fact, when a requesting page asks for streaming 
+  # data in this way, the browser should specify the page origin through the
   # `Origin` HTTP header, to give the Server a chance to accept or refuse the
   # request. This is the most common way streaming data is requested by the Web
   # (Unified API) Client Library. You can see the Client Guide for the Web
@@ -2162,47 +2134,45 @@ security:
   # are always authorized.
   crossDomainPolicy:
 
-    # -- Optional. In case an HTTP OPTIONS request is sent to authorize future
-    # requests, the server allows the client to store the result of such
+    # -- (int) Optional. In case an HTTP OPTIONS request is sent to authorize 
+    # future requests, the server allows the client to store the result of such
     # OPTIONS for the specified number of seconds. Thus a previously authorized
     # client may not give up its authorization, even if the related origin is
     # removed from the list and the server is restarted, until its
     # authorization expires.
-    # @default -- 3600
     optionsMaxAgeSeconds: 3600
 
-    # -- Optional. In case the client wishes to send custom headers to the
-    # server, it requires approval from the server itself. This setting
+    # -- (string) Optional. In case the client wishes to send custom headers to 
+    # the server, it requires approval from the server itself. This setting
     # permits to specify a comma separated list of extra headers to be allowed
     # in the client requests. Note that a space is expected after each comma
     # (e.g.: `acceptExtraHeaders: "custom-header1, custom-header2"`).
-    # @default -- ""
-    acceptExtraHeaders:
+    acceptExtraHeaders: ""
 
-    # -- Optional. Specify if the server should authorize the client to send
-    # its credentials on a CORS request. This setting does not impact the
+    # -- Optional. Specify if the server should authorize the client to send its
+    # credentials on a CORS request. This setting does not impact the 
     # user/password sent over the Lightstreamer protocol, but, if set to
     # `false`, might prevent, or force a fallback connection, on clients
     # sending CORS requests carrying cookies, http-basic-authentication or
     # client-side certificates.
-    # @default -- false
     acceptCredentials: true
 
-    # -- Optional. List of Origin allowed to consume responses to cross-origin
-    # requests.
+    # -- Optional. Map of Origins allowed to consume responses to cross-origin
+    # requests. Every entry in the map is a rule against which the Origin header 
+    # will be checked. 
     allowAccessFrom:
 
       # -- Optional. Defines a rule against which Origin headers will be
       # checked.
       fromEveryWhere:
 
-        # -- Mandatory. A valid scheme name (usually http or https) or `*`; the
-        # latter matches both http and https scheme, but it doesn't match other
-        # schemes.
+        # -- (string) Mandatory. A valid scheme name (usually http or https) 
+        # or `*`; the latter matches both http and https scheme, but it doesn't 
+        # match other schemes.
         scheme: "*"
 
-        # -- Mandatory. A valid host name, IPv4 or IPv6 representing, an
-        # authorized Origin. Also a `*` is accepted with the meaning of
+        # -- (string) Mandatory. A valid host name, IPv4 or IPv6 representing, 
+        # an authorized Origin. Also a `*` is accepted with the meaning of
         # "any host or IP".
         # If a host name is specified it can be prefixed with a wildcard as long
         # as at least the second level domain is explicitly specified (i.e.:
@@ -2340,22 +2310,6 @@ pushSession:
   # @default -- see description
   maxStreamingMillis:
 
-  # -- (string) Optional. Enables the use of the "chunked" transfer encoding, as
-  # defined by the HTTP 1.1 specifications, for sending the response body on
-  # HTTP streaming connections.
-  # If set to `Y`, the "chunked" transfer encoding will be used whenever an
-  # HTTP 1.1 response is permitted, which will enforce the use of HTTP 1.1 (see
-  # `globalSocket.useHttpVersion`).
-  # If set to `N`, causes no transfer encoding (that is, the "identity"
-  # transfer encoding) to be used for all kinds of responses.
-  # If set to `AUTO`, the "chunked" transfer encoding will be used only when an
-  # HTTP 1.1 response is being sent (see `globalSocket.useHttpVersion`).
-  # Though with "chunked" transfer encoding the content-length header is not
-  # needed on the HTTP response header, configuring a content length for the
-  # Server is still mandatory and the setting is obeyed in order to put a limit
-  # to the response length.
-  useChunkedEncoding: Y
-
   # -- (string) Optional. Enables the use of the "gzip" content encoding, as
   # defined by the HTTP 1.1 specifications, for compressing the resource
   # content on HTTP responses; compression is currently not supported for
@@ -2440,7 +2394,6 @@ pushSession:
   # Note that recovery is available only for some client versions; if any other
   # version were involved, the session would be closed immediately.
   # A `0` value also prevents any accumulation of memory.
-  # @default -- 0
   sessionRecoveryMillis: 13000
 
   # -- (int) Optional. Maximum number of bytes of streaming data, already sent
@@ -2475,7 +2428,7 @@ pushSession:
   # `pushSession.sessionTimeoutMillis` or `pushSession.sessionRecoveryMillis`
   # setting, the accomplished wait is considered as valid also for the
   # subscription wait purpose.
-  # @default -- the time configured for `pushSession.sessionTimeoutMillis`
+  # If not specified, the `pushSession.sessionTimeoutMillis` value is used.
   subscriptionTimeoutMillis: 5000
 
   # -- (int) Optional. Timeout used to ensure the proper ordering of
@@ -2495,8 +2448,7 @@ pushSession:
   # allowing the client library to reissue requests that have got lost.
   # A low timeout reduces the delays of subsequent messages in case a request
   # has got lost and can be used if message dropping is acceptable.
-  # @default -- 30000
-  missingMessageTimeoutMillis:
+  missingMessageTimeoutMillis: 30000
 
   # -- Optional. Configuration of the policy adopted for the delivery of
   # updates to the clients.
@@ -2617,7 +2569,6 @@ pushSession:
   # sets a trade-off between Server scalability and maximum data latency. It
   # also sets an upper bound to the maximum update frequency for items not
   # subscribed with unlimited or unfiltered frequency.
-  # @default -- 0
   maxDelayMillis: 30
 
   # -- Mandatory. Default keep-alive configuration.
@@ -2752,8 +2703,8 @@ mpn:
       # -- Mandatory. JDBC URL.
       jdbcUrl: jdbc:hsqldb:hsql://localhost:9001
 
-      # -- Mandatory. The name of the secret containing the credentials. The
-      # secret must contain the keys `user` and `password`.
+      # -- (string) Mandatory. The name of the secret containing the 
+      # credentials. The secret must contain the keys `user` and `password`.
       # The `hsql-hibernate-secret` secret is provided out of the box and
       # contains the default `SA` user with empty password.
       credentialsSecretRef: hsql-factory-secret
@@ -2877,13 +2828,12 @@ mpn:
 
     # -- (int) Optional. Specifies the maximum number of threads the pool may
     # use.
-    # @default -- 10
-    maxSize:
+    maxSize: 10
 
     # -- (int) Optional. Specifies the maximum number of idle threads the pool
-    # may have.
-    # @default -- 0, meaning the pool will not consume resources when idle
-    maxFree:
+    # may have. A `0` value means that the pool will not consume resources when 
+    # idle.
+    maxFree: 0
 
   # -- Optional. Requests the creation of a specific thread pool,
   # `MPN DEVICE HANDLER`, specifically dedicated to the handling of the
@@ -2894,17 +2844,17 @@ mpn:
   # support this burst of activity. If the pool is not defined, each
   # "subscribe" call will be managed by the thread pool associated with the
   # involved Data Adapter, similarly to ordinary sessions.
+  # @default -- {}
   deviceHandlerPool:
 
     # -- (int) Optional. Specifies the maximum number of threads the pool may
     # use.
-    # @default -- 100
-    maxSize:
+    maxSize: 100
 
     # -- (int) Optional. Specifies the maximum number of idle threads the pool
-    # may have.
-    # @default -- 0, meaning the pool will not consume resources when idle
-    maxFree:
+    # may have. A `0` value means that the pool will not consume resources when 
+    # idle.
+    maxFree: 0
 
   # -- (int) Optional. Size of the notifiers' `MPN XXX NOTIFIER` internal
   # thread pool, which is devoted to composing the notifications payload,
@@ -2947,7 +2897,6 @@ mpn:
   # then rises again, it may be sent twice.
   # Set to `abort_operation` to abort the ongoing operation.
   # Set to `continue_operation` to continue the ongoing operation.
-  # @default -- abort_operation
   reactionOnDatabaseFailure: continue_operation
 
   # -- Optional. Apple platforms notifier configuration.
@@ -3221,36 +3170,6 @@ webServer:
   # @default -- 8192
   compressionThreshold:
 
-  # -- Optional. Enables the processing of the `/crossdomain.xml` URL, required
-  # by the Flash player in order to allow pages from a different host to
-  # request data to Lightstreamer Broker host.
-  # See the "WebSite Controls" section on
-  # http://www.adobe.com/devnet/flashplayer/articles/flash_player_9_security.pdf
-  # for details on the contents of the document to be returned.
-  # If set to `true`, the Server accepts requests for `/crossdomain.xml`; the
-  # file configured through the `webServer.flexCrossdomainPath` setting is
-  # returned. Enabling internal web server (through `webServer.enabled`) is
-  # not needed; note that if the internal web server is enabled, the processing
-  # of the `/crossdomain.xml` URL is different than the processing of the other
-  # URLs.
-  # If set to `false`, no special processing for the `/crossdomain.xml` requests
-  # is performed.
-  # Note that if the internal web server is enabled, then the processing of the
-  # `/crossdomain.xml` URL is performed as for any other URL (i.e. a file named
-  # `crossdomain.xml` is looked for in the directory configured as the root for
-  # URL path mapping).
-  # Note that `/crossdomain.xml` is also used by the Silverlight runtime when
-  # `/clientaccesspolicy.xml` is not provided.
-  # @default -- false
-  enableFlexCrossdomain:
-
-  # -- Mandatory if `webServer.enableFlexCrossdomain` is set to `true`.
-  # Path of the file to be returned upon requests for the `/crossdomain.xml`
-  # URL. It is ignored when `webServer.enableFlexCrossdomain` is false.
-  # The file content should be encoded with the iso-8859-1 charset.
-  # The file path is relative to the conf directory.
-  flexCrossdomainPath:
-
   # -- Optional. Enables the processing of the `/clientaccesspolicy.xml` URL,
   # required by the Silverlight runtime in order to allow pages from a
   # different host to request data to Lightstreamer Broker host.
@@ -3376,8 +3295,7 @@ load:
   # based on the maximum concurrent buffer needs).
   # If `-1`, disables buffer reuse at all and causes all allocated buffers to be
   # released immediately.
-  # @default -- 200000000
-  maxCommonNioBufferAllocation:
+  maxCommonNioBufferAllocation: 200000000
 
   # -- (int) Optional. Number of distinct NIO selectors (each one with its own
   # thread) that will share the same operation. Different pools will be
@@ -3385,8 +3303,7 @@ load:
   # rise to a significant overall number of selectors.
   # Further selectors may be created because of the `load.selectorMaxLoad`
   # setting.
-  # @default -- the number of available total cores, as detected by the JVM
-  maxCommonPumpBufferAllocation:
+  maxCommonPumpBufferAllocation: 200000000
 
   # -- (int) Optional. Number of distinct NIO selectors (each one with its own
   # thread) that will share the same operation. Different pools will be
@@ -3403,16 +3320,14 @@ load:
   # will never be created.
   # The base number of selectors is determined by the `load.selectorPoolSize`
   # setting.
-  # @default -- 0
-  selectorMaxLoad:
+  selectorMaxLoad: 0
 
   # -- (int) Optional. Number of threads used to parallelize the implementation
   # of the internal timers.
   # This task does not involve blocking operations, but its computation may be
   # heavy under high update activity; hence, on multiprocessor machines,
   # allocating multiple threads may be beneficial.
-  # @default -- 1
-  timerPoolSize:
+  timerPoolSize: -1
 
   # -- (int) Optional. Size of the `EVENTS` internal thread pool, which is
   # devoted to dispatching the update events received from a Data Adapter to
@@ -3427,7 +3342,7 @@ load:
   # client sessions.
   # This task does not involve blocking operations; however, on multiprocessor
   # machines, allocating multiple threads may be beneficial.
-  # @default -- min(10, the number of total cores, as detected by the JVM)
+  # @default -- min(10, the number of total cores as detected by the JVM)
   snapshotPoolSize:
 
   # -- (int) Optional. Size of the `PUMP` internal thread pool, which is
@@ -3446,8 +3361,7 @@ load:
   # A steadily long queue on the `PUMP` pool may indicate CPU shortage due to a
   # huge streaming activity.
   # A negative value disables the check.
-  # @default -- -1
-  pumpPoolMaxQueue:
+  pumpPoolMaxQueue: -1
 
   # -- (int) Optional. Maximum number of threads allowed for the `SERVER`
   # internal pool, which is devoted to the management of the client requests.
@@ -3468,8 +3382,7 @@ load:
   # thread pool. They are defined in `adapters.xml`; see the templates provided
   # in the In-Process Adapter SDK for details.
   # A zero value means a potentially unlimited number of threads.
-  # @default -- 1000
-  serverPoolMaxSize:
+  serverPoolMaxSize: 1000
 
   # -- (int) Optional, but mandatory if `load.serverPoolMaxSize` is set to `0`.
   # Maximum number of idle threads allowed for the `SERVER` internal pool,
@@ -3633,7 +3546,7 @@ load:
   forceEarlyConversions:
 
 # -- Optional. Map of Adapter Set configurations.
-# Every key in the map defines a specific configuration of an Adapter Set
+# Every entry in the map defines a specific configuration of an Adapter Set
 # pluggable into the Lightstreamer Broker.
 adapters:
 
@@ -4568,6 +4481,7 @@ adapters:
           # `load`.serverPoolMaxFree settings.
           # Using a specific thread pool is advisable if the implementation
           # of any of the involved Adapter methods introduces delays.
+          # @default -- nil
           dataAdapterPool:
 
             # -- (int) Mandatory. Maximum number of threads allowed for the
@@ -4614,8 +4528,7 @@ adapters:
           # retrieve and restore the state of the previously connected instance,
           # this will be its own burden; for how to identify the involved Server
           # instance, see `remoteParams.prefix`.
-          # @default -- false
-          enableRobustAdapter:
+          enableRobustAdapter: false
 
           # -- Optional. Requests the creation of a specific `DATA` thread pool,
           # expressly devoted to the submission to the Remote Data Adapter of
@@ -5045,7 +4958,7 @@ connectors:
       # -- At least one must be provided. Connection configuration.
       # The Kafka Connector allows the configuration of different independent
       # connections to different Kafka broker/clusters.
-      # Every key in the map defines a connection configuration.
+      # Every entry in the map defines a connection configuration.
       # Since the Kafka Connector manages the physical connection to Kafka by
       # wrapping an internal Kafka Consumer, several configuration settings are
       # identical to those required by the usual Kafka Consumer configuration.
@@ -5133,10 +5046,10 @@ connectors:
             # @default -- PLAIN
             mechanism:
 
-            # -- Mandatory if `mechanism` is set to `PLAIN`, `SCRAM-SHA-256`,
-            # `SCRAM-SHA-512`. The name of the secret containing the
-            # credentials. The secret must contain the keys `user` and
-            # `password`.
+            # -- (string) Mandatory if `mechanism` is set to `PLAIN`, 
+            # `SCRAM-SHA-256`, `SCRAM-SHA-512`. The name of the secret 
+            # containing the credentials. The secret must contain the keys 
+            # `user` and `password`.
             credentialsSecretRef:
 
             # -- Mandatory if `mechanism` is set to `GSSAPI`. The GSSAPI
@@ -5144,8 +5057,7 @@ connectors:
             gssapi:
 
               # -- Optional. Enables the use of a keytab.
-              # @default -- false
-              enableKeytab:
+              enableKeytab: false
 
               # -- Mandatory if `enableKeytab` is set to `true`. The configmap
               # name and key where the keytab file is stored
@@ -5154,8 +5066,7 @@ connectors:
                 # key: my-keytab
 
               # -- Optional. Enables the storage of the principal key.
-              # @default -- false
-              enableStoreKey:
+              enableStoreKey: false
 
               # -- (string) Mandatory. The name of the Kerberos service.
               kerberosServiceName:
@@ -5165,8 +5076,7 @@ connectors:
               principal:
 
               # -- Optional. Enables the use of a ticket cache.
-              # @default -- false
-              enableTicketCache:
+              enableTicketCache: false
 
         # -- Optional. Record evaluation settings.
         # If not specified, all settings at their defaults will be used.
@@ -5433,11 +5343,10 @@ connectors:
         basicAuthentication:
 
           # -- Optional. Enables Basic HTTP authentication.
-          # @default -- false
-          enabled:
+          enabled: false
 
-          # -- Mandatory if `enabled` is set to `true`. The name of the secret
-          # containing the credentials.
+          # -- (string) Mandatory if `enabled` is set to `true`. The name of the 
+          # secret containing the credentials.
           # The secret must contain the keys `user` and `password`.
           credentialsSecretRef:
 
