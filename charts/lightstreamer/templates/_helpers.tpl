@@ -177,13 +177,10 @@ server exists and no duplicated names or ports are used.
       {{- fail (printf "servers.%s.name \"%s\" already used" $serverKey $serverName ) }}
     {{- end }}
     {{- $usedNames = append $usedNames $serverName }}
-
     {{- /* Check the server ports */ -}}
     {{- $serverPort := required (printf "servers.%s.port must be set" $serverKey) $server.port }}
-    {{ kindOf $server.port }}
     {{- if has $serverPort $usedPorts }}
-      {{ .Values.servers }}
-      {{- fail (printf "servers.%s.port \"%d\" already used" $serverKey $serverPort ) }}
+      {{- fail (printf "servers.%s.port \"%d\" already used" $serverKey (int $serverPort) ) }}
     {{- end }}
     {{- $usedPorts = append $usedPorts $serverPort }}
   {{- end }}
