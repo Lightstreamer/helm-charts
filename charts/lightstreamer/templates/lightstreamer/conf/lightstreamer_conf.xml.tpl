@@ -231,15 +231,12 @@ Render the Lightstreamer configuration file.
              and the determined address may be a local one.
              If the whole block is omitted, this just means that all settings
              are at their defaults. -->
-  {{- $clientIdentificationDefaults := dict }}
-  {{- $_:= set $clientIdentificationDefaults "enablePrivate" true }}
-  {{- $_:= set $clientIdentificationDefaults "enableProxyProtocol" false }}
-  {{- $_:= set $clientIdentificationDefaults "proxyProtocolTimeoutMillis" 1000 }}
-  {{- $_:= set $clientIdentificationDefaults "skipLocalForwards" 0 }}
-  {{- $_:= set $clientIdentificationDefaults "enableForwardsLogging" false }}
-  {{- $clientIdentification := merge .clientIdentification $clientIdentificationDefaults }}
-  {{- with $clientIdentification }}
-        <client_identification private={{ .enablePrivate | ternary "Y" "N" | quote }}>
+  
+  {{- $enablePrivate := (not (eq (.clientIdentification).enabledPrivate false)) }}
+  {{- $enableProxyProtocol := (.clientIdentification).enableProxyProtocol | default false }}
+  {{- $proxyProtocolTimeoutMillis := not (quote (.clientIdentification).proxyProtocolTimeoutMillis | empty) | ternary (.clientIdentification).proxyProtocolTimeoutMillis 1000 }}
+  {{- $enableForwardsLogging := (.clientIdentification).enableForwardsLogging | default false }}
+        <client_identification private={{ $enablePrivate | ternary "Y" "N" | quote }}>
 
             <!-- Optional. If Y, instructs the Server that the connection endpoint
                  is a reverse proxy or load balancer that sends client address
@@ -257,7 +254,7 @@ Render the Lightstreamer configuration file.
                  On the other hand, if Y, both proxy protocol version 1 and 2 are
                  handled; only information for normal TCP connections is considered.
                  Default: N. -->
-            <proxy_protocol_enabled>{{ .enableProxyProtocol | ternary "Y" "N" }}</proxy_protocol_enabled>
+            <proxy_protocol_enabled>{{ $enableProxyProtocol | ternary "Y" "N" }}</proxy_protocol_enabled>
 
             <!-- Optional. Timeout applied while reading for information through
                  the proxy protocol, when enabled. Note that a reverse proxy or
@@ -269,7 +266,7 @@ Render the Lightstreamer configuration file.
                  thread pool and this setting protects that pool against such
                  unlikely events.
                  Default: 1000. -->
-            <proxy_protocol_timeout_millis>{{ int .proxyProtocolTimeoutMillis }}</proxy_protocol_timeout_millis>
+            <proxy_protocol_timeout_millis>{{ $proxyProtocolTimeoutMillis }}</proxy_protocol_timeout_millis>
 
             <!-- Optional, but nonzero values forbidden if "proxy_protocol_enabled"
                  is Y. Number of entries in the X-Forwarded-For header that are
@@ -300,18 +297,14 @@ Render the Lightstreamer configuration file.
                  than the determined "real" remote address are included.
                  These entries are expected to be written by client-side proxies.
                  Default: N. -->
-            <log_forwards>{{ .enableForwardsLogging | ternary "Y" "N" }}</log_forwards>
+            <log_forwards>{{ $enableForwardsLogging | ternary "Y" "N" }}</log_forwards>
         </client_identification>
-  {{- end }}
 
   {{- if $enableHttps }}
-    {{- /*$sslConfigDefaults = dict "allowCipherSuites" [] "removeCipherSuites" [] "enableTlsRenegotiation" true "allowProtocols" [] "removeProtocols" [] "enableClientHintsForTlsSessionResumption" false "enableClientAuth" false "enableMandatoryClientAuth" false */ -}}
-    {{- /* $sslConfig := merge .sslConfig | $sslConfigDefaults */ -}}
-    {{- $sslConfig := .sslConfig }}
-    {{ if $sslConfig | empty }} 
+    {{ if .sslConfig | empty }} 
       {{ printf "servers.%s.sslConfig must be set" $serverKey | fail }}
     {{ end }}
-    {{- with $sslConfig }}
+    {{- with .sslConfig }}
         <!-- Optional. If defined, overrides the default JVM's Security Provider
              configured in the java.security file of the JDK installation. This allows
              the use of different Security Providers dedicated to single listening ports.
@@ -419,18 +412,12 @@ Render the Lightstreamer configuration file.
              Note, however, that the underlying Security Provider may ignore
              this setting. This is the case, for instance, of the Conscrypt provider.
              Default: N. -->
-      {{- with .enforceServerCipherSuitePreference }}
-        {{- if .order }}
-          {{- if not (mustHas .order (list "JVM" "config")) }}
-            {{- fail printf ("server.%s.sslConfig.enforceServerCipherSuitePreference must be one of: \"JVM\", \"config\"" $serverKey) }}
-          {{- end }}
-        {{- end }}
-        <enforce_server_cipher_suite_preference{{ if not (quote .order | empty) }} order={{ .order | quote }}{{ end }}>{{ .enabled | default false | ternary "Y" "N" }}</enforce_server_cipher_suite_preference>
-      {{- else }}
-        <!--
-        <enforce_server_cipher_suite_preference order="JVM">Y</enforce_server_cipher_suite_preference>
-        -->
+      {{- $order := (.enforceServerCipherSuitePreference).order | default "JVM" }}
+      {{- $enabled := not (eq (.enforceServerCipherSuitePreference).enabled false) }}
+      {{- if not (mustHas $order (list "JVM" "config")) }}
+        {{- fail printf ("server.%s.sslConfig.enforceServerCipherSuitePreference must be one of: \"JVM\", \"config\"" $serverKey) }}
       {{- end }}
+        <enforce_server_cipher_suite_preference order={{ $order | quote }}>{{ $enabled | ternary "Y" "N" }}</enforce_server_cipher_suite_preference>
 
         <!-- Optional. If Y, causes any client-initiated TLS renegotiation request
              to be refused by closing the connection. This policy may be evaluated
