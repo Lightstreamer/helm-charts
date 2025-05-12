@@ -1677,8 +1677,7 @@ Render the Lightstreamer configuration file.
   PUSH SESSION CONFIGURATION
   ==========================
 -->
-
-{{- with .Values.pushSession }}
+{{- with required "pushSession must be set" .Values.pushSession }}
     <!-- Optional and cumulative. If used, defines one or multiple alternative
          url paths for all requests related to the streaming services, which
          will be composed by the specified prefix followed by /lightstreamer.
