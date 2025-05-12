@@ -170,7 +170,7 @@ server exists and no duplicated names or ports are used.
   {{- if not $server }}
     {{ printf "servers.%s must be set" $serverKey | fail }}
   {{- end }}
-  {{- /* Set the enabled flag to true if not set */ -}}
+  {{- /* Set the enabled flag to default true value if not set */ -}}
   {{- $_ := set $server "enabled" (not (eq $server.enabled false)) }}
   {{- if $server.enabled }}
     {{- /* Check the server names */ -}}
