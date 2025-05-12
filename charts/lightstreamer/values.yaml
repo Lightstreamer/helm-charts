@@ -166,7 +166,7 @@ deployment:
       # -- Optional. Enables the readiness probe.
       enabled: false
 
-      # -- Mandatory if `enabled` is set to `true` and `readiness.default` is 
+      # -- Mandatory if `enabled` is set to `true` and `readiness.default` is
       # not specified. Readiness probe configuration based on the default
       # Lightstreamer health check.
       healthCheck:
@@ -183,7 +183,7 @@ deployment:
         timeoutSeconds:
         successThreshold:
 
-      # -- Mandatory if `enabled` is set to `true` and `readiness.healthCheck` 
+      # -- Mandatory if `enabled` is set to `true` and `readiness.healthCheck`
       # is not specified. Default startup probe configuration to be used if no
       # `probes.readiness.healthCheck` is specified.
       # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
@@ -215,7 +215,7 @@ deployment:
         timeoutSeconds:
         terminationGracePeriodSeconds:
 
-      # -- Mandatory if `enabled` is set to `true` and `startup.healthCheck` is 
+      # -- Mandatory if `enabled` is set to `true` and `startup.healthCheck` is
       # not specified. Default startup probe configuration to be used if no
       # `probes.startup.healthCheck` is specified.
       # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
@@ -322,7 +322,7 @@ service:
       # the service port.
       name: default-service
 
-  # -- The load balancer implementation when the `type` is set to 
+  # -- The load balancer implementation when the `type` is set to
   # `LoadBalancer`.
   # See https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-class.
   loadBalancerClass:
@@ -471,12 +471,12 @@ license:
 
       # -- Mandatory if `enableRestrictedFeaturesSet` is set to `true`. Set of
       # features to enable for the ENTERPRISE edition
-      # The `DEMO`, `EVALUATION`, and `STARTUP` license types by default allow 
-      # all the optional features. For the other license types, the allowed 
+      # The `DEMO`, `EVALUATION`, and `STARTUP` license types by default allow
+      # all the optional features. For the other license types, the allowed
       # optional features are determined by the specific license in use.
       # You cannot turn on features that are not allowed by the license in use
-      # (the server would not start in such case). But you can turn off any 
-      # feature that is allowed by the license in use. 
+      # (the server would not start in such case). But you can turn off any
+      # feature that is allowed by the license in use.
       # To know more, open the Welcome Page or the Monitoring Dashboard (Edition
       # tab) of the running Lightstreamer Server.
       features:
@@ -575,6 +575,7 @@ license:
     # The proxies are all checked and the first acceptable one is used.
     # If any SOCKS proxy in `socksProxies` is configured too, it is checked in
     # parallel with the defined HTTP proxies.
+    # @default -- []
     httpProxies:
 
       - # -- (string) Optional, but empty values are skipped. Host name or IP
@@ -589,8 +590,8 @@ license:
         # Possible values: `http`, `https`.
         scheme:
 
-        # -- (string) Mandatory if proxy authentication is required. The name of 
-        # the secret containing the credentials. The secret must contain the 
+        # -- (string) Mandatory if proxy authentication is required. The name of
+        # the secret containing the credentials. The secret must contain the
         # keys `user` and `password`.
         credentialsSecretRef:
 
@@ -598,6 +599,7 @@ license:
     # The proxies are all checked and the first acceptable one is used.
     # If any HTTP proxy is configured in `httpProxies` too, it is checked in
     # parallel with the defined SOCKS proxies.
+    # @default -- []
     socksProxies:
 
       - # -- (string) Optional, but empty values are skipped. Host name or IP
@@ -612,8 +614,8 @@ license:
         # Possible values: `SOCKS4`, `SOCKS4a`, `SOCKS5`.
         version:
 
-        # -- (string) Mandatory if proxy authentication is required. The name of 
-        # the secret containing the credentials. The secret must contain the 
+        # -- (string) Mandatory if proxy authentication is required. The name of
+        # the secret containing the credentials. The secret must contain the
         # keys `user` and `password`.
         credentialsSecretRef:
 
@@ -646,7 +648,7 @@ license:
     networkInterface:
 
 # -- Mandatory. Map of HTTP/S server socket configurations.
-# Every entry in the map defines a specific listening socket configuration, 
+# Every entry in the map defines a specific listening socket configuration,
 # which can then be referenced through the whole configuration.
 # Defining multiple listening socket allows the coexistence of private and
 # public ports. This allows the use of multiple address for accessing the Server
@@ -654,7 +656,7 @@ license:
 # In particular this is the case when the Server is behind load balancer and
 # the `cluster.controlLinkAddress` setting is leveraged to ensure that all
 # requests issued by the same client are dispatched to the same Server instance.
-# At least one enabled server socket configuration must be provided. 
+# At least one enabled server socket configuration must be provided.
 servers:
 
   # -- The default HTTP server socket configuration.
@@ -797,7 +799,7 @@ servers:
       # information through the Proxy Protocol. The received address and port
       # will be used as the real client address and port.
       # In particular, they will appear in all log lines for this client (but
-      # for the `logging.loggers.lightstreamerLogger.subLoggers.connections` 
+      # for the `logging.loggers.lightstreamerLogger.subLoggers.connections`
       # logger).
       # On the other hand, the reported protocol will always refer to the
       # actual connection.
@@ -819,8 +821,8 @@ servers:
       # For this reason, the read is performed directly in the `ACCEPT` thread
       # pool and this setting protects that pool against such unlikely events.
       proxyProtocolTimeoutMillis: 1000
-      
-      # -- (int) Optional, but nonzero values forbidden if 
+
+      # -- (int) Optional, but nonzero values forbidden if
       # `enableProxyProtocol` is set to `true`. Number of entries in the
       # `X-Forwarded-For` header that are expected to be supplied on each HTTP
       # request (including Websocket handshake) by the intermediate nodes (e.g.
@@ -866,16 +868,16 @@ servers:
       # -- Mandatory. The reference to a keystore configuration (defined in
       # `keystores`). The access to the included certificates is subject to the
       # following constraints:
-      # - Only the first certificated found in the keystore ca be sent to the 
+      # - Only the first certificated found in the keystore ca be sent to the
       # client.
-      # - The password for the keystore and the password of the included 
+      # - The password for the keystore and the password of the included
       # certificate should be the same.
       # - The support of keystore contents may depend on the Security Provider
       # in use; for instance, keystores with dual RSA/ECC certificates are not
       # fully supported by the Conscrypt provider.
-      # See the `keystores.myKeystore` settings for general details on keystore
-      # configuration.
-      keystoreRef:
+      # See the `keystores.myServerKeystore` settings for general details on 
+      # keystore configuration.
+      keystoreRef: myServerKeystore
 
       # -- Optional, but forbidden if `removeCipherSuites` is used.
       # Specifies all the cipher suites allowed for the TLS/SSL interaction,
@@ -883,8 +885,8 @@ servers:
       # "supported" cipher suites of the underlying Security Provider.
       # The default set of the "supported" cipher suites is logged at startup
       # by the `logging.loggers.lightstreamerLogger.subLoggers.io.ssl` logger at
-      # `DEBUG` level. If not used, the `removeCipherSuites` setting is 
-      # considered; hence, if `removeCipherSuites` is also not used, all cipher 
+      # `DEBUG` level. If not used, the `removeCipherSuites` setting is
+      # considered; hence, if `removeCipherSuites` is also not used, all cipher
       # suites enabled by the Security Provider will be available.
       # The order in which the cipher suites are specified can be enforced as
       # the server-side preference order (see
@@ -904,8 +906,8 @@ servers:
       # Note that the selection is operated on the default set of the cipher
       # suites "enabled" by the Security Provider, not on the wider set of the
       # "supported" cipher suites. The default set of the "enabled" cipher
-      # suites is logged at startup by the 
-      # `logging.loggers.lightstreamerLogger.subLoggers.io.ssl` logger at 
+      # suites is logged at startup by the
+      # `logging.loggers.lightstreamerLogger.subLoggers.io.ssl` logger at
       # `DEBUG` level.
       removeCipherSuites: []
         # - TLS_RSA_
@@ -964,8 +966,8 @@ servers:
       # Note that the selection is operated on the default set of the protocols
       # "enabled" by the Security Provider, not on the wider set of the
       # "supported" protocols. The default set of the "enabled" protocols is
-      # logged at startup by the 
-      # `logging.loggers.lightstreamerLogger.subLoggers.io.ssl` logger at 
+      # logged at startup by the
+      # `logging.loggers.lightstreamerLogger.subLoggers.io.ssl` logger at
       # `DEBUG` level.
       removeProtocols: []
         # - SSL
@@ -988,8 +990,8 @@ servers:
       # underlying Security Provider, based on its own configuration.
       enableStatelessTlsSessionResumption:
 
-      # -- (int) Optional. Size of the cache used by the TLS implementation to 
-      # handle TLS session resumptions when stateful resumption is configured 
+      # -- (int) Optional. Size of the cache used by the TLS implementation to
+      # handle TLS session resumptions when stateful resumption is configured
       # (see `enableStatelessTlsSessionResumption`).
       # A value of `0` means no size limit.
       # Note, however, that the underlying Security Provider may ignore this
@@ -997,11 +999,11 @@ servers:
       # If not specified, the cache size is decided by the underlying Security
       # Provider. For the default SunJSSE, it is `20480` TLS sessions, unless
       # configured through the `javax.net.ssl.sessionCacheSize` JVM property.
-      # If not specified, decided by the underlying Security Provider's 
+      # If not specified, decided by the underlying Security Provider's
       # configuration.
       tlsSessionCacheSize:
 
-      # -- (int) Optional. Maximum time in which a TLS session is kept available 
+      # -- (int) Optional. Maximum time in which a TLS session is kept available
       # to the client for resumption. This holds for both stateless and stateful
       # TLS resumption (see `enableStatelessTlsSessionResumption`).
       # In the latter case, the session also has to be kept in a cache.
@@ -1048,9 +1050,9 @@ servers:
       # It can be used to supply client certificates that should be accepted,
       # in addition to those with a valid certificate chain, for instance while
       # testing with self-signed certificates.
-      # See `keystoreRef` and `keystores.myKeystore` for further details  about
-      # keystore configuration.
-      # Note that the further constraints reported there with regard to 
+      # See `keystoreRef` and `keystores.myServerKeystore` for further details
+      # about keystore configuration.
+      # Note that the further constraints reported there with regard to
       # accessing the certificates in a JKS keystore don't hold in this case,
       # where the latter is used as a truststore.
       # Moreover, the handling of keystore replacement doesn't apply here.
@@ -1061,15 +1063,17 @@ servers:
 # configuration.
 keystores:
 
-  # -- Example of Keystore definition used by HTTPS server socket configurations 
+  # -- Example of Keystore definition used by HTTPS server socket configurations
   # and other settings that require a keystore.
   # The default values used here reference the JKS keystore file
-  # `mykeystore`, which is provided out of the box (and stored in the
-  # `mykeystore-secret` secret, along with the password stored in the
-  # `mykeystore-keypass-secret` secret), and obviously contains an invalid
-  # certificate. In order to use it for your experiments, remember to add a
-  # security exception to your browser.
-  myKeystore:
+  # `myserver.keystore`, which is provided out of the box (and stored in the
+  # `myserver-keystore-secret` secret, along with the password stored in the
+  # `myserver-keystore-keypass-secret` secret), and obviously contains an 
+  # invalid certificate. In order to use it for your experiments, remember to 
+  # add a security exception to your browser.
+  # This example can be used as a template to define your own keystore
+  # configurations.
+  myServerKeystore:
 
     # -- (string) Optional. The keystore type.
     # The currently supported types are:
@@ -1084,26 +1088,26 @@ keystores:
     # -- Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key
     # where the keystore file is stored.
     keystoreFileSecretRef:
-      name: mykeystore-secret
-      key: mykeystore
+      name: myserver-keystore-secret
+      key: myserver.keystore
 
     # -- Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key
     # where keystore password is stored.
     keystorePasswordSecretRef:
-      name: mykeystore-keypass-secret
-      key: mykeystore.keypass
+      name: myserver-keystore-keypass-secret
+      key: myserver-keystore.keypass
 
     # -- Optional. Secret name and key where the password of the private key
     # in the keystore is stored.
     keyPasswordSecretRef:
-      name:
-      key:
+      # name:
+      # key:
 
 # -- Mandatory. Logging configuration for the Lightstreamer Broker.
 logging:
 
   # -- Mandatory. Map of appenders configuration. Every entry in the map
-  # defines a specific appender configuration. 
+  # defines a specific appender configuration.
   # Every logger must refer to one or more appenders defined here.
   appenders:
 
@@ -1446,20 +1450,20 @@ logging:
       level: INFO
 
     # Log from third-party libraries used internally by the Server.
-    # All the log produced by these libraries is routed, by keeping the category 
-    # names, to the JDK's `java.util.logging` system first, then routed to 
+    # All the log produced by these libraries is routed, by keeping the category
+    # names, to the JDK's `java.util.logging` system first, then routed to
     # Logback.
     # Hence, this log can be consumed by defining the loggers below.
-    # 
-    # If any Adapter should log through the java.util.logging support on the 
+    #
+    # If any Adapter should log through the java.util.logging support on the
     # same categories, (either directly, or by using the same JDK services, or
-    # through some third-party library), this log will be shared with the Server 
+    # through some third-party library), this log will be shared with the Server
     # log.
-    # 
-    # If, for any reason, it is required that the configuration of the 
-    # java.util.logging system for some of these categories is done elsewhere, 
-    # then the mappings done here can be disabled at startup, by just removing 
-    # or commenting out the corresponding loggers below, or by setting them to 
+    #
+    # If, for any reason, it is required that the configuration of the
+    # java.util.logging system for some of these categories is done elsewhere,
+    # then the mappings done here can be disabled at startup, by just removing
+    # or commenting out the corresponding loggers below, or by setting them to
     # level OFF.
     # Disabling the mapping may also prevent inefficiency for heavy loggers.
 
@@ -1589,7 +1593,7 @@ management:
 
   # -- Optional. Enables the inclusion of the user password in the log of the
   # client requests for new sessions, performed by the
-  # `logging.loggers.lightstreamerLogger.subLoggers.requests` logger at `INFO` 
+  # `logging.loggers.lightstreamerLogger.subLoggers.requests` logger at `INFO`
   # level.
   # If set to `true`, the whole request is logged.
   # If set to `false`, the request is logged, but for the value of the
@@ -1664,12 +1668,12 @@ management:
 
       # -- Mandatory. TCP port configuration.
       port:
-        
+
         # -- Mandatory. TCP port on which the RMI Connector will be available
         # This is the port that has to be specified in the client access url.
         value: 8888
 
-        # -- Optional. If set to `true`, enables TLS/SSL communication. Note 
+        # -- Optional. If set to `true`, enables TLS/SSL communication. Note
         # that this case is not managed by some JMX clients, like jconsole.
         enableSsl: false
 
@@ -1733,15 +1737,15 @@ management:
       # @default -- accept connections on any/all local addresses
       listeningInterface:
 
-      # -- Mandatory if `rmiConnector.enableSsl` or 
+      # -- Mandatory if `rmiConnector.enableSsl` or
       # `rmiConnector.dataPort.enableSsl` is set to `true`. TLS/SSL settings for
       # the RMI Connector.
       sslConfig:
-      
+
         # -- Mandatory, The reference to a keystore configuration (defined in
         # `keystores`) to be used in case TLS/SSL is enabled for part or all of
         # the communication.
-        # See the `keystores.myKeystore` for general details on keystore
+        # See the `keystores.myServerKeystore` for general details on keystore
         # configuration. These include the runtime replacement of the keystore,
         # with one difference: if the load of the new keystore fails, the RMI
         # Connector may be left unreachable.
@@ -1756,16 +1760,16 @@ management:
           # - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
 
         # -- Optional, but forbidden if `allowCipherSuites` is used.
-        # Pattern to be matched against the names of the enabled cipher suites 
-        # in order to remove the matching ones from the enabled cipher suites 
-        # set to be used in case TLS/SSL is enabled for part or all the 
+        # Pattern to be matched against the names of the enabled cipher suites
+        # in order to remove the matching ones from the enabled cipher suites
+        # set to be used in case TLS/SSL is enabled for part or all the
         # communication.
         # See notes for `servers.{}.sslConfig.removeCipherSuites`.
         removeCipherSuites: []
           # - TLS_RSA_
 
         # -- Optional. Determines which side should express the preference when
-        # multiple cipher suites are in common between server and client (in 
+        # multiple cipher suites are in common between server and client (in
         # case TLS/SSL is enabled for part or all the communication).
         # See notes for
         # `servers.{}.sslConfig.enforceServerCipherSuitePreference`.
@@ -1774,7 +1778,7 @@ management:
           # order: "JVM"
 
         # -- Optional, but forbidden if `removeProtocols` is used.
-        # Specifies one or more protocols allowed for the TLS/SSL interaction, 
+        # Specifies one or more protocols allowed for the TLS/SSL interaction,
         # in case TLS/SSL is enabled for part or all the communication.
         # See notes for `servers.{}.sslConfig.allowProtocols`.
         allowProtocols: []
@@ -1871,10 +1875,10 @@ management:
     enableStoppingServiceCheck:
 
   # -- Optional. Configuration of the Monitoring Dashboard.
-  # The Monitoring Dashboard is a webapp whose pages are embedded in the 
-  # Lightstreamer Broker and supplied by the internal web server. The main page 
-  # has several tabs, which provide basic monitoring statistics in graphical 
-  # form; the last one shows the newly introduced JMX Tree, which enables JMX 
+  # The Monitoring Dashboard is a webapp whose pages are embedded in the
+  # Lightstreamer Broker and supplied by the internal web server. The main page
+  # has several tabs, which provide basic monitoring statistics in graphical
+  # form; the last one shows the newly introduced JMX Tree, which enables JMX
   # data viewing and management from the browser.
   # The Dashboard leans on an internal Adapter Set, named "MONITOR".
   # The following settings configure access restrictions to Monitoring Dashboard
@@ -1928,7 +1932,7 @@ management:
     # @default -- []
     credentials:
 
-      - # -- (string) Mandatory. The reference to the secret containing the 
+      - # -- (string) Mandatory. The reference to the secret containing the
         # credentials of the user enabled to access the Monitoring Dashboard.
         # The secret must contain the keys `user` and `password`.
         secretRef:
@@ -1944,7 +1948,7 @@ management:
     # through all the defined server sockets.
     # If set to `false`, requests to the Monitoring Dashboard can be issued only
     # through the server sockets specified in the `availableOnServers` setting,
-    # if any; otherwise, requests to the dashboard url will get a 
+    # if any; otherwise, requests to the dashboard url will get a
     # "page not found" error. If no `availableOnServers` setting is defined,
     # requests to the Monitoring Dashboard will not be possible in any way.
     # Disabling the Dashboard on a server socket causes the internal "MONITOR"
@@ -2022,7 +2026,7 @@ globalSocket:
 
   # -- (int) Optional. Longest inactivity time accepted while waiting for a
   # slow operation during a TLS/SSL handshake. This involves both reads, writes,
-  # and encryption tasks managed by the `TLS-SSL HANDSHAKE` or 
+  # and encryption tasks managed by the `TLS-SSL HANDSHAKE` or
   # `TLS-SSL AUTHENTICATION` internal pools. If this value is exceeded, the
   # socket is closed.
   # The time actually considered may be approximated and may be a few seconds
@@ -2041,7 +2045,7 @@ globalSocket:
   requestLimit: 50000
 
   # -- Optional. Longest operation time accepted while writing data on a socket.
-  # If this value is exceeded, the socket is closed. Note that this may also 
+  # If this value is exceeded, the socket is closed. Note that this may also
   # affect very slow clients.
   # The time actually considered may be approximated and may be a few seconds
   # higher, for internal performance reasons.
@@ -2061,7 +2065,7 @@ globalSocket:
     # -- (int) Optional. Maximum time the Server is allowed to wait for the
     # client "close" frame, in case the Server is sending its own close" frame
     # first, in order to try to close the connection in a clean way.
-    # If not specified, no timeout is set and the global 
+    # If not specified, no timeout is set and the global
     # `globalSocket.readTimeoutMillis` value applies.
     maxClosingWaitMillis:
 
@@ -2111,9 +2115,9 @@ security:
   # @default -- false
   enableCookiesForwarding: false
 
-  # -- Optional. Configuration of the origins to be allowed by the browsers to 
-  # consume responses to requests sent to this Server through cross-origin XHR 
-  # or through WebSockets; in fact, when a requesting page asks for streaming 
+  # -- Optional. Configuration of the origins to be allowed by the browsers to
+  # consume responses to requests sent to this Server through cross-origin XHR
+  # or through WebSockets; in fact, when a requesting page asks for streaming
   # data in this way, the browser should specify the page origin through the
   # `Origin` HTTP header, to give the Server a chance to accept or refuse the
   # request. This is the most common way streaming data is requested by the Web
@@ -2134,7 +2138,7 @@ security:
   # are always authorized.
   crossDomainPolicy:
 
-    # -- (int) Optional. In case an HTTP OPTIONS request is sent to authorize 
+    # -- (int) Optional. In case an HTTP OPTIONS request is sent to authorize
     # future requests, the server allows the client to store the result of such
     # OPTIONS for the specified number of seconds. Thus a previously authorized
     # client may not give up its authorization, even if the related origin is
@@ -2142,7 +2146,7 @@ security:
     # authorization expires.
     optionsMaxAgeSeconds: 3600
 
-    # -- (string) Optional. In case the client wishes to send custom headers to 
+    # -- (string) Optional. In case the client wishes to send custom headers to
     # the server, it requires approval from the server itself. This setting
     # permits to specify a comma separated list of extra headers to be allowed
     # in the client requests. Note that a space is expected after each comma
@@ -2150,7 +2154,7 @@ security:
     acceptExtraHeaders: ""
 
     # -- Optional. Specify if the server should authorize the client to send its
-    # credentials on a CORS request. This setting does not impact the 
+    # credentials on a CORS request. This setting does not impact the
     # user/password sent over the Lightstreamer protocol, but, if set to
     # `false`, might prevent, or force a fallback connection, on clients
     # sending CORS requests carrying cookies, http-basic-authentication or
@@ -2158,20 +2162,20 @@ security:
     acceptCredentials: true
 
     # -- Optional. Map of Origins allowed to consume responses to cross-origin
-    # requests. Every entry in the map is a rule against which the Origin header 
-    # will be checked. 
+    # requests. Every entry in the map is a rule against which the Origin header
+    # will be checked.
     allowAccessFrom:
 
       # -- Optional. Defines a rule against which Origin headers will be
       # checked.
       fromEveryWhere:
 
-        # -- (string) Mandatory. A valid scheme name (usually http or https) 
-        # or `*`; the latter matches both http and https scheme, but it doesn't 
+        # -- (string) Mandatory. A valid scheme name (usually http or https)
+        # or `*`; the latter matches both http and https scheme, but it doesn't
         # match other schemes.
         scheme: "*"
 
-        # -- (string) Mandatory. A valid host name, IPv4 or IPv6 representing, 
+        # -- (string) Mandatory. A valid host name, IPv4 or IPv6 representing,
         # an authorized Origin. Also a `*` is accepted with the meaning of
         # "any host or IP".
         # If a host name is specified it can be prefixed with a wildcard as long
@@ -2236,10 +2240,10 @@ security:
   # If set to `FULL`, the Server identifies itself as:
   # `Lightstreamer Server/X.Y.Z build BBBB (Lightstreamer Push Server -
   # www.lightstreamer.com) EEEEEE edition`.
-  # If set to `MINIMAL`, the Server identifies itself, depending on the 
-  # Edition: 
-  # - for Enterprise edition, as `Lightstreamer Server`; 
-  # - for Community edition, as `Lightstreamer Server (Lightstreamer Push Server 
+  # If set to `MINIMAL`, the Server identifies itself, depending on the
+  # Edition:
+  # - for Enterprise edition, as `Lightstreamer Server`;
+  # - for Community edition, as `Lightstreamer Server (Lightstreamer Push Server
   # - www.lightstreamer.com) COMMUNITY edition`.
   # @default -- FULL
   serverIdentificationPolicy:
@@ -2359,8 +2363,8 @@ pushSession:
   # that can be kept in the buffer, hence the consequent memory usage also
   # depends on the size of the values carried by the enqueued updates.
   # As lost updates for unfiltered subscriptions are logged on the
-  # `logging.loggers.lightstreamerLogger.subLoggers.pump` logger at `INFO` 
-  # level, if a low buffer size limit is set, it is advisable also setting this 
+  # `logging.loggers.lightstreamerLogger.subLoggers.pump` logger at `INFO`
+  # level, if a low buffer size limit is set, it is advisable also setting this
   # logger at `WARN` level.
   # Aggregate statistics on lost updates are also provided by the JMX interface
   # (if available) and by the Internal Monitor.
@@ -2703,7 +2707,7 @@ mpn:
       # -- Mandatory. JDBC URL.
       jdbcUrl: jdbc:hsqldb:hsql://localhost:9001
 
-      # -- (string) Mandatory. The name of the secret containing the 
+      # -- (string) Mandatory. The name of the secret containing the
       # credentials. The secret must contain the keys `user` and `password`.
       # The `hsql-hibernate-secret` secret is provided out of the box and
       # contains the default `SA` user with empty password.
@@ -2831,7 +2835,7 @@ mpn:
     maxSize: 10
 
     # -- (int) Optional. Specifies the maximum number of idle threads the pool
-    # may have. A `0` value means that the pool will not consume resources when 
+    # may have. A `0` value means that the pool will not consume resources when
     # idle.
     maxFree: 0
 
@@ -2852,7 +2856,7 @@ mpn:
     maxSize: 100
 
     # -- (int) Optional. Specifies the maximum number of idle threads the pool
-    # may have. A `0` value means that the pool will not consume resources when 
+    # may have. A `0` value means that the pool will not consume resources when
     # idle.
     maxFree: 0
 
@@ -2921,37 +2925,35 @@ mpn:
     # automatically as the load increases. If the expected load is very high,
     # increasing the pool's maximum size may be beneficial.
     # For apps with development service level, this parameter is ignored.
-    # @default -- 1
-    maxConcurrentConnections:
+    maxConcurrentConnections: 1
 
     # -- (int) Optional. Timeout for connecting to APNS services. In case of
     # slow outgoing connectivity, increasing the timeout may be beneficial.
-    # @default -- 30000
-    connectionTimeoutMillis:
+    connectionTimeoutMillis: 30000
 
-    # -- Optional. List of apps that should receive mobile push notifications.
+    # -- Optional. Map of apps that should receive mobile push notifications.
+    # Each entry in the map is an application configuration.
     apps:
 
       # -- An application configuration.
       myApp:
 
         # -- Optional. Enables the application configuration.
-        # @default -- false
-        enabled:
+        enabled: false
 
         # -- (string) Mandatory if `enabled` is set to `true`. The app ID,
         # which corresponds to the bundle ID of the app's binary. Note that for
         # web apps (i.e. targeting Safari push notification) the ID must begin
         # with `web`, e.g.: `web.com.mydomain.myapp`.
-
         id:
+
         # -- Mandatory if `enabled` is set to `true`. Specifies the intended
         # service level for the current app ID, must be one of: `test`,
         # `development`, `production`. If set to `test`, notification will be
         # logged only and no connection will be established with Apple's
-        # servers. The corresponding logger is 
-        # `logging.loggers.lightstreamerLogger.subLoggers.mpn.apple`, 
-        # notifications are logged at `INFO` level (see 
+        # servers. The corresponding logger is
+        # `logging.loggers.lightstreamerLogger.subLoggers.mpn.apple`,
+        # notifications are logged at `INFO` level (see
         # `logging.loggers.lightstreamerLogger.subLoggers.mpn.apple`).
         # If set to `development` or `production`, notifications will be sent
         # to, respectively, Apple's development or production servers.
@@ -2959,7 +2961,7 @@ mpn:
         # `development` service level should not be used, as there is no
         # corresponding `development` client environment that can receive
         # notifications. Use either `production` or `test`.
-        serviceLevel:
+        serviceLevel: test
 
         # -- Mandatory if `serviceLevel` is set to `development` or
         # `production`.
@@ -2978,7 +2980,7 @@ mpn:
           # key: push_package.zip
 
         # -- Optional. List of trigger expressions that will be accepted. Each
-        # item is a Java-compatible regular expression 
+        # item is a Java-compatible regular expression
         # (see java.util.regex.Pattern): triggers requested via client APIs
         # will be compared with each regular expression, and accepted only if
         # there is at least one match.
@@ -3044,15 +3046,15 @@ mpn:
     # @default -- the number of available total cores, as detected by the JVM
     messagingPoolSize:
 
-    # -- Optional. List of apps that should receive mobile push notifications.
+    # -- Optional. Map of apps that should receive mobile push notifications.
+    # Each entry in the map is an application configuration.
     apps:
 
       # -- An application configuration.
       myApp:
 
         # -- Optional. Enables the application configuration.
-        # @default -- false
-        enabled:
+        enabled: false
 
         # -- (string) Mandatory if `enabled` is set to `true`. The package name
         # of the app.
@@ -3063,14 +3065,14 @@ mpn:
         # `dry_run`,`production`.
         # If set to `test`, notification will be logged only and no connection
         # will be established with Google's servers.
-        # The corresponding logger is 
-        # `logging.loggers.lightstreamerLogger.subLoggers.mpn.google`, 
+        # The corresponding logger is
+        # `logging.loggers.lightstreamerLogger.subLoggers.mpn.google`,
         # notifications are logged at `INFO` level (see
         # `logging.loggers.lightstreamerLogger.subLoggers.mpn.google`).
         # If set to `dry_run` or `production`, notifications will be sent to
         # Google's servers. If set to `dry_run`, notifications will be accepted
         # by Google's servers but not delivered to the user's device.
-        serviceLevel:
+        serviceLevel: test
 
         # -- Mandatory if `serviceLevel` is set to `dry_run` or `production`.
         # The configmap name and the key where the JSON descriptor for the
@@ -3119,7 +3121,6 @@ webServer:
   # -- Optional. Enables the internal web server.
   # If set to `true`, the Server accepts requests for file resources.
   # If set to `false`, the Server ignores requests for file resources.
-  # @default -- false
   enabled: true
 
   # -- Optional. The configmap name and the key where an HTML page to be
@@ -3568,7 +3569,7 @@ adapters:
 
       # -- (string) The path to the Adapter Set resources in the image,
       # e.g.: `/lightstreamer/adapters/my-adapter-set`. At startup, the path
-      # will be me mounted at the designated Adapter Set folder under 
+      # will be me mounted at the designated Adapter Set folder under
       # the `/lightstreamer/deployed_adapters` directory in the container.
       fromPathInImage:
 
@@ -3603,6 +3604,7 @@ adapters:
     # Using a specific thread pool is advisable if the implementation of any of
     # the Adapter methods introduces delays and more specific thread pools are
     # not being used.
+    # @default -- nil
     adapterSetPool:
 
       # -- (int) Mandatory. Maximum number of threads allowed for the `SET`
@@ -3640,18 +3642,18 @@ adapters:
         adapterClass:
 
         # -- Optional, but mandatory if `classLoader` is set to `dedicated`.
-        # Specifies the directory where the Metadata Adapter's own `lib` and 
+        # Specifies the directory where the Metadata Adapter's own `lib` and
         # `classes` folders are located in the provisioning source.
         # The full path will be then available at
-        # `/lightstreamer/deployed_adapters/<adapter-set-folder>/<installDir>` 
+        # `/lightstreamer/deployed_adapters/<adapter-set-folder>/<installDir>`
         # in the container.
         # See `classLoader` for more details.
-        # @default -- . 
+        # @default -- .
         installDir:
 
-        # -- Optional. The reference to a configmap containing extra 
+        # -- Optional. The reference to a configmap containing extra
         # configuration files of the in-process Metadata Adapter. At startup,
-        # the files will be copied to the 
+        # the files will be copied to the
         # `/lightstreamer/deployed_adapters/<adapter-set-folder>/installDir`
         # directory in the container.
         configMapRef:
@@ -3684,8 +3686,7 @@ adapters:
         #
         # The determined ClassLoader is also set as the "context ClassLoader" in
         # all Adapter method invocations.
-        # @default -- common
-        classLoader:
+        classLoader: common
 
         # -- Optional. Configures the specific `AUTHENTICATION` thread pool,
         # expressly devoted to the calls of `notifyUser` against this Metadata
@@ -3718,25 +3719,21 @@ adapters:
 
           # -- (int) Optional. Maximum number of threads allowed for the
           # `AUTHENTICATION` thread pool.
-          # @default - 1
-          maxSize:
+          maxSize: 1
 
           # -- (int) Optional. Maximum number of idle threads allowed for the
           # `AUTHENTICATION` thread pool.
-          # @default - 1
-          maxFree:
+          maxFree: 1
 
           # -- (int) Optional. Maximum number pending requests to the Metadata
           # Adapter.
-          # @default - 1
-          maxPendingRequests:
+          maxPendingRequests: -1
 
           # -- (int) Optional. Maximum number of tasks allowed to be queued to
           # enter the `AUTHENTICATION` thread pool before undertaking
           # backpressure actions.
           # See `load.serverPoolMaxQueue`.
-          # @default -- -1
-          maxQueue:
+          maxQueue: -1
 
         # -- Optional. Configures the specific `MSG` thread pool, expressly
         # devoted to the calls of `notifyUserMessage`, which handle messages
@@ -3769,24 +3766,20 @@ adapters:
 
           # -- (int) Optional. Maximum number of threads allowed for the `MSG`
           # thread pool.
-          # @default - 1
-          maxSize:
+          maxSize: 1
 
           # -- (int) Optional. Maximum number of idle threads allowed for the
           # `MSG` thread pool.
-          # @default - 1
-          maxFree:
+          maxFree: 1
 
           # -- (int) Optional. Maximum number pending requests to the Metadata
           # Adapter.
-          # @default - 1
-          maxPendingRequests:
+          maxPendingRequests: -1
 
           # -- (int) Optional. Maximum number of tasks allowed to be queued to
           # enter the `MSG` thread pool before undertaking backpressure actions.
           # See `load.serverPoolMaxQueue`.
-          # @default -- -1
-          maxQueue:
+          maxQueue: -1
 
         # -- Optional. Requests the creation of a specific `MPN REQUESTS` thread
         # pool, devoted to the submission to the Remote Metadata Adapter of all
@@ -3806,12 +3799,10 @@ adapters:
 
           # -- (int) Mandatory. Maximum number of threads allowed for the
           # `MPN REQUESTS` thread pool.
-          # @default - 1
           maxSize:
 
           # -- (int) Mandatory. Maximum number of idle threads allowed for the
           # `MPN REQUESTS` thread pool.
-          # @default - 1
           maxFree:
 
         # -- Optional. If set to `true`, ensures that all Table (i.e.
@@ -3949,8 +3940,7 @@ adapters:
         # for Lightstreamer and all client requests performed in this condition
         # will fail with an `unexpected error` cause; this can be avoided only
         # for requests for new sessions (see `notifyUserDisconnectionCode`).
-        # @default -- false
-        enableRobustAdapter:
+        enableRobustAdapter: false
 
         # -- Optional. Configures the specific `AUTHENTICATION` thread pool,
         # expressly devoted to the calls of Notify User against the Remote
@@ -3982,25 +3972,21 @@ adapters:
 
           # -- (int) Optional. Maximum number of threads allowed for the
           # `AUTHENTICATION` thread pool.
-          # @default - 1
-          maxSize:
+          maxSize: 1
 
           # -- (int) Optional. Maximum number of idle threads allowed for the
           # `AUTHENTICATION` thread pool.
-          # @default - 1
-          maxFree:
+          maxFree: 1
 
           # -- (int) Optional. Maximum number pending requests to the Remote
           # Metadata Adapter.
-          # @default - 1
-          maxPendingRemoteRequests:
+          maxPendingRemoteRequests: -1
 
           # -- (int) Optional. Maximum number of tasks allowed to be queued to
           # enter the `AUTHENTICATION` thread pool before undertaking
           # backpressure actions.
           # See `load.serverPoolMaxQueue`.
-          # @default -- -1
-          maxQueue:
+          maxQueue: -1
 
         # -- Optional. Configures the specific `MSG` thread pool, expressly
         # devoted to the calls of Notify User Message, which handle messages
@@ -4032,24 +4018,20 @@ adapters:
 
           # -- (int) Optional. Maximum number of threads allowed for the `MSG`
           # thread pool.
-          # @default - 1
-          maxSize:
+          maxSize: 1
 
           # -- (int) Optional. Maximum number of idle threads allowed for the
           # `MSG` thread pool.
-          # @default - 1
-          maxFree:
+          maxFree: 1
 
           # -- (int) Optional. Maximum number pending requests to the Remote
           # Metadata Adapter.
-          # @default - 1
-          maxPendingRemoteRequests:
+          maxPendingRemoteRequests: -1
 
           # -- (int) Optional. Maximum number of tasks allowed to be queued to
           # enter the `MSG` thread pool before undertaking backpressure actions.
           # See `load.serverPoolMaxQueue`.
-          # @default -- -1
-          maxQueue:
+          maxQueue: -1
 
         # -- Optional. Requests the creation of a specific `MPN REQUESTS` thread
         # pool, devoted to the submission to the Remote Metadata Adapter of all
@@ -4069,12 +4051,10 @@ adapters:
 
           # -- (int) Mandatory. Maximum number of threads allowed for the
           # `MPN REQUESTS` thread pool.
-          # @default - 1
           maxSize:
 
           # -- (int) Mandatory. Maximum number of idle threads allowed for the
           # `MPN REQUESTS` thread pool.
-          # @default - 1
           maxFree:
 
         # -- Optional. If set to `true`, ensures that all Table (i.e.
@@ -4084,12 +4064,11 @@ adapters:
         # `false`, then concurrent invocations will be possible.
         # Note that the final invocation to Notify Session Close is always
         # guaranteed to occur after all the above notifications have terminated.
-        # @default -- false
-        enableTableNotificationsSequentialization:
+        enableTableNotificationsSequentialization: false
 
         # -- (int) Mandatory. The request/reply port to listen on. The
         # connection on this port will carry the requests/replies channels.
-        requestReplyPort:
+        requestReplyPort: 6663
 
         # -- (string) Optional. If set, inverts the normal connection
         # establishment behavior, by having the Proxy Adapter open a client
@@ -4123,12 +4102,11 @@ adapters:
         sslConfig:
 
           # -- Optional. Enables the encryption.
-          # @default -- false
-          enabled:
+          enabled: false
 
           # -- (string) Mandatory. The reference to a keystore configuration
           # (defined in `keystores`).
-          # See the `keystores.myKeystore` settings for general details on
+          # See the `keystores.myServerKeystore` settings for general details on
           # keystore configuration.
           keystoreRef:
 
@@ -4152,7 +4130,7 @@ adapters:
 
           # -- Mandatory if `enableMandatoryClientAuth` is set to `true`. The
           # reference to a keystore configuration (defined in `keystores`).
-          # See the `keystores.myKeystore` settings for general details on
+          # See the `keystores.myServerKeystore` settings for general details on
           # keystore configuration.
           truststoreRef:
 
@@ -4173,22 +4151,19 @@ adapters:
           # check.
           # Note that the user names will be used in log messages at `INFO`
           # level or above, whereas the passwords won't.
-          # @default -- false
-          enabled:
+          enabled: false
 
           # -- Optional, but ineffective if `enabled` is set to `false`. The
           # reference to the secrets containing the credentials of the users
           # allowed to connect.
           # Every secret must contains the keys `user` and `password`.
-          # @default -- []
-          credentialsSecrets:
+          credentialsSecrets: []
 
         # -- (int) Optional, but effective only if `remoteHost` is specified.
         # Delay to be enforced before retrying a connection attempt to the
         # Remote Server, to prevent a possible strict loop of unsuccessful
         # attempts.
-        # @default -- 10000
-        connectionRetryMillis:
+        connectionRetryMillis: 10000
 
         # -- (int) Optional, but effective only if `enableRobustAdapter` is set
         # to `true`. The timeout for initialization errors. After an
@@ -4199,20 +4174,18 @@ adapters:
         # attempt.
         # A negative value prevents further attempts, so that no remote server
         # will be available.
-        # @default -- -1
-        connectionRecoveryTimeoutMillis:
+        connectionRecoveryTimeoutMillis: -1
 
         # -- (int) Optional, but effective only if `enableRobustAdapter` is set
         # to `true`. The timeout for the first connection attempt. Upon
-        # the Proxy Adapter initialization at the Lightstreamer Broker startup, 
-        # if a remote server connection is not available, the Lightstreamer 
+        # the Proxy Adapter initialization at the Lightstreamer Broker startup,
+        # if a remote server connection is not available, the Lightstreamer
         # Broker startup can be delayed until this timeout expires.
         # A negative value stands for an unlimited timeout.
-        # Note that, when the Lightstreamer Broker startup completes, as long as 
+        # Note that, when the Lightstreamer Broker startup completes, as long as
         # a connection to a remote server is still missing, all client requests
         # will be refused.
-        # @default -- -1
-        firstConnectionTimeoutMillis:
+        firstConnectionTimeoutMillis: 10000
 
         # -- (string) Optional, but effective only if `enableRobustAdapter` is
         # set to `true`. The strategy to be adopted whenever a new remote
@@ -4253,8 +4226,7 @@ adapters:
         #    already omitted, unless requested by the remote server through the
         #    `wantsTablesNotification` method.
         #
-        # @default -- pessimistic
-        closeNotificationsRecovery:
+        closeNotificationsRecovery: unneeded
 
         # -- (string) Optional, but effective only if `enableRobustAdapter` is
         # set to `true`. The action to be performed when the authentication of
@@ -4343,8 +4315,7 @@ adapters:
         # for an unlimited timeout.
         # Timed out requests are considered as failed and later answers are
         # ignored.
-        # @default -- 10000
-        timeoutMillis:
+        timeoutMillis: 10000
 
         # -- Optional. If set to `false`, suppresses clearing of the cached
         # profile data for a user when no sessions for the user are active. This
@@ -4445,21 +4416,21 @@ adapters:
           adapterClass:
 
           # -- Optional, but mandatory if `classLoader` is set to `dedicated`.
-          # Specifies the directory where the Data Adapter's own `lib` and 
+          # Specifies the directory where the Data Adapter's own `lib` and
           # `classes` folders are located in the provisioning source.
           # The full path will be then available at
-          # `/lightstreamer/deployed_adapters/<adapter-set-folder>/<installDir>` 
+          # `/lightstreamer/deployed_adapters/<adapter-set-folder>/<installDir>`
           # in the container.
           # See `classLoader` for more details.
-          # @default -- . 
+          # @default -- .
           installDir:
 
-          # -- Optional. The reference to a configmap containing extra 
+          # -- Optional. The reference to a configmap containing extra
           # configuration files of the in-process Data Adapter. At startup,
           # the files will be copied to the
           # `/lightstreamer/deployed_adapters/<adapter-set-folder>/installDir`
           # directory in the container.
-          configMapRef:          
+          configMapRef:
 
           # -- Optional. See
           # `adapters.{}.metadataProvider.inProcessMetadataAdapter.classLoader`.
@@ -4560,7 +4531,7 @@ adapters:
 
           # -- (int) Mandatory. The request/reply port to listen on. The
           # connection on this port will carry the requests/replies channels.
-          requestReplyPort:
+          requestReplyPort: 6661
 
           # -- (string) Optional. If set, inverts the normal connection
           # establishment behavior, by having the Proxy Adapter open a client
@@ -4598,8 +4569,8 @@ adapters:
 
             # -- Mandatory. The reference to a keystore configuration (defined
             # in `keystores`).
-            # See the `keystores.myKeystore` settings for general details on
-            # keystore configuration.
+            # See the `keystores.myServerKeystore` settings for general details
+            # on keystore configuration.
             keystoreRef:
 
             # -- See `servers.{}.sslConfig.allowCipherSuites`.
@@ -4666,20 +4637,19 @@ adapters:
           # previous attempt.
           # A negative value prevents further attempts, so that no remote server
           # will be available.
-          # @default -- -1
-          connectionRecoveryTimeoutMillis:
+          connectionRecoveryTimeoutMillis: 10000
 
           # -- (int) Optional, but effective only if `enableRobustAdapter` is
           # set to `true`. The timeout for the first connection attempt. Upon
-          # the Proxy Adapter initialization at the Lightstreamer Broker 
+          # the Proxy Adapter initialization at the Lightstreamer Broker
           # startup, if remote server connection is not available, the
           # Lightstreamer Broker startup can be delayed until this timeout
           # expires.
           # A negative value stands for an unlimited timeout.
-          # Note that, when the Lightstreamer Broker startup completes, as long 
-          # as a connection to a remote server is still missing, all 
-          # subscription requests will get an empty snapshot; then, when the 
-          # connection is established, the data flow will be restored according 
+          # Note that, when the Lightstreamer Broker startup completes, as long
+          # as a connection to a remote server is still missing, all
+          # subscription requests will get an empty snapshot; then, when the
+          # connection is established, the data flow will be restored according
           # to the `eventsRecovery` setting.
           # @default -- 0
           firstConnectionTimeoutMillis:
@@ -4737,8 +4707,7 @@ adapters:
           #   issue.
           #
           # The configured strategy will be applied with all items.
-          # @default -- leave_hole
-          eventsRecovery:
+          eventsRecovery: use_snapshot
 
           # -- (string) Optional, but effective only if `enableRobustAdapter` is
           # set to `true`. Specifies an item name to be managed by the Proxy
@@ -4805,8 +4774,7 @@ adapters:
           # stands for an unlimited timeout.
           # Timed out requests are considered as failed and later answers are
           # ignored.
-          # @default -- 1000
-          timeoutMillis:
+          timeoutMillis: 10000
 
           # -- (string) Optional. Specifies a comma-separated list of hosts
           # allowed to connect to this proxy adapter in order to act as remote
@@ -4996,8 +4964,7 @@ connectors:
         sslConfig:
 
           # -- Optional. Enables the encryption.
-          # @default -- false
-          enabled: true
+          enabled: false
 
           # -- (string) Optional. The SSL protocol to be used. Possible values:
           # `TLSv1.2`, `TLSv1.3`.
@@ -5017,13 +4984,13 @@ connectors:
 
           # -- Optional. The reference to a keystore (defined in 'keystores')
           # used to validate the certificates provided by the Kafka brokers.
-          # See the `keystores.myKeyStore` settings for general
-          # details on keystore configuration for the Kafka Connector.
+          # See the `keystores.myServerKeystore` settings for general details on
+          # keystore configuration for the Kafka Connector.
           truststoreRef:
 
           # -- Optional. The reference to a keystore (defined in 'keystores')
           # used if mutual TLS is enabled on Kafka brokers.
-          # See the `keystores.myKeyStore` settings for general
+          # See the `keystores.myServerKeystore` settings for general
           # details on keystore configuration for the Kafka Connector.
           keystoreRef:
 
@@ -5046,9 +5013,9 @@ connectors:
             # @default -- PLAIN
             mechanism:
 
-            # -- (string) Mandatory if `mechanism` is set to `PLAIN`, 
-            # `SCRAM-SHA-256`, `SCRAM-SHA-512`. The name of the secret 
-            # containing the credentials. The secret must contain the keys 
+            # -- (string) Mandatory if `mechanism` is set to `PLAIN`,
+            # `SCRAM-SHA-256`, `SCRAM-SHA-512`. The name of the secret
+            # containing the credentials. The secret must contain the keys
             # `user` and `password`.
             credentialsSecretRef:
 
@@ -5345,7 +5312,7 @@ connectors:
           # -- Optional. Enables Basic HTTP authentication.
           enabled: false
 
-          # -- (string) Mandatory if `enabled` is set to `true`. The name of the 
+          # -- (string) Mandatory if `enabled` is set to `true`. The name of the
           # secret containing the credentials.
           # The secret must contain the keys `user` and `password`.
           credentialsSecretRef:
