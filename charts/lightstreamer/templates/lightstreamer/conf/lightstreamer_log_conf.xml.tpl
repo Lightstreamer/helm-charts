@@ -22,7 +22,7 @@ Render the Lightstreamer logging configuration file
 <!-- Do not remove this line. File tag: log_conf-APV-7.3.0. -->
 
 <configuration scan="true" scanPeriod="10 seconds">
-{{- with .Values.logging }}
+{{- with required "logging must be set" .Values.logging }}
 
   <!--
     A custom StatusListener used to log the internal status of Logback.
@@ -92,7 +92,7 @@ Render the Lightstreamer logging configuration file
   -->
 
   {{- /* DEFINITION OF APPENDERS */ -}}
-  {{- range $key, $val := required "logging.appenders must be set" .appenders }}
+  {{- range $key, $val := .appenders }}
     {{- $name := printf "%s%s" "LS" (title $key) }}
     {{- if not (has $val.type (list "DailyRollingFile" "Console")) }}
       {{- fail (printf "logging.appenders.%s.type must be one of: \"DailyRollingFile\", \"Console\"" $key) }}
