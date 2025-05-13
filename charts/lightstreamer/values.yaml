@@ -1139,7 +1139,7 @@ logging:
     # -- The console appender configuration.
     console:
       type: Console
-      pattern: "%d{\"yyyy-MM-dd HH:mm:ss,SSS\"}|%-5.5(%p%marker)|%-19.19c{19}|%m%n"
+      pattern: "%d{\"yyyy-MM-dd HH:mm:ss,SSS\"}|%-5.5(%p%marker)|%m%n"
 
   # -- Optional. Loggers configuration.
   loggers:
