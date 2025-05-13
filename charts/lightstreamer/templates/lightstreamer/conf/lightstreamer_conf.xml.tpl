@@ -1365,7 +1365,7 @@ Render the Lightstreamer configuration file.
               in other ways. The provided installation scripts also close
               the Server without resorting to the "stop" script.
          Default: N. -->
-    <ensure_stopping_service>{{ .jmx.enableStoppingServiceCheck | default false | ternary "Y" "N" }}</ensure_stopping_service>
+    <ensure_stopping_service>{{ .enableStoppingServiceCheck | default false | ternary "Y" "N" }}</ensure_stopping_service>
 
     <!-- Optional. Configuration of the Monitoring Dashboard.
          The dashboard is a webapp whose pages are embedded in Lightstreamer
@@ -1393,7 +1393,10 @@ Render the Lightstreamer configuration file.
          Data Adapter instance embedded in a custom Adapter Set is only managed
          by the custom Metadata Adapter included. -->
     <dashboard>
-  {{- with .dashboard }}
+  {{- with required "management.dashboard must be set" .dashboard }}
+    {{- $dashboardEnabled := not (eq .enabled false) }}
+    {{- if $dashboardEnabled }}
+
         <!-- Optional. Enabling of the requests for the JMX Tree page, which is
              part of the Monitoring Dashboard.
              This page, whose implementation is based on the "jminix" library,
@@ -1407,13 +1410,9 @@ Render the Lightstreamer configuration file.
                   dashboard tab will just show a "disabled page" notification.
              Default: N. -->
 
-    {{- if (quote .enableJmxTree | empty) }}
-        <!--
-        <jmxtree_enabled>N</jmxtree_enabled>
-        -->
-    {{ else }}
-        <jmxtree_enabled>{{ .enableJmxTree | ternary "Y" "N" }}</jmxtree_enabled>
-    {{ end }}
+      {{- $enableJmxTree := not (eq .enableJmxTree false) }}
+        <jmxtree_enabled>{{ $enableJmxTree | ternary "Y" "N" }}</jmxtree_enabled>
+
         <!-- Optional. Enabling of the access to the Monitoring Dashboard
              pages without credentials.
              Can be one of the following:
@@ -1425,13 +1424,8 @@ Render the Lightstreamer configuration file.
                   If no "user" elements are defined, the Monitoring Dashboard
                   will not be accessible in any way.
              Default: N. -->
-    {{- if (quote .enablePublicAccess | empty) }}
-        <!--
-        <public>Y</public>
-         -->
-    {{- else }}
-        <public>{{ .enablePublicAccess | ternary "Y" "N" }}</public>
-    {{- end }}
+      {{- $enablePublicAccess := not (eq .enablePublicAccess false) }}
+        <public>{{ $enablePublicAccess | ternary "Y" "N" }}</public>
 
         <!-- Optional and cumulative (but ineffective if "public" is set to "Y").
              Credentials of the users enabled to access the Monitoring Dashboard.
@@ -1439,20 +1433,20 @@ Render the Lightstreamer configuration file.
              The optional "jmxtree_visible" attribute (whose default is "Y")
              allows for restriction of the access to the JMX Tree on a user basis;
              it is only effective if <jmxtree_enabled> is set to "Y". -->
-    {{- if and .credentials (not .enablePublicAccess) }}
-      {{- range $credential := .credentials }}
-        {{- if $credential.secretRef}}
-        <user id="$env.LS_DASHBOARD_CREDENTIAL_{{ $credential.secretRef | upper | replace "-" "_" }}_USER" password="$env.LS_DASHBOARD_CREDENTIAL_{{ .secretRef | upper | replace "-" "_"}}_PASSWORD"{{- if not (quote .enableJmxTreeVisibility | empty) }} jmxtree_visible={{ $credential.enableJmxTreeVisibility | ternary "Y" "N" | quote }}{{- end }} />
+      {{- if and .credentials (not .enablePublicAccess) }}
+        {{- range $credential := .credentials }}
+          {{- $secretRef := required "management.dashboard.credentials[].secretRef must be set" ($credential).secretRef }}
+          {{- $enableJmxTreeVisibility := not (eq $credential.enableJmxTreeVisibility false) }}
+        <user id="$env.LS_DASHBOARD_CREDENTIAL_{{ $credential.secretRef | upper | replace "-" "_" }}_USER" password="$env.LS_DASHBOARD_CREDENTIAL_{{ .secretRef | upper | replace "-" "_"}}_PASSWORD" jmxtree_visible={{ $enableJmxTreeVisibility | ternary "Y" "N" | quote }} />
         {{- end }}
-      {{- end }}
-    {{- else}}
+      {{- else}}
         <!--
         <user id="put_your_dashboard_user_here" password="put_your_dashboard_password_here" />
         -->
         <!--
         <user id="other_user" password="other_password" jmxtree_visible="N" />
         -->
-    {{- end }}
+      {{- end }}
 
         <!-- Optional. Enabling of the access to the Monitoring Dashboard pages
              through all server sockets. Can be one of the following:
@@ -1468,13 +1462,13 @@ Render the Lightstreamer configuration file.
              Adapter Set to also become unavailable from that socket. This does not
              affect in any way the special "MONITOR" Data Adapter.
              Default: N. -->
-    {{- if (quote .enableAvailabilityOnAllServers | empty) }}
+      {{- if (quote .enableAvailabilityOnAllServers | empty) }}
         <!--
         <available_on_all_servers>N</available_on_all_servers>
         -->
-    {{ else }}
+      {{ else }}
         <available_on_all_servers>{{ .enableAvailabilityOnAllServers | ternary "Y" "N" }}</available_on_all_servers>
-    {{ end }}
+      {{ end }}
         <!-- Optional and cumulative (but ineffective if "available_on_all_servers"
              is set to "Y").
              Specific server sockets for which requests to the Monitoring Dashboard
@@ -1483,30 +1477,30 @@ Render the Lightstreamer configuration file.
              The optional "jmxtree_visible" attribute (whose default is "Y")
              allows for restriction of the access to the JMX Tree on a TCP port
              basis; it is only effective if <jmxtree_enabled> is set to "Y". -->
-    {{- if not .enableAvailabilityOnAllServers }}
-      {{- range $index, $value := .availableOnServers }}
-        {{- include "lightstreamer.configuration.servers.validateServerRef" (list $ (printf "management.dashboard.availableOnServers[%d].serverRef" (int $index)) $value.serverRef) }}
+      {{- if not .enableAvailabilityOnAllServers }}
+        {{- range $index, $value := .availableOnServers }}
+          {{- include "lightstreamer.configuration.servers.validateServerRef" (list $ (printf "management.dashboard.availableOnServers[%d].serverRef" (int $index)) $value.serverRef) }}
         <available_on_server name={{ (get $.Values.servers $value.serverRef).name | quote }}{{- if not (quote $value.enableJmxTreeVisibility | empty) }} jmxtree_visible={{ $value.enableJmxTreeVisibility | ternary "Y" "N" | quote }}{{- end }} />
-      {{- else }}
+        {{- else }}
         <!--
         <available_on_server name="Lightstreamer HTTPS Server" />
         -->
         <!--
         <available_on_server name="Lightstreamer HTTP Server" jmxtree_visible="N" />
         -->
+        {{- end }}
       {{- end }}
-    {{- end }}
 
         <!-- Optional. URL path to map the Monitoring Dashboard pages to.
              An absolute path must be specified.
              Default: /dashboard -->
-    {{- if .urlPath }}
+      {{- if .urlPath }}
         <dashboard_url_path>{{ .urlPath }}</dashboard_url_path>
-    {{- else }}
+      {{- else }}
         <!--
         <dashboard_url_path>/my_dashboard</dashboard_url_path>
         -->
-    {{- end }}
+      {{- end }}
 
         <!-- Optional. Enabling of the reverse lookup on Client IPs and inclusion
              of the Client hostnames while monitoring client activity.
@@ -1520,14 +1514,15 @@ Render the Lightstreamer configuration file.
              - N: no reverse lookup is performed and the Client hostname is not
                   included on Client activity monitoring.
              Default: N. -->
-    {{- if (quote .enableHostnameLookup | empty) }}
+      {{- if (quote .enableHostnameLookup | empty) }}
         <!--
         <enable_hostname_lookup>Y</enable_hostname_lookup>
         -->
-    {{- else }}
+      {{- else }}
         <enable_hostname_lookup>{{ .enableHostnameLookup | ternary "Y" "N" }}</enable_hostname_lookup>
-    {{- end }}
-  {{ end }}
+      {{- end }}
+    {{- end }} 
+  {{ end }} {{/* dashboard */}}
     </dashboard>
 
     <!-- Optional. Configuration of the "/lightstreamer/healthcheck" request
