@@ -1878,7 +1878,7 @@ management:
   # resorting to the "stop" script.
   enableStoppingServiceCheck: false
 
-  # -- Optional. Configuration of the Monitoring Dashboard.
+  # -- Mandatory. Configuration of the Monitoring Dashboard.
   # The Monitoring Dashboard is a webapp whose pages are embedded in the
   # Lightstreamer Broker and supplied by the internal web server. The main page
   # has several tabs, which provide basic monitoring statistics in graphical
@@ -1904,6 +1904,9 @@ management:
   # managed by the custom Metadata Adapter included.
   dashboard:
 
+    # -- Optional. Enables the Monitoring Dashboard.
+    enabled: true
+
     # -- Optional. Enables the requests for the JMX Tree page, which is part of
     # the Monitoring Dashboard.
     # This page, whose implementation is based on the "jminix" library, enables
@@ -1925,8 +1928,7 @@ management:
     # the browser may prompt the user to enter credentials. If no `credentials`
     # settings are defined, the Monitoring Dashboard will not be accessible in
     # any way.
-    # @default -- false
-    enablePublicAccess:
+    enablePublicAccess: true
 
     # -- Optional, but ineffective if `enablePublicAccess` is set to `true`.
     # Credentials of users authorized to access the Monitoring Dashboard.
