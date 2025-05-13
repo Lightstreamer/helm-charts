@@ -1865,18 +1865,18 @@ management:
     # instance, this applies to `CurrentSessionList` in the `ResourceMBean`.
     enableLongListProperties: true
 
-    # -- Optional. Startup check that the conditions for the correct working of
-    # the provided "stop" script are met (see `jmx`).
-    # If set to `true`, the startup will wait if the JMX RMI Connector is not
-    # configured or the `ServerMBean` cannot be started. This also enforces the
-    # check of the JMX port reachability (see `rmiConnector.enablePortTest`
-    # and the remarks on the test effectiveness); if the test fails, the
-    # startup will also fail.
-    # If set to `false`, no check is made that the "stop" script should work.
-    # This may not be a problem, because the Server can be stopped in other
-    # ways. The provided installation scripts also close the Server without
-    # resorting to the "stop" script.
-    enableStoppingServiceCheck: false
+  # -- Optional. Startup check that the conditions for the correct working of
+  # the provided "stop" script are met (see `jmx`).
+  # If set to `true`, the startup will wait if the JMX RMI Connector is not
+  # configured or the `ServerMBean` cannot be started. This also enforces the
+  # check of the JMX port reachability (see `rmiConnector.enablePortTest`
+  # and the remarks on the test effectiveness); if the test fails, the
+  # startup will also fail.
+  # If set to `false`, no check is made that the "stop" script should work.
+  # This may not be a problem, because the Server can be stopped in other
+  # ways. The provided installation scripts also close the Server without
+  # resorting to the "stop" script.
+  enableStoppingServiceCheck: false
 
   # -- Optional. Configuration of the Monitoring Dashboard.
   # The Monitoring Dashboard is a webapp whose pages are embedded in the
