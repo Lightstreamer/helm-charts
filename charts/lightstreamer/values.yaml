@@ -1589,7 +1589,8 @@ logging:
 # -- Mandatory. Logging and management configuration.
 management:
 
-  # -- Optional. A set of Clients whose activity is not to be logged.
+  # -- Optional. List of IP addresses of Clients whose activity is not to be 
+  # logged.
   noLoggingIpAddresses: []
     # - "20.0.0.10"
 
@@ -1642,8 +1643,7 @@ management:
   # and License Type.
   collectorMillis: 2000
 
-  # -- Mandatory (if you wish to use the provided "stop" script).
-  # JMX preferences and external access configuration.
+  # -- Optional. JMX preferences and external access configuration.
   # Full JMX features is an optional feature, available depending on Edition
   # and License Type; if not available, only the Server shutdown operation via
   # JMX is allowed. To know what features are enabled by your license, please
@@ -1651,9 +1651,9 @@ management:
   # `/dashboard`).
   jmx:
 
-    # -- Mandatory (if you wish to use the provided "stop" script).
-    # Enables the standard RMI Connector.
-    # The remote MBean server will be accessible through this url:
+    # -- Optional. Enables the standard RMI Connector, which is used by the 
+    # provided "stop" script to stop the Server. The remote MBean server will be 
+    # accessible through this url:
     # `service:jmx:rmi:///jndi/rmi://<host>:<port>/lsjmx`.
     # If full JMX features is not available, only the `Server` MBean is supplied
     # and only the Server shutdown operation is available.
@@ -1668,7 +1668,10 @@ management:
     # default, available at `/dashboard`).
     rmiConnector:
 
-      # -- Mandatory. TCP port configuration.
+      # -- Optional. Enables the RMI Connector.
+      enabled: true
+
+      # -- Mandatory if `enabled` is set to `true`. TCP port configuration.
       port:
 
         # -- Mandatory. TCP port on which the RMI Connector will be available
@@ -1711,8 +1714,7 @@ management:
       # the same environment of the Server, the script should work.
       # If set to `false`, disables the test, but this setting can be
       # overridden by setting `jmx.enableStoppingServiceCheck` to `true`.
-      # @default -- true
-      enablePortTest:
+      enablePortTest: false
 
       # -- (int) Optional. Timeout to be posed on the connection attempts
       # through the RMI Connector. If `0`, no timeout will be posed.
@@ -1801,7 +1803,7 @@ management:
       # If set to `true`, requests to the RMI Connector are always allowed.
       # If set to `false`, requests to the RMI Connector are subject to user
       # authentication; the allowed users are set in the "user" elements.
-      enablePublicAccess: true
+      enablePublicAccess: false
 
       # -- Optional, but ineffective if `enablePublicAccess` is set to
       # `true`. The reference to the secrets containing the credentials of the
@@ -1843,8 +1845,7 @@ management:
     # the Server when many sessions are active and many of them are
     # continuously created and closed. For this reason, the support is disabled
     # by default.
-    # @default -- inactive
-    sessionMbeanAvailability:
+    sessionMbeanAvailability: inactive
 
     # -- Optional. Enables all properties provided by the various MBeans. This
     # flag could potentially cause MBeans to return extremely long lists. In
@@ -2054,7 +2055,7 @@ globalSocket:
   # If not specified or `0`, the check is suppressed.
   writeTimeoutMillis: 120000
 
-  # -- Optional. WebSocket support configuration.
+  # -- Mandatory. WebSocket support configuration.
   webSocket:
 
     # -- (int) Optional. Maximum time the Server is allowed to wait before
@@ -2077,7 +2078,7 @@ globalSocket:
     # The Server may enforce a lower limit for this setting.
     maxOutboundFrameSize: 16384
 
-# -- Optional. Security configuration.
+# -- Mandatory. Security configuration.
 security:
 
   # -- Optional. Disabling of the protection for JavaScript pages, supplied by
@@ -2114,7 +2115,6 @@ security:
   # attacks.
   # If set to `true`, cookies are forwarded to the Metadata Adapter.
   # If set to `false`, cookies are hidden from the Metadata Adapter.
-  # @default -- false
   enableCookiesForwarding: false
 
   # -- Optional. Configuration of the origins to be allowed by the browsers to
@@ -2139,6 +2139,9 @@ security:
   # origin checks; so they don't send the Origin header and thus their requests
   # are always authorized.
   crossDomainPolicy:
+
+    # -- Optional. Enables this cross-domain policy configuration.
+    enabled: true
 
     # -- (int) Optional. In case an HTTP OPTIONS request is sent to authorize
     # future requests, the server allows the client to store the result of such
@@ -2247,8 +2250,7 @@ security:
   # - for Enterprise edition, as `Lightstreamer Server`;
   # - for Community edition, as `Lightstreamer Server (Lightstreamer Push Server
   # - www.lightstreamer.com) COMMUNITY edition`.
-  # @default -- FULL
-  serverIdentificationPolicy:
+  serverIdentificationPolicy: FULL
 
 # -- Mandatory. Push session configuration.
 pushSession:
@@ -2668,8 +2670,7 @@ mpn:
   # notifications will be rejected.
   # Note that, by enabling the module, the handling of the special URL
   # configured by `appleWebServicePath` is also enabled.
-  # @default -- false
-  enabled:
+  enabled: false
 
   # -- (string) Optional. Specifies the root path of the web service URL to be
   # invoked by the client application on a Safari browser to enable Web Push

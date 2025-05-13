@@ -232,10 +232,11 @@ Render the Lightstreamer configuration file.
              If the whole block is omitted, this just means that all settings
              are at their defaults. -->
   
-  {{- $enablePrivate := (not (eq (.clientIdentification).enabledPrivate false)) }}
+  {{- $enablePrivate := (not (eq (.clientIdentification).enablePrivate false)) }}
   {{- $enableProxyProtocol := (.clientIdentification).enableProxyProtocol | default false }}
-  {{- $proxyProtocolTimeoutMillis := not (quote (.clientIdentification).proxyProtocolTimeoutMillis | empty) | ternary (.clientIdentification).proxyProtocolTimeoutMillis 1000 }}
+  {{- $proxyProtocolTimeoutMillis := int (not (quote (.clientIdentification).proxyProtocolTimeoutMillis | empty) | ternary (.clientIdentification).proxyProtocolTimeoutMillis 1000) }}
   {{- $enableForwardsLogging := (.clientIdentification).enableForwardsLogging | default false }}
+  {{- $skipLocalForwards := int (.clientIdentification).skipLocalForwards }}
         <client_identification private={{ $enablePrivate | ternary "Y" "N" | quote }}>
 
             <!-- Optional. If Y, instructs the Server that the connection endpoint
@@ -288,7 +289,7 @@ Render the Lightstreamer configuration file.
                  reported, any port and protocol associated will still refer to the
                  actual connection.
                  Default: 0. -->
-            <skip_local_forwards>{{ int .skipLocalForwards }}</skip_local_forwards>
+            <skip_local_forwards>{{ $skipLocalForwards }}</skip_local_forwards>
 
             <!-- Optional. If Y, causes the list of entries of the X-Forwarded-For
                  header, when available, to be added to log lines related to the
@@ -648,13 +649,7 @@ Render the Lightstreamer configuration file.
          body part separately.
          For a request over a WebSocket, the limit applies to the request
          message payload. -->
-  {{- if not (quote .requestLimit | empty) }}
-    <request_limit>{{ int .requestLimit }}</request_limit>
-  {{- else }}
-    <!--
-    <request_limit>5000</request_limit>
-    -->
-  {{- end }}
+    <request_limit>{{ int .requestLimit | default 5000 }}</request_limit>
 
     <!-- Optional. Longest operation time accepted while writing data on a
          socket. If this value is exceeded, the socket is closed. Note that
@@ -662,13 +657,7 @@ Render the Lightstreamer configuration file.
          The time actually considered may be approximated and may be a few
          seconds higher, for internal performance reasons.
          If missing or 0, the check is suppressed. -->
-  {{- if not (quote .writeTimeoutMillis | empty) }}
-    <write_timeout_millis>{{ int .writeTimeoutMillis }}</write_timeout_millis>
-  {{- else }}
-    <!--
-    <write_timeout_millis>120000</write_timeout_millis>
-    -->
-  {{- end }}
+    <write_timeout_millis>{{ int .writeTimeoutMillis | default 120000 }}</write_timeout_millis>
 
     <!-- Optional. Enabling the use of the full HTTP 1.1 syntax for all the
          responses, upon HTTP 1.1 requests. Can be one of the following:
@@ -699,7 +688,7 @@ Render the Lightstreamer configuration file.
              Server refusal, will resort to HTTP streaming without any
              additional delay to session establishment.
              Default: Y. -->
-  {{- with .webSocket }}
+  {{- with required "webSocket must be set" .webSocket }}
         <!--
         <enabled>N</enabled>
         -->
@@ -756,7 +745,7 @@ Render the Lightstreamer configuration file.
   ======================
 -->
 
-{{- with .Values.security }}
+{{- with required "security must be set" .Values.security }}
     <!-- Optional. Disabling of the protection for JavaScript pages, supplied
          by the Server, that carry user data.
          JavaScript pages can be supplied upon requests by old versions of the
@@ -786,13 +775,7 @@ Render the Lightstreamer configuration file.
               Adapter implementation, but can be enforced by setting
               <forward_cookies> to N.
          Default: Y. -->
-  {{- if (quote .enableProtectedJs | empty) }}
-    <!--
-    <use_protected_js>N</use_protected_js>
-    -->
-  {{- else }}
-    <use_protected_js>{{ .enableProtectedJs | ternary "Y" "N" }}</use_protected_js>
-  {{- end }}
+    <use_protected_js>{{ .enableProtectedJs | default false | ternary "Y" "N" }}</use_protected_js>
 
     <!-- Optional. Use this setting to enable the forwarding of the cookies to
          the Metadata Adapter through the httpHeaders argument of the "notifyUser"
@@ -804,14 +787,10 @@ Render the Lightstreamer configuration file.
          - Y: cookies are forwarded to the Metadata Adapter.
          - N: cookies are hidden from the Metadata Adapter.
          Default: N. -->
-  {{- if (quote .enableCookiesForwarding | empty) }}
-    <!--
-    <forward_cookies>Y</forward_cookies>
-    -->
-  {{- else}}
-    <forward_cookies>{{ .enableCookiesForwarding | ternary "Y" "N" }}</forward_cookies>
-  {{- end }}
-
+    <forward_cookies>{{ .enableCookiesForwarding | default false | ternary "Y" "N" }}</forward_cookies>
+  {{ with required "security.crossDomainPolicy must be set" .crossDomainPolicy -}}
+    {{- $crossDomainPolicyEnabled := not (eq .enabled false ) }}
+    {{- if $crossDomainPolicyEnabled }} 
     <!-- Optional. List of origins to be allowed by the browsers to consume
          responses to requests sent to this Server through cross-origin XHR or
          through WebSockets; in fact, when a requesting page asks for streaming
@@ -850,9 +829,10 @@ Render the Lightstreamer configuration file.
          attribute of this element (default is 3600). Thus a previously authorized
          client may not give up its authorization, even if the related origin is
          removed from the list and the server is restarted, until its authorization
-         expires. -->
-  {{- with .crossDomainPolicy }}
-    <cross_domain_policy{{- if .optionsMaxAgeSeconds }} options_max_age={{ .optionsMaxAgeSeconds | quote }}{{- end }}{{- if .acceptExtraHeaders }} accept_extra_headers={{ .acceptExtraHeaders | default "" | quote }}{{- end }}{{- if not (quote .acceptCredentials | empty )}} accept_credentials={{ .acceptCredentials | ternary "Y" "N" | quote }}{{- end }}>
+         expires. -->    
+     {{- $acceptCredentials := not (eq .acceptCredentials false) }}
+     {{- $acceptExtraHeaders := .acceptExtraHeaders | default "" }}
+    <cross_domain_policy{{- if .optionsMaxAgeSeconds }} options_max_age={{ .optionsMaxAgeSeconds | quote }}{{- end }} accept_extra_headers={{ $acceptExtraHeaders | quote }} accept_credentials={{ $acceptCredentials | ternary "Y" "N" | quote }}>
 
         <!-- Optional and cumulative. Declaration of an Origin allowed
              to consume responses to cross-origin requests.
@@ -871,11 +851,14 @@ Render the Lightstreamer configuration file.
              Note that by setting three *'s any origin will be accepted, without
              performing any check. In particular, any scheme will be accepted,
              not just http and https. -->
-    {{- if .allowAccessFrom }}
-      {{- range $value := .allowAccessFrom }}
-        <allow_access_from scheme={{ required "scheme must be set" $value.scheme | quote }} host={{ required "host must be set" $value.host | quote }} port={{ required "port must be set" $value.port | quote }} />
-      {{- end }}
-    {{- else }}
+      {{- range $key, $value := .allowAccessFrom }}
+        {{- if $value }}
+        {{- $scheme := required (printf "security.crossDomainPolicy.allowsAccess.%s.scheme must be set" $key) $value.scheme }} 
+        {{- $host := required (printf "security.crossDomainPolicy.allowsAccess.%s.host must be set" $key) $value.host }} 
+        {{- $port := required (printf "security.crossDomainPolicy.allowsAccess.%s.port must be set" $key) $value.port }} 
+        <allow_access_from scheme={{ $scheme | quote }} host={{ $host | quote }} port={{ $port | quote }} />
+        {{- end }}
+      {{- else }}
         <!--
         <allow_access_from scheme="https" host="www.my-domain.com" port="443" />
         -->
@@ -891,9 +874,10 @@ Render the Lightstreamer configuration file.
         <!--
         <allow_access_from scheme="*" host="2001:0db8:aaaa::dddd:eeee:0" port="*" />
         -->
-     {{- end }}
+      {{- end }}
 
     </cross_domain_policy>
+    {{- end }}
   {{- end }}
 
     <!-- Optional and cumulative. Origin domain or subdomain to be allowed
@@ -917,10 +901,8 @@ Render the Lightstreamer configuration file.
          If the requesting page doesn't specify any subdomain for the response,
          the request will always be allowed; in this case, a same-domain access
          to the Server data page will be performed by the browser. -->
-  {{- if .allowedDomains }}
-    {{- range .allowedDomains }}
-    <allowed_domain>{{ . }}</allowed_domain>
-    {{- end }}
+  {{- range .allowedDomains }}
+    <allowed_domain>{{ required "security.allowedDomains[] must be set" . }}</allowed_domain>
   {{- else }}
     <!--
     <allowed_domain>my-domain.com</allowed_domain>
@@ -944,8 +926,9 @@ Render the Lightstreamer configuration file.
                  Lightstreamer Server (Lightstreamer Push Server - www.lightstreamer.com) COMMUNITY edition
          Default: FULL. -->
   {{- if .serverIdentificationPolicy }}
-    {{- if not (mustHas .serverIdentificationPolicy (list "FULL" "MINIMAL")) }}
-      {{- fail "security.serverIdentificationPolicy must be set with a valid value" }}
+    {{- $admittedIdentificationPolicies := list "FULL" "MINIMAL" }}
+    {{- if not (has .serverIdentificationPolicy $admittedIdentificationPolicies) }}
+      {{- printf "security.serverIdentificationPolicy must be one of: %s" $admittedIdentificationPolicies | fail }}
     {{- end }}
     <server_tokens>{{ .serverIdentificationPolicy }}</server_tokens>
   {{- else }}
@@ -1009,13 +992,7 @@ Render the Lightstreamer configuration file.
          takes more than this time.
          A 0 value disables the check.
          Default: 1000. -->
-  {{- if (quote .unexpectedWaitThresholdMillis | empty) }}
-    <!--
-    <unexpected_wait_threshold_millis>1000</unexpected_wait_threshold_millis>
-    -->
-  {{- else }}
     <unexpected_wait_threshold_millis>{{ int .unexpectedWaitThresholdMillis }}</unexpected_wait_threshold_millis>
-  {{- end }}
 
     <!-- Optional. Threshold time for long asynchronous processing alerts.
          Data and Metadata Adapter calls, even when performed through
@@ -1028,13 +1005,8 @@ Render the Lightstreamer configuration file.
          threshold on a pool, a warning is logged. Note that warning messages
          can be issued repeatedly. A 0 value disables the check.
          Default: 10000. -->
-  {{- if (quote .asyncProcessingThresholdMillis | empty) }}
-    <!--
-    <async_processing_threshold_millis>1000</async_processing_threshold_millis>
-    -->
-  {{- else }}
+  {{- $asyncProcessingThresholdMillis := .asyncProcessingThresholdMillis | default 60000 }}
     <async_processing_threshold_millis>{{ int .asyncProcessingThresholdMillis }}</async_processing_threshold_millis>
-  {{- end }}
 
     <!-- Optional. Threshold wait time for a task enqueued for running on any
          of the internal thread pools.
@@ -1068,7 +1040,7 @@ Render the Lightstreamer configuration file.
          tab of the Monitoring Dashboard (by default,
          available at /dashboard). -->
     <jmx>
-  {{- with .jmx }}
+  {{- with required "management.jmx must be set" .jmx }}
 
         <!-- Mandatory (if you wish to use the provided "stop" script).
              Enables the standard RMI Connector.
@@ -1088,7 +1060,9 @@ Render the Lightstreamer configuration file.
              license, please see the License tab of the Monitoring Dashboard
              (by default, available at /dashboard). -->
         <rmi_connector>
-    {{- with .rmiConnector }}
+    {{- with required "management.jmx.rmiConnector must be set" .rmiConnector }}
+      {{- $rmiConnectorEnabled := not (eq .enabled false) }}
+      {{- if $rmiConnectorEnabled}}
 
             <!-- Mandatory for this block. TCP port on which the RMI Connector will
                  be available. This is the port that has to be specified in the
@@ -1096,8 +1070,10 @@ Render the Lightstreamer configuration file.
                  The optional "ssl" attribute, when set to "Y", enables TLS/SSL
                  communication. Note that this case is not managed by some JMX
                  clients, like jconsole. -->
-       {{- $port := required "management.jmx.rmiConnector.port must be set" .port }}
-            <port{{- if not (quote $port.enableSsl | empty) }} ssl={{ $port.enableSsl | ternary "Y" "N" | quote }}{{- end }}>{{ int (required "management.jmx.rmiConnector.port.value must be set" $port.value) }}</port>
+        {{- $rmiPort := required "management.jmx.rmiConnector.port must be set" .port }}
+        {{- $rmiPortValue := required "management.jmx.rmiConnector.port.value must be set" $rmiPort.value }}
+        {{- $rmiPortEnableSsl := $rmiPort.enableSsl | default false }}
+            <port ssl={{ $rmiPortEnableSsl | ternary "Y" "N" | quote }}>{{ int $rmiPortValue }}</port>
 
             <!-- Optional. TCP port that will be used by the RMI Connector for
                  its own communication stuff. The port has not to be specified
@@ -1109,15 +1085,15 @@ Render the Lightstreamer configuration file.
                  on the main port. If omitted, the same setting used for <port>
                  is considered.
                  Default: the same as configured in <port>. -->
-      {{- if .dataPort }}
         {{- with .dataPort }}
-            <data_port{{- if not (quote .enableSsl | empty) }} ssl={{ .enableSsl | ternary "Y" "N" | quote }}{{- end }}>{{ int (required "management.jmx.rmiConnector.dataPort.value must be set" .value) }}</data_port>
-        {{- end }}
-      {{- else }}
+            <!--
+            <data_port ssl={{ .enableSsl | default false | ternary "Y" "N" | quote }}>{{ int (.value | default $rmiPortValue) }}</data_port>
+            -->
+        {{- else }}
             <!--
             <data_port ssl="N">4444</data_port>
             -->
-      {{- end }}
+        {{- end }}
 
             <!-- Optional. A hostname by which the RMI Server can be reached from
                  all the clients. In fact, the RMI Connector, for its own
@@ -1127,13 +1103,13 @@ Render the Lightstreamer configuration file.
                  specified hostname has to be visible also from local clients.
                  Default: any setting provided to the "java.rmi.server.hostname"
                  JVM property. -->
-      {{- if .hostName }}
-            <hostname>{{ .hostName }}</hostname>
-      {{- else }}
+        {{- if .hostname }}
+            <hostname>{{ .hostname }}</hostname>
+        {{- else }}
             <!--
             <hostname>push.mycompany.com</hostname>
             -->
-      {{- end }}
+        {{- end }}
 
             <!-- Optional. Enabling of a preliminary test on the reachability
                  of the RMI Server through the configured hostname. Note that the
@@ -1148,13 +1124,7 @@ Render the Lightstreamer configuration file.
                  - N: Disables the test, but this setting can be overridden by
                       setting <ensure_stopping_service> to Y.
                  Default: Y. -->
-      {{- if (quote .enablePortTest | empty) }}
-            <!--
-            <test_ports>Y</test_ports>
-            -->
-      {{- else }}
-            <test_ports>{{ .enablePortTest | ternary "Y" "N" }}</test_ports>
-      {{- end }}
+            <test_ports>{{ .enablePortTest | default false | ternary "Y" "N" }}</test_ports>
 
             <!-- Optional. Timeout to be posed on the connection attempts through
                  the RMI Connector. If 0, no timeout will be posed.
@@ -1170,13 +1140,7 @@ Render the Lightstreamer configuration file.
                    preventing the connector setup would be ignored.
                  On the other hand, the setting is ignored by the "stop" script.
                  Default: 0. -->
-      {{- if (quote .testTimeoutMillis | empty) }}
-            <!--
-            <test_timeout_millis>5000</test_timeout_millis>
-            -->
-      {{- else }}
-            <test_timeout_millis>{{ int .testTimeoutMillis}}</test_timeout_millis>
-      {{- end }}
+            <test_timeout_millis>{{ int .testTimeoutMillis | default 5000 }}</test_timeout_millis>
 
             <!-- Optional. Can be used on a multihomed host to specify the IP
                  address to bind the HTTP/HTTPS server sockets to, for all the
@@ -1186,13 +1150,13 @@ Render the Lightstreamer configuration file.
                  <hostname> setting may be needed to make the connector accessible,
                  even from local clients.
                  The default is to accept connections on any/all local addresses. -->
-      {{- if .listeningInterface }}
+        {{- if .listeningInterface }}
             <listening_interface>{{ .listeningInterface }}</listening_interface>
-      {{- else }}
+        {{- else }}
             <!--
             <listening_interface>200.0.0.1</listening_interface>
             -->
-      {{- end }}
+        {{- end }}
 
             <!-- Optional. Reference to the keystore to be used in case TLS/SSL
                  is enabled for part or all the communication.
@@ -1204,19 +1168,19 @@ Render the Lightstreamer configuration file.
                  Default: if the block is missing, any settings provided to the
                  "javax.net.ssl.keyStore" and "javax.net.ssl.keyStorePassword"
                  JVM properties will apply. -->
-      {{- if or .port.enableSsl (.dataPort).enableSsl }}
-      {{- with required (printf "management.jmx.rmiConnector.sslConfig must be set") .sslConfig }}
-        {{- with required "management.jmx.rmiConnector.sslConfig.keystoreRef must be set" .keystoreRef }}
-          {{- include "lightstreamer.configuration.keystore" (list $.Values.keystores .) | nindent 12 }}
-        {{- end }}
+        {{- if or .port.enableSsl (.dataPort).enableSsl }}
+        {{- with required (printf "management.jmx.rmiConnector.sslConfig must be set") .sslConfig }}
+          {{- with required "management.jmx.rmiConnector.sslConfig.keystoreRef must be set" .keystoreRef }}
+            {{- include "lightstreamer.configuration.keystore" (list $.Values.keystores .) | nindent 12 }}
+          {{- end }}
 
             <!-- Optional and cumulative, but forbidden if <remove_cipher_suites> is used.
                  Specifies all the cipher suites allowed for the interaction, in case
                  TLS/SSL is enabled for part or all the communication.
                  See notes for <allow_cipher_suite> under <https_server>. -->
-        {{- range .allowCipherSuites }}
-            <allow_cipher_suite>{{ . }}</allow_cipher_suite>
-        {{- else }}
+          {{- range .allowCipherSuites }}
+            <allow_cipher_suite>{{ required "management.jmx.rmiConnector.sslConfig.allowCipherSuite[] must be set" . }}</allow_cipher_suite>
+          {{- else }}
             <!--
             <allow_cipher_suite>TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384</allow_cipher_suite>
             -->
@@ -1226,53 +1190,47 @@ Render the Lightstreamer configuration file.
             <!--
             <allow_cipher_suite>........</allow_cipher_suite>
             -->
-        {{- end }}
+          {{- end }}
 
             <!-- Optional and cumulative, but forbidden if <allow_cipher_suite> is used.
                  Pattern to be matched against the names of the enabled cipher suites
                  in order to remove the matching ones from the enabled cipher suites set
                  to be used in case TLS/SSL is enabled for part or all the communication.
                  See notes for <remove_cipher_suites> under <https_server>. -->
-        {{- range .removeCipherSuites }}
-            <remove_cipher_suites>{{ . }}</remove_cipher_suites>
-        {{- else }}
+          {{- range .removeCipherSuites }}
+            <remove_cipher_suites>{{ required "management.jmx.rmiConnector.sslConfig.removeCipherSuites[] must be set" . }}</remove_cipher_suites>
+          {{- else }}
             <!--
             <remove_cipher_suites>TLS_RSA_</remove_cipher_suites>
             -->
-        {{- end }}
+          {{- end }}
 
             <!-- Optional. Determines which side should express the preference when
                  multiple cipher suites are in common between server and client
                  (in case TLS/SSL is enabled for part or all the communication).
                  See notes for <enforce_server_cipher_suite_preference> under <https_server>.
                  Default: N. -->
-        {{- with .enforceServerCipherSuitePreference }}
-          {{- if .order }}
-            {{- if not (mustHas .order (list "JVM" "config")) }}
-              {{- fail "management.jmx.rmiConnector.sslConfig.enforceServerCipherSuitePreference must be set with a valid value" }}
-            {{- end }}
+          {{- $order := (.enforceServerCipherSuitePreference).order | default "JVM" }}
+          {{- $enabled := not (eq (.enforceServerCipherSuitePreference).enabled false) }}
+          {{- if not (mustHas $order (list "JVM" "config")) }}
+            {{- fail printf ("management.jmx.rmiConnector.sslConfig.enforceServerCipherSuitePreference must be one of: \"JVM\", \"config\"") }}
           {{- end }}
-            <enforce_server_cipher_suite_preference{{ if not (quote .order | empty) }} order={{ .order | quote }}{{ end }}>{{ .enabled | default false | ternary "Y" "N" }}</enforce_server_cipher_suite_preference>
-        {{- else }}
-            <!--
-            <enforce_server_cipher_suite_preference order="JVM">Y</enforce_server_cipher_suite_preference>
-            -->
-        {{- end }}
+            <enforce_server_cipher_suite_preference order={{ $order | quote }}>{{ $enabled | ternary "Y" "N" }}</enforce_server_cipher_suite_preference>
 
             <!-- Optional and cumulative, but forbidden if <remove_protocols> is used.
                  Specifies one or more protocols allowed for the TLS/SSL interaction,
                  in case TLS/SSL is enabled for part or all the communication.
                  See notes for <allow_protocol> under <https_server>. -->
-        {{- range .allowProtocols }}
-            <allow_protocol>{{ . }}</allow_protocol>
-        {{- else }}
+          {{- range .allowProtocols }}
+            <allow_protocol>{{ required "management.jmx.rmiConnector.sslConfig.allowProtocols[] must be set" . }}</allow_protocol>
+          {{- else }}
             <!--
             <allow_protocol>TLSv1.2</allow_protocol>
             -->
             <!--
             <allow_protocol>TLSv1.3</allow_protocol>
             -->
-        {{- end }}
+          {{- end }}
 
             <!-- Optional and cumulative, but forbidden if <allow_protocol> is used.
                  Pattern to be matched against the names of the enabled TLS/SSL
@@ -1280,15 +1238,15 @@ Render the Lightstreamer configuration file.
                  protocols set to be used in case TLS/SSL is enabled for part
                  or all the communication.
                  See notes for <remove_protocols> under <https_server>. -->
-        {{- range .removeProtocols }}
-            <remove_protocols>{{ . }}</remove_protocols>
-        {{- else }}
+          {{- range .removeProtocols }}
+            <remove_protocols>{{ required "management.jmx.rmiConnector.sslConfig.removeProtocols[] must be set" }}</remove_protocols>
+          {{- else }}
             <!--
             <remove_protocols>SSL</remove_protocols>
             -->
-        {{- end }}
-      {{- end }} {{/* sslConfig */}}
-      {{- end }} {{/* or .port.enableSsl (.dataPort).enableSsl */}}
+          {{- end }}
+        {{- end }} {{/* sslConfig */}}
+        {{- end }} {{/* or .port.enableSsl (.dataPort).enableSsl */}}
 
             <!-- Optional. Enabling of the RMI Connector access without credentials.
                  Can be one of the following:
@@ -1296,13 +1254,7 @@ Render the Lightstreamer configuration file.
                  - N: requests to the RMI Connector are subject to user authentication;
                       the allowed users are set in the "user" elements.
                  Default: N. -->
-      {{- if (quote .enablePublicAccess | empty) }}
-            <!--
-            <public>Y</public>
-            -->
-      {{- else }}
-            <public>{{ .enablePublicAccess | ternary "Y" "N"}}</public>
-      {{- end }}
+            <public>{{ .enablePublicAccess | default false | ternary "Y" "N"}}</public>
 
             <!-- Optional and cumulative (but ineffective if "public" is set to "Y").
                  Credentials of the users enabled to access the RMI Connector.
@@ -1311,16 +1263,17 @@ Render the Lightstreamer configuration file.
                  be supplied in order to allow access through the connector.
                  This is also needed if you wish to use the provided "stop" script;
                  the script will always use the first user supplied. -->
-      {{- if not .enablePublicAccess }}
-        {{- range .credentialsSecrets}}
+        {{- if not .enablePublicAccess }}
+          {{- range .credentialsSecrets}}
             <user id="$env.LS_RMI_CREDENTIAL_{{ . | upper | replace "-" "_" }}_USER" password="$env.LS_RMI_CREDENTIAL_{{ . | upper | replace "-" "_"}}_PASSWORD" />
-        {{- end }}
-      {{- else}}
+          {{- end }}
+        {{- else}}
             <!--
             <user id="other_user" password="other_password" />
             -->
+        {{- end }}
       {{- end }}
-    {{- end }}
+    {{- end }} {{/* rmiConnector */}}
         </rmi_connector>
 
         <!-- Optional. Enables Sun/Oracle's JMXMP connector.
@@ -1329,7 +1282,7 @@ Render the Lightstreamer configuration file.
              see README.TXT in the JMX SDK for details.
              The remote server will be accessible through the url:
              "service:jmx:jmxmp://<host>:<port>". -->
-    {{- if (.jmxmpConnector).enabled }}
+      {{- if (.jmxmpConnector).enabled }}
         <jmxmp_connector>
 
             <!-- Mandatory for this block. TCP port on which Sun/Oracle's JMXMP
@@ -1338,7 +1291,7 @@ Render the Lightstreamer configuration file.
             <port>{{ int (required "management.jmx.jmxmpConnector.port must be set" .jmxmpConnector.port) }}</port>
 
         </jmxmp_connector>
-    {{- else }}
+      {{- else }}
         <!--
         <jmxmp_connector>
         -->
@@ -1394,13 +1347,8 @@ Render the Lightstreamer configuration file.
                   may be an extremely long list; consider, for instance,
                   'CurrentSessionList' in the ResourceMBean.
              Default: N. -->
-    {{- if (quote .enableLongListProperties | empty) }}
-        <!--
-        <disable_long_list_properties>Y</disable_long_list_properties>
-        -->
-    {{- else }}
-        <disable_long_list_properties>{{ .enableLongListProperties | ternary "N" "Y"}}</disable_long_list_properties>
-    {{- end }}
+    {{- $enableLongListProperties := not (eq .enableLongListProperties false) }}
+        <disable_long_list_properties>{{ $enableLongListProperties | ternary "N" "Y"}}</disable_long_list_properties>
   {{- end }}
     </jmx>
 
@@ -1417,13 +1365,7 @@ Render the Lightstreamer configuration file.
               in other ways. The provided installation scripts also close
               the Server without resorting to the "stop" script.
          Default: N. -->
-  {{- if (quote (.jmx).enableStoppingServiceCheck | empty) }}
-    <!--
-    <ensure_stopping_service>Y</ensure_stopping_service>
-    -->
-  {{- else }}
-    <ensure_stopping_service>{{ .jmx.enableStoppingServiceCheck | ternary "Y" "N" }}</ensure_stopping_service>
-  {{- end }}
+    <ensure_stopping_service>{{ .jmx.enableStoppingServiceCheck | default false | ternary "Y" "N" }}</ensure_stopping_service>
 
     <!-- Optional. Configuration of the Monitoring Dashboard.
          The dashboard is a webapp whose pages are embedded in Lightstreamer
