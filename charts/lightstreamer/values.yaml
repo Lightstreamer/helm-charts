@@ -1139,7 +1139,7 @@ logging:
     # -- The console appender configuration.
     console:
       type: Console
-      pattern: "%d{\"yyyy-MM-dd HH:mm:ss,SSS\"}|%-5.5(%p%marker)|%m%n"
+      pattern: "%d{\"yyyy-MM-dd HH:mm:ss,SSS\"}|%-5.5(%p%marker)|%-19.19c{19}|%m%n"
 
   # -- Optional. Loggers configuration.
   loggers:
@@ -1643,7 +1643,7 @@ management:
   # and License Type.
   collectorMillis: 2000
 
-  # -- Optional. JMX preferences and external access configuration.
+  # -- Mandatory. JMX preferences and external access configuration.
   # Full JMX features is an optional feature, available depending on Edition
   # and License Type; if not available, only the Server shutdown operation via
   # JMX is allowed. To know what features are enabled by your license, please
@@ -1651,7 +1651,7 @@ management:
   # `/dashboard`).
   jmx:
 
-    # -- Optional. Enables the standard RMI Connector, which is used by the 
+    # -- Mandatory. Enables the standard RMI Connector, which is used by the 
     # provided "stop" script to stop the Server. The remote MBean server will be 
     # accessible through this url:
     # `service:jmx:rmi:///jndi/rmi://<host>:<port>/lsjmx`.
@@ -1674,25 +1674,29 @@ management:
       # -- Mandatory if `enabled` is set to `true`. TCP port configuration.
       port:
 
-        # -- Mandatory. TCP port on which the RMI Connector will be available
-        # This is the port that has to be specified in the client access url.
+        # -- (int) Mandatory. TCP port on which the RMI Connector will be 
+        # available. This is the port that has to be specified in the client 
+        # access url.
         value: 8888
 
         # -- Optional. If set to `true`, enables TLS/SSL communication. Note
         # that this case is not managed by some JMX clients, like jconsole.
         enableSsl: false
 
-      # -- Optional. TCP port that will be used by the RMI Connector for its
-      # own communication stuff. The port has not to be specified in the client
-      # access url, but it may have to be considered for firewall settings.
-      # The optional `enableSsl` setting, when set to `false`, enables TLS/SSL
-      # communication by the connector; TLS/SSL at this level is supported by
-      # some JMX clients, like jconsole, that don't support TLS/SSL on the main
-      # port.
-      # @default -- the same as configured for `rmiConnector.port`
+      # -- Optional. TCP data port configuration.
       dataPort:
-        # value: 4444
-        # enableSsl: false
+        
+        # -- (int) Optional. TCP port that will be used by the RMI Connector 
+        # for its own communication stuff. The port has not to be specified in 
+        # the client access url, but it may have to be considered for firewall 
+        # settings.
+        # @default -- the same as configured in `rmiConnector.port`
+        value:
+
+        # -- Optional. If set to `true`, enables TLS/SSL communication by the
+        # connector; TLS/SSL at this level is supported by some JMX clients,
+        # like jconsole, that don't support TLS/SSL on the main  port.
+        enableSsl: false
 
       # -- (string) Optional. A hostname by which the RMI Server can be reached
       # from all the clients. In fact, the RMI Connector, for its own
@@ -1701,7 +1705,7 @@ management:
       # Note that, if you wish to use the provided "stop" script, the specified
       # hostname has to be visible also from local clients.
       # @default -- the value of the `java.rmi.server.hostname` JVM property
-      hostName:
+      hostname:
 
       # -- Optional. Enables a preliminary test on the reachability of the RMI
       # Server through the configured hostname. Note that the reachability is
@@ -1759,7 +1763,6 @@ management:
         # Specifies all the cipher suites allowed for the interaction, in case
         # TLS/SSL is enabled for part or all the communication.
         # See notes for `servers.{}.sslConfig.allowCipherSuites`.
-        # @default -- []
         allowCipherSuites: []
           # - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
 
@@ -1830,7 +1833,7 @@ management:
       # -- (int) Mandatory if enabled is set to `true`. TCP port on which
       # Sun/Oracle's JMXMP connector will be listening. This is the port that
       # has to be specified in the client access url.
-      port: 9999
+      port:
 
     # -- (string) Optional. Enables the availability of session-related mbeans,
     # the ones identified by `type="Session"`.
@@ -1860,8 +1863,7 @@ management:
     # If set to `false`, properties that can, potentially, return extremely long
     # lists won't yield the correct value, but just a reminder text; for
     # instance, this applies to `CurrentSessionList` in the `ResourceMBean`.
-    # @default -- true
-    enableLongListProperties: false
+    enableLongListProperties: true
 
     # -- Optional. Startup check that the conditions for the correct working of
     # the provided "stop" script are met (see `jmx`).
@@ -1874,8 +1876,7 @@ management:
     # This may not be a problem, because the Server can be stopped in other
     # ways. The provided installation scripts also close the Server without
     # resorting to the "stop" script.
-    # @default -- false
-    enableStoppingServiceCheck:
+    enableStoppingServiceCheck: false
 
   # -- Optional. Configuration of the Monitoring Dashboard.
   # The Monitoring Dashboard is a webapp whose pages are embedded in the
@@ -2636,7 +2637,6 @@ pushSession:
     # if many sessions subscribe to the same items and updates for these items
     # are rare, to avoid that also the following polls for these sessions occur
     # at the same times.
-    # @default -- false
     randomize: false
 
   # -- (int) Optional. Shortest time allowed between consecutive polls on a
