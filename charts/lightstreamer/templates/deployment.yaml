@@ -84,12 +84,13 @@ spec:
           {{- end }}
             {{- /* START RMI CONNECTOR PORTS */ -}}
           {{- with (.Values.management.jmx).rmiConnector }}
+            {{- $rmiPortValue := .port.value }}
             - name: jmx-port
-              containerPort: {{ .port.value }}
+              containerPort: {{ $rmiPortValue }}
               protocol: TCP
             {{- with .dataPort }}
             - name: jmx-data-port
-              containerPort: {{ .value }}
+              containerPort: {{ .value | default $rmiPortValue }}
               protocol: TCP
             {{- end }}
           {{- end }}
