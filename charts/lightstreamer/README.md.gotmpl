@@ -17,16 +17,18 @@ For installation instructions, custom configuration, and deployment guidance, se
 
 {{- define "chart.extractValues" }}
 {{ if .Description }}{{ .Description }}{{ else }}{{ .AutoDescription }}{{ end }}
-{{ $defaultValue := (.AutoDefault | empty) | ternary .Default (printf "`%s`" .AutoDefault) }}
-{{ if gt (len $defaultValue) 45 -}}
+
+**Type:** {{ .Type }}
+{{ $defaultValue := (.AutoDefault | empty) | ternary .Default .AutoDefault | replace "`" ""}}
+{{ if and (gt (len $defaultValue) 45) (has .Type (list "object" "list" "map")) -}}
 **Default:**
 
 ```
-{{ $defaultValue | replace "`" "" }}
+{{ $defaultValue }}
 ```
 
 {{- else -}}
-**Default:** {{ $defaultValue }}
+**Default:** `{{ $defaultValue }}`
 
 {{- end }}
 {{- end }}
