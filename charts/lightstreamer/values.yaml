@@ -1690,13 +1690,14 @@ management:
         # for its own communication stuff. The port has not to be specified in 
         # the client access url, but it may have to be considered for firewall 
         # settings.
-        # @default -- the same as configured in `rmiConnector.port`
+        # @default -- the same as configured in `rmiConnector.port.value`
         value:
 
         # -- Optional. If set to `true`, enables TLS/SSL communication by the
         # connector; TLS/SSL at this level is supported by some JMX clients,
         # like jconsole, that don't support TLS/SSL on the main  port.
-        enableSsl: false
+        # @default -- the same as configured in `rmiConnector.port.enableSsl`
+        enableSsl:
 
       # -- (string) Optional. A hostname by which the RMI Server can be reached
       # from all the clients. In fact, the RMI Connector, for its own
@@ -1718,7 +1719,7 @@ management:
       # the same environment of the Server, the script should work.
       # If set to `false`, disables the test, but this setting can be
       # overridden by setting `jmx.enableStoppingServiceCheck` to `true`.
-      enablePortTest: false
+      enablePortTest: true
 
       # -- (int) Optional. Timeout to be posed on the connection attempts
       # through the RMI Connector. If `0`, no timeout will be posed.
@@ -1935,13 +1936,16 @@ management:
     # If `enablePublicAccess` is set to `false`, at least one set of
     # credentials should be supplied in order to allow access through the
     # connector.
-    # @default -- []
     credentials:
 
       - # -- (string) Mandatory. The reference to the secret containing the
         # credentials of the user enabled to access the Monitoring Dashboard.
         # The secret must contain the keys `user` and `password`.
-        secretRef:
+        # The default value is provided out of the box and contains user
+        # `dashboard-user` user with password `dashboard-password`. In a real
+        # production environment, this secret should be replaced with a
+        # custom one, containing a different user and password.
+        secretRef: dashboard-user-secret
 
         # -- Optional, but effective only if `dashboard.enableJmxTree` is set to
         # `true`. Allows for restriction of the access to the JMX Tree on a
@@ -1965,12 +1969,11 @@ management:
     # -- Optional, but ineffective if `enableAvailabilityOnAllServers` is set
     # to `true`. List of server socket configurations (defined in `servers.{}`)
     # for which requests to the Monitoring Dashboard will be allowed.
-    # @default -- []
     availableOnServers:
 
-      - # -- Mandatory. The reference to the allowed server socket
+      - # -- Mandatory. The reference to the allowed server socket 
         # configuration.
-        serverRef:
+        serverRef: defaultServer
 
         # -- Optional, but effective only if `dashboard.enableJmxTree` is set to
         # `true`. Allows for restriction of the access to the JMX Tree on a TCP
