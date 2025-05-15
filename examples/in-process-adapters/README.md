@@ -2,6 +2,8 @@
 
 The following examples demonstrate how to configure and deploy the Lightstreamer Helm chart with with in-process Adapter Sets.
 
+## Sample Adapter Set project
+
 The [`example-adapter-set`](example-adapter-set/) set folder contains a _gradle_ project for building a sample Adapter Set, with the purpose to illustrate the available provisioning and configuration options.
 
 Here the project structure:
@@ -10,7 +12,7 @@ Here the project structure:
 
 ## Example 1. Embed Adapters in the Docker image
 
-The in-process Adapters will be embedded into the Docker image, which will be then references from the Helm Chart values
+The in-process Adapters will be embedded into the Docker image, which will be then references from the Helm Chart values.
 
 To make it easy using a custom container image, a _minikube_ local cluster will be used to deploy the Helm chart.
 
@@ -65,6 +67,9 @@ To deploy the
 
 ## Example 2. Deploy Adapters to a persistent storage
 
+The in-process Adapters will deployed to a persistent storage by using Kubernetes volume.
+
+1. 
 
 ## Configuration 
 
