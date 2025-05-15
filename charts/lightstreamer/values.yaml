@@ -1982,8 +1982,7 @@ management:
 
     # -- (string) Optional. URL path to map the Monitoring Dashboard pages to.
     # An absolute path must be specified.
-    # @default -- /dashboard
-    urlPath:
+    urlPath: /dashboard
 
     # -- Optional. Enables the reverse lookup on Client IPs and inclusion of the
     # Client hostnames while monitoring client activity.
@@ -1994,10 +1993,9 @@ management:
     # heavy for some systems.
     # If set to `false`, no reverse lookup is performed and the Client hostname
     # is not included on Client activity monitoring.
-    # @default -- false
-    enableHostnameLookup:
+    enableHostnameLookup: false
 
-  # -- Optional. Configuration of the `/lightstreamer/healthcheck` request url,
+  # -- Mandatory. Configuration of the `/lightstreamer/healthcheck` request url,
   # which allows a load balancer to test for Server responsiveness to external
   # requests. The Server should always respond to the request with the `OK\r\n`
   # content string (unless overridden through e JMX interface). The Server may
@@ -2006,19 +2004,20 @@ management:
   # Edition and License Type.
   healthCheck:
 
+    # -- Optional. Enables the health check url.
+    enabled: true
+
     # -- Optional. Enables the health check url on all server sockets.
     # If set to `true`, the health check request can be issued through all the
     # defined server sockets.
     # If set to `false`, the health check request can be issued only through the
     # server sockets specified in the `availableOnServers` setting, if any.
-    # @default -- false
-    enableAvailabilityOnAllServers: true
+    enableAvailabilityOnAllServers: false
 
     # -- Optional, but ineffective if `enableAvailabilityOnAllServers` is set
     # to `false`. List of server socket configurations (defined in `servers.{}`)
     # for which health check requests can be issued.
-    # @default -- []
-    availableOnServers:
+    availableOnServers: []
       # - defaultServer
 
 # -- Mandatory. Global socket configuration.
