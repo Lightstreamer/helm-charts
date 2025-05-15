@@ -348,6 +348,10 @@ Render the Lightstreamer configuration file.
         {{- include "lightstreamer.configuration.keystore" (list $.Values.keystores .)  | nindent 8 }}
       {{- end }}
 
+      {{- if and .allowCipherSuites .removeCipherSuites }}
+        {{ printf "servers.%s.sslConfig.allowCipherSuites and servers.%s.sslConfig.removeCipherSuites cannot be used together" $serverKey $serverKey | fail }}
+      {{- end }}
+
         <!-- Optional and cumulative, but forbidden if <remove_cipher_suites> is used.
              Specifies all the cipher suites allowed for the TLS/SSL interaction,
              provided that they are included, with the specified name, in the set
@@ -359,8 +363,8 @@ Render the Lightstreamer configuration file.
              the Security Provider will be available.
              The order in which the cipher suites are specified can be enforced as the
              server-side preference order (see <enforce_server_cipher_suite_preference>). -->
-      {{- range .allowCipherSuites }}
-        <allow_cipher_suite>{{ . }}</allow_cipher_suite>
+      {{- range $index, $cipherSuite := .allowCipherSuites }}
+        <allow_cipher_suite>{{ required (printf "servers.%s.sslConfig.allowCipherSuites[%d] must be set" $serverKey (int $index)) $cipherSuite }}</allow_cipher_suite>
       {{- else }}
         <!--
         <allow_cipher_suite>TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384</allow_cipher_suite>
@@ -388,9 +392,9 @@ Render the Lightstreamer configuration file.
              the "supported" cipher suites. The default set of the "enabled" cipher
              suites is logged at startup by the LightstreamerLogger.io.ssl
              logger at DEBUG level. -->
-      {{- range .removeCipherSuites }}
-        <remove_cipher_suites>{{ . }}</remove_cipher_suites>
-      {{- else }}
+      {{- range $index, $cipherSuite := .removeCipherSuites }}
+        <allow_cipher_suite>{{ required (printf "servers.%s.sslConfig.removeCipherSuites[%d] must be set" $serverKey (int $index)) $cipherSuite }}</allow_cipher_suite>
+      {{- else }}             
         <!--
         <remove_cipher_suites>TLS_RSA_</remove_cipher_suites>
         -->
@@ -1169,6 +1173,10 @@ Render the Lightstreamer configuration file.
             {{- include "lightstreamer.configuration.keystore" (list $.Values.keystores .) | nindent 12 }}
           {{- end }}
 
+          {{- if and .allowCipherSuites .removeCipherSuites }}
+            {{ printf "management.jmx.rmiConnector.sslConfig.allowCipherSuites and management.jmx.rmiConnector.sslConfig.removeCipherSuites cannot be used together" | fail }}
+          {{- end }}
+
             <!-- Optional and cumulative, but forbidden if <remove_cipher_suites> is used.
                  Specifies all the cipher suites allowed for the interaction, in case
                  TLS/SSL is enabled for part or all the communication.
@@ -1197,6 +1205,10 @@ Render the Lightstreamer configuration file.
             {{- fail printf ("management.jmx.rmiConnector.sslConfig.enforceServerCipherSuitePreference must be one of: \"JVM\", \"config\"") }}
           {{- end }}
             <enforce_server_cipher_suite_preference order={{ $order | quote }}>{{ $enabled | ternary "Y" "N" }}</enforce_server_cipher_suite_preference>
+
+          {{- if and .allowProtocols .removeProtocols }}
+            {{ printf "management.jmx.rmiConnector.sslConfig.allowProtocols and management.jmx.rmiConnector.sslConfig.removeProtocols cannot be used together" | fail }}
+          {{- end }}
 
             <!-- Optional and cumulative, but forbidden if <remove_protocols> is used.
                  Specifies one or more protocols allowed for the TLS/SSL interaction,
@@ -1464,6 +1476,9 @@ Render the Lightstreamer configuration file.
              An absolute path must be specified.
              Default: /dashboard -->
       {{- if .urlPath }}
+        {{ if not (hasPrefix "/" .urlPath) }}
+          {{ printf "management.dashboard.urlPath must start with a /" | fail }}
+        {{ end }}
         <dashboard_url_path>{{ .urlPath }}</dashboard_url_path>
       {{- else }}
         <!--
@@ -1483,17 +1498,14 @@ Render the Lightstreamer configuration file.
              - N: no reverse lookup is performed and the Client hostname is not
                   included on Client activity monitoring.
              Default: N. -->
-      {{- if (quote .enableHostnameLookup | empty) }}
-        <!--
-        <enable_hostname_lookup>Y</enable_hostname_lookup>
-        -->
-      {{- else }}
-        <enable_hostname_lookup>{{ .enableHostnameLookup | ternary "Y" "N" }}</enable_hostname_lookup>
-      {{- end }}
+        <enable_hostname_lookup>{{ .enableHostnameLookup | default false | ternary "Y" "N" }}</enable_hostname_lookup>
     {{- end }} 
   {{ end }} {{/* dashboard */}}
     </dashboard>
 
+  {{- with required "management.healthCheck must be set" .healthCheck }}
+    {{- $healthCheckEnabled := not (eq .enabled false) }}
+    {{- if $healthCheckEnabled }}
     <!-- Optional. Configuration of the "/lightstreamer/healthcheck" request
          url, which allows a load balancer to test for Server responsiveness
          to external requests. The Server should always answer to the
@@ -1503,7 +1515,6 @@ Render the Lightstreamer configuration file.
          Support for clustering is an optional feature, available depending
          on Edition and License Type. -->
     <healthcheck>
-  {{- with .healthCheck }}
 
         <!-- Optional. Enabling of the healthcheck url on all server sockets.
              Can be one of the following:
@@ -1513,30 +1524,31 @@ Render the Lightstreamer configuration file.
                   sockets specified in the "available_on_server" elements,
                   if any.
              Default: N. -->
-    {{- if (quote .enableAvailabilityOnAllServers | empty) }}
+      {{- if (quote .enableAvailabilityOnAllServers | empty) }}
         <!--
         <available_on_all_servers>Y</available_on_all_servers>
         -->
-    {{- else }}
+      {{- else }}
         <available_on_all_servers>{{ .enableAvailabilityOnAllServers | ternary "Y" "N" }}</available_on_all_servers>
-    {{- end }}
+      {{- end }}
 
         <!-- Optional and cumulative (but ineffective if "available_on_all_servers"
              is set to "Y").
              Specific server sockets for which healthcheck requests can be issued,
              that can be identified through the mandatory "name" attribute. -->
-    {{- if not .enableAvailabilityOnAllServers }}
-      {{- range $index, $value := .availableOnServers }}
-        {{- include "lightstreamer.configuration.servers.validateServerRef" (list $ (printf "management.healthCheck.availableOnServers[%d].serverRef" (int $index)) $value.serverRef) }}
+      {{- if not .enableAvailabilityOnAllServers }}
+        {{- range $index, $value := .availableOnServers }}
+          {{- include "lightstreamer.configuration.servers.validateServerRef" (list $ (printf "management.healthCheck.availableOnServers[%d].serverRef" (int $index)) $value.serverRef) }}
         <available_on_server name={{ (get $.Values.servers $value.serverRef).name | quote }} />
-      {{- else }}
+        {{- else }}
         <!--
         <available_on_server name="Lightstreamer HTTP Server" />
         -->
+        {{- end }}
       {{- end }}
+      </healthcheck>
     {{- end }}
-  {{ end }}
-    </healthcheck>
+  {{- end }}
 {{- end }}
 
 <!--
