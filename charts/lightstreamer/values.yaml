@@ -318,7 +318,7 @@ service:
       # `servers.{}`).
       targetPort: defaultServer
 
-      # -- Optional, but mandatory if more than one port is defined. The name of
+      # -- Optional but mandatory if more than one port is defined. The name of
       # the service port.
       name: default-service
 
@@ -1132,7 +1132,7 @@ logging:
       # for the log file.
       fileNamePattern: "lightstreamer-%d{yyyy-MM-dd}.log"
 
-      # -- (string) Optional, but effective only if type is set to 
+      # -- (string) Optional but only effective if `type` is set to 
       # `DailyRollingFile`. The reference to a volume to use for the log file.
       volumeRef:
 
@@ -1947,7 +1947,7 @@ management:
         # custom one, containing a different user and password.
         secretRef: dashboard-user-secret
 
-        # -- Optional, but effective only if `dashboard.enableJmxTree` is set to
+        # -- Optional but only effective if `dashboard.enableJmxTree` is set to
         # `true`. Allows for restriction of the access to the JMX Tree on a
         # user basis.
         enableJmxTreeVisibility: true
@@ -1975,7 +1975,7 @@ management:
         # configuration.
         serverRef: defaultServer
 
-        # -- Optional, but effective only if `dashboard.enableJmxTree` is set to
+        # -- Optional but only effective if `dashboard.enableJmxTree` is set to
         # `true`. Allows for restriction of the access to the JMX Tree on a TCP
         # port basis.
         enableJmxTreeVisibility: true
@@ -2520,8 +2520,7 @@ pushSession:
   # always be used, regardless of efficiency reasons. This can be leveraged in
   # special application scenarios, when the clients require to directly
   # retrieve the updates in the form of JSON Patch differences.
-  # @default -- 50
-  jsonPatchMinLength:
+  jsonPatchMinLength: 50
 
   # -- Optional. Configuration of the update management for items subscribed to
   # in `COMMAND` mode with unfiltered dispatching.
@@ -2536,8 +2535,7 @@ pushSession:
   # by license limitations are applied for each key independently.
   # No item-level choice is possible. However, setting this flag as `true`
   # allows for backward compatibility to versions before 4.0, if needed.
-  # @default -- false
-  preserveUnfilteredCommandOrdering:
+  preserveUnfilteredCommandOrdering: false
 
   # -- (string) Optional. Policy to be adopted for the handling of
   # session-related data when a session is closed.
@@ -2574,8 +2572,7 @@ pushSession:
   # also note that the system may force a minimum size.
   # Higher values should make sense only if the expected throughput is high and
   # responsive updates are desired.
-  # @default -- 1600
-  sendbuf:
+  sendbuf: 1600
 
   # -- (int) Optional. Longest delay that the Server is allowed to apply to
   # outgoing updates to collect more updates in the same packet. This value
@@ -2601,7 +2598,6 @@ pushSession:
     # sessions subscribe to the same items and updates for these items are rare,
     # to avoid that also the keepalives for these sessions occur at the same
     # times.
-    # @default -- false
     randomize: false
 
   # -- (int) Mandatory. Lower bound to the keep-alive time requested by a
@@ -2654,8 +2650,7 @@ pushSession:
   # However, in order to avoid that a similar case causes too much load on the
   # Server, this setting can be used as a protection, to limit the polling
   # frequency.
-  # @default -- 0
-  minInterPollMillis:
+  minInterPollMillis: 0
 
 # -- Optional. Mobile Push Notification (MPN) module configuration.
 # This module is able to receive updates from an item subscription on behalf of
@@ -2685,15 +2680,13 @@ mpn:
   # Enabling the internal web server (`webServer.enabled` set to `true`) is not
   # needed for this; note that if the internal web server is enabled, the
   # processing of this path is different from the processing of the other URLs.
-  # @default -- /apple_web_service
-  appleWebServicePath:
+  appleWebServicePath: /apple_web_service
 
   # -- (string) Optional. Specifies the name of the built-in data adapter that
   # client SDKs may subscribe to in order to obtain the current status of MPN
   # devices and subscriptions. This data adapter is automatically added to all
   # configured Adapter Sets in an MPN-enabled Server.
-  # @default -- MPN_INTERNAL_DATA_ADAPTER
-  internalDataAdapter:
+  internalDataAdapter: MPN_INTERNAL_DATA_ADAPTER
 
   # -- Mandatory. Hibernate configuration.
   # The MPN module uses an Hibernate-mapped database to make the list of
@@ -2757,15 +2750,13 @@ mpn:
   # interacts with the database, a timeout is applied so that a disconnected
   # database will not result in a hang client. If a timeout occurs during a
   # request processing, the client receives a specific error.
-  # @default -- 15000
-  requestTimeoutMillis:
+  requestTimeoutMillis: 15000
 
   # -- (int) Optional. Interval between health checks on the database.
   # During this health check, a number of tasks are carried out: takeover of
   # dead module instances, stop and restart of subscriptions updated by other
   # module instances, and deletion of abandoned subscriptions.
-  # @default -- 5000
-  moduleCheckPeriodMillis:
+  moduleCheckPeriodMillis: 5000
 
   # -- (int) Optional. Timeout for a health check of other modules. If a
   # module fails to do its health check for this period of time, other module
@@ -2775,8 +2766,7 @@ mpn:
   # In case a cluster is in place, the timeout should be longer than all values
   # of `moduleCheckPeriodMillis` configured for the various instances in the
   # cluster.
-  # @default -- 30000
-  moduleTimeoutMillis:
+  moduleTimeoutMillis: 30000
 
   # -- Optional. Enables the startup of the module upon Server startup. If
   # module startup is prevented, or not yet completed, or completed
@@ -2793,10 +2783,10 @@ mpn:
     # on Edition and License Type).
     enabled: true
 
-    # -- (int) Optional, but effective only if `mpn.enableActivationOnStartUp`
-    # is set to `true`. If not specified, or set to `-1`, the Server startup
-    # will be blocked until module startup completion; if the module startup
-    # fails, the Server startup will fail in turn.
+    # -- (int) Optional but only effective if `enabled` is set to `true`.
+    # If not specified, or set to `-1`, the Server startup will be blocked until
+    # module startup completion; if the module startup fails, the Server startup 
+    # will fail in turn.
     # Otherwise, the Server startup will be blocked only up to the specified
     # delay. If the delay expires, the Server may start with the module in a
     # temporarily inactive state; moreover, if the module startup eventually
@@ -2812,8 +2802,7 @@ mpn:
   # become inactive and the Server will continue running with an inactive
   # module.
   # See `mpn.activationOnStartUp` for notes on inactive modules.
-  # @default -- true
-  enableModuleRecovery:
+  enableModuleRecovery: true
 
   # -- (int) Optional. Timeout after which an inactive device is considered
   # abandoned and is permanently deleted. A device is considered inactive if it
@@ -2821,30 +2810,28 @@ mpn:
   # or if it has no active subscriptions. A suspended device may be resumed with
   # a token change (typically, client libraries handle this situation
   # automatically).
-  # @default -- 10080
-  deviceInactivityTimeoutMinutes:
+  deviceInactivityTimeoutMinutes: 10080
 
   # -- (int) Optional. Periodicity of the device garbage collector. Once every
   # this number of minutes, devices that have been inactive for more than
   # `deviceInactivityTimeoutMinutes` are permanently deleted.
-  # @default -- 60
-  collectorPeriodMinutes:
+  collectorPeriodMinutes: 60
 
   # -- Optional. Sizes of request processor's (`MPN EXECUTOR`) thread pool.
   # The request processor is devoted to process incoming MPN requests, such as
   # subscription activations and deactivations. These requests interact with the
   # database and may blocked in case of database disconnection.
   # If not specified, all settings at their defaults will be used.
-  executorPool:
+  executorPool: {}
 
     # -- (int) Optional. Specifies the maximum number of threads the pool may
     # use.
-    maxSize: 10
+    # maxSize: 10
 
     # -- (int) Optional. Specifies the maximum number of idle threads the pool
     # may have. A `0` value means that the pool will not consume resources when
     # idle.
-    maxFree: 0
+    # maxFree: 0
 
   # -- Optional. Requests the creation of a specific thread pool,
   # `MPN DEVICE HANDLER`, specifically dedicated to the handling of the
@@ -2855,17 +2842,16 @@ mpn:
   # support this burst of activity. If the pool is not defined, each
   # "subscribe" call will be managed by the thread pool associated with the
   # involved Data Adapter, similarly to ordinary sessions.
-  # @default -- {}
-  deviceHandlerPool:
+  deviceHandlerPool: {}
 
     # -- (int) Optional. Specifies the maximum number of threads the pool may
     # use.
-    maxSize: 100
+    # maxSize: 100
 
     # -- (int) Optional. Specifies the maximum number of idle threads the pool
     # may have. A `0` value means that the pool will not consume resources when
     # idle.
-    maxFree: 0
+    # maxFree: 0
 
   # -- (int) Optional. Size of the notifiers' `MPN XXX NOTIFIER` internal
   # thread pool, which is devoted to composing the notifications payload,
@@ -2888,8 +2874,7 @@ mpn:
   # This task does not involve blocking operations, but its computation may be
   # heavy under high update activity; hence, on multiprocessor machines,
   # allocating multiple threads may be beneficial.
-  # @default -- 1
-  mpnTimerPoolSize:
+  mpnTimerPoolSize: 1
 
   # -- (string) Mandatory. Specifies what to do in case of database failure.
   # A number of internal operations are bound to the success of a database
@@ -3150,21 +3135,18 @@ webServer:
   # of the Monitoring Dashboard(see `management.dashboard.urlPath`); hence,
   # subdirectories of the pages directory with conflicting names would be
   # ignored.
-  # @default -- ../pages
-  pagesDir:
+  pagesDir: ../pages
 
   # -- (int) Optional. Caching time, in minutes, to be allowed to the browser
   # (through the `expires` HTTP header) for all the resources supplied by the
   # internal web server.
   # A zero value disables caching by the browser.
-  # @default -- 0
+  persistencyMinutes: 0
 
-  persistencyMinutes:
   # -- Optional. Path of the MIME types configuration property file.
   # The file path is relative to the conf directory.
-  # @default -- ./mime_types.properties
+  mimeTypesConfig: ./mime_types.properties
 
-  mimeTypesConfig:
   # -- Optional. Path of an HTML page to be returned as the body upon a
   # "404 Not Found" answer caused by the request of a nonexistent URL.
   # The file content should be encoded with the iso-8859-1 charset.
@@ -3175,8 +3157,7 @@ webServer:
   # -- (int) Optional. Size of the resource contents below which compression is
   # not applied, regardless of the `webServer.compression.default` setting, as
   # we guess that no overall benefit would be reached.
-  # @default -- 8192
-  compressionThreshold:
+  compressionThreshold: 8192
 
   # -- Optional. Enables the processing of the `/clientaccesspolicy.xml` URL,
   # required by the Silverlight runtime in order to allow pages from a
@@ -3198,10 +3179,9 @@ webServer:
   # configured as the root for URL path mapping).
   # Note that `/crossdomain.xml` is also used by the Silverlight
   # runtime when `/clientaccesspolicy.xml` is not provided.
-  # @default -- false
+  enableSilverlightAccessPolicy: false
 
-  enableSilverlightAccessPolicy:
-  # -- Mandatory if `web.enableSilverlightAccessPolicy` is set to `true`.
+  # -- Mandatory if `webServer.enableSilverlightAccessPolicy` is set to `true`.
   # Path of the file to be returned upon requests for the
   # `/clientaccesspolicy.xml` URL. It is ignored when
   # `web.enableSilverlightAccessPolicy` is false.
@@ -3648,7 +3628,7 @@ adapters:
         # -- Mandatory. Java class name of the Metadata Adapter.
         adapterClass:
 
-        # -- Optional, but mandatory if `classLoader` is set to `dedicated`.
+        # -- Optional but mandatory if `classLoader` is set to `dedicated`.
         # Specifies the directory where the Metadata Adapter's own `lib` and
         # `classes` folders are located in the provisioning source.
         # The full path will be then available at
@@ -4166,13 +4146,13 @@ adapters:
           # Every secret must contains the keys `user` and `password`.
           credentialsSecrets: []
 
-        # -- (int) Optional, but effective only if `remoteHost` is specified.
+        # -- (int) Optional but only effective when `remoteHost` is set.
         # Delay to be enforced before retrying a connection attempt to the
         # Remote Server, to prevent a possible strict loop of unsuccessful
         # attempts.
         connectionRetryMillis: 10000
 
-        # -- (int) Optional, but effective only if `enableRobustAdapter` is set
+        # -- (int) Optional but only effective if `enableRobustAdapter` is set
         # to `true`. The timeout for initialization errors. After an
         # unsuccessful attempt to achieve a connection from a remote server due
         # to an error in configuration, network access or initialization, the
@@ -4183,7 +4163,7 @@ adapters:
         # will be available.
         connectionRecoveryTimeoutMillis: -1
 
-        # -- (int) Optional, but effective only if `enableRobustAdapter` is set
+        # -- (int) Optional but only effective if `enableRobustAdapter` is set
         # to `true`. The timeout for the first connection attempt. Upon
         # the Proxy Adapter initialization at the Lightstreamer Broker startup,
         # if a remote server connection is not available, the Lightstreamer
@@ -4194,7 +4174,7 @@ adapters:
         # will be refused.
         firstConnectionTimeoutMillis: 10000
 
-        # -- (string) Optional, but effective only if `enableRobustAdapter` is
+        # -- (string) Optional but only effective if `enableRobustAdapter` is
         # set to `true`. The strategy to be adopted whenever a new remote
         # server is available in order to resend the state change notifications
         # that could not or might not have been sent to the previous remote
@@ -4235,7 +4215,7 @@ adapters:
         #
         closeNotificationsRecovery: unneeded
 
-        # -- (string) Optional, but effective only if `enableRobustAdapter` is
+        # -- (string) Optional but only effective if `enableRobustAdapter` is
         # set to `true`. The action to be performed when the authentication of
         # the request for a new Session (through `notifyUser`) cannot be carried
         # out because of the unavailability of the Remote Metadata Adapter.
@@ -4270,9 +4250,9 @@ adapters:
         # @default -- no code will be used, hence `notifyUserOnDisconnection` will be set as fail
         notifyUserDisconnectionCode:
 
-        # -- (string) Optional, but effective only if
-        # `notifyUserDisconnectionCode` is specified. A string to be supplied as
-        # a custom error message by `notifyUser`, through a `CreditsException`,
+        # -- (string) Optional but only effective when 
+        # `notifyUserDisconnectionCode` is set. A string to be supplied as a
+        # custom error message by `notifyUser`, through a `CreditsException`,
         # when the request is being refused because of the unavailability of the
         # Remote Metadata Adapter.
         # The message will be used in association with the error code configured
@@ -4310,9 +4290,8 @@ adapters:
           # @default -- "" (no custom initialization parameters will be sent)
           prefix:
 
-          # -- Optional, but effective only if `prefix` is specified. Set of
-          # custom initialization parameters to be sent to the remote
-          # counterpart.
+          # -- Optional but only effective when `prefix` is set. Set of custom
+          # initialization parameters to be sent to the remote counterpart.
           # Every key is the name of the parameter and must start with the value
           # specified in the `prefix` setting.
           params:
@@ -4338,7 +4317,7 @@ adapters:
         # @default -- 10000
         userDataTimeoutMillis:
 
-        # -- Optional, but effective only if `enableRobust` is set to `true`. If
+        # -- Optional but only effective if `enableRobust` is set to `true`. If
         # set to `true`, enforces the clearing of all internal caches when a new
         # Remote Metadata Adapter instance is connected after the disconnection
         # of the previous instance.
@@ -4406,7 +4385,7 @@ adapters:
         # @default -- false
         enabled:
 
-        # -- Optional, but mandatory if multiple Data Adapters (either proxy
+        # -- Optional but mandatory if multiple Data Adapters (either proxy
         # or in-process) are defined in the same Adapter Set. The name of the
         # Data Adapter.
         # Example: `MY_REMOTE`
@@ -4422,7 +4401,7 @@ adapters:
           # -- Mandatory. Java class name of the Data Adapter.
           adapterClass:
 
-          # -- Optional, but mandatory if `classLoader` is set to `dedicated`.
+          # -- Optional but mandatory if `classLoader` is set to `dedicated`.
           # Specifies the directory where the Data Adapter's own `lib` and
           # `classes` folders are located in the provisioning source.
           # The full path will be then available at
@@ -4628,14 +4607,14 @@ adapters:
             # @default -- []
             credentialsSecrets:
 
-          # -- (int) Optional, but effective only if `remoteHost` is specified.
+          # -- (int) Optional but only effective when `remoteHost` is set.
           # Delay to be enforced before retrying a connection attempt to the
           # Remote Server, to prevent a possible strict loop of unsuccessful
           # attempts.
           # @default -- 10000
           connectionRetryMillis:
 
-          # -- (int) Optional, but effective only if `enableRobustAdapter` is
+          # -- (int) Optional but only effective if `enableRobustAdapter` is
           # set to `true`. The timeout for initialization errors. After an
           # unsuccessful attempt to achieve a connection from a remote server
           # due to an error in configuration, network access or initialization,
@@ -4646,7 +4625,7 @@ adapters:
           # will be available.
           connectionRecoveryTimeoutMillis: 10000
 
-          # -- (int) Optional, but effective only if `enableRobustAdapter` is
+          # -- (int) Optional but only effective if `enableRobustAdapter` is
           # set to `true`. The timeout for the first connection attempt. Upon
           # the Proxy Adapter initialization at the Lightstreamer Broker
           # startup, if remote server connection is not available, the
@@ -4661,7 +4640,7 @@ adapters:
           # @default -- 0
           firstConnectionTimeoutMillis:
 
-          # -- (string) Optional, but effective only if `enableRobustAdapter` is
+          # -- (string) Optional but only effective if `enableRobustAdapter` is
           # set to `true`. The strategy to be adopted whenever a new remote
           # server is available in order to restore the data flow for items that
           # were subscribed to while no remote server was available.
@@ -4716,7 +4695,7 @@ adapters:
           # The configured strategy will be applied with all items.
           eventsRecovery: use_snapshot
 
-          # -- (string) Optional, but effective only if `enableRobustAdapter` is
+          # -- (string) Optional but only effective if `enableRobustAdapter` is
           # set to `true`. Specifies an item name to be managed by the Proxy
           # Adapter for carrying information about the availability of the
           # Remote Data Adapter.
@@ -4769,7 +4748,7 @@ adapters:
             # @default -- "" (no custom initialization parameters will be sent)
             prefix:
 
-            # -- Optional, but effective only if `prefix` is specified. Set of
+            # -- Optional but only effective when `prefix` is set. Set of 
             # custom initialization parameters to be sent to the remote
             # counterpart.
             # Every key is the name of the parameter and must start with the
@@ -4831,7 +4810,6 @@ connectors:
   kafkaConnector:
 
     # -- Optional. Enables the Lightstreamer Kafka Connector.
-    # @default -- false
     enabled: false
 
     # -- Mandatory. Defines the provisioning method of the Lightstreamer Kafka
@@ -4841,7 +4819,7 @@ connectors:
     provisioning:
 
       # -- (string) The path to the Kafka Connector deployment in the image,
-      # e.g.: `/lightstreamer/adapters/lightstreamer-kafka-connector-1.2.0`.
+      # e.g.: `/lightstreamer/adapters/lightstreamer-kafka-connector-1.2.8`.
       # At startup, the deployment folder will be mounted at
       # `/lightstreamer/deployed_adapters/kafka-connector` in the container.
       fromPathInImage:
@@ -4869,7 +4847,7 @@ connectors:
         name:
 
         # -- (string) The file path to the Kafka Connector zip package in the
-        # volume, e.g.: `/connectors/lightstreamer-kafka-connector-1.2.0.zip`.
+        # volume, e.g.: `/connectors/lightstreamer-kafka-connector-1.2.8.zip`.
         filePath:
 
     # -- Mandatory. Defines the Kafka Connector Adapter Set and its unique ID.
@@ -4950,8 +4928,7 @@ connectors:
         # -- Enables the connection.
         # If set to `false`, the Lightstreamer Broker automatically denies all
         # subscription requests for this connection.
-        # @default -- false
-        enabled:
+        enabled: false
 
         # -- (string) Mandatory. The Kafka Cluster bootstrap server endpoint
         # expressed as the list of host/port pairs used to establish the
@@ -4980,11 +4957,11 @@ connectors:
 
           # -- Optional. List of enabled secure communication protocols.
           # @default -- [TLSv1.2, TLSv1.3] when running on Java 11 or newer TLSv1.2 otherwise
-          allowedProtocols:
+          allowProtocols:
 
           # -- Optional. List of enabled secure cipher suites.
           # @default -- all the available cipher suites in the running JVM
-          allowedCipherSuites:
+          allowCipherSuites:
 
           # -- Optional. Enables the hostname verification.
           enableHostnameVerification: false
@@ -5004,53 +4981,76 @@ connectors:
         # -- Optional. Authentication settings for the connection.
         authentication:
 
-            # -- Optional. Enables the authentication of the connection against
-            # the Kafka Cluster.
-            # @default -- false
-            enabled: false
+          # -- Optional. Enables the authentication of the connection against
+          # the Kafka Cluster.
+          enabled: false
 
-            # -- (string) Mandatory if `enabled` is set to `true`. The SASL
-            # mechanism type.
-            # The Kafka Connector accepts the following authentication
-            # mechanisms:
-            #  - PLAIN
-            #  - SCRAM-SHA-256
-            #  - SCRAM-SHA-512
-            #  - GSSAPI
-            # @default -- PLAIN
-            mechanism:
+          # -- (string) Mandatory if `enabled` is set to `true`. The SASL
+          # mechanism type.
+          # The Kafka Connector accepts the following authentication
+          # mechanisms:
+          #  - PLAIN
+          #  - SCRAM-SHA-256
+          #  - SCRAM-SHA-512
+          #  - GSSAPI
+          #  - AWS_MSK_IAM
+          mechanism: PLAIN
 
-            # -- (string) Mandatory if `mechanism` is set to `PLAIN`,
-            # `SCRAM-SHA-256`, `SCRAM-SHA-512`. The name of the secret
-            # containing the credentials. The secret must contain the keys
-            # `user` and `password`.
-            credentialsSecretRef:
+          # -- (string) Mandatory if `mechanism` is set to `PLAIN`,
+          # `SCRAM-SHA-256`, `SCRAM-SHA-512`. The name of the secret
+          # containing the credentials. The secret must contain the keys
+          # `user` and `password`.
+          credentialsSecretRef:
 
-            # -- Mandatory if `mechanism` is set to `GSSAPI`. The GSSAPI
-            # authentication settings.
-            gssapi:
+          # -- Mandatory if `mechanism` is set to `GSSAPI`. The GSSAPI
+          # authentication settings.
+          gssapi:
 
-              # -- Optional. Enables the use of a keytab.
-              enableKeytab: false
+            # -- Optional. Enables the use of a keytab.
+            enableKeytab: false
 
-              # -- Mandatory if `enableKeytab` is set to `true`. The configmap
-              # name and key where the keytab file is stored
-              keytabFilePathRef:
-                # name:
-                # key: my-keytab
+            # -- Mandatory if `enableKeytab` is set to `true`. The configmap
+            # name and key where the keytab file is stored
+            keytabFilePathRef:
+              # name:
+              # key: my-keytab
 
-              # -- Optional. Enables the storage of the principal key.
-              enableStoreKey: false
+            # -- Optional. Enables the storage of the principal key.
+            enableStoreKey: false
 
-              # -- (string) Mandatory. The name of the Kerberos service.
-              kerberosServiceName:
+            # -- (string) Mandatory. The name of the Kerberos service.
+            kerberosServiceName:
 
-              # -- (string) Mandatory if `enableTicketCache` is set to `true`.
-              # The name of the principal to be used.
-              principal:
+            # -- (string) Mandatory if `enableTicketCache` is set to `true`.
+            # The name of the principal to be used.
+            principal:
 
-              # -- Optional. Enables the use of a ticket cache.
-              enableTicketCache: false
+            # -- Optional. Enables the use of a ticket cache.
+            enableTicketCache: false
+          
+          # -- Optional but only effective Mandatory if `mechanism` is set to 
+          # `AWS_MSK_IAM`.
+          iam:
+          
+            # -- (string) Optional. The name of the AWS credential profile to 
+            # use for authentication. These profiles are defined in the AWS
+            # shared credentials file.
+            credentialProfileName:
+
+            # -- (string) Optional. The Amazon Resource Name (ARN) of the IAM
+            # role that the Kafka Connector should assume for authentication 
+            # with MSK. Use this when you want the connector to assume a 
+            # specific role with temporary credentials.
+            roleArn:
+
+            # -- (string) Optional but only effective when `roleArn` is set.
+            # The name of the session for the assumed IAM role.
+            roleSessionName:
+
+            # -- (string) Optional but only effective when `roleArn` is set.
+            # Specifies the AWS region of the STS endpoint to use when assuming 
+            # the IAM role.
+            stsRegion:
 
         # -- Optional. Record evaluation settings.
         # If not specified, all settings at their defaults will be used.
@@ -5065,7 +5065,6 @@ connectors:
           # Sets the value of the `auto.offset.reset` key to configure the
           # internal Kafka Consumer.
           # See https://kafka.apache.org/documentation/#consumerconfigs_auto.offset.reset
-          # @default -- LATEST
           consumeFrom: EARLIEST
 
           # -- (int) Optional. The number of threads to be used for parallel
@@ -5075,17 +5074,16 @@ connectors:
           # @default -- 1
           consumeWithThreadNumber:
 
-          # -- (string) Optional, but effective only if
-          # `consumeWithThreadNumber` is set to a value greater than 1 (which
-          # includes the default value). The order strategy to be used for
-          # concurrent processing of the incoming deserialized records.
+          # -- (string) Optional but only effective if `consumeWithThreadNumber`
+          # is set to a value greater than 1 (which includes the default value).
+          # The order strategy to be used for concurrent processing of the
+          # incoming deserialized records.
           # If set to `ORDER_BY_PARTITION`, maintain the order of records
           # within each partition.
           # If set to `ORDER_BY_KEY`, maintain the order among the records
           # sharing the same key.
           # If set to `UNORDERED`, provide no ordering guarantees.
-          # @default -- ORDER_BY_PARTITION
-          consumeWithOrderStrategy:
+          consumeWithOrderStrategy: ORDER_BY_PARTITION
 
           # -- Optional. Key evaluator configuration.
           # If not specified, all settings at their defaults will be used.
