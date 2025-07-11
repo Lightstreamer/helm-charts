@@ -287,8 +287,11 @@ spec:
             {{- /* AUTHENTICATION */ -}}
             {{- $authSecretRefs := list }}
             {{- range $key, $connection := $.Values.connectors.kafkaConnector.connections }}
-              {{- if and (($connection.authentication).enabled) (ne ($connection.authentication).mechanism "GSSAPI") }}
-                {{- $authSecretRefs = append $authSecretRefs ($connection.authentication.credentialsSecretRef) }}
+              {{- if ($connection.authentication).enabled }}
+                {{- $mechanism := $connection.authentication.mechanism | default "PLAIN" }} 
+                {{- if has $mechanism (list "PLAIN" "SCRAM-SHA-256" "SCRAM-SHA-512") }}
+                  {{- $authSecretRefs = append $authSecretRefs ($connection.authentication.credentialsSecretRef) }}
+                {{- end }}
               {{- end }}
             {{- end }}
             {{- $authSecretRefs := $authSecretRefs | uniq }}
