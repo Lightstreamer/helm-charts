@@ -133,34 +133,34 @@ Render the Lightstreamer Kafka Connector configuration file.
         <!-- Optional. The list of enabled secure communication protocols.
 
              Default value: TLSv1.2,TLSv1.3 when running on Java 11 or newer, `TLSv1.2` otherwise. -->
-          {{- if .allowedProtocols }}
-            {{- range $protocol := .allowedProtocols}}
+          {{- if .allowProtocols }}
+            {{- range $protocol := .allowProtocols}}
               {{- if not (mustHas $protocol (list "TLSv1.2" "TLSv1.3")) }}
-                {{- fail (printf "connectors.kafkaConnector.connections.%s.sslConfig.allowedProtocols must be a list of \"TLSv1.2\", \"TLSv1.3\"" $key) }}
+                {{- fail (printf "connectors.kafkaConnector.connections.%s.sslConfig.allowProtocols must be a list of \"TLSv1.2\", \"TLSv1.3\"" $key) }}
               {{- end }}
             {{- end }}
-        <param name="encryption.enabled.protocols">{{ join "," .allowedProtocols }}</param>
+        <param name="encryption.enabled.protocols">{{ join "," .allowProtocols }}</param>
           {{- else }}
         <!--
         <param name="encryption.enabled.protocols">TLSv1.3</param>
         -->
-          {{- end }} {{/* of .allowedProtocols */}}
+          {{- end }} {{/* of .allowProtocols */}}
 
         <!--Optional. The list of enabled secure cipher suites.
 
             Default value: all the available cipher suites in the running JVM. -->
-          {{- if .allowedCipherSuites }}
-            {{- range $cipherSuite := .allowedCipherSuites}}
+          {{- if .allowCipherSuites }}
+            {{- range $cipherSuite := .allowCipherSuites}}
               {{- if $cipherSuite | empty }}
-                {{- fail (printf "connectors.kafkaConnector.connections.%s.sslConfig.allowedCipherSuites must be a list of valid values" $key) }}
+                {{- fail (printf "connectors.kafkaConnector.connections.%s.sslConfig.allowCipherSuites must be a list of valid values" $key) }}
               {{- end }}
             {{- end }}
-        <param name="encryption.cipher.suites">{{ join "," .allowedCipherSuites }}</param>
+        <param name="encryption.cipher.suites">{{ join "," .allowCipherSuites }}</param>
           {{- else }}
         <!--
         <param name="encryption.cipher.suites">TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA</param>
         -->
-          {{- end }} {{/* of .allowedCipherSuites */}}
+          {{- end }} {{/* of .allowCipherSuites */}}
 
         <!-- Optional. Enable hostname verification. Can be one of the following:
              - true
@@ -238,14 +238,13 @@ Render the Lightstreamer Kafka Connector configuration file.
 
         <!-- Broker authentication is configured through parameters with the
              `authentication` prefix. -->
-
+          {{- if .enabled }}
         <!-- Optional. Enable the authentication of this connection against the Kafka Cluster.
              Can be one of the following:
              - true
              - false
 
              Default value: false. -->
-          {{- if .enabled }}
         <param name="authentication.enable">true</param>
 
         <!-- Mandatory if authentication is enabled. The SASL mechanism type.
@@ -255,21 +254,17 @@ Render the Lightstreamer Kafka Connector configuration file.
              - SCRAM-SHA-256
              - SCRAM-SHA-512
              - GSSAPI
+             - AWS_MSK_IAM
 
              Default value: PLAIN.-->
-            {{- if not (quote .mechanism | empty )}}
-              {{- if not (mustHas .mechanism (list "PLAIN" "SCRAM-SHA-256" "SCRAM-SHA-512" "GSSAPI")) }}
-                {{- fail (printf "connectors.kafkaConnector.connections.%s.authentication.mechanism must be one of: \"PLAIN\", \"SCRAM-SHA-256\", \"SCRAM-SHA-512\", \"GSSAPI\"" $key) }}
-              {{- end }}
-        <param name="authentication.mechanism">{{ .mechanism }}</param>
-            {{- else }}
-        <!--
-        <param name="authentication.mechanism">PLAIN</param>
-        -->
-            {{- end }} {{/* of .mechanism */}}
+            {{- $mechanism := .mechanism | default "PLAIN" }} 
+            {{- if not (mustHas $mechanism (list "PLAIN" "SCRAM-SHA-256" "SCRAM-SHA-512" "GSSAPI" "AWS_MSK_IAM")) }}
+              {{- fail (printf "connectors.kafkaConnector.connections.%s.authentication.mechanism must be one of: \"PLAIN\", \"SCRAM-SHA-256\", \"SCRAM-SHA-512\", \"GSSAPI\", \"AWS_MSK_IAM\"" $key) }}
+            {{- end }}
+        <param name="authentication.mechanism">{{ $mechanism }}</param>
 
         <!-- Mandatory if authentication.mechanism is one of PLAIN, SCRAM-SHA-256, SCRAM-SHA-512. The credentials. -->
-            {{- if has (.mechanism | default "PLAIN") (list "PLAIN" "SCRAM-SHA-256" "SCRAM-SHA-512") }}
+            {{- if has $mechanism (list "PLAIN" "SCRAM-SHA-256" "SCRAM-SHA-512") }}
         <param name="authentication.username">$env.LS_KAFKA_PLAIN_AUTH_{{ required (printf "connectors.kafkaConnector.connections.%s.authentication.credentialsSecretRef must be set" $key) .credentialsSecretRef | upper | replace "-" "_" }}_USERNAME</param>
         <param name="authentication.password">$env.LS_KAFKA_PLAIN_AUTH_{{ required (printf "connectors.kafkaConnector.connections.%s.authentication.credentialsSecretRef must be set" $key) .credentialsSecretRef | upper | replace "-" "_" }}_PASSWORD</param>
             {{- else }}
@@ -279,8 +274,8 @@ Render the Lightstreamer Kafka Connector configuration file.
         -->
             {{- end }} {{/* of .mechanism */}}
 
-        <!-- ##### GSSAPI AUTHENTICATION SETTINGS ##### -->
-            {{- if eq .mechanism "GSSAPI"}}
+            {{- if eq $mechanism "GSSAPI"}}
+        <!-- ##### GSSAPI AUTHENTICATION SETTINGS ##### -->            
               {{- with required "connectors.kafkaConnector.connections.%s.authentication.gssapi must be set" .gssapi }}
 
         <!-- In the case of GSSAPI authentication mechanism, the following parameters will be part of
@@ -353,13 +348,52 @@ Render the Lightstreamer Kafka Connector configuration file.
         -->
                 {{- end }} {{/* of .enableTicketCache */}}
               {{- end }} {{/* of .gssapi */}}
-            {{- end }}
-          {{- else }}
-        <!--
-        <param name="authentication.enable">true</param>
+            {{- else if eq $mechanism "AWS_MSK_IAM" }}
+              {{- with .iam }}
+        <!-- ##### IAM AUTHENTICATION SETTINGS ##### -->              
+
+        <!-- The AWS_MSK_IAM authentication mechanism enables access to Amazon Managed Streaming for Apache Kafka (MSK)
+             clusters through IAM access control.
+
+             When specified, the following parameters will be part of the authentication configuration:
         -->
+                {{- if not (quote .credentialProfileName | empty) }} 
+
+        <!-- Optional. The name of the AWS credential profile to use for authentication. These profiles are defined in
+             the AWS shared credentials file.
+        -->
+        <param name="authentication.iam.credential.profile.name">{{ .credentialProfileName }}<param>
+                {{- end }}
+
+                {{- if not (quote .roleArn | empty) }}
+
+        <!-- Optional. The Amazon Resource Name (ARN) of the IAM role that the Kafka Connector should assume for
+             authentication with MSK. Use this when you want the connector to assume a specific role with temporary credentials.
+        -->
+        <param name="authentication.iam.role.arn">{{ .roleArn }}</param>
+                {{- end }}
+
+                {{- if not (quote .roleSessionName | empty) }}
+
+        <!-- Optional but only effective when "authentication.iam.role.arn" is set. The name of the session for the
+             assumed IAM role.
+        -->
+        <param name="authentication.iam.role.session.name">{{ .roleSessionaAme }}</param>
+                {{- end }}
+
+                {{- if not (quote .stsRegion | empty) }}
+        <!-- Optional but only effective when "authentication.iam.role.arn" is set. Specifies the AWS region of the STS
+             endpoint to use when assuming the IAM role.
+        -->
+        <param name="authentication.iam.sts.region">{{ .stsRegion }}</param>
+                {{- end }}
+                
+              {{- end }} {{/* of .iam */}}
+
+            {{- end }} {{/* of .mechanism */}}
           {{- end }} {{/* of .authentication.enable */}}
-        {{- end }} {{/* of .authentication */}}
+        {{- end }} {{/* of connection.authentication */}}
+
 
         <!-- ##### RECORD EVALUATION SETTINGS ##### -->
 
@@ -385,8 +419,8 @@ Render the Lightstreamer Kafka Connector configuration file.
              determined based on the number of available CPU cores.
 
              Default value: 1. -->
-          {{- if not ( quote .consumeWithThreadNumber | empty) }}
-            {{- if or ( eq (int .consumeWithThreadNumber) -1 ) (gt (int .consumeWithThreadNumber) 0) }}
+          {{- if not (quote .consumeWithThreadNumber | empty) }}
+            {{- if or (eq (int .consumeWithThreadNumber) -1) (gt (int .consumeWithThreadNumber) 0) }}
         <param name="record.consume.with.num.threads">{{ .consumeWithThreadNumber }}</param>
             {{- else }}
               {{- fail (printf "connectors.kafkaConnector.connections.%s.record.consumeWithThreadNumber must be set with a valid value" $key) }}
@@ -569,7 +603,7 @@ Render the Lightstreamer Kafka Connector configuration file.
              https://github.com/lightstreamer/Lightstreamer-kafka-connector?tab=readme-ov-file#filtered-record-routing-item-templatetemplate_name
         -->
           {{- range $key, $itemTemplate := .itemTemplates }}
-            {{- if not ( quote $itemTemplate | empty) }}
+            {{- if not (quote $itemTemplate | empty) }}
         <param name="item-template.{{ $key }}">{{ $itemTemplate }}</param>
             {{- else }}
         <!--
@@ -701,31 +735,31 @@ Render the Lightstreamer Kafka Connector configuration file.
 
         <!-- Set general encryption settings -->
           {{- with $schemaRegistry.sslConfig }}
-            {{- if .allowedProtocols }}
-              {{- range $protocol := .allowedProtocols}}
+            {{- if .allowProtocols }}
+              {{- range $protocol := .allowProtocols}}
                 {{- if not (mustHas $protocol (list "TLSv1.2" "TLSv1.3")) }}
-                  {{- fail (printf "connectors.kafkaConnector.schemaRegistry.%s.sslConfig.allowedProtocols must be a list of \"TLSv1.2\", \"TLSv1.3\"" $schemaRegistryRef) }}
+                  {{- fail (printf "connectors.kafkaConnector.schemaRegistry.%s.sslConfig.allowProtocols must be a list of \"TLSv1.2\", \"TLSv1.3\"" $schemaRegistryRef) }}
                 {{- end }}
               {{- end }}
-        <param name="schema.registry.encryption.enabled.protocols">{{ join "," .allowedProtocols }}</param>
+        <param name="schema.registry.encryption.enabled.protocols">{{ join "," .allowProtocols }}</param>
             {{- else }}
         <!--
         <param name="schema.registry.encryption.enabled.protocols">TLSv1.3</param>
         -->
-            {{- end }} {{/* of .allowedProtocols */}}
+            {{- end }} {{/* of .allowProtocols */}}
 
-            {{- if .allowedCipherSuites }}
-              {{- range $cipherSuite := .allowedCipherSuites}}
+            {{- if .allowCipherSuites }}
+              {{- range $cipherSuite := .allowCipherSuites}}
                 {{- if $cipherSuite | empty }}
-                  {{- fail (printf "connectors.kafkaConnector.schemaRegistry.%s.sslConfig.allowedCipherSuites must be a list of valid values" $schemaRegistryRef) }}
+                  {{- fail (printf "connectors.kafkaConnector.schemaRegistry.%s.sslConfig.allowCipherSuites must be a list of valid values" $schemaRegistryRef) }}
                 {{- end }}
               {{- end }}
-        <param name="schema.registry.encryption.cipher.suites">{{ join "," .allowedCipherSuites }}</param>
+        <param name="schema.registry.encryption.cipher.suites">{{ join "," .allowCipherSuites }}</param>
             {{- else }}
         <!--
         <param name="schema.registry.encryption.cipher.suites">TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA</param>
         -->
-            {{- end }} {{/* of .allowedCipherSuites */}}
+            {{- end }} {{/* of .allowCipherSuites */}}
 
             {{- if .enableHostnameVerification }}
         <param name="schema.registry.encryption.hostname.verification.enable">true</param>
