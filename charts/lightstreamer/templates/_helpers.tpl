@@ -491,6 +491,71 @@ Render the keystore settings for the Lightstreamer Kafka Connector configuration
 {{- end -}}
 
 {{/*
+Render the key/value record evaluator settings for the Lightstreamer Kafka Connector configuration file.
+*/}}
+{{- define "lightstreamer.kafka-connector.configuration.record.evaluator" -}}
+{{- $evaluator := index . 0 -}}
+{{- $keyOrValue := index . 1 -}}
+{{- $localSchemaFiles := index . 2 -}}
+{{- $key := index . 3 -}}
+{{- $type := $evaluator.type | default "STRING" }}
+{{- $protobufMessageType := $evaluator.protobufMessageType }}
+{{- if not (mustHas $type (list "AVRO" "JSON" "PROTOBUF" "STRING" "INTEGER" "BOOLEAN" "BYTE_ARRAY" "BYTE_BUFFER" "BYTES" "DOUBLE" "FLOAT" "LONG" "SHORT" "UUID")) }}
+  {{- fail (printf "connectors.kafkaConnector.connections.%s.record.%sEvaluator.type must be one of: \"AVRO\", \"JSON\", \"PROTOBUF\" \"STRING\", \"INTEGER\", \"BOOLEAN\", \"BYTE_ARRAY\", \"BYTE_BUFFER\", \"BYTES\", \"DOUBLE\", \"FLOAT\", \"LONG\", \"SHORT\", \"UUID\"" $key $keyOrValue) }}
+{{- end }}
+  <!-- Optional. The format to be used to deserialize the key a Kafka record.
+        Can be one of the following:
+        - AVRO
+        - JSON
+        - PROTOBUF
+        - STRING
+        - INTEGER
+        - BOOLEAN
+        - BYTE_ARRAY
+        - BYTE_BUFFER
+        - BYTES
+        - DOUBLE
+        - FLOAT
+        - LONG
+        - SHORT
+        - UUID
+
+        Default: STRING -->
+<param name="record.{{ $keyOrValue }}.evaluator.type">{{ $type }}</param>
+
+{{- if has $type (list "AVRO" "JSON" "PROTOBUF") }}
+  {{- if $evaluator.enableSchemaRegistry }}
+
+<!-- Mandatory if evaluator type is AVRO and no local schema paths are specified. Enable the use of the Confluent Schema Registry for validation respectively of the key.
+      Can be one of the following:
+      - true
+      - false
+
+      Default value: false. -->
+<param name="record.{{ $keyOrValue }}.evaluator.schema.registry.enable">true</param>
+  {{- else }}
+    {{- with $evaluator.localSchemaFilePathRef }}
+      {{ $localSchema := required (printf "connectors.kafkaConnector.localSchemaFiles.%s not defined" . ) (get ($localSchemaFiles | default dict) .) }}
+<!-- Mandatory if evaluator type is set to "AVRO" or "PROTOBUF" and the Confluent Schema Registry is disabled. The path of the local schema
+      (or binary descriptor) file relative to the deployment folder (LS_HOME/adapters/lightstreamer-kafka-connector-<version>) for
+      message validation respectively of the key and the value. -->
+<param name="record.{{ $keyOrValue }}.evaluator.schema.path">schemas/{{ . }}/{{ required (printf "connectors.kafkaConnector.localSchemaFiles.%s.key must be set" .) $localSchema.key }}</param>
+      {{ if (eq $type "PROTOBUF") }}
+<!-- Mandatory when the evaluator type is set to "PROTOBUF" and a binary descriptor file is provided through the "record.key/value.evaluator.schema.path" 
+      parameters. Specifies the name of the Protobuf message type to be used for deserializing the key and value of a Kafka record.
+-->
+<param name="record.{{ $keyOrValue }}.evaluator.protobuf.message.type">{{ required (printf "connectors.kafkaConnector.connections.%s.record.%sEvaluator.protobufMessageType must be set" $key $keyOrValue) $protobufMessageType }}</param>
+      {{- end }}
+    {{- else }}
+      {{- if has $type (list "AVRO" "PROTOBUF") }}
+        {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.record.%sEvaluator.localSchemaFilePathRef.key or enable connectors.kafkaConnector.connections.%s.record.%sEvaluator.enableSchemaRegistry" $key $keyOrValue $key $keyOrValue) }}
+      {{- end }}
+    {{- end }} {{/* of .localSchemaFilePathRef */}}
+  {{- end }} {{/* of .enableSchemaRegistry */}}
+{{- end }} {{/* of has $type (list "AVRO" "JSON" "PROTOBUF") */}}
+{{- end }}
+
+{{/*
 Validate all the adapter set configurations, ensuring that:
 - No duplicate adapter set ids exist.
 - Possible provided provisioning settings are defined consistently.
