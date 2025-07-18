@@ -5107,7 +5107,7 @@ connectors:
             # @default -- STRING
             type: INTEGER
 
-            # -- (string) Mandatory if `type` is set to `AVRO` and
+            # -- (string) Mandatory if `type` is set to `AVRO` or `PROTOBUF` and
             # `enableSchemaRegistry` is set to `false`. The reference to a
             # local schema file (defined in
             # `connectors.kafkaConnectors.localSchemaFiles`) for message
@@ -5117,10 +5117,15 @@ connectors:
 
             # -- Optional. Enables the Confluent Schema Registry for validation
             # of the key.
-            # Must be set to `true` when `keyEvaluator.type` is set to `AVRO`
-            # and no local schema are specified.
-            # @default -- false
-            enableSchemaRegistry:
+            # Must be set to `true` when `type` is set to `AVRO` and no local
+            # schema is set.
+            enableSchemaRegistry: false
+
+            # -- Mandatory when `type` is set to `PROTOBUF` and a binary
+            # descriptor file is provided through `localSchemaFilePathRef`.
+            # Specifies the name of the Protobuf message type to be used for 
+            # deserializing the key a Kafka record.
+            protobufMessageType:  
 
           # -- Optional. Value evaluator configuration.
           # If not specified, all settings at their defaults will be used.
@@ -5132,7 +5137,7 @@ connectors:
             # @default -- STRING
             type: JSON
 
-            # -- (string) Mandatory if `type` is set to `AVRO` and
+            # -- (string) Mandatory if `type` is set to `AVRO` or `PROTOBUF` and
             # `enableSchemaRegistry` is set to `false`. The reference to a
             # local schema file (defined in
             # `connectors.kafkaConnectors.localSchemaFiles`) for message
@@ -5142,10 +5147,15 @@ connectors:
 
             # -- Optional. Enables the Confluent Schema Registry for validation
             # of the value.
-            # Must be set to `true` when `valueEvaluator.type` is set to `AVRO`
-            # and no local schema are specified.
-            # @default -- false
-            enableSchemaRegistry:
+            # Must be set to `true` when `type` is set to `AVRO` and no local
+            # schema is set.
+            enableSchemaRegistry: false
+            
+            # -- Mandatory when `type` is set to `PROTOBUF` and a binary
+            # descriptor file is provided through `localSchemaFilePathRef`.
+            # Specifies the name of the Protobuf message type to be used for 
+            # deserializing the value a Kafka record.
+            protobufMessageType:             
 
           # -- Optional. The error handling strategy to be used if an error
           # occurs while extracting data from incoming deserialized records.
@@ -5154,8 +5164,7 @@ connectors:
           # If set to `FORCE_UNSUBSCRIPTION`, the processing of the record is
           # stopped and the unsubscription of the items requested by all the
           # Lightstreamer clients subscribed to this connection is forced.
-          # @default -- IGNORE_AND_CONTINUE
-          extractionErrorStrategy:
+          extractionErrorStrategy: IGNORE_AND_CONTINUE
 
           # -- Optional. The reference to a Schema Registry configuration
           # defined in `connectors.kafkaConnector.schemaRegistry`.
