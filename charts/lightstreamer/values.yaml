@@ -875,7 +875,7 @@ servers:
       # - The support of keystore contents may depend on the Security Provider
       # in use; for instance, keystores with dual RSA/ECC certificates are not
       # fully supported by the Conscrypt provider.
-      # See the `keystores.myServerKeystore` settings for general details on 
+      # See the `keystores.myServerKeystore` settings for general details on
       # keystore configuration.
       keystoreRef: myServerKeystore
 
@@ -1068,8 +1068,8 @@ keystores:
   # The default values used here reference the JKS keystore file
   # `myserver.keystore`, which is provided out of the box (and stored in the
   # `myserver-keystore-secret` secret, along with the password stored in the
-  # `myserver-keystore-keypass-secret` secret), and obviously contains an 
-  # invalid certificate. In order to use it for your experiments, remember to 
+  # `myserver-keystore-keypass-secret` secret), and obviously contains an
+  # invalid certificate. In order to use it for your experiments, remember to
   # add a security exception to your browser.
   # This example can be used as a template to define your own keystore
   # configurations.
@@ -1111,7 +1111,7 @@ logging:
   # Every logger must refer to one or more appenders defined here.
   appenders:
 
-    # -- An appender configuration. You can use this configuration as a template 
+    # -- An appender configuration. You can use this configuration as a template
     # to define your own appender configurations. In particular, `dailyRolling`
     # defines a daily rolling file appender.
     dailyRolling:
@@ -1132,7 +1132,7 @@ logging:
       # for the log file.
       fileNamePattern: "lightstreamer-%d{yyyy-MM-dd}.log"
 
-      # -- (string) Optional but only effective if `type` is set to 
+      # -- (string) Optional but only effective if `type` is set to
       # `DailyRollingFile`. The reference to a volume to use for the log file.
       volumeRef:
 
@@ -1589,7 +1589,7 @@ logging:
 # -- Mandatory. Logging and management configuration.
 management:
 
-  # -- Optional. List of IP addresses of Clients whose activity is not to be 
+  # -- Optional. List of IP addresses of Clients whose activity is not to be
   # logged.
   noLoggingIpAddresses: []
     # - "20.0.0.10"
@@ -1651,8 +1651,8 @@ management:
   # `/dashboard`).
   jmx:
 
-    # -- Mandatory. Enables the standard RMI Connector, which is used by the 
-    # provided "stop" script to stop the Server. The remote MBean server will be 
+    # -- Mandatory. Enables the standard RMI Connector, which is used by the
+    # provided "stop" script to stop the Server. The remote MBean server will be
     # accessible through this url:
     # `service:jmx:rmi:///jndi/rmi://<host>:<port>/lsjmx`.
     # If full JMX features is not available, only the `Server` MBean is supplied
@@ -1674,8 +1674,8 @@ management:
       # -- Mandatory if `enabled` is set to `true`. TCP port configuration.
       port:
 
-        # -- (int) Mandatory. TCP port on which the RMI Connector will be 
-        # available. This is the port that has to be specified in the client 
+        # -- (int) Mandatory. TCP port on which the RMI Connector will be
+        # available. This is the port that has to be specified in the client
         # access url.
         value: 8888
 
@@ -1685,10 +1685,10 @@ management:
 
       # -- Optional. TCP data port configuration.
       dataPort:
-        
-        # -- (int) Optional. TCP port that will be used by the RMI Connector 
-        # for its own communication stuff. The port has not to be specified in 
-        # the client access url, but it may have to be considered for firewall 
+
+        # -- (int) Optional. TCP port that will be used by the RMI Connector
+        # for its own communication stuff. The port has not to be specified in
+        # the client access url, but it may have to be considered for firewall
         # settings.
         # @default -- the same as configured in `rmiConnector.port.value`
         value:
@@ -1971,7 +1971,7 @@ management:
     # for which requests to the Monitoring Dashboard will be allowed.
     availableOnServers:
 
-      - # -- Mandatory. The reference to the allowed server socket 
+      - # -- Mandatory. The reference to the allowed server socket
         # configuration.
         serverRef: defaultServer
 
@@ -2274,8 +2274,7 @@ pushSession:
   # prefix, even if the prefix is not stripped off by the proxy.
   # However, this support does not apply to the Internal Web Server and to the
   # Monitoring Dashboard.
-  # @default -- []
-  serviceUrlPrefixes:
+  serviceUrlPrefixes: []
 
   # -- Mandatory. Maximum size of HTTP streaming responses; when the maximum
   # size is reached, the connection is closed but the session remains active
@@ -2785,7 +2784,7 @@ mpn:
 
     # -- (int) Optional but only effective if `enabled` is set to `true`.
     # If not specified, or set to `-1`, the Server startup will be blocked until
-    # module startup completion; if the module startup fails, the Server startup 
+    # module startup completion; if the module startup fails, the Server startup
     # will fail in turn.
     # Otherwise, the Server startup will be blocked only up to the specified
     # delay. If the delay expires, the Server may start with the module in a
@@ -2909,8 +2908,7 @@ mpn:
     # notification.
     # Mobile push notifications fired by a trigger are not subject to this limit
     # and may be sent at higher pace.
-    # @default -- 1000
-    minSendDelayMillis:
+    minSendDelayMillis: 1000
 
     # -- (int) Optional. Maximum number of concurrent connections to APNS
     # services. The connection pool starts with 1 connection and grows
@@ -2930,7 +2928,7 @@ mpn:
       # -- An application configuration.
       myApp:
 
-        # -- Optional. Enables the application configuration.
+        # -- Optional. Enables this application configuration.
         enabled: false
 
         # -- (string) Mandatory if `enabled` is set to `true`. The app ID,
@@ -3028,8 +3026,7 @@ mpn:
     # permanently) any successive notification.
     # Mobile push notifications fired by a trigger are not subject to this limit
     # and may be sent at higher pace.
-    # @default -- 1000
-    minSendDelayMillis:
+    minSendDelayMillis: 1000
 
     # -- (int) Optional. Size of the notifier's `MPN XXX MESSAGING` internal
     # thread pool, which is devoted to sending the notifications payload. Each
@@ -3045,7 +3042,7 @@ mpn:
       # -- An application configuration.
       myApp:
 
-        # -- Optional. Enables the application configuration.
+        # -- Optional. Enables this application configuration.
         enabled: false
 
         # -- (string) Mandatory if `enabled` is set to `true`. The package name
@@ -3430,8 +3427,7 @@ load:
   # A long queue on the `ACCEPT` pool may be the consequence of a CPU shortage
   # during (or caused by) a high client connection activity.
   # A negative value disables the check.
-  # @default -- -1
-  acceptPoolMaxQueue:
+  acceptPoolMaxQueue: -1
 
   # -- (int) Optional. Size of the `TLS-SSL HANDSHAKE` internal pool, which is
   # devoted to the management of operations needed to accomplish TLS/SSL
@@ -3469,8 +3465,7 @@ load:
   # Note that, in the absence of sockets configured as specified above, no
   # backpressure action will take place.
   # A negative value disables the check.
-  # @default -- 100
-  handshakePoolMaxQueue:
+  handshakePoolMaxQueue: 100
 
   # -- (int) Optional. Size of the `TLS-SSL AUTHENTICATION` internal pool,
   # which is used instead of the `TLS-SSL HANDSHAKE` pool for listening
@@ -3494,8 +3489,7 @@ load:
   # (see `servers.{}.sslConfig.enableClientAuth` and
   # `servers.{}.sslConfig.enableMandatoryClientAuth`).
   # A negative value disables the check.
-  # @default -- 100
-  httpsAuthPoolMaxQueue:
+  httpsAuthPoolMaxQueue: 100
 
   # -- (int) Optional. Maximum number of sessions that can be left in
   # "prestarted" state, that is, waiting for the first bind or control
@@ -3515,8 +3509,7 @@ load:
   # `load.handshakePoolMaxQueue` and `load.httpsAuthPoolMaxQueue` from
   # affecting the accept loop of `CONTROL_ONLY` ports in https.
   # A negative value disables the check.
-  # @default -- -1
-  prestartedMaxQueue:
+  prestartedMaxQueue: -1
 
   # -- Optional. Policy to be adopted in order to manage the extraction of the
   # field values from the item events and their conversion to
@@ -3530,19 +3523,17 @@ load:
   # it is needed; in this case, as the same event object may be shared by many
   # sessions, some synchronization logic is needed and this may lead to poor
   # scaling in case many clients subscribe to the same item.
-  # @default -- true
-  forceEarlyConversions:
+  forceEarlyConversions: true
 
-# -- Optional. Map of Adapter Set configurations.
-# Every entry in the map defines a specific configuration of an Adapter Set
-# pluggable into the Lightstreamer Broker.
+# -- Optional. Map of Adapter Set configurations. Every entry in the map defines
+# a specific configuration of an Adapter Set pluggable into the Lightstreamer
+# Broker.
 adapters:
 
   # -- Optional. An Adapter Set configuration.
   myAdapterSet:
 
-    # -- Optional. Enables the Adapter Set.
-    # @default -- false
+    # -- Optional. Enables this Adapter Set.
     enabled: false
 
     # -- Mandatory and unique across all adapter sets. Defines the Adapter Set
@@ -3613,8 +3604,7 @@ adapters:
     # initialization is complete, the listening ports for these Remote Data
     # Adapters will not be open and any connection attempt by the Remote Data
     # Adapters will fail.
-    # @default -- true
-    enableMetadataInitializedFirst:
+    enableMetadataInitializedFirst: true
 
     # -- Mandatory. Metadata Adapter Configuration.
     metadataProvider:
@@ -4250,7 +4240,7 @@ adapters:
         # @default -- no code will be used, hence `notifyUserOnDisconnection` will be set as fail
         notifyUserDisconnectionCode:
 
-        # -- (string) Optional but only effective when 
+        # -- (string) Optional but only effective when
         # `notifyUserDisconnectionCode` is set. A string to be supplied as a
         # custom error message by `notifyUser`, through a `CreditsException`,
         # when the request is being refused because of the unavailability of the
@@ -4381,9 +4371,8 @@ adapters:
       # -- At least one must be provided. Data Adapter configuration.
       myDataProvider:
 
-        # -- Optional. Enables the Data Provider configuration.
-        # @default -- false
-        enabled:
+        # -- Optional. Enables this Data Provider configuration.
+        enabled: false
 
         # -- Optional but mandatory if multiple Data Adapters (either proxy
         # or in-process) are defined in the same Adapter Set. The name of the
@@ -4748,7 +4737,7 @@ adapters:
             # @default -- "" (no custom initialization parameters will be sent)
             prefix:
 
-            # -- Optional but only effective when `prefix` is set. Set of 
+            # -- Optional but only effective when `prefix` is set. Set of
             # custom initialization parameters to be sent to the remote
             # counterpart.
             # Every key is the name of the parameter and must start with the
@@ -4905,17 +4894,22 @@ connectors:
         #    - stdout
         #  level: INFO
 
-    # -- Mandatory. Connection configurations.
+    # -- Mandatory. Maps of connection configurations. The Kafka Connector
+    # allows the configuration of different independent connections to different
+    # Kafka  broker/clusters.
+    # Every entry in the map defines a connection configuration.
     connections:
 
-      # -- At least one must be provided. Connection configuration.
-      # The Kafka Connector allows the configuration of different independent
-      # connections to different Kafka broker/clusters.
-      # Every entry in the map defines a connection configuration.
+      # -- At least one must be provided. A connection configuration.
       # Since the Kafka Connector manages the physical connection to Kafka by
       # wrapping an internal Kafka Consumer, several configuration settings are
       # identical to those required by the usual Kafka Consumer configuration.
-      quickStart:
+      aConnectionConfiguration:
+
+        # -- Enables this connection configuration.
+        # If set to `false`, the Lightstreamer Broker automatically denies all
+        # subscription requests for this connection.
+        enabled: false
 
         # -- (string) Mandatory and unique across all configurations. The
         # connection name.
@@ -4923,17 +4917,14 @@ connectors:
         # this specific Kafka connection through a Subscription object.
         # The connection name is also used to group all logging messages
         # belonging to the same connection.
-        name: "K8S-QuickStart"
-
-        # -- Enables the connection.
-        # If set to `false`, the Lightstreamer Broker automatically denies all
-        # subscription requests for this connection.
-        enabled: false
+        # Example: "a-connection-configuration"
+        name:
 
         # -- (string) Mandatory. The Kafka Cluster bootstrap server endpoint
         # expressed as the list of host/port pairs used to establish the
         # initial connect.
-        bootstrapServers: broker:9092
+        # Example: "broker:9092"
+        bootstrapServers:
 
         # -- (string) Optional. The name of the consumer group this connection
         # belongs to.
@@ -4941,8 +4932,10 @@ connectors:
         # Kafka Consumer.
         # See https://kafka.apache.org/documentation/#consumerconfigs_group.id
         # for details.
-        # @default -- kafkaConnector.adapterSetId + name + randomly generated suffix
-        groupId: quickstart
+        # If not specified, the default value is
+        # `kafkaConnector.adapterSetId + name + randomly generated suffix`.
+        # Example: "a-consumer-group"
+        groupId:
 
         # -- Optional. TLS/SSL settings for the connection.
         sslConfig:
@@ -4952,16 +4945,18 @@ connectors:
 
           # -- (string) Optional. The SSL protocol to be used. Possible values:
           # `TLSv1.2`, `TLSv1.3`.
-          # @default -- TLSv1.3 when running on Java 11 or newer, TLSv1.2 otherwise
+          # If not specified, the default value is `TLSv1.3` when running on
+          # Java 11 or newer, `TLSv1.2` otherwise.
           protocol:
 
           # -- Optional. List of enabled secure communication protocols.
-          # @default -- [TLSv1.2, TLSv1.3] when running on Java 11 or newer TLSv1.2 otherwise
-          allowProtocols:
+          # If not specified, the default value is `[TLSv1.2, TLSv1.3]` when
+          # running on Java 11 or newer, `[TLSv1.2]` otherwise.
+          allowProtocols: []
 
           # -- Optional. List of enabled secure cipher suites.
-          # @default -- all the available cipher suites in the running JVM
-          allowCipherSuites:
+          # If not specified, all the available cipher suites in the running JVM will be used.
+          allowCipherSuites: []
 
           # -- Optional. Enables the hostname verification.
           enableHostnameVerification: false
@@ -4994,7 +4989,7 @@ connectors:
           #  - SCRAM-SHA-512
           #  - GSSAPI
           #  - AWS_MSK_IAM
-          mechanism: PLAIN
+          mechanism:
 
           # -- (string) Mandatory if `mechanism` is set to `PLAIN`,
           # `SCRAM-SHA-256`, `SCRAM-SHA-512`. The name of the secret
@@ -5013,7 +5008,7 @@ connectors:
             # name and key where the keytab file is stored
             keytabFilePathRef:
               # name:
-              # key: my-keytab
+              # key:
 
             # -- Optional. Enables the storage of the principal key.
             enableStoreKey: false
@@ -5027,19 +5022,19 @@ connectors:
 
             # -- Optional. Enables the use of a ticket cache.
             enableTicketCache: false
-          
-          # -- Optional but only effective Mandatory if `mechanism` is set to 
+
+          # -- Optional but only effective if `mechanism` is set to
           # `AWS_MSK_IAM`.
           iam:
-          
-            # -- (string) Optional. The name of the AWS credential profile to 
+
+            # -- (string) Optional. The name of the AWS credential profile to
             # use for authentication. These profiles are defined in the AWS
             # shared credentials file.
             credentialProfileName:
 
             # -- (string) Optional. The Amazon Resource Name (ARN) of the IAM
-            # role that the Kafka Connector should assume for authentication 
-            # with MSK. Use this when you want the connector to assume a 
+            # role that the Kafka Connector should assume for authentication
+            # with MSK. Use this when you want the connector to assume a
             # specific role with temporary credentials.
             roleArn:
 
@@ -5048,7 +5043,7 @@ connectors:
             roleSessionName:
 
             # -- (string) Optional but only effective when `roleArn` is set.
-            # Specifies the AWS region of the STS endpoint to use when assuming 
+            # Specifies the AWS region of the STS endpoint to use when assuming
             # the IAM role.
             stsRegion:
 
@@ -5065,14 +5060,13 @@ connectors:
           # Sets the value of the `auto.offset.reset` key to configure the
           # internal Kafka Consumer.
           # See https://kafka.apache.org/documentation/#consumerconfigs_auto.offset.reset
-          consumeFrom: EARLIEST
+          consumeFrom: LATEST
 
           # -- (int) Optional. The number of threads to be used for parallel
           # processing of the incoming deserialized records. If set to `-1`,
           # the number of threads will be automatically determined based on the
           # number of available CPU cores.
-          # @default -- 1
-          consumeWithThreadNumber:
+          consumeWithThreadNumber: 1
 
           # -- (string) Optional but only effective if `consumeWithThreadNumber`
           # is set to a value greater than 1 (which includes the default value).
@@ -5093,6 +5087,8 @@ connectors:
             # key of a Kafka record. Possible values:
             # - `AVRO`
             # - `JSON`
+            # - `PROTOBUF`
+            # - `KVP`
             # - `STRING`
             # - `INTEGER`
             # - `BOOLEAN`
@@ -5104,8 +5100,7 @@ connectors:
             # - `LONG`
             # - `SHORT`
             # - `UUID`
-            # @default -- STRING
-            type: INTEGER
+            type: STRING
 
             # -- (string) Mandatory if `type` is set to `AVRO` or `PROTOBUF` and
             # `enableSchemaRegistry` is set to `false`. The reference to a
@@ -5121,11 +5116,23 @@ connectors:
             # schema is set.
             enableSchemaRegistry: false
 
-            # -- Mandatory when `type` is set to `PROTOBUF` and a binary
+            # -- Mandatory if `type` is set to `PROTOBUF` and a binary
             # descriptor file is provided through `localSchemaFilePathRef`.
-            # Specifies the name of the Protobuf message type to be used for 
+            # Specifies the name of the Protobuf message type to be used for
             # deserializing the key a Kafka record.
-            protobufMessageType:  
+            protobufMessageType:
+
+            # -- Optional but only effective if `type` is set to `KVP`.
+            # Specifies the configuration for the KVP (Key Value Pair) format.
+            kvp:
+
+              # -- Optional. Specifies the symbol used to separate keys from
+              # values in a record key.
+              keyValueSeparator: "="
+
+              # -- Optional. Specifies the symbol used to separate multiple
+              # key-value pairs in a record key.
+              pairsSeparator: ","
 
           # -- Optional. Value evaluator configuration.
           # If not specified, all settings at their defaults will be used.
@@ -5134,8 +5141,7 @@ connectors:
             # -- (string) Optional. The format to be used to deserialize the
             # value of a Kafka record. See `record.keyEvaluator.type` for the
             # list of supported formats.
-            # @default -- STRING
-            type: JSON
+            type: STRING
 
             # -- (string) Mandatory if `type` is set to `AVRO` or `PROTOBUF` and
             # `enableSchemaRegistry` is set to `false`. The reference to a
@@ -5150,12 +5156,24 @@ connectors:
             # Must be set to `true` when `type` is set to `AVRO` and no local
             # schema is set.
             enableSchemaRegistry: false
-            
-            # -- Mandatory when `type` is set to `PROTOBUF` and a binary
+
+            # -- Mandatory if `type` is set to `PROTOBUF` and a binary
             # descriptor file is provided through `localSchemaFilePathRef`.
-            # Specifies the name of the Protobuf message type to be used for 
+            # Specifies the name of the Protobuf message type to be used for
             # deserializing the value a Kafka record.
-            protobufMessageType:             
+            protobufMessageType:
+
+            # -- Optional but only effective if `type` is set to `KVP`.
+            # Specifies the configuration for the KVP (Key Value Pair) format.
+            kvp:
+
+              # -- Optional. Specifies the symbol used to separate keys from
+              # values in a record value.
+              keyValueSeparator: "="
+
+              # -- Optional. Specifies the symbol used to separate multiple
+              # key-value pairs in a record value.
+              pairsSeparator: ","
 
           # -- Optional. The error handling strategy to be used if an error
           # occurs while extracting data from incoming deserialized records.
@@ -5173,114 +5191,69 @@ connectors:
         # -- Mandatory. Record routings configuration.
         routing:
 
-          # -- Optional. Maps of item template expressions.
-          # An expression is made of:
+          # -- Optional. Maps of item template expressions. Every entry in the
+          # map defines an expression composed as follows:
           # - ITEM_PREFIX: the prefix of the item name
           # - BINDABLE_EXPRESSIONS: a sequence of bindable extraction
           #   expressions
           # See https://lightstreamer.com/api/ls-kafka-connector/latest/ls-kafka-connector/record-extraction.html.
-          # @default -- {}
           itemTemplates:
-            stockTemplate: stock-#{index=KEY}
+            # stockTemplate: stock-#{index=KEY}
 
-          # -- Mandatory. Kafka topic mappings.
+          # -- Mandatory. Maps of Kafka topic mappings. Every entry in the map
+          # defines a topic mapping.
           topicMappings:
 
-            # -- At least one must be provided. A Kafka topic mapping.
-            # Map a Kafka topic to:
+            # -- At least one must be provided. Maps a Kafka topic to:
             # - one or more simple items
             # - one or more item templates
             # - any combination of the above
-            #
-            # Examples:
-            #
-            # topicMappingSample1:
-            #   topic: "aTopicName"
-            #   items:
-            #     - "item1"
-            #     - "item2"
-            #     - "itemN"
-            #
-            # topicMappingSample2:
-            #   topic: "anotherTopicName"
-            #   itemTemplateRefs:
-            #     - "itemTemplate1"
-            #     - "itemTemplate2"
-            #     - "itemTemplateN"
-            #
-            # topicMappingSample3
-            #   topic: "yetAnotherTopicName"
-            #   items:
-            #     - "item1"
-            #     - "item2"
-            #     - "itemN"
-            #   itemTemplateRefs:
-            #     - "itemTemplate1"
-            #     - "itemTemplate2"
-            #     - "itemTemplateN"
-            stock:
+            aTopicMapping:
 
               # -- (string) Mandatory and unique across all topic mappings. The
               # Kafka topic name.
-              topic: stocks
+              # Example: "stock"
+              topic:
 
               # -- Mandatory if `itemTemplateRefs` is empty. List of simple
               # items to which the topic must be mapped.
-              # @default -- []
-              items:
-                # - item1
-                # - item2
-                # - item3
+              items: []
+                # - "anItemName"
+                # - "anotherItemName"
 
               # -- Mandatory if `items` is empty. List of item templates to
               # which the topic must be mapped.
-              # @default -- []
-              itemTemplateRefs:
-                - stockTemplate
+              itemTemplateRefs: []
+                # - "stockTemplate"
+                # - "anotherTemplate"
 
           # -- Optional. Enables treating
           # `connectors.kafkaConnector.routing.topicMappings.{}.topic` as a
           # regular expression instead of a literal topic name.
-          # @default -- false
-          enableTopicRegEx:
+          enableTopicRegEx: false
 
         # -- Mandatory. Record mappings configuration.
         fields:
 
-          # -- Mandatory. Record data to Lightstreamer field mappings.
+          # -- Mandatory. Record data to Lightstreamer field mappings. Every
+          # entry in the map defines a mapping from the Kafka record to the
+          # Lightstreamer fields.
           mappings:
 
-            # -- At least one must be provided. A field mapping.
-            # Map the value extracted through the `#{extraction_expression}` to
-            # the Lightstreamer field name specified by key.
-            # The expression is written in the Data Extraction Language. See
-            # documentation at:
+            # -- At least one must be provided. Maps a Lightstreamer field (key)
+            # to data extracted from Kafka records (value) using extraction 
+            # expressions. The extraction expressions follow the Data Extraction
+            # Language syntax. For a complete reference, see:
             # https://github.com/lightstreamer/Lightstreamer-kafka-connector?tab=readme-ov-file#record-mapping-fieldfield_name.
-            timestamp: "#{VALUE.timestamp}"
-            time: "#{VALUE.time}"
-            stock_name: "#{VALUE.name}"
-            last_price: "#{VALUE.last_price}"
-            ask: "#{VALUE.ask}"
-            ask_quantity: "#{VALUE.ask_quantity}"
-            bid: "#{VALUE.bid}"
-            bid_quantity: "#{VALUE.bid_quantity}"
-            pct_change: "#{VALUE.pct_change}"
-            min: "#{VALUE.min}"
-            max: "#{VALUE.max}"
-            ref_price: "#{VALUE.ref_price}"
-            open_price: "#{VALUE.open_price}"
-            item_status: "#{VALUE.item_status}"
-            ts: "#{TIMESTAMP}"
-            topic: "#{TOPIC}"
-            offset: "#{OFFSET}"
-            partition: "#{PARTITION}"
+            aLightstreamerFieldName: "#{extraction_expression}"
+            # stock_name: "#{VALUE.name}"
+            # last_price: "#{VALUE.last_price}"
 
           # -- Optional. If set to `true`, if a field mapping fails, that
           # specific field's value will simply be omitted from the update sent
           # to the Lightstreamer clients, while other successfully mapped fields
           # from the same record will still be delivered.
-          # @default -- false
-          enableSkipFailedMapping:
+          enableSkipFailedMapping: false
 
         # -- Optional. Logger configuration for the connection.
         # If not specified, all settings at their defaults will be used.
@@ -5289,10 +5262,10 @@ connectors:
           # -- Mandatory. List of references to the appenders defined in
           # `connectors.kafkaConnector.logging.appenders`.
           appenders:
-            - stdout
+            # - stdout
 
           # -- (string) Mandatory. The logger level.
-          level: INFO
+          level:
 
     # -- Optional. Local schema files used for message validation.
     localSchemaFiles:
