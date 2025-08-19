@@ -500,27 +500,27 @@ Render the key/value record evaluator settings for the Lightstreamer Kafka Conne
 {{- $key := index . 3 -}}
 {{- $type := $evaluator.type | default "STRING" }}
 {{- $protobufMessageType := $evaluator.protobufMessageType }}
-{{- if not (mustHas $type (list "AVRO" "JSON" "PROTOBUF" "STRING" "INTEGER" "BOOLEAN" "BYTE_ARRAY" "BYTE_BUFFER" "BYTES" "DOUBLE" "FLOAT" "LONG" "SHORT" "UUID")) }}
-  {{- fail (printf "connectors.kafkaConnector.connections.%s.record.%sEvaluator.type must be one of: \"AVRO\", \"JSON\", \"PROTOBUF\" \"STRING\", \"INTEGER\", \"BOOLEAN\", \"BYTE_ARRAY\", \"BYTE_BUFFER\", \"BYTES\", \"DOUBLE\", \"FLOAT\", \"LONG\", \"SHORT\", \"UUID\"" $key $keyOrValue) }}
+{{- if not (mustHas $type (list "AVRO" "JSON" "PROTOBUF" "KVP" "STRING" "INTEGER" "BOOLEAN" "BYTE_ARRAY" "BYTE_BUFFER" "BYTES" "DOUBLE" "FLOAT" "LONG" "SHORT" "UUID")) }}
+  {{- fail (printf "connectors.kafkaConnector.connections.%s.record.%sEvaluator.type must be one of: \"AVRO\", \"JSON\", \"PROTOBUF\", \"KVP\", \"STRING\", \"INTEGER\", \"BOOLEAN\", \"BYTE_ARRAY\", \"BYTE_BUFFER\", \"BYTES\", \"DOUBLE\", \"FLOAT\", \"LONG\", \"SHORT\", \"UUID\"" $key $keyOrValue) }}
 {{- end }}
-  <!-- Optional. The format to be used to deserialize the key a Kafka record.
-        Can be one of the following:
-        - AVRO
-        - JSON
-        - PROTOBUF
-        - STRING
-        - INTEGER
-        - BOOLEAN
-        - BYTE_ARRAY
-        - BYTE_BUFFER
-        - BYTES
-        - DOUBLE
-        - FLOAT
-        - LONG
-        - SHORT
-        - UUID
-
-        Default: STRING -->
+<!-- Optional. The format to be used to deserialize the key a Kafka record.
+      Can be one of the following:
+      - AVRO
+      - JSON
+      - PROTOBUF
+      - KVP
+      - STRING
+      - INTEGER
+      - BOOLEAN
+      - BYTE_ARRAY
+      - BYTE_BUFFER
+      - BYTES
+      - DOUBLE
+      - FLOAT
+      - LONG
+      - SHORT
+      - UUID
+      Default: STRING -->
 <param name="record.{{ $keyOrValue }}.evaluator.type">{{ $type }}</param>
 
 {{- if has $type (list "AVRO" "JSON" "PROTOBUF") }}
@@ -548,10 +548,27 @@ Render the key/value record evaluator settings for the Lightstreamer Kafka Conne
       {{- end }}
     {{- else }}
       {{- if has $type (list "AVRO" "PROTOBUF") }}
-        {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.record.%sEvaluator.localSchemaFilePathRef.key or enable connectors.kafkaConnector.connections.%s.record.%sEvaluator.enableSchemaRegistry" $key $keyOrValue $key $keyOrValue) }}
+        {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.record.%sEvaluator.localSchemaFilePathRef or enable connectors.kafkaConnector.connections.%s.record.%sEvaluator.enableSchemaRegistry" $key $keyOrValue $key $keyOrValue) }}
       {{- end }}
     {{- end }} {{/* of .localSchemaFilePathRef */}}
   {{- end }} {{/* of .enableSchemaRegistry */}}
+{{- else if eq $type "KVP" }}
+  {{- $keyValueSeparator := ($evaluator.kvp).keyValueSeparator | default "=" }}
+  {{- $pairSeparator := ($evaluator.kvp).pairsSeparator | default "," }}
+
+<!-- Optional but only effective when "record.key/value.evaluator.type" is set to "KVP".
+      Specifies the symbol used to separate keys from values in a record key (or record value) serialized in the KVP format.
+  
+      Default value: "=".
+-->
+<param name="record.{{ $keyOrValue }}.evaluator.kvp.key-value.separator">{{ $keyValueSeparator }}</param>
+
+<!-- Optional but only effective when "record.key/value.evaluator.type" is set to "KVP".
+      Specifies the symbol used to separate multiple key-value pairs in a record key (or record value) serialized in the KVP format.
+  
+      Default value: ",".
+-->
+<param name="record.{{ $keyOrValue }}.evaluator.kvp.pairs.separator">{{ $pairSeparator }}</param>
 {{- end }} {{/* of has $type (list "AVRO" "JSON" "PROTOBUF") */}}
 {{- end }}
 
