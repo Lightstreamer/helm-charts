@@ -95,8 +95,10 @@ Render the Lightstreamer Kafka Connector configuration file.
         -->
         {{- end }} {{/* of .groupId */}}
 
+        {{- if (($connection.sslConfig)).enabled }}
+
         <!-- ##### ENCRYPTION SETTINGS ##### -->
-        {{- with $connection.sslConfig }}
+          {{- with $connection.sslConfig }}
 
         <!-- A TCP secure connection to Kafka is configured through parameters with
              the `encryption` prefix. -->
@@ -106,80 +108,67 @@ Render the Lightstreamer Kafka Connector configuration file.
              - false
 
              Default value: false. -->
-          {{- if .enable }}
         <param name="encryption.enable">true</param>
-          {{- else }}
-        <!--
-        <param name="encryption.enable">true</param>
-        -->
-          {{- end }} {{/* of .enable */}}
+            {{- if .protocol }}
 
         <!-- Optional. The SSL protocol to be used. Can be one of the following:
              - TLSv1.2
              - TLSv1.3
 
              Default value: TLSv1.3 when running on Java 11 or newer, TLSv1.2 otherwise. -->
-          {{- if .protocol }}
-            {{- if not (mustHas .protocol (list "TLSv1.2" "TLSv1.3")) }}
-              {{- fail (printf "connectors.kafkaConnector.connections.%s.sslConfig.protocol must be one of: \"TLSv1.2\", \"TLSv1.3\"" $key) }}
-            {{- end }}
+              {{- if not (mustHas .protocol (list "TLSv1.2" "TLSv1.3")) }}
+                {{- fail (printf "connectors.kafkaConnector.connections.%s.sslConfig.protocol must be one of: \"TLSv1.2\", \"TLSv1.3\"" $key) }}
+              {{- end }}
         <param name="encryption.protocol">{{ .protocol }}</param>
-          {{- else }}
-        <!--
-        <param name="encryption.protocol">TLSv1.2</param>
-        -->
-          {{- end }} {{/* of .protocol */}}
+            {{- end }} {{/* of .protocol */}}
+
+            {{- if .allowProtocols }}
 
         <!-- Optional. The list of enabled secure communication protocols.
 
              Default value: TLSv1.2,TLSv1.3 when running on Java 11 or newer, `TLSv1.2` otherwise. -->
-          {{- if .allowProtocols }}
-            {{- range $protocol := .allowProtocols}}
-              {{- if not (mustHas $protocol (list "TLSv1.2" "TLSv1.3")) }}
-                {{- fail (printf "connectors.kafkaConnector.connections.%s.sslConfig.allowProtocols must be a list of \"TLSv1.2\", \"TLSv1.3\"" $key) }}
+              {{- range $protocol := .allowProtocols}}
+                {{- if not (mustHas $protocol (list "TLSv1.2" "TLSv1.3")) }}
+                  {{- fail (printf "connectors.kafkaConnector.connections.%s.sslConfig.allowProtocols must be a list of \"TLSv1.2\", \"TLSv1.3\"" $key) }}
+                {{- end }}
               {{- end }}
-            {{- end }}
         <param name="encryption.enabled.protocols">{{ join "," .allowProtocols }}</param>
-          {{- else }}
-        <!--
-        <param name="encryption.enabled.protocols">TLSv1.3</param>
-        -->
-          {{- end }} {{/* of .allowProtocols */}}
+            {{- end }} {{/* of .allowProtocols */}}
 
         <!--Optional. The list of enabled secure cipher suites.
 
             Default value: all the available cipher suites in the running JVM. -->
-          {{- if .allowCipherSuites }}
-            {{- range $cipherSuite := .allowCipherSuites}}
-              {{- if $cipherSuite | empty }}
-                {{- fail (printf "connectors.kafkaConnector.connections.%s.sslConfig.allowCipherSuites must be a list of valid values" $key) }}
+            {{- if .allowCipherSuites }}
+              {{- range $cipherSuite := .allowCipherSuites}}
+                {{- if $cipherSuite | empty }}
+                  {{- fail (printf "connectors.kafkaConnector.connections.%s.sslConfig.allowCipherSuites must be a list of valid values" $key) }}
+                {{- end }}
               {{- end }}
-            {{- end }}
         <param name="encryption.cipher.suites">{{ join "," .allowCipherSuites }}</param>
-          {{- else }}
+            {{- else }}
         <!--
         <param name="encryption.cipher.suites">TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA</param>
         -->
-          {{- end }} {{/* of .allowCipherSuites */}}
+            {{- end }} {{/* of .allowCipherSuites */}}
 
         <!-- Optional. Enable hostname verification. Can be one of the following:
              - true
              - false
 
              Default value: false. -->
-          {{- if .enableHostnameVerification }}
+            {{- if .enableHostnameVerification }}
         <param name="encryption.hostname.verification.enable">true</param>
-          {{- else }}
+            {{- else }}
         <!--
         <param name="encryption.hostname.verification.enable">true</param>
         -->
-          {{- end }} {{/* of .enableHostnameVerification */}}
+            {{- end }} {{/* of .enableHostnameVerification */}}
 
         <!-- Optional. The path of the trust store file, relative to the deployment folder
              (LS_HOME/adapters/lightstreamer-kafka-connector-<version>). -->
-          {{- if .truststoreRef}}
-            {{- include "lightstreamer.kafka-connector.configuration.truststore" (list "encryption.truststore" $.Values.keystores .truststoreRef)  | nindent 8 }}
-          {{- else }}
+            {{- if .truststoreRef}}
+              {{- include "lightstreamer.kafka-connector.configuration.truststore" (list "encryption.truststore" $.Values.keystores .truststoreRef)  | nindent 8 }}
+            {{- else }}
         <!--
         <param name="encryption.truststore.path">secrets/kafka-connector.truststore.jks</param>
         -->
@@ -191,11 +180,11 @@ Render the Lightstreamer Kafka Connector configuration file.
         <!--
         <param name="encryption.truststore.password">kafka-connector-truststore-password</param>
         -->
-          {{- end }} {{/* of .truststoreRef */}}
+            {{- end }} {{/* of .truststoreRef */}}
 
-          {{- if .keystoreRef }}
-            {{- include "lightstreamer.kafka-connector.configuration.keystore" (list "encryption.keystore" $.Values.keystores .keystoreRef)  | nindent 8 }}
-          {{- else }}
+            {{- if .keystoreRef }}
+              {{- include "lightstreamer.kafka-connector.configuration.keystore" (list "encryption.keystore" $.Values.keystores .keystoreRef)  | nindent 8 }}
+            {{- else }}
         <!-- Optional. Enable a key store. Can be one of the following:
              - true
              - false
@@ -230,8 +219,9 @@ Render the Lightstreamer Kafka Connector configuration file.
         <!--
         <param name="encryption.keystore.key.password">kafka-connector-private-key-password</param>
         -->
-          {{- end }} {{/* of .enableKeyStore */}}
-        {{- end }} {{/* of .sslConfig */}}
+            {{- end }} {{/* of .enableKeyStore */}}
+          {{- end }} {{/* of .sslConfig */}}
+        {{- end }} {{/* of .sslConfig.enabled */}}
 
         <!-- ##### AUTHENTICATION SETTINGS ##### -->
         {{- with $connection.authentication }}
@@ -673,9 +663,12 @@ Render the Lightstreamer Kafka Connector configuration file.
             {{- end }} {{/* of .keystoreRef */}}
           {{- end }} {{/* of .sslConfig */}}
         {{- else }}
-          {{- if or ((($connection.record).keyEvaluator).enableSchemaRegistry) ((($connection.record).valueEvaluator).enableSchemaRegistry) }}
-            {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.record.schemaRegistryRef or disable connectors.kafkaConnector.connections.%s.record.keyEvaluator.enableSchemaRegistry and connectors.kafkaConnector.connections.%s.record.valueEvaluator.enableSchemaRegistry" $key $key $key) }}
+          {{- if ((($connection.record).keyEvaluator).enableSchemaRegistry) }}
+            {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.record.schemaRegistryRef or disable connectors.kafkaConnector.connections.%s.record.keyEvaluator.enableSchemaRegistry" $key $key) }}
           {{- end }}
+          {{- if ((($connection.record).valueEvaluator).enableSchemaRegistry) }}
+            {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.record.schemaRegistryRef or disable connectors.kafkaConnector.connections.%s.record.valueEvaluator.enableSchemaRegistry" $key $key) }}
+          {{- end }}          
         {{- end }} {{/* of .schemaRegistryRef */}}
 
     </data_provider>
