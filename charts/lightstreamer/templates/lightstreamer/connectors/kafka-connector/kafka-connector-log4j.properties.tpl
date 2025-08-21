@@ -22,8 +22,7 @@ Render the logger configuration.
 {{- $globalAppenders := index . 0 -}}
 {{- $loggerName := index . 1 -}}
 {{- $logger := index . 2 -}}
-{{- range $appenderName := required (printf "%s.appenders must be set" $loggerName) $logger.appenders }}
-  {{- $appenderName := required (printf "%s.appenders must be set" $loggerName) $appenderName }}
+{{- range $appenderName := $logger.appenders }}
   {{- if not (hasKey $globalAppenders $appenderName) }}
     {{- fail (printf "connectors.kafkaConnector.logging.appenders.%s not defined" $appenderName) }}
   {{- end }}
@@ -31,11 +30,15 @@ Render the logger configuration.
 {{- if not (mustHas $logger.level $admittedLoggingLevels) }}
   {{- fail (printf "connectors.kafkaConnector.logging.kafkaConnector.logging.loggers.%s.level must be one of %s" $loggerName $admittedLoggingLevels) }}
 {{- end }}
-log4j.logger.{{ $loggerName }}={{ $logger.level }}, {{ join ", " $logger.appenders }}
+{{- $appendersList := "" }}
+{{- if $logger.appenders }} 
+  {{- $appendersList = printf ", %s" (join ", " $logger.appenders) }}
+{{- end }}
+log4j.logger.{{ $loggerName }}={{ $logger.level }}{{ $appendersList }}
 {{- end }}
 
 {{/*
-Render the  Kafka Connector logging configuration file.
+Render the Kafka Connector logging configuration file.
 */}}
 {{- define "lightstreamer.kafka-connector.logging-conf" -}}
 {{- with required "kafkaConnector.logging must be set" .Values.connectors.kafkaConnector.logging }}
@@ -47,7 +50,7 @@ Render the  Kafka Connector logging configuration file.
   {{- end }}
 
   {{- /* Render the appenders */}}
-  {{ range $appenderName, $appender := required "connectors.kafkaConnector.logging.appenders must be set" .appenders }}
+  {{ range $appenderName, $appender := .appenders }}
 # {{ $appenderName | quote }} Appender
     {{- $type := default "" ($appender).type }}
     {{- if not (mustHas $type (list "Console")) }}
@@ -64,10 +67,9 @@ log4j.appender.{{ $appenderName }}.layout.ConversionPattern={{ required (printf 
 
 {{- /* Render connection loggers */ -}}
 {{- range $key, $connection := $.Values.connectors.kafkaConnector.connections }}
-  {{- if $connection.enabled }}
-    {{- $logger := $connection.logger | default (dict "level" "INFO" "appenders" (list "stdout")) }}
+  {{- if and $connection.enabled $connection.logger }}
 # {{ $connection.name | quote }} logger
-    {{- include "lightstreamer.kafka-connector.logging-logger-conf" (list $.Values.connectors.kafkaConnector.logging.appenders $connection.name $logger) }}
+    {{- include "lightstreamer.kafka-connector.logging-logger-conf" (list $.Values.connectors.kafkaConnector.logging.appenders $connection.name $connection.logger) }}
   {{- end }}
 {{ end }}
 
