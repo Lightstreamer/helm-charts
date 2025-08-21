@@ -494,8 +494,9 @@ Render the keystore settings for the Lightstreamer Kafka Connector configuration
 Render the key/value record evaluator settings for the Lightstreamer Kafka Connector configuration file.
 */}}
 {{- define "lightstreamer.kafka-connector.configuration.record.evaluator" -}}
-{{- $evaluator := index . 0 -}}
+{{- $connection := index . 0 -}}
 {{- $keyOrValue := index . 1 -}}
+{{- $evaluator := get $connection.record (printf "%sEvaluator" $keyOrValue) }}
 {{- $localSchemaFiles := index . 2 -}}
 {{- $key := index . 3 -}}
 {{- $type := $evaluator.type | default "STRING" }}
@@ -525,6 +526,9 @@ Render the key/value record evaluator settings for the Lightstreamer Kafka Conne
 
 {{- if has $type (list "AVRO" "JSON" "PROTOBUF") }}
   {{- if $evaluator.enableSchemaRegistry }}
+    {{- if not $connection.record.schemaRegistryRef }}
+      {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.record.schemaRegistryRef or disable connectors.kafkaConnector.connections.%s.record.%sEvaluator.enableSchemaRegistry" $key $key $keyOrValue) }}
+    {{- end }}
 
 <!-- Mandatory if evaluator type is AVRO and no local schema paths are specified. Enable the use of the Confluent Schema Registry for validation respectively of the key.
       Can be one of the following:
@@ -534,6 +538,7 @@ Render the key/value record evaluator settings for the Lightstreamer Kafka Conne
       Default value: false. -->
 <param name="record.{{ $keyOrValue }}.evaluator.schema.registry.enable">true</param>
   {{- else }}
+    {{- $_ := unset $connection.record "schemaRegistryRef" -}}
     {{- with $evaluator.localSchemaFilePathRef }}
       {{ $localSchema := required (printf "connectors.kafkaConnector.localSchemaFiles.%s not defined" . ) (get ($localSchemaFiles | default dict) .) }}
 <!-- Mandatory if evaluator type is set to "AVRO" or "PROTOBUF" and the Confluent Schema Registry is disabled. The path of the local schema
