@@ -296,8 +296,7 @@ service:
 
   # -- Optional. The service type.
   # See https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types.
-  # @default -- ClusterIP
-  type:
+    type: ClusterIP
 
   # -- Optional. The IP address of the service.
   # @default -- Allocated by the Kubernetes control plane
@@ -1106,7 +1105,7 @@ keystores:
 # -- Mandatory. Logging configuration for the Lightstreamer Broker.
 logging:
 
-  # -- Optional. Map of appenders configuration. Every entry in the map
+  # -- Optional. Map of appender configurations. Every entry in the map
   # defines a specific appender configuration.
   # Every logger must refer to one or more appenders defined here.
   appenders:
@@ -4070,7 +4069,7 @@ adapters:
         remoteHost:
 
         # -- Optional. The local network interface to bind to.
-        # Example: 192.168."1.1"
+        # Example: `192.168.1.1`
         # @default -- will bind to any available interface
         interface:
 
@@ -4374,9 +4373,8 @@ adapters:
         # -- Optional. Enables this Data Provider configuration.
         enabled: false
 
-        # -- Optional but mandatory if multiple Data Adapters (either proxy
-        # or in-process) are defined in the same Adapter Set. The name of the
-        # Data Adapter.
+        # -- (string) Mandatory if multiple Data Adapters (either proxy or 
+        # in-process) are defined in the same Adapter Set. The name of the Data Adapter.
         # Example: `MY_REMOTE`
         # @default -- DEFAULT
         name:
@@ -4531,7 +4529,7 @@ adapters:
           remoteHost:
 
           # -- Optional. The local network interface to bind to.
-          # Example: 192.168."1.1"
+          # Example: `192.168.1.1`
           # @default -- will bind to any available interface
           interface:
 
@@ -4733,7 +4731,7 @@ adapters:
             # where the latter is added by the Robust Proxy Data Adapter and
             # allows a Remote Data Adapter to detect if it is in replacement
             # of a previous instance for the same Proxy Adapter instance.
-            # Example: "remote:"
+            # Example: `remote:`
             # @default -- "" (no custom initialization parameters will be sent)
             prefix:
 
@@ -4818,7 +4816,7 @@ connectors:
       # will be deployed to the
       # `/lightstreamer/deployed_adapters/kafka-connector` directory in the
       # container.
-      fromGitHubRelease:
+      fromGitHubRelease: 1.2.8
 
       # -- (string) The URL from which to download the Kafka Connector zip
       # package at startup. Once downloaded, the package will be deployed to the
@@ -4850,10 +4848,11 @@ connectors:
     # GitHub.
     adapterClassName: "com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter"
 
-    # -- Mandatory. Global logging configuration for the Kafka Connector.
+    # -- Mandatory. Logging configuration for the Kafka Connector.
     logging:
 
-      # -- Mandatory. Appenders configuration.
+      # -- Mandatory. Map of appender configurations. Every entry in the map
+      # defines a specific appender configuration.
       # Every logger must refer to one or more appenders defined here.
       appenders:
 
@@ -4868,12 +4867,13 @@ connectors:
           pattern: "%d|%-10c{1}|%-5p|%m%n"
 
       # -- Optional. Global loggers configuration.
+      # Every entry in the map defines a logger configuration
       loggers:
 
         # -- Logger for the internal official Java client activities.
         org.apache.kafka:
 
-          # -- Mandatory. List of references to the appenders to be used by
+          # -- Optional. List of references to the appenders to be used by
           # the logger.
           appenders:
             - stdout
@@ -4881,17 +4881,21 @@ connectors:
           # -- (string) Mandatory. The logger level.
           level: WARN
 
-        # -- Logger for the Kafka Connector Metadata Adapter.
-        # Replace this key with the name of the custom Metadata Adapter class.
+        # -- Logger for the default Kafka Connector Metadata Adapter
+        # implementation class.
         com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter:
           appenders:
             - stdout
+
           level: INFO
 
         # Put here other loggers as needed.
-        # my.package:
+        #
+        # my.custom.logger:
+        #
         #  appenders:
         #    - stdout
+        #
         #  level: INFO
 
     # -- Mandatory. Maps of connection configurations. The Kafka Connector
@@ -4917,13 +4921,13 @@ connectors:
         # this specific Kafka connection through a Subscription object.
         # The connection name is also used to group all logging messages
         # belonging to the same connection.
-        # Example: "a-connection-configuration"
+        # Example: `a-connection-configuration`
         name:
 
         # -- (string) Mandatory. The Kafka Cluster bootstrap server endpoint
         # expressed as the list of host/port pairs used to establish the
         # initial connect.
-        # Example: "broker:9092"
+        # Example: `broker:9092`
         bootstrapServers:
 
         # -- (string) Optional. The name of the consumer group this connection
@@ -4934,7 +4938,7 @@ connectors:
         # for details.
         # If not specified, the default value is
         # `kafkaConnector.adapterSetId + name + randomly generated suffix`.
-        # Example: "a-consumer-group"
+        # Example: `a-consumer-group`
         groupId:
 
         # -- Optional. TLS/SSL settings for the connection.
@@ -5110,10 +5114,11 @@ connectors:
             # `enableSchemaRegistry` if the latter is set to `true`.
             localSchemaFilePathRef:
 
-            # -- Optional. Enables the Confluent Schema Registry for validation
-            # of the key.
-            # Must be set to `true` when `type` is set to `AVRO` and no local
-            # schema is set.
+            # -- Mandatory if `type` is set to `AVRO` or `PROTOBUF` and no
+            # local schema paths are provided. Enables the Confluent Schema 
+            # Registry for validation of the key.
+            # When enabled, the reference to a Schema Registry configuration is
+            # mandatory through the `record.schemaRegistryRef` parameter.            
             enableSchemaRegistry: false
 
             # -- Mandatory if `type` is set to `PROTOBUF` and a binary
@@ -5151,10 +5156,11 @@ connectors:
             # `enableSchemaRegistry` if the latter is set to `true`.
             localSchemaFilePathRef:
 
-            # -- Optional. Enables the Confluent Schema Registry for validation
-            # of the value.
-            # Must be set to `true` when `type` is set to `AVRO` and no local
-            # schema is set.
+            # -- Mandatory if `type` is set to `AVRO` or `PROTOBUF` and no
+            # local schema paths are provided. Enables the Confluent Schema 
+            # Registry for validation of the value.
+            # When enabled, the reference to a Schema Registry configuration is
+            # mandatory through the `record.schemaRegistryRef` parameter.
             enableSchemaRegistry: false
 
             # -- Mandatory if `type` is set to `PROTOBUF` and a binary
@@ -5184,8 +5190,15 @@ connectors:
           # Lightstreamer clients subscribed to this connection is forced.
           extractionErrorStrategy: IGNORE_AND_CONTINUE
 
-          # -- Optional. The reference to a Schema Registry configuration
-          # defined in `connectors.kafkaConnector.schemaRegistry`.
+          # -- Mandatory when either record.keyEvaluator or record.valueEvaluator
+          # require a Schema Registry. The reference to a Schema Registry 
+          # configuration defined in 
+          # `connectors.kafkaConnector.schemaRegistries`.
+
+          # -- Mandatory when either record.keyEvaluator or record.valueEvaluator
+          # requires a Schema Registry. The reference to a Schema Registry
+          # configuration (defined in 
+          # `connectors.kafkaConnector.schemaRegistries`).
           schemaRegistryRef:
 
         # -- Mandatory. Record routings configuration.
@@ -5204,15 +5217,15 @@ connectors:
           # defines a topic mapping.
           topicMappings:
 
-            # -- At least one must be provided. Maps a Kafka topic to:
-            # - one or more simple items
-            # - one or more item templates
-            # - any combination of the above
+            # -- At least one must be provided. Maps a Kafka topic as follows:
+            # - to one or more simple items
+            # - to one or more item templates
+            # - to any combination of the above
             aTopicMapping:
 
               # -- (string) Mandatory and unique across all topic mappings. The
               # Kafka topic name.
-              # Example: "stock"
+              # Example: `stock`
               topic:
 
               # -- Mandatory if `itemTemplateRefs` is empty. List of simple
@@ -5256,15 +5269,15 @@ connectors:
           enableSkipFailedMapping: false
 
         # -- Optional. Logger configuration for the connection.
-        # If not specified, all settings at their defaults will be used.
         logger:
 
-          # -- Mandatory. List of references to the appenders defined in
+          # -- Optional. List of references to the appenders defined in
           # `connectors.kafkaConnector.logging.appenders`.
-          appenders:
+          appenders: []
             # - stdout
 
           # -- (string) Mandatory. The logger level.
+          # Example: `INFO`
           level:
 
     # -- Optional. Local schema files used for message validation.
@@ -5280,17 +5293,21 @@ connectors:
         # name: record-value
         # key: record_value.avsc
 
-    # -- Optional. Set of Schema Registry configurations.
-    schemaRegistry:
+    # -- Optional. Map of Schema Registry definitions. Every entry in the map
+    # defines a specific Schema Registry configuration, which can then be
+    # referenced from the connector configurations through the 
+    # `connection.{}.schemaRegistryRef` setting.
+    schemaRegistries:
 
-      # -- Mandatory if at least one of `connections.{}.keyEvaluator.type` or
-      # `connections.{}.valueEvaluator.type` is set to `AVRO` and no local
-      # schema paths are specified. Schema Registry configuration.
+      # Example of Schema Registry configuration. 
+      # This example can be used as a template to define your own Schema 
+      # Registry configurations.
       mySchemaRegistry:
 
         # -- Mandatory. The URL of the Confluent Schema Registry. An encrypted
         # connection is enabled by specifying the `https` protocol.
-        url: https://schema-registry:8084
+        # Example: `https://schema-registry:8084`
+        url:
 
         # -- Optional. Basic HTTP authentication of a connection against the
         # Schema Registry.
@@ -5309,19 +5326,17 @@ connectors:
         sslConfig:
 
           # -- Optional. List of enabled secure communication protocols.
-          # @default -- [TLSv1.2, TLSv1.3] when running on Java 11 or newer, [TLSv1.2] otherwise
-          allowProtocols:
-            # - TLSv1.2
-            # - TLSv1.3
+          # If not specified, the default value is `[TLSv1.2, TLSv1.3]` when
+          # running on Java 11 or newer, `[TLSv1.2]` otherwise.
+          allowProtocols: []
 
           # -- Optional. List of enabled secure cipher suites.
-          # @default -- all the available cipher suites in the running JVM
-          allowCipherSuites:
-            # - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
+          # If not specified, all the available cipher suites in the running JVM 
+          # will be used.
+          allowCipherSuites: []
 
           # -- Optional. Enables the hostname verification.
-          # @default -- false
-          enableHostnameVerification:
+          enableHostnameVerification: false
 
           # -- Optional. The reference to a keystore (defined in 'keystores')
           # used to validate the certificates provided by the Schema Registry.
