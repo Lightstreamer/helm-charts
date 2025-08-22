@@ -435,8 +435,8 @@ Render the truststore settings for the Lightstreamer Kafka Connector configurati
 
 <!-- Optional. The password of the trust store.
 
-      If not set, checking the integrity of the trust store file configured will not
-      be possible. -->
+     If not set, checking the integrity of the trust store file configured will not
+     be possible. -->
 <param name="{{ $prefix }}.password">$env.LS_KEYSTORE_{{ $key | upper |replace "-" "_" }}_PASSWORD</param>
 
 {{- if not (quote $keyStore.type | empty) }}
@@ -460,6 +460,7 @@ Render the keystore settings for the Lightstreamer Kafka Connector configuration
 
       If enabled, the following parameters configure the key store settings:
       - encryption.keystore.path
+      - encryption.keystore.type
       - encryption.keystore.password
       - encryption.keystore.key.password
 
@@ -479,10 +480,6 @@ Render the keystore settings for the Lightstreamer Kafka Connector configuration
 <!-- Optional. The password of the private key in the key store file. -->
 {{- if $keyStore.keyPasswordSecretRef }}
 <param name="{{ $prefix }}.key.password">$env.LS_KEYSTORE_{{ $key | upper |replace "-" "_" }}_KEY_PASSWORD</param>
-{{- else }}
-<!--
-<param name="{{ $prefix }}.key.password">kafka-connector-private-key-password</param>
--->
 {{- end }}
 
 {{- if not (quote $keyStore.type | empty) }}
@@ -529,6 +526,8 @@ Render the key/value record evaluator settings for the Lightstreamer Kafka Conne
     {{- if not $connection.record.schemaRegistryRef }}
       {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.record.schemaRegistryRef or disable connectors.kafkaConnector.connections.%s.record.%sEvaluator.enableSchemaRegistry" $key $key $keyOrValue) }}
     {{- end }}
+    {{- /* Triggers rendering of the Schema Registry settings - */ -}}
+    {{- $_ := set $connection.record "renderSchemaRegistry" true -}}
 
 <!-- Mandatory if evaluator type is AVRO and no local schema paths are specified. Enable the use of the Confluent Schema Registry for validation respectively of the key.
       Can be one of the following:
@@ -538,7 +537,6 @@ Render the key/value record evaluator settings for the Lightstreamer Kafka Conne
       Default value: false. -->
 <param name="record.{{ $keyOrValue }}.evaluator.schema.registry.enable">true</param>
   {{- else }}
-    {{- $_ := unset $connection.record "schemaRegistryRef" -}}
     {{- with $evaluator.localSchemaFilePathRef }}
       {{ $localSchema := required (printf "connectors.kafkaConnector.localSchemaFiles.%s not defined" . ) (get ($localSchemaFiles | default dict) .) }}
 <!-- Mandatory if evaluator type is set to "AVRO" or "PROTOBUF" and the Confluent Schema Registry is disabled. The path of the local schema
