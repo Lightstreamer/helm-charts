@@ -88,9 +88,10 @@ spec:
             - name: jmx-port
               containerPort: {{ $rmiPortValue }}
               protocol: TCP
-            {{- with .dataPort }}
+            {{- $dataPortValue := (.dataPort).value | default $rmiPortValue}}
+            {{- if ne $dataPortValue $rmiPortValue }}
             - name: jmx-data-port
-              containerPort: {{ .value | default $rmiPortValue }}
+              containerPort: {{ $dataPortValue }}
               protocol: TCP
             {{- end }}
           {{- end }}
@@ -294,7 +295,7 @@ spec:
                 {{- end }}
               {{- end }}
             {{- end }}
-            {{- $authSecretRefs := $authSecretRefs | uniq }}
+            {{- $authSecretRefs = $authSecretRefs | uniq }}
             {{- range $authSecretRefs }}
             - name: LS_KAFKA_PLAIN_AUTH_{{ . | upper | replace "-" "_" }}_USER
               valueFrom:
@@ -309,24 +310,27 @@ spec:
             {{- end }} {{- /* end of range $authSecretRefs */ -}}
             {{- /* END AUTHENTICATION */ -}}
             {{- /* SCHEMA REGISTRY */ -}}
-            {{- range $key, $schemaRegistry := $.Values.connectors.kafkaConnector.schemaRegistry }}
+            {{- $schemaRegistryAuthSecretRefs := list }}
+            {{- range $key, $schemaRegistry := $.Values.connectors.kafkaConnector.schemaRegistries }}
               {{- if ($schemaRegistry.basicAuthentication).enabled }}
-                {{- with $schemaRegistry.basicAuthentication }}
-            - name: LS_KAFKA_SCHEMA_REGISTRY_{{ $key | upper | replace "-" "_" }}_USERNAME
+                {{- $schemaRegistryAuthSecretRefs = append $schemaRegistryAuthSecretRefs ($schemaRegistry.basicAuthentication.credentialsSecretRef) }}
+              {{- end }}
+            {{- end }}
+            {{- $schemaRegistryAuthSecretRefs = $schemaRegistryAuthSecretRefs | uniq }}
+            {{- range $schemaRegistryAuthSecretRefs }}
+            - name: LS_KAFKA_SCHEMA_REGISTRY_{{ . | upper | replace "-" "_" }}_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: {{ .credentialsSecretRef }}
+                  name: {{ . }}
                   key: user
-            - name: LS_KAFKA_SCHEMA_REGISTRY_{{ $key | upper | replace "-" "_" }}_PASSWORD
+            - name: LS_KAFKA_SCHEMA_REGISTRY_{{ . | upper | replace "-" "_" }}_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .credentialsSecretRef }}
+                  name: {{ . }}
                   key: password
                 {{- end }}
-              {{- end }} {{- /* end of $schemaRegistry.basicAuthentication.enabled */ -}}
-            {{- end }} {{- /* end of range $schemaRegistry */ -}}
+            {{- end }} {{- /* end of range $schemaRegistryAuthSecretRefs */ -}}
             {{- /* END SCHEMA REGISTRY */ -}}
-          {{- end }}
           {{- /* END ENV VARIABLES FOR THE KAFKA CONNECTOR */ -}}
           {{- with .Values.deployment.extraEnv }}
             {{- toYaml . | nindent 12 }}
