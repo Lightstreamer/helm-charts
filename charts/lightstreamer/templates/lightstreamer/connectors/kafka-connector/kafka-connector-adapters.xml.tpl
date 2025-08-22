@@ -571,7 +571,7 @@ Render the Lightstreamer Kafka Connector configuration file.
           {{- end }} {{/* of .enableSkipFailedMapping */}}
         {{- end }} {{/* of .mappingsfields */}}
 
-        {{- if ($connection.record).schemaRegistryRef }}
+        {{- if ($connection.record).renderSchemaRegistry }} {{/* Flag set by the "lightstreamer.kafka-connector.configuration.record.evaluator" function */}}
 
         <!-- ##### SCHEMA REGISTRY SETTINGS ##### -->
           {{- $schemaRegistryRef := $connection.record.schemaRegistryRef }}
@@ -580,37 +580,31 @@ Render the Lightstreamer Kafka Connector configuration file.
         <!-- Mandatory if the Confluent Schema Registry is enabled. The URL of the Confluent Schema Registry.
              An encrypted connection is enabled by specifying the "https" protocol. -->
         <param name="schema.registry.url">{{ required (printf "connectors.kafkaConnector.schemaRegistries.%s.url must be set" $schemaRegistryRef) $schemaRegistry.url }}</param>
+          
+          {{- if ($schemaRegistry.basicAuthentication).enabled }}
 
         <!-- Optional. Enable Basic HTTP authentication of this connection against the Schema Registry. Can be one of the following:
              - true
              - false
 
              Default value: false. -->
-          {{- if ($schemaRegistry.basicAuthentication).enabled }}
             {{- with $schemaRegistry.basicAuthentication }}
         <param name="schema.registry.basic.authentication.enable">true</param>
               {{- with required (printf "connectors.kafkaConnector.schemaRegistries.%s.basicAuthentication.credentialsSecretRef must be set" $schemaRegistryRef) .credentialsSecretRef }}
+
+        <!-- Mandatory if Basic HTTP authentication is enabled. The credentials. -->
         <param name="schema.registry.basic.authentication.username">$env.LS_KAFKA_SCHEMA_REGISTRY_{{ . | upper | replace "-" "_" }}_USERNAME</param>
         <param name="schema.registry.basic.authentication.password">$env.LS_KAFKA_SCHEMA_REGISTRY_{{ . | upper | replace "-" "_" }}_PASSWORD</param>
               {{- end }} {{/* of .basicAuthentication */}}
             {{- end }} {{/* of .basicAuthentication.enabled */}}
-          {{- else }}
-        <!--
-        <param name="schema.registry.basic.authentication.enable">true</param>
-        -->
-
-        <!-- Mandatory if Basic HTTP authentication is enabled. The credentials. -->
-        <!--
-        <param name="schema.registry.basic.authentication.username">authorized-schema-registry-user</param>
-        <param name="schema.registry.basic.authentication.password">authorized-schema-registry-user-password</param>
-        -->
           {{- end }} {{/* of .basicAuthentication.enabled */}}
+
+          {{- with $schemaRegistry.sslConfig }}
 
         <!-- The following parameters have the same meaning as the homologous ones defined in
              the ENCRYPTION SETTINGS section. -->
 
         <!-- Set general encryption settings -->
-          {{- with $schemaRegistry.sslConfig }}
             {{- if .allowProtocols }}
               {{- range $protocol := .allowProtocols}}
                 {{- if not (mustHas $protocol (list "TLSv1.2" "TLSv1.3")) }}
@@ -618,10 +612,6 @@ Render the Lightstreamer Kafka Connector configuration file.
                 {{- end }}
               {{- end }}
         <param name="schema.registry.encryption.enabled.protocols">{{ join "," .allowProtocols }}</param>
-            {{- else }}
-        <!--
-        <param name="schema.registry.encryption.enabled.protocols">TLSv1.3</param>
-        -->
             {{- end }} {{/* of .allowProtocols */}}
 
             {{- if .allowCipherSuites }}
@@ -631,40 +621,22 @@ Render the Lightstreamer Kafka Connector configuration file.
                 {{- end }}
               {{- end }}
         <param name="schema.registry.encryption.cipher.suites">{{ join "," .allowCipherSuites }}</param>
-            {{- else }}
-        <!--
-        <param name="schema.registry.encryption.cipher.suites">TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA</param>
-        -->
             {{- end }} {{/* of .allowCipherSuites */}}
 
             {{- if .enableHostnameVerification }}
         <param name="schema.registry.encryption.hostname.verification.enable">true</param>
-            {{- else }}
-        <!--
-        <param name="schema.registry.encryption.hostname.verification.enable">true</param>
-        -->
             {{- end }} {{/* of .enableHostnameVerification */}}
 
-        <!-- If required, configure the trust store to trust the Confluent Schema Registry certificates -->
             {{- if .truststoreRef}}
+        <!-- If required, configure the trust store to trust the Confluent Schema Registry certificates -->            
+
               {{- include "lightstreamer.kafka-connector.configuration.truststore" (list "schema.registry.truststore" $.Values.keystores .truststoreRef)  | nindent 8 }}
-            {{- else }}
-        <!--
-        <param name="schema.registry.encryption.truststore.path">secrets/kafka-connector.truststore.jks</param>
-        <param name="schema.registry.encryption.truststore.password">kafka-connector-truststore-password</param>
-        -->
             {{- end }} {{/* of .truststoreRef */}}
 
             {{- if .keystoreRef }}
-              {{- include "lightstreamer.kafka-connector.configuration.keystore" (list "schema.registry.keystore" $.Values.keystores .keystoreRef)  | nindent 8 }}
-            {{- else }}
+
         <!-- If mutual TLS is enabled on the Confluent Schema Registry, enable and configure the key store -->
-        <!--
-        <param name="schema.registry.encryption.keystore.enable">true</param>
-        <param name="schema.registry.encryption.keystore.path">secrets/kafka-connector.keystore.jks</param>
-        <param name="schema.registry.encryption.keystore.password">kafka-connector-password</param>
-        <param name="schema.registry.encryption.keystore.key.password">kafka-connector-private-key-password</param>
-        -->
+              {{- include "lightstreamer.kafka-connector.configuration.keystore" (list "schema.registry.keystore" $.Values.keystores .keystoreRef)  | nindent 8 }}
             {{- end }} {{/* of .keystoreRef */}}
           {{- end }} {{/* of .sslConfig */}}
         {{- end }} {{/* of .schemaRegistryRef */}}
