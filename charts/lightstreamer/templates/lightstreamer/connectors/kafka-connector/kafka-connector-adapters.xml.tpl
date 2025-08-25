@@ -40,6 +40,9 @@ Render the Lightstreamer Kafka Connector configuration file.
         <param name="logging.configuration.path">log4j.properties</param>
     </metadata_provider>
 
+    {{- range $key, $connection := required "kafkaConnectors.connections must be set" .connections }}
+      {{- if $connection.enabled }}
+
     <!-- Mandatory. The Kafka Connector allows the configuration of different independent connections to different Kafka
          broker/clusters.
 
@@ -56,8 +59,6 @@ Render the Lightstreamer Kafka Connector configuration file.
          The connection name is also used to group all logging messages belonging to the same connection.
 
          Its default value is "DEFAULT", but only one "DEFAULT" configuration is permitted. -->
-    {{- range $key, $connection := required "kafkaConnectors.connections must be set" .connections }}
-      {{- if $connection.enabled }}
     <data_provider name={{ $connection.name | quote }}>
         <!-- ##### GENERAL PARAMETERS ##### -->
 
@@ -78,8 +79,10 @@ Render the Lightstreamer Kafka Connector configuration file.
 
              The parameter sets the value of the "bootstrap.servers" key to configure the internal Kafka Consumer.
              See https://kafka.apache.org/documentation/#consumerconfigs_bootstrap.servers for more details.
-         -->
+        -->
         <param name="bootstrap.servers">{{ required (printf "connectors.kafkaConnector.connections.%s.bootstrapServers must be set" $key) $connection.bootstrapServers }}</param>
+
+        {{- if $connection.groupId }}
 
         <!-- Optional. The name of the consumer group this connection belongs to.
 
@@ -87,12 +90,7 @@ Render the Lightstreamer Kafka Connector configuration file.
              Kafka Consumer. See https://kafka.apache.org/documentation/#consumerconfigs_group.id for more details.
 
              Default value: Adapter Set id + the Data Adapter name + randomly generated suffix. -->
-        {{- if $connection.groupId }}
         <param name="group.id">{{ required (printf "connectors.kafkaConnector.connections.%s.groupId must be set" $key) $connection.groupId }}</param>
-        {{- else }}
-        <!--
-        param name="group.id">kafka-connector-group</param>
-        -->
         {{- end }} {{/* of .groupId */}}
 
         {{- if (($connection.sslConfig)).enabled }}
@@ -135,96 +133,46 @@ Render the Lightstreamer Kafka Connector configuration file.
         <param name="encryption.enabled.protocols">{{ join "," .allowProtocols }}</param>
             {{- end }} {{/* of .allowProtocols */}}
 
-        <!--Optional. The list of enabled secure cipher suites.
-
-            Default value: all the available cipher suites in the running JVM. -->
             {{- if .allowCipherSuites }}
+
+        <!-- Optional. The list of enabled secure cipher suites.
+
+             Default value: all the available cipher suites in the running JVM. -->
               {{- range $cipherSuite := .allowCipherSuites}}
                 {{- if $cipherSuite | empty }}
                   {{- fail (printf "connectors.kafkaConnector.connections.%s.sslConfig.allowCipherSuites must be a list of valid values" $key) }}
                 {{- end }}
               {{- end }}
         <param name="encryption.cipher.suites">{{ join "," .allowCipherSuites }}</param>
-            {{- else }}
-        <!--
-        <param name="encryption.cipher.suites">TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA</param>
-        -->
             {{- end }} {{/* of .allowCipherSuites */}}
+
+            {{- if .enableHostnameVerification }}
 
         <!-- Optional. Enable hostname verification. Can be one of the following:
              - true
              - false
 
              Default value: false. -->
-            {{- if .enableHostnameVerification }}
         <param name="encryption.hostname.verification.enable">true</param>
-            {{- else }}
-        <!--
-        <param name="encryption.hostname.verification.enable">true</param>
-        -->
             {{- end }} {{/* of .enableHostnameVerification */}}
+
+            {{- if .truststoreRef}}
 
         <!-- Optional. The path of the trust store file, relative to the deployment folder
              (LS_HOME/adapters/lightstreamer-kafka-connector-<version>). -->
-            {{- if .truststoreRef}}
               {{- include "lightstreamer.kafka-connector.configuration.truststore" (list "encryption.truststore" $.Values.keystores .truststoreRef)  | nindent 8 }}
-            {{- else }}
-        <!--
-        <param name="encryption.truststore.path">secrets/kafka-connector.truststore.jks</param>
-        -->
-
-        <!-- Optional. The password of the trust store.
-
-             If not set, checking the integrity of the trust store file configured will not
-             be possible. -->
-        <!--
-        <param name="encryption.truststore.password">kafka-connector-truststore-password</param>
-        -->
             {{- end }} {{/* of .truststoreRef */}}
 
             {{- if .keystoreRef }}
+
               {{- include "lightstreamer.kafka-connector.configuration.keystore" (list "encryption.keystore" $.Values.keystores .keystoreRef)  | nindent 8 }}
-            {{- else }}
-        <!-- Optional. Enable a key store. Can be one of the following:
-             - true
-             - false
-
-            A key store is required if the mutual TLS is enabled on Kafka.
-
-            If enabled, the following parameters configure the key store settings:
-            - encryption.keystore.path
-            - encryption.keystore.password
-            - encryption.keystore.key.password
-
-            Default value: false. -->
-        <!--
-        <param name="encryption.keystore.enable">true</param>
-        -->
-
-        <!-- Mandatory if key store is enabled. The path of the key store file, relative to
-             the deployment folder (LS_HOME/adapters/lightstreamer-kafka-connector-<version>). -->
-        <!--
-        <param name="encryption.keystore.path">secrets/kafka-connector.keystore.jks</param>
-        -->
-
-        <!-- Optional. The password of the key store.
-
-             If not set, checking the integrity of the key store file configured
-             will not be possible. -->
-        <!--
-        <param name="encryption.keystore.password">kafka-connector-password</param>
-        -->
-
-        <!-- Optional. The password of the private key in the key store file. -->
-        <!--
-        <param name="encryption.keystore.key.password">kafka-connector-private-key-password</param>
-        -->
             {{- end }} {{/* of .enableKeyStore */}}
           {{- end }} {{/* of .sslConfig */}}
         {{- end }} {{/* of .sslConfig.enabled */}}
 
-        <!-- ##### AUTHENTICATION SETTINGS ##### -->
         {{- with $connection.authentication }}
+        
+        <!-- ##### AUTHENTICATION SETTINGS ##### -->
 
         <!-- Broker authentication is configured through parameters with the
              `authentication` prefix. -->
@@ -384,42 +332,37 @@ Render the Lightstreamer Kafka Connector configuration file.
           {{- end }} {{/* of .authentication.enable */}}
         {{- end }} {{/* of connection.authentication */}}
 
-
         <!-- ##### RECORD EVALUATION SETTINGS ##### -->
 
         {{- with $connection.record }}
+          {{- if .consumeFrom }}
+
         <!-- Optional. Specifies where to start consuming events from:
              - LATEST: start consuming events from the end of the topic partition
              - EARLIEST: start consuming events from the beginning of the topic partition
 
              Default value: LATEST. -->
-          {{- if .consumeFrom }}
             {{- if not (mustHas .consumeFrom (list "EARLIEST" "LATEST")) }}
                {{- fail (printf "connectors.kafkaConnector.connections.%s.record.consumeFrom must be one of: \"EARLIEST\", \"LATEST\"" $key) }}
             {{- end }}
         <param name="record.consume.from">{{ .consumeFrom }}</param>
-          {{- else }}
-        <!--
-        <param name="record.consume.from">EARLIEST</param>
-        -->
           {{- end }} {{/* of .consumeFrom */}}
+
+          {{- if not (quote .consumeWithThreadNumber | empty) }}
 
         <!-- Optional. The number of threads to be used for concurrent processing of the
              incoming deserialized records. If set to `-1`, the number of threads will be automatically
              determined based on the number of available CPU cores.
 
              Default value: 1. -->
-          {{- if not (quote .consumeWithThreadNumber | empty) }}
             {{- if or (eq (int .consumeWithThreadNumber) -1) (gt (int .consumeWithThreadNumber) 0) }}
         <param name="record.consume.with.num.threads">{{ .consumeWithThreadNumber }}</param>
             {{- else }}
               {{- fail (printf "connectors.kafkaConnector.connections.%s.record.consumeWithThreadNumber must be set with a valid value" $key) }}
             {{- end }}
-          {{- else }}
-        <!--
-        <param name="record.consume.with.num.threads">4</param>
-        -->
           {{- end }} {{/* of .consumeWithThreadNumber */}}
+
+          {{- if .consumeWithOrderStrategy }}
 
         <!-- Optional but only effective if "record.consume.with.num.threads" is set to a value greater than 1 (which includes hte default value).
              The order strategy to be used for concurrent processing of the incoming
@@ -430,20 +373,17 @@ Render the Lightstreamer Kafka Connector configuration file.
              - UNORDERED: provide no ordering guarantees
 
              Default value: ORDER_BY_PARTITION. -->
-          {{- if .consumeWithOrderStrategy }}
             {{- if not (mustHas .consumeWithOrderStrategy (list "ORDER_BY_PARTITION" "ORDER_BY_KEY" "UNORDERED")) }}
               {{- fail (printf "connectors.kafkaConnector.connections.%s.record.consumeWithOrderStrategy must be one of: \"ORDER_BY_PARTITION\", \"ORDER_BY_KEY\", \"UNORDERED\"" $key) }}
             {{- else }}
         <param name="record.consume.with.order.strategy">{{ .consumeWithOrderStrategy }}</param>
             {{- end }}
-          {{- else }}
-        <!--
-        <param name="record.consume.with.order.strategy">ORDER_BY_KEY</param>
-        -->
           {{- end }} {{/* of .consumeWithOrderStrategy */}}
 
           {{- include "lightstreamer.kafka-connector.configuration.record.evaluator" (list $connection "key" $.Values.connectors.kafkaConnector.localSchemaFiles $key) | nindent 8 }}
           {{- include "lightstreamer.kafka-connector.configuration.record.evaluator" (list $connection "value" $.Values.connectors.kafkaConnector.localSchemaFiles $key) | nindent 8 }}
+
+          {{- if .extractionErrorStrategy }}
 
         <!-- Optional. The error handling strategy to be used if an error occurs while extracting data from incoming
              deserialized records.
@@ -453,15 +393,10 @@ Render the Lightstreamer Kafka Connector configuration file.
                                      requested by all the Lightstreamer clients subscribed to this connection
 
              Default: "IGNORE_AND_CONTINUE". -->
-          {{- if .extractionErrorStrategy }}
             {{- if not (mustHas .extractionErrorStrategy (list "IGNORE_AND_CONTINUE" "FORCE_UNSUBSCRIPTION")) }}
               {{- fail (printf "connectors.kafkaConnector.connections.%s.record.extractionErrorStrategy must be one of: \"IGNORE_AND_CONTINUE\", \"FORCE_UNSUBSCRIPTION\"" $key) }}
             {{- end }}
         <param name="record.extraction.error.strategy">{{ .extractionErrorStrategy }}</param>
-          {{- else }}
-        <!--
-        <param name="record.extraction.error.strategy">FORCE_UNSUBSCRIPTION</param>
-        -->
           {{- end }} {{/* of .extractionErrorStrategy */}}
         {{- end }} {{/* of .record */}}
 
@@ -493,15 +428,6 @@ Render the Lightstreamer Kafka Connector configuration file.
              <param name="map.TOPIC_NAME.to">item1,item2,itemN,...</param>
              
              At least one mapping must be provided. -->
-        <!-- Example 1:
-        <param name="map.aTopicName.to">item1,item2,itemN,...</param>
-        -->
-        <!-- Example 2:
-        <param name="map.aTopicName.to">item-template.template-name1,item-template.template-name2...</param>
-        -->
-        <!-- Example 3:
-        <param name="map.aTopicName.to">item-template.template-name1,item1,item-template.template-name2,item2,...</param>
-        -->
           {{- $itemTemplates := .itemTemplates }}
           {{- $usedTopicNames := list }}
           {{- range $mappingKey, $mapping := .topicMappings }}
@@ -529,15 +455,12 @@ Render the Lightstreamer Kafka Connector configuration file.
             {{- fail (printf "connectors.kafkaConnector.connections.%s.routing.topicMappings must be set" $key) }}
           {{- end }} {{/* of .topicMappings */}}
 
+          {{- if .enableTopicRegEx }}
+
         <!-- Optional. Enable the "TOPIC_NAME" part of the "map.TOPIC_NAME.to" parameter to be treated as a regular expression
              rather than of a literal topic name.
         -->
-          {{- if .enableTopicRegEx }}
         <param name="map.regex.enable">true</param>
-          {{- else }}
-        <!--
-        <parm name="map.regex.enable">true</param>
-        -->
           {{- end }} {{/* of .enableTopicRegEx */}}
         {{- end }} {{/* of .routing */}}
 
@@ -549,12 +472,11 @@ Render the Lightstreamer Kafka Connector configuration file.
              https://github.com/lightstreamer/Lightstreamer-kafka-connector?tab=readme-ov-file#record-mapping-fieldfield_name
 
              At least one mapping must be provided. -->
-        <!--
-        <param name="field.FIELD_NAME">extraction_expression</param>
-        -->
           {{- range $fieldName, $extractionExpression := required (printf "connectors.kafkaConnector.connections.%s.fields.mapping must be set" $key) .mappings }}
         <param name="field.{{ $fieldName }}">{{ $extractionExpression }}</param>
           {{- end }} {{/* of .mappings */}}
+
+          {{- if .enableSkipFailedMapping }}
 
         <!-- Optional. By enabling the parameter, if a field mapping fails, that specific field's value will simply be omitted from the update sent to
              Lightstreamer clients, while other successfully mapped fields from the same record will still be delivered. Can be one of the following:
@@ -562,12 +484,7 @@ Render the Lightstreamer Kafka Connector configuration file.
              - false
 
              Default value: false. -->
-          {{- if .enableSkipFailedMapping }}
         <param name="fields.skip.failed.mapping.enable">{{ .enableSkipFailedMapping }}</param>
-          {{- else }}
-        <!--
-        <param name="fields.skip.failed.mapping.enable">true</param>
-        -->
           {{- end }} {{/* of .enableSkipFailedMapping */}}
         {{- end }} {{/* of .mappingsfields */}}
 
@@ -641,9 +558,9 @@ Render the Lightstreamer Kafka Connector configuration file.
           {{- end }} {{/* of .sslConfig */}}
         {{- end }} {{/* of .schemaRegistryRef */}}
 
-    </data_provider>
+    </data_provider> 
       {{- end }} {{/* of .enabled */}}
-    {{- end }} {{/* of .connections */}}
+    {{- end -}} {{/* of .connections */}}
 
 </adapters_conf>
 {{- end }} {{/* of .Values.connectors.kafkaConnector */}}
