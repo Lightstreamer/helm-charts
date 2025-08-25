@@ -440,6 +440,16 @@ Render the truststore settings for the Lightstreamer Kafka Connector configurati
 <param name="{{ $prefix }}.password">$env.LS_KEYSTORE_{{ $key | upper |replace "-" "_" }}_PASSWORD</param>
 
 {{- if not (quote $keyStore.type | empty) }}
+  {{- if not (mustHas $keyStore.type (list "JKS" "PKCS12")) }}
+    {{- fail (printf "keystores.%s.type must be one of: \"JKS\", \"PKCS12\"" $key) }}
+  {{- end }}
+
+<!-- Optional. The type of the trust store. Can be one of the following:
+      - JKS
+      - PKCS12
+
+      Default value: JKS. -->
+<!--  
 <param name="{{ $prefix }}.type">{{ $keyStore.type }}</param>
 {{- end -}}
 {{- end -}}
@@ -477,12 +487,23 @@ Render the keystore settings for the Lightstreamer Kafka Connector configuration
       will not be possible. -->
 <param name="{{ $prefix }}.password">$env.LS_KEYSTORE_{{ $key | upper |replace "-" "_" }}_PASSWORD</param>
 
-<!-- Optional. The password of the private key in the key store file. -->
 {{- if $keyStore.keyPasswordSecretRef }}
+
+<!-- Optional. The password of the private key in the key store file. -->
 <param name="{{ $prefix }}.key.password">$env.LS_KEYSTORE_{{ $key | upper |replace "-" "_" }}_KEY_PASSWORD</param>
 {{- end }}
 
 {{- if not (quote $keyStore.type | empty) }}
+  {{- if not (mustHas $keyStore.type (list "JKS" "PKCS12")) }}
+    {{- fail (printf "keystores.%s.type must be one of: \"JKS\", \"PKCS12\"" $key) }}
+  {{- end }}
+
+<!-- Optional. The type of the key store.
+      Can be one of the following:
+      - JKS
+      - PKCS12
+
+      Default value: JKS. -->  
 <param name="{{ $prefix }}.keystore.type">{{ $keyStore.type }}</param>
 {{- end -}}
 {{- end -}}
@@ -494,13 +515,14 @@ Render the key/value record evaluator settings for the Lightstreamer Kafka Conne
 {{- $connection := index . 0 -}}
 {{- $keyOrValue := index . 1 -}}
 {{- $evaluator := get $connection.record (printf "%sEvaluator" $keyOrValue) }}
-{{- $localSchemaFiles := index . 2 -}}
-{{- $key := index . 3 -}}
-{{- $type := $evaluator.type | default "STRING" }}
-{{- $protobufMessageType := $evaluator.protobufMessageType }}
-{{- if not (mustHas $type (list "AVRO" "JSON" "PROTOBUF" "KVP" "STRING" "INTEGER" "BOOLEAN" "BYTE_ARRAY" "BYTE_BUFFER" "BYTES" "DOUBLE" "FLOAT" "LONG" "SHORT" "UUID")) }}
-  {{- fail (printf "connectors.kafkaConnector.connections.%s.record.%sEvaluator.type must be one of: \"AVRO\", \"JSON\", \"PROTOBUF\", \"KVP\", \"STRING\", \"INTEGER\", \"BOOLEAN\", \"BYTE_ARRAY\", \"BYTE_BUFFER\", \"BYTES\", \"DOUBLE\", \"FLOAT\", \"LONG\", \"SHORT\", \"UUID\"" $key $keyOrValue) }}
-{{- end }}
+{{- if $evaluator }}
+  {{- $localSchemaFiles := index . 2 -}}
+  {{- $key := index . 3 -}}
+  {{- $type := $evaluator.type | default "STRING" }}
+  {{- $protobufMessageType := $evaluator.protobufMessageType }}
+  {{- if not (mustHas $type (list "AVRO" "JSON" "PROTOBUF" "KVP" "STRING" "INTEGER" "BOOLEAN" "BYTE_ARRAY" "BYTE_BUFFER" "BYTES" "DOUBLE" "FLOAT" "LONG" "SHORT" "UUID")) }}
+    {{- fail (printf "connectors.kafkaConnector.connections.%s.record.%sEvaluator.type must be one of: \"AVRO\", \"JSON\", \"PROTOBUF\", \"KVP\", \"STRING\", \"INTEGER\", \"BOOLEAN\", \"BYTE_ARRAY\", \"BYTE_BUFFER\", \"BYTES\", \"DOUBLE\", \"FLOAT\", \"LONG\", \"SHORT\", \"UUID\"" $key $keyOrValue) }}
+  {{- end }}
 <!-- Optional. The format to be used to deserialize the key a Kafka record.
       Can be one of the following:
       - AVRO
@@ -521,13 +543,13 @@ Render the key/value record evaluator settings for the Lightstreamer Kafka Conne
       Default: STRING -->
 <param name="record.{{ $keyOrValue }}.evaluator.type">{{ $type }}</param>
 
-{{- if has $type (list "AVRO" "JSON" "PROTOBUF") }}
-  {{- if $evaluator.enableSchemaRegistry }}
-    {{- if not $connection.record.schemaRegistryRef }}
-      {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.record.schemaRegistryRef or disable connectors.kafkaConnector.connections.%s.record.%sEvaluator.enableSchemaRegistry" $key $key $keyOrValue) }}
-    {{- end }}
-    {{- /* Triggers rendering of the Schema Registry settings - */ -}}
-    {{- $_ := set $connection.record "renderSchemaRegistry" true -}}
+  {{- if has $type (list "AVRO" "JSON" "PROTOBUF") }}
+    {{- if $evaluator.enableSchemaRegistry }}
+      {{- if not $connection.record.schemaRegistryRef }}
+        {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.record.schemaRegistryRef or disable connectors.kafkaConnector.connections.%s.record.%sEvaluator.enableSchemaRegistry" $key $key $keyOrValue) }}
+      {{- end }}
+      {{- /* Triggers rendering of the Schema Registry settings - */ -}}
+      {{- $_ := set $connection.record "renderSchemaRegistry" true -}}
 
 <!-- Mandatory if evaluator type is AVRO and no local schema paths are specified. Enable the use of the Confluent Schema Registry for validation respectively of the key.
       Can be one of the following:
@@ -536,28 +558,28 @@ Render the key/value record evaluator settings for the Lightstreamer Kafka Conne
 
       Default value: false. -->
 <param name="record.{{ $keyOrValue }}.evaluator.schema.registry.enable">true</param>
-  {{- else }}
-    {{- with $evaluator.localSchemaFilePathRef }}
-      {{ $localSchema := required (printf "connectors.kafkaConnector.localSchemaFiles.%s not defined" . ) (get ($localSchemaFiles | default dict) .) }}
+    {{- else }}
+      {{- with $evaluator.localSchemaFilePathRef }}
+        {{ $localSchema := required (printf "connectors.kafkaConnector.localSchemaFiles.%s not defined" . ) (get ($localSchemaFiles | default dict) .) }}
 <!-- Mandatory if evaluator type is set to "AVRO" or "PROTOBUF" and the Confluent Schema Registry is disabled. The path of the local schema
       (or binary descriptor) file relative to the deployment folder (LS_HOME/adapters/lightstreamer-kafka-connector-<version>) for
       message validation respectively of the key and the value. -->
 <param name="record.{{ $keyOrValue }}.evaluator.schema.path">schemas/{{ . }}/{{ required (printf "connectors.kafkaConnector.localSchemaFiles.%s.key must be set" .) $localSchema.key }}</param>
-      {{ if (eq $type "PROTOBUF") }}
+        {{ if (eq $type "PROTOBUF") }}
 <!-- Mandatory when the evaluator type is set to "PROTOBUF" and a binary descriptor file is provided through the "record.key/value.evaluator.schema.path" 
       parameters. Specifies the name of the Protobuf message type to be used for deserializing the key and value of a Kafka record.
 -->
 <param name="record.{{ $keyOrValue }}.evaluator.protobuf.message.type">{{ required (printf "connectors.kafkaConnector.connections.%s.record.%sEvaluator.protobufMessageType must be set" $key $keyOrValue) $protobufMessageType }}</param>
-      {{- end }}
-    {{- else }}
-      {{- if has $type (list "AVRO" "PROTOBUF") }}
-        {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.record.%sEvaluator.localSchemaFilePathRef or enable connectors.kafkaConnector.connections.%s.record.%sEvaluator.enableSchemaRegistry" $key $keyOrValue $key $keyOrValue) }}
-      {{- end }}
-    {{- end }} {{/* of .localSchemaFilePathRef */}}
-  {{- end }} {{/* of .enableSchemaRegistry */}}
-{{- else if eq $type "KVP" }}
-  {{- $keyValueSeparator := ($evaluator.kvp).keyValueSeparator | default "=" }}
-  {{- $pairSeparator := ($evaluator.kvp).pairsSeparator | default "," }}
+        {{- end }}
+      {{- else }}
+        {{- if has $type (list "AVRO" "PROTOBUF") }}
+          {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.record.%sEvaluator.localSchemaFilePathRef or enable connectors.kafkaConnector.connections.%s.record.%sEvaluator.enableSchemaRegistry" $key $keyOrValue $key $keyOrValue) }}
+        {{- end }}
+      {{- end }} {{/* of .localSchemaFilePathRef */}}
+    {{- end }} {{/* of .enableSchemaRegistry */}}
+  {{- else if eq $type "KVP" }}
+    {{- $keyValueSeparator := ($evaluator.kvp).keyValueSeparator | default "=" }}
+    {{- $pairSeparator := ($evaluator.kvp).pairsSeparator | default "," }}
 
 <!-- Optional but only effective when "record.key/value.evaluator.type" is set to "KVP".
       Specifies the symbol used to separate keys from values in a record key (or record value) serialized in the KVP format.
@@ -572,7 +594,8 @@ Render the key/value record evaluator settings for the Lightstreamer Kafka Conne
       Default value: ",".
 -->
 <param name="record.{{ $keyOrValue }}.evaluator.kvp.pairs.separator">{{ $pairSeparator }}</param>
-{{- end }} {{/* of has $type (list "AVRO" "JSON" "PROTOBUF") */}}
+  {{- end }} {{/* of has $type (list "AVRO" "JSON" "PROTOBUF") */}}
+{{- end }}
 {{- end }}
 
 {{/*
