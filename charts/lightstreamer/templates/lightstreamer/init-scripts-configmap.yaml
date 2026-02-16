@@ -28,7 +28,6 @@ data:
   setup-kafka-connector.sh: |
     #!/bin/bash
     set -euo pipefail
-
     {{- with ((.Values.connectors).kafkaConnector).provisioning }}
     # Initialize deployment path
     KAFKA_CONNECTOR_DEPLOYMENT={{ include "lightstreamer.kafka-connector.deployment" . }}
