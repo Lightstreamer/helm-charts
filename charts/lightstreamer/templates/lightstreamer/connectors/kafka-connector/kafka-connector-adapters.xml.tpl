@@ -79,7 +79,7 @@ Render the Lightstreamer Kafka Connector configuration file.
 
              The parameter sets the value of the "bootstrap.servers" key to configure the internal Kafka Consumer.
              See https://kafka.apache.org/documentation/#consumerconfigs_bootstrap.servers for more details.
-        -->
+         -->
         <param name="bootstrap.servers">{{ required (printf "connectors.kafkaConnector.connections.%s.bootstrapServers must be set" $key) $connection.bootstrapServers }}</param>
 
         {{- if $connection.groupId }}
@@ -159,7 +159,8 @@ Render the Lightstreamer Kafka Connector configuration file.
             {{- if .truststoreRef}}
 
         <!-- Optional. The path of the trust store file, relative to the deployment folder
-             (LS_HOME/adapters/lightstreamer-kafka-connector-<version>). -->
+             (LS_HOME/adapters/lightstreamer-kafka-connector-<version>).
+             The trust store is used to validate the certificates provided by the Kafka brokers. -->
               {{- include "lightstreamer.kafka-connector.configuration.truststore" (list "encryption.truststore" $.Values.keystores .truststoreRef)  | nindent 8 }}
             {{- end }} {{/* of .truststoreRef */}}
 
@@ -216,8 +217,7 @@ Render the Lightstreamer Kafka Connector configuration file.
         <!-- ##### GSSAPI AUTHENTICATION SETTINGS ##### -->            
               {{- with required "connectors.kafkaConnector.connections.%s.authentication.gssapi must be set" .gssapi }}
 
-        <!-- In the case of GSSAPI authentication mechanism, the following parameters will be part of
-             the authentication configuration. -->
+        <!-- When this mechanism is specified, you can configure the following authentication parameters: -->
 
         <!-- Optional. Enable the use of a keytab. Can be one of the following:
             - true
@@ -337,9 +337,10 @@ Render the Lightstreamer Kafka Connector configuration file.
         {{- with $connection.record }}
           {{- if .consumeFrom }}
 
-        <!-- Optional. Specifies where to start consuming events from:
-             - LATEST: start consuming events from the end of the topic partition
-             - EARLIEST: start consuming events from the beginning of the topic partition
+        <!-- Optional. Specifies where to start consuming events from. Can be one of the following:
+
+             - LATEST: Start consuming events from the end of the topic partition.
+             - EARLIEST: Start consuming events from the beginning of the topic partition.
 
              Default value: LATEST. -->
             {{- if not (mustHas .consumeFrom (list "EARLIEST" "LATEST")) }}
@@ -470,6 +471,17 @@ Render the Lightstreamer Kafka Connector configuration file.
         <!-- Multiple and Mandatory. Map the value extracted through "extraction_expression" to
              field FIELD_NAME. The expression is written in the Data Extraction Language. See documentation at:
              https://github.com/lightstreamer/Lightstreamer-kafka-connector?tab=readme-ov-file#record-mapping-fieldfield_name
+
+             Dynamic Field Discovery: Use wildcards in both parameter name (field.*) and extraction expression
+             to automatically discover and map field names at runtime from the record structure. For example:
+
+             <param name="field.*">#{VALUE.*}</param>
+             <param name="field.*">#{KEY.*}</param>
+             <param name="field.*">#{HEADERS.*}</param>
+             <param name="field.*">#{VALUE.nested.*}</param>
+             <param name="field.*">#{VALUE.items.*}</param>
+
+             Static field.fieldName mappings take precedence over field.* wildcards.             
 
              At least one mapping must be provided. -->
           {{- range $fieldName, $extractionExpression := required (printf "connectors.kafkaConnector.connections.%s.fields.mapping must be set" $key) .mappings }}
