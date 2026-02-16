@@ -4806,7 +4806,7 @@ connectors:
     provisioning:
 
       # -- (string) The path to the Kafka Connector deployment in the image,
-      # e.g.: `/lightstreamer/adapters/lightstreamer-kafka-connector-1.2.8`.
+      # e.g.: `/lightstreamer/adapters/lightstreamer-kafka-connector-1.3.2`.
       # At startup, the deployment folder will be mounted at
       # `/lightstreamer/deployed_adapters/kafka-connector` in the container.
       fromPathInImage:
@@ -4816,7 +4816,8 @@ connectors:
       # will be deployed to the
       # `/lightstreamer/deployed_adapters/kafka-connector` directory in the
       # container.
-      fromGitHubRelease: 1.2.8
+      # Example: "1.3.2"
+      fromGitHubRelease:
 
       # -- (string) The URL from which to download the Kafka Connector zip
       # package at startup. Once downloaded, the package will be deployed to the
@@ -4834,7 +4835,7 @@ connectors:
         name:
 
         # -- (string) The file path to the Kafka Connector zip package in the
-        # volume, e.g.: `/connectors/lightstreamer-kafka-connector-1.2.8.zip`.
+        # volume, e.g.: `/connectors/lightstreamer-kafka-connector-1.3.2.zip`.
         filePath:
 
     # -- Mandatory. Defines the Kafka Connector Adapter Set and its unique ID.
@@ -4851,19 +4852,39 @@ connectors:
     # -- Mandatory. Logging configuration for the Kafka Connector.
     logging:
 
-      # -- Mandatory. Map of appender configurations. Every entry in the map
+      # -- Optional. Map of appender configurations. Every entry in the map
       # defines a specific appender configuration.
       # Every logger must refer to one or more appenders defined here.
       appenders:
 
-        # -- At least one must be provided. An appender configuration.
+        # -- An appender configuration. You can use this configuration as a template
+        # to define your own appender configurations. In particular, `dailyRolling`
+        # defines a daily rolling file appender.
+        dailyRolling:
+
+          # -- (string) Mandatory. The type of appender.
+          # Possible values: `DailyRollingFile`, `Console`.
+          type: DailyRollingFile
+
+          # -- (string) Mandatory. The conversion pattern.
+          # See https://reload4j.qos.ch/apidocs/org/apache/log4j/PatternLayout.html for details.
+          pattern: "[%d] [%-10c{1}] %-5p %m%n"
+
+          # -- Mandatory if `type` is set to `DailyRollingFile`. The name of the log
+          # file.
+          fileName: "kafka-connector.log"
+
+          # -- Mandatory if `type` is set to `DailyRollingFile`. The pattern to use
+          # for the log file.
+          fileNamePattern: "kafka-connector-%d{yyyy-MM-dd}.log"
+
+          # -- (string) Optional but only effective if `type` is set to
+          # `DailyRollingFile`. The reference to a volume to use for the log file.
+          volumeRef:      
+
+        # -- The console appender configuration.
         stdout:
-
-          # -- (string) Mandatory. The appender type.
-          # Currently, only the `Console` type is supported.
           type: Console
-
-          # -- (string) Mandatory. The log message format pattern.
           pattern: "%d|%-10c{1}|%-5p|%m%n"
 
       # -- Optional. Global loggers configuration.
@@ -5261,6 +5282,11 @@ connectors:
             aLightstreamerFieldName: "#{extraction_expression}"
             # stock_name: "#{VALUE.name}"
             # last_price: "#{VALUE.last_price}"
+            #
+            # Dynamic Field Discovery: Use wildcards in both the entry (`*`) and
+            # extraction expression to automatically discover and map field
+            # names at runtime from the record structure.
+            # "*": "#{VALUE.*}"
 
           # -- Optional. If set to `true`, if a field mapping fails, that
           # specific field's value will simply be omitted from the update sent
