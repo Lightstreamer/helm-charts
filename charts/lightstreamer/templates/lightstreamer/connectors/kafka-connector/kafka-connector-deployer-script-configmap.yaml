@@ -37,11 +37,11 @@ data:
     # Download the zip archive from the GitHub release to the temporary
     # directory mounted from the ephemeral volume
     # "kafka-connector-source-storage".
-    wget -O /tmp/connectors-source-archives/kafka/${ZIP_ARCHIVE} {{ include "lightstreamer.kafka-connector.url" .fromGitHubRelease }}
+    curl -L -o /tmp/connectors-source-archives/kafka/${ZIP_ARCHIVE} {{ include "lightstreamer.kafka-connector.url" .fromGitHubRelease }}
       {{- else if .fromUrl }}
     # Download the zip archive from the specified URL to the temporary directory
     # mounted from the ephemeral volume "kafka-connector-source-storage".
-    wget -O /tmp/connectors-source-archives/kafka/${ZIP_ARCHIVE} {{ .fromUrl }}
+    curl -L -o /tmp/connectors-source-archives/kafka/${ZIP_ARCHIVE} {{ .fromUrl }}
       {{- end }}
     {{- end }}
     unzip /tmp/connectors-source-archives/kafka/${ZIP_ARCHIVE} -d /kafka-connector-deployment
