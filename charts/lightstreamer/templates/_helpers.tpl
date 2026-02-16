@@ -449,7 +449,6 @@ Render the truststore settings for the Lightstreamer Kafka Connector configurati
       - PKCS12
 
       Default value: JKS. -->
-<!--  
 <param name="{{ $prefix }}.type">{{ $keyStore.type }}</param>
 {{- end -}}
 {{- end -}}
@@ -540,6 +539,7 @@ Render the key/value record evaluator settings for the Lightstreamer Kafka Conne
       - LONG
       - SHORT
       - UUID
+
       Default: STRING -->
 <param name="record.{{ $keyOrValue }}.evaluator.type">{{ $type }}</param>
 
@@ -551,8 +551,8 @@ Render the key/value record evaluator settings for the Lightstreamer Kafka Conne
       {{- /* Triggers rendering of the Schema Registry settings - */ -}}
       {{- $_ := set $connection.record "renderSchemaRegistry" true -}}
 
-<!-- Mandatory if evaluator type is AVRO and no local schema paths are specified. Enable the use of the Confluent Schema Registry for validation respectively of the key.
-      Can be one of the following:
+<!-- Mandatory when the evaluator type is set to "AVRO" or "PROTOBUF" and no local schema paths are provided.
+      Enable the use of the Confluent Schema Registry for validation respectively of the key and value. Can be one of the following:
       - true
       - false
 
@@ -583,14 +583,14 @@ Render the key/value record evaluator settings for the Lightstreamer Kafka Conne
 
 <!-- Optional but only effective when "record.key/value.evaluator.type" is set to "KVP".
       Specifies the symbol used to separate keys from values in a record key (or record value) serialized in the KVP format.
-  
+
       Default value: "=".
 -->
 <param name="record.{{ $keyOrValue }}.evaluator.kvp.key-value.separator">{{ $keyValueSeparator }}</param>
 
 <!-- Optional but only effective when "record.key/value.evaluator.type" is set to "KVP".
       Specifies the symbol used to separate multiple key-value pairs in a record key (or record value) serialized in the KVP format.
-  
+
       Default value: ",".
 -->
 <param name="record.{{ $keyOrValue }}.evaluator.kvp.pairs.separator">{{ $pairSeparator }}</param>
