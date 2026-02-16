@@ -132,7 +132,7 @@ In the following sections, we will guide you on how to customize the values of t
 
 ### License
 
-The [`license`](README.md#license) section configures the edition and license type for the Lightstreamer Broker.
+The [`license`](charts/lightstreamer/README.md#license) section configures the edition and license type for the Lightstreamer Broker.
 
 Two editions are available:
 
@@ -173,9 +173,9 @@ Contact *_info@lightstreamer.com_* for evaluation without session limits or for 
 
 To configure the `ENTERPRISE` edition with a customer license:
 
-1. Set [`license.edition`](README.md#licenseedition) to `ENTERPRISE`.
-2. Set [`license.enterprise.licenseType`](README.md#licenseenterpriselicensetype) to specify license type.
-3. Set [`license.enterprise.contractId`](README.md#licenseenterprisecontractid) with your contract identifier.
+1. Set [`license.edition`](../lightstreamer-helm-charts/README.md#licenseedition) to `ENTERPRISE`.
+2. Set [`license.enterprise.licenseType`](../lightstreamer-helm-charts/README.md#licenseenterpriselicensetype) to specify license type.
+3. Set [`license.enterprise.contractId`](../lightstreamer-helm-charts/README.md#licenseenterprisecontractid) with your contract identifier.
 4. Configure license validation using one of these methods:
 
    **Online Validation**
@@ -189,9 +189,9 @@ To configure the `ENTERPRISE` edition with a customer license:
      --namespace <namespace>
    ```
 
-   2. Set [`license.enterprise.licenseValidation`](README.md#licenseenterpriselicensevalidation) to `ONLINE`.
+   2. Set [`license.enterprise.licenseValidation`](../lightstreamer-helm-charts/README.md#licenseenterpriselicensevalidation) to `ONLINE`.
    
-   3. Configure [`license.enterprise.onlinePasswordSecretRef`](README.md#licenseenterpriseonlinepasswordsecretref) with the name and the key of the secret generated at step 1.
+   3. Configure [`license.enterprise.onlinePasswordSecretRef`](../lightstreamer-helm-charts/README.md#licenseenterpriseonlinepasswordsecretref) with the name and the key of the secret generated at step 1.
 
    Example configuration:
    ```yaml
@@ -218,9 +218,9 @@ To configure the `ENTERPRISE` edition with a customer license:
      --namespace <namespace>
    ```
 
-   2. Set [`license.enterprise.licenseValidation`](README.md#licenseenterpriselicensevalidation) to `FILE`. 
+   2. Set [`license.enterprise.licenseValidation`](charts/lightstreamer/README.md#licenseenterpriselicensevalidation) to `FILE`. 
 
-   3. Configure [`license.enterprise.filePathSecretRef`](README.md#licenseenterprisefilepathsecretref) with the name and the key of the secret generated at step 1.
+   3. Configure [`license.enterprise.filePathSecretRef`](charts/lightstreamer/README.md#licenseenterprisefilepathsecretref) with the name and the key of the secret generated at step 1.
 
    Example configuration:
    ```yaml
@@ -236,16 +236,16 @@ To configure the `ENTERPRISE` edition with a customer license:
    ...
    ```
 
-See the [License settings](README.md#license) section of the _Lightstreamer Helm Chart specification_ for additional license configuration options.
+See the [License settings](charts/lightstreamer/README.md#license) section of the _Lightstreamer Helm Chart specification_ for additional license configuration options.
 
 ### Server socket
 
-To configure a new server socket, add a new entry to the [`servers`](README.md#servers) section with the following mandatory settings:
+To configure a new server socket, add a new entry to the [`servers`](charts/lightstreamer/README.md#servers) section with the following mandatory settings:
 
-- [`name`](README.md#serversdefaultservername): A unique name for the server socket.
-- [`port`](README.md#serversdefaultserverport): The port number the server socket will listen on.
+- [`name`](charts/lightstreamer/README.md#serversdefaultservername): A unique name for the server socket.
+- [`port`](charts/lightstreamer/README.md#serversdefaultserverport): The port number the server socket will listen on.
 
-Moreover, set the [`enabled`](README.md#serversdefaultserverenabled) flag to `true` to include the server socket in the deployment.
+Moreover, set the [`enabled`](charts/lightstreamer/README.md#serversdefaultserverenabled) flag to `true` to include the server socket in the deployment.
 
 Example configuration:
 
@@ -308,7 +308,7 @@ servers:
 
 To configure TLS/SSL settings for a server socket configuration, perform the following actions:
 
-- Set the [`enableHttps`](README.md#serversdefaultserverenablehttps) flag of the target server configuration to `true`:
+- Set the [`enableHttps`](charts/lightstreamer/README.md#serversdefaultserverenablehttps) flag of the target server configuration to `true`:
 
   ```yaml
   servers:
@@ -331,7 +331,7 @@ To configure TLS/SSL settings for a server socket configuration, perform the fol
      $ kubectl create secret generic <keystore-password-secret-name> --from-literal=password=<keystore-password> --namespace <namespace>
      ```
 
-  3. Define a new keystore in the [`keystores`](README.md#keystores) section:
+  3. Define a new keystore in the [`keystores`](charts/lightstreamer/README.md#keystores) section:
 
      ```yaml
      keystores:
@@ -376,7 +376,7 @@ To configure TLS/SSL settings for a server socket configuration, perform the fol
            key: password
      ```
 
-- Configure the [`sslConfig`](README.md#serversdefaultserversslconfig) section:
+- Configure the [`sslConfig`](charts/lightstreamer/README.md#serversdefaultserversslconfig) section:
 
   ```yaml
   servers:
@@ -392,27 +392,27 @@ To configure TLS/SSL settings for a server socket configuration, perform the fol
         # Other settings
         ...
   ```
-See the [`servers.defaultServer.sslConfig`](README.md#serversdefaultserversslconfig) section of the _Lightstreamer Helm Chart specification_ for additional TLS/SLS configuration options.
+See the [`servers.defaultServer.sslConfig`](charts/lightstreamer/README.md#serversdefaultserversslconfig) section of the _Lightstreamer Helm Chart specification_ for additional TLS/SLS configuration options.
 
 ### Logging
 
 The provided logging settings are designed to meet the needs of most production environments. However, you can customize the configuration to suit specific requirements.
 
-See the [_Logging_](README.md#logging) section of the _Lightstreamer Helm Chart specification_ for full details about logging configuration.
+See the [_Logging_](charts/lightstreamer/README.md#logging) section of the _Lightstreamer Helm Chart specification_ for full details about logging configuration.
 
 #### Primary loggers
 
-The [`logging.loggers`](README.md#loggingloggers) section defines the primary loggers used by the Lightstreamer Broker:
+The [`logging.loggers`](charts/lightstreamer/README.md#loggingloggers) section defines the primary loggers used by the Lightstreamer Broker:
 
-- [`lightstreamerLogger`](README.md#loggingloggerslightstreamerlogger): Logs major activities of the Lightstreamer Broker.
-- [`lightstreamerMonitorText`](README.md#loggingloggerslightstreamermonitortext) and [`lightstreamerMonitorTAB`](README.md#loggingloggerslightstreamermonitortab): Log statistics in text and tabular formats, respectively.
-- [`lightstreamerHealthCheck`](README.md#loggingloggerslightstreamerhealthcheck): Logs health check requests.
-- [`lightstreamerProxyAdapters`](README.md#loggingloggerslightstreamerproxyadapters): Logs activities of Proxy Data and Metadata Adapters.
+- [`lightstreamerLogger`](charts/lightstreamer/README.md#loggingloggerslightstreamerlogger): Logs major activities of the Lightstreamer Broker.
+- [`lightstreamerMonitorText`](charts/lightstreamer/README.md#loggingloggerslightstreamermonitortext) and [`lightstreamerMonitorTAB`](charts/lightstreamer/README.md#loggingloggerslightstreamermonitortab): Log statistics in text and tabular formats, respectively.
+- [`lightstreamerHealthCheck`](charts/lightstreamer/README.md#loggingloggerslightstreamerhealthcheck): Logs health check requests.
+- [`lightstreamerProxyAdapters`](charts/lightstreamer/README.md#loggingloggerslightstreamerproxyadapters): Logs activities of Proxy Data and Metadata Adapters.
 
 For each logger, you can configure the following settings:
 
 - `level`: Specifies the logging level. Available levels are `OFF`, `FATAL`, `ERROR`, `WARN`, `INFO`, `DEBUG`, and `TRACE`.
-- `appenders`: Lists the appenders used to log messages. Each entry must reference an appender defined in the [`logging.appenders`](README.md#loggingappenders) section.
+- `appenders`: Lists the appenders used to log messages. Each entry must reference an appender defined in the [`logging.appenders`](charts/lightstreamer/README.md#loggingappenders) section.
 
 Example configuration:
 ```yaml
@@ -430,7 +430,7 @@ logging:
 
 #### Subloggers
 
-The [`logging.loggers.lightstreamerLogger.subLoggers`](README.md#loggingloggerslightstreamerloggersubloggers) section allows you to define logging levels for subloggers of `lightstreamerLogger`. Subloggers inherit appenders from their parent logger.
+The [`logging.loggers.lightstreamerLogger.subLoggers`](charts/lightstreamer/README.md#loggingloggerslightstreamerloggersubloggers) section allows you to define logging levels for subloggers of `lightstreamerLogger`. Subloggers inherit appenders from their parent logger.
 
 Example configuration:
 ```yaml
@@ -480,7 +480,7 @@ extraLoggers:
 
 #### Appenders
 
-The [`logging.appenders`](README.md#loggingappenders) section defines the appenders available for use by loggers. The default configuration includes:
+The [`logging.appenders`](charts/lightstreamer/README.md#loggingappenders) section defines the appenders available for use by loggers. The default configuration includes:
 
 - [`dailyRolling`](charts/lightstreamer/values.yaml#L660): A daily rolling file appender
 - [`console`](charts/lightstreamer/values.yaml#L681): A console appender
@@ -586,7 +586,7 @@ Expected output:
 ]
 ```
 
-The following example shows how to customize the RMI Connector listening port through the [`management.jmx.rmiConnector.port`](README.md#managementjmxrmiconnectorport) setting:
+The following example shows how to customize the RMI Connector listening port through the [`management.jmx.rmiConnector.port`](charts/lightstreamer/README.md#managementjmxrmiconnectorport) setting:
 
 ```yaml
 management:
@@ -596,11 +596,11 @@ management:
         value: 9999
 ```
 
-See the [`management.jmx.rmiConnector`](README.md#managementjmxrmiconnector) section of the _Lightstreamer Helm Chart specification_ for full details about other configurable RMI Connector settings.
+See the [`management.jmx.rmiConnector`](charts/lightstreamer/README.md#managementjmxrmiconnector) section of the _Lightstreamer Helm Chart specification_ for full details about other configurable RMI Connector settings.
 
 ##### TLS/SSL
 
-To enable TLS/SSL communication, turn on the optional [`management.jmx.rmiConnector.port.enableSsl`](README.md#managementjmxrmiconnectorportenablessl) flag and reference a keystore trough [`management.jmx.rmiConnector.keystoreRef`](README.md#managementjmxrmiconnectorsslconfigkeystoreref) (as already explained in the [_TLS/SSL_](#tlsssl) ):
+To enable TLS/SSL communication, turn on the optional [`management.jmx.rmiConnector.port.enableSsl`](charts/lightstreamer/README.md#managementjmxrmiconnectorportenablessl) flag and reference a keystore trough [`management.jmx.rmiConnector.keystoreRef`](charts/lightstreamer/README.md#managementjmxrmiconnectorsslconfigkeystoreref) (as already explained in the [_TLS/SSL_](#tlsssl) ):
 
 ```yaml
 management:
@@ -615,7 +615,7 @@ management:
 > [!WARNING]
 > Make sure to enable TLS/SSL communication in a production deployment.
 
-See the [`management.jmx.rmiConnector.sslConfig`](README.md#managementjmxrmiconnectorsslconfig) section of the _Lightstreamer Helm Chart specification_ for additional TLS/SSL configuration options for the RMI Connector. 
+See the [`management.jmx.rmiConnector.sslConfig`](charts/lightstreamer/README.md#managementjmxrmiconnectorsslconfig) section of the _Lightstreamer Helm Chart specification_ for additional TLS/SSL configuration options for the RMI Connector. 
 
 ##### Authentication
 
@@ -626,7 +626,7 @@ kubectl create secret generic rmi-user-1-secret --from-literal=user=<user-1> --f
 kubectl create secret generic rmi-user-2-secret --from-literal=user=<user-2>' --from-literal=password='<user2-password>' --namespace <namespace>
 ```
 
-Then, disable public access turning off the [`management.jmx.rmiConnector.enablePublicAccess`](README.md#managementjmxrmiconnectorenablepublicaccess) flag and populate the [`management.jmx.rmiConnector.credentialsSecrets`](README.md#managementjmxrmiconnectorcredentialssecrets) list with the references to the secrets.
+Then, disable public access turning off the [`management.jmx.rmiConnector.enablePublicAccess`](charts/lightstreamer/README.md#managementjmxrmiconnectorenablepublicaccess) flag and populate the [`management.jmx.rmiConnector.credentialsSecrets`](charts/lightstreamer/README.md#managementjmxrmiconnectorcredentialssecrets) list with the references to the secrets.
 
 Example:
 ```yaml
@@ -724,7 +724,7 @@ The [examples/dashboard](examples/dashboard/) directory provides a complete exam
 - Set up user authentication with different permission levels
 - Customize the Dashboard URL path
 
-See the [`management.dashboard`](README.md#managementdashboard) section of the _Helm Lightstreamer Chart specification_ for full details about available Monitoring Dashboard settings.
+See the [`management.dashboard`](charts/lightstreamer/README.md#managementdashboard) section of the _Helm Lightstreamer Chart specification_ for full details about available Monitoring Dashboard settings.
 
 ### Adapters
 
@@ -741,13 +741,13 @@ Lightstreamer Adapters can be implemented in two ways:
 
 See the _The Adapters_ chapter of the [_General Concepts_](https://lightstreamer.com/ls-server/latest/docs/General%20Concepts.pdf) document to learn more about Lightstreamer Adapters.
 
-To define an Adapter Set, add a new configuration to [`adapters`](README.md#adapters) section with the following mandatory settings:
+To define an Adapter Set, add a new configuration to [`adapters`](charts/lightstreamer/README.md#adapters) section with the following mandatory settings:
 
-- [`id`](README.md#adaptersmyadaptersetid): A unique id for the adapter set
-- [`metadataProvider`](README.md#adaptersmyadaptersetmetadataprovider): A Metadata Adapter configuration
-- [`dataProviders`](README.md#adaptersmyadaptersetmetadataprovider): One or more Data Adapter configurationA Metadata Adapter configuration
+- [`id`](charts/lightstreamer/README.md#adaptersmyadaptersetid): A unique id for the adapter set
+- [`metadataProvider`](charts/lightstreamer/README.md#adaptersmyadaptersetmetadataprovider): A Metadata Adapter configuration
+- [`dataProviders`](charts/lightstreamer/README.md#adaptersmyadaptersetmetadataprovider): One or more Data Adapter configurationA Metadata Adapter configuration
 
-Moreover, set the [`enabled`](README.md#adaptersmyadaptersetenabled) flag to `true` to include the adapter set in in the deployment.
+Moreover, set the [`enabled`](charts/lightstreamer/README.md#adaptersmyadaptersetenabled) flag to `true` to include the adapter set in in the deployment.
 
 Example configuration:
 
@@ -777,7 +777,7 @@ To configure in-process Metadata Adapter, you have to accomplish the following s
 
 ##### Provisioning
 
-Adapter Sets can be provisioned using different methods, configured through the [`provisioning`](README.md#adaptersmyadaptersetprovisioning) section:
+Adapter Sets can be provisioned using different methods, configured through the [`provisioning`](charts/lightstreamer/README.md#adaptersmyadaptersetprovisioning) section:
 
 1. Embed the Adapter Set's resources in the image
 
@@ -793,14 +793,14 @@ Adapter Sets can be provisioned using different methods, configured through the 
 
      **IMPORTANT** Do not include the usual `adapters.xml` file, which is normally required to deploy an Adapter Set in a non-Kubernetes environment, as the file will be dynamically rendered according to the provided configuration in the Helm chart values.
    
-   - Update [`image.repository`](README.md#imagerepository) with the reference to the new image:
+   - Update [`image.repository`](charts/lightstreamer/README.md#imagerepository) with the reference to the new image:
 
      ```yaml
      image:
        repository: lightstreamer
      ```
    
-   - Configure the [`provisioning.fromPathInImage`](README.md#adaptersmyadaptersetprovisioningfrompathinimage) setting of the Adapter Set definition with the full path of the deployment folder:
+   - Configure the [`provisioning.fromPathInImage`](charts/lightstreamer/README.md#adaptersmyadaptersetprovisioningfrompathinimage) setting of the Adapter Set definition with the full path of the deployment folder:
      
      ```yaml
      adapters:
@@ -827,7 +827,7 @@ Adapter Sets can be provisioned using different methods, configured through the 
 
      and populate it with the Adapter Set's resources (excluding any `adapters.xml` file).
 
-   - Configure the [`provisioning.fromPath`](README.md#adaptersmyadaptersetprovisioningfrompathinimage) setting of the Adapter Set definition with the reference to the volume and optionally the deployment full path in the volume:
+   - Configure the [`provisioning.fromPath`](charts/lightstreamer/README.md#adaptersmyadaptersetprovisioningfrompathinimage) setting of the Adapter Set definition with the reference to the volume and optionally the deployment full path in the volume:
      
      ```yaml
      adapters:
@@ -845,8 +845,8 @@ Adapter Sets can be provisioned using different methods, configured through the 
 
 You can configure in-process Metadata Adapters and Data Adapters by populating the following sections in your Helm chart values:
 
-- [`metadataProvider.inProcessMetadataAdapter`](README.md#adaptersmyadaptersetmetadataproviderinprocessmetadataadapter)
-- [`dataProviders.<dataProviderName>.inProcessDataAdapter`](README.md#adaptersmyadaptersetdataprovidersmydataproviderinprocessdataadapter)
+- [`metadataProvider.inProcessMetadataAdapter`](charts/lightstreamer/README.md#adaptersmyadaptersetmetadataproviderinprocessmetadataadapter)
+- [`dataProviders.<dataProviderName>.inProcessDataAdapter`](charts/lightstreamer/README.md#adaptersmyadaptersetdataprovidersmydataproviderinprocessdataadapter)
 
 These sections share the following key settings:
 
