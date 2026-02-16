@@ -53,15 +53,21 @@ Render the Kafka Connector logging configuration file.
   {{ range $appenderName, $appender := .appenders }}
 # {{ $appenderName | quote }} Appender
     {{- $type := default "" ($appender).type }}
-    {{- if not (mustHas $type (list "Console")) }}
-      {{- fail (printf "connectors.kafkaConnector.logging.appenders.%s.type must be one of: \"Console\"" $appenderName) }}
+    {{- if not (mustHas $type (list "DailyRollingFile" "Console")) }}
+      {{- fail (printf "connectors.kafkaConnector.logging.appenders.%s.type must be one of: \"DailyRollingFile\" \"Console\"" $appenderName) }}
     {{- end }}
-    {{- if eq $type "Console" }}
+    {{- if eq $type "DailyRollingFile" }}
+      {{- $fileName := required (printf "connectors.kafkaConnector.logging.appenders.%s.fileName must be set" $appenderName) $appender.fileName }}
+log4j.appender.{{ $appenderName }}=org.apache.log4j.RollingFileAppender
+log4j.appender.{{ $appenderName }}.layout.ConversionPattern={{ required (printf "kafkaConnector.logging.appenders.%s.pattern must be set" $appenderName) $appender.pattern }}
+log4j.appender.{{ $appenderName }}.File=../../logs/{{ $fileName }}
+    {{- else if eq $type "Console" }}
 log4j.appender.{{ $appenderName }}=org.apache.log4j.ConsoleAppender
 log4j.appender.{{ $appenderName }}.Target=System.out
     {{- end }}
+    {{- $pattern := required (printf "kafkaConnector.logging.appenders.%s.pattern must be set" $appenderName) $appender.pattern }}
 log4j.appender.{{ $appenderName }}.layout=org.apache.log4j.PatternLayout
-log4j.appender.{{ $appenderName }}.layout.ConversionPattern={{ required (printf "kafkaConnector.logging.appenders.%s.pattern must be set" $appenderName) $appender.pattern }}
+log4j.appender.{{ $appenderName }}.layout.ConversionPattern={{ $pattern }}
   {{ end }}
 {{- end }}
 
