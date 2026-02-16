@@ -490,7 +490,7 @@ spec:
         {{- with .Values.connectors.kafkaConnector.provisioning }}
           {{- if not .fromPathInImage }}
         - name: kafka-connector-deployer
-          image: alpine
+          image: alpine/curl
           command: ['sh', '/bin/kafka-connector-deployer.sh']
           volumeMounts:
             - name: kafka-connector-deployer-script
