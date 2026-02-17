@@ -416,7 +416,7 @@ Create the download URL of the Lightstreamer Kafka Connector.
 {{- end }}
 
 {{/*
-Create the deployment folder the Lightstreamer Kafka Connector.
+Create the name of the deployment folder the Lightstreamer Kafka Connector.
 */}}
 {{- define "lightstreamer.kafka-connector.deployment" -}}
 {{- printf "/lightstreamer/deployed_adapters/kafka-connector" }}
@@ -523,49 +523,51 @@ Render the key/value record evaluator settings for the Lightstreamer Kafka Conne
     {{- fail (printf "connectors.kafkaConnector.connections.%s.record.%sEvaluator.type must be one of: \"AVRO\", \"JSON\", \"PROTOBUF\", \"KVP\", \"STRING\", \"INTEGER\", \"BOOLEAN\", \"BYTE_ARRAY\", \"BYTE_BUFFER\", \"BYTES\", \"DOUBLE\", \"FLOAT\", \"LONG\", \"SHORT\", \"UUID\"" $key $keyOrValue) }}
   {{- end }}
 <!-- Optional. The format to be used to deserialize the key a Kafka record.
-      Can be one of the following:
-      - AVRO
-      - JSON
-      - PROTOBUF
-      - KVP
-      - STRING
-      - INTEGER
-      - BOOLEAN
-      - BYTE_ARRAY
-      - BYTE_BUFFER
-      - BYTES
-      - DOUBLE
-      - FLOAT
-      - LONG
-      - SHORT
-      - UUID
+     Can be one of the following:
+     - AVRO
+     - JSON
+     - PROTOBUF
+     - KVP
+     - STRING
+     - INTEGER
+     - BOOLEAN
+     - BYTE_ARRAY
+     - BYTE_BUFFER
+     - BYTES
+     - DOUBLE
+     - FLOAT
+     - LONG
+     - SHORT
+     - UUID
 
-      Default: STRING -->
+     Default: STRING -->
 <param name="record.{{ $keyOrValue }}.evaluator.type">{{ $type }}</param>
 
-  {{- if has $type (list "AVRO" "JSON" "PROTOBUF") }}
+  {{- if has $type (list "AVRO" "JSON" "PROTOBUF") -}}
     {{- if $evaluator.enableSchemaRegistry }}
       {{- if not $connection.record.schemaRegistryRef }}
         {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.record.schemaRegistryRef or disable connectors.kafkaConnector.connections.%s.record.%sEvaluator.enableSchemaRegistry" $key $key $keyOrValue) }}
       {{- end }}
       {{- /* Triggers rendering of the Schema Registry settings - */ -}}
-      {{- $_ := set $connection.record "renderSchemaRegistry" true -}}
+      {{- $_ := set $connection.record "renderSchemaRegistry" true }}
 
 <!-- Mandatory when the evaluator type is set to "AVRO" or "PROTOBUF" and no local schema paths are provided.
-      Enable the use of the Confluent Schema Registry for validation respectively of the key and value. Can be one of the following:
-      - true
-      - false
+     Enable the use of the Confluent Schema Registry for validation respectively of the key and value. Can be one of the following:
+     - true
+     - false
 
       Default value: false. -->
 <param name="record.{{ $keyOrValue }}.evaluator.schema.registry.enable">true</param>
     {{- else }}
       {{- with $evaluator.localSchemaFilePathRef }}
         {{ $localSchema := required (printf "connectors.kafkaConnector.localSchemaFiles.%s not defined" . ) (get ($localSchemaFiles | default dict) .) }}
+
 <!-- Mandatory if evaluator type is set to "AVRO" or "PROTOBUF" and the Confluent Schema Registry is disabled. The path of the local schema
       (or binary descriptor) file relative to the deployment folder (LS_HOME/adapters/lightstreamer-kafka-connector-<version>) for
       message validation respectively of the key and the value. -->
 <param name="record.{{ $keyOrValue }}.evaluator.schema.path">schemas/{{ . }}/{{ required (printf "connectors.kafkaConnector.localSchemaFiles.%s.key must be set" .) $localSchema.key }}</param>
         {{ if (eq $type "PROTOBUF") }}
+
 <!-- Mandatory when the evaluator type is set to "PROTOBUF" and a binary descriptor file is provided through the "record.key/value.evaluator.schema.path" 
       parameters. Specifies the name of the Protobuf message type to be used for deserializing the key and value of a Kafka record.
 -->
