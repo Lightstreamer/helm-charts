@@ -36,6 +36,13 @@ This guide provides step-by-step instructions on how to deploy the Lightstreamer
         - [`dedicated` ClassLoader](#dedicated-classloader)
         - [`log-enabled` ClassLoader](#log-enabled-classloader)
         - [Summary of ClassLoader types](#summary-of-classloader-types)
+  - [Connectors](#connectors)
+    - [Kafka Connector](#kafka-connector)
+      - [Provisioning](#provisioning-1)
+      - [Connections](#connections)
+      - [Routing](#routing)
+      - [Field Mapping](#field-mapping)
+      - [Logging](#logging-1)
 
 ## Prerequisites
 
@@ -1016,3 +1023,356 @@ adapters:
 By carefully organizing your Adapter Set's directory structure and selecting the appropriate `classLoader` type, you can optimize resource sharing and ensure proper isolation between adapters.
 
 ##### Proxy Adapters
+
+### Connectors
+
+Lightstreamer Connectors are specialized adapter sets that enable seamless integration between Lightstreamer Broker and external messaging systems or data sources. Unlike general-purpose adapters, connectors are purpose-built to bridge Lightstreamer with specific platforms, providing optimized data flow and simplified configuration.
+
+Connectors handle:
+- **Data Ingestion**: Consuming data from external systems and transforming it into Lightstreamer-compatible formats
+- **Protocol Translation**: Managing communication protocols between Lightstreamer and external platforms
+- **Schema Management**: Handling data serialization formats (JSON, Avro, Protobuf, etc.)
+- **Connection Management**: Maintaining reliable connections to external systems with automatic reconnection and error handling
+
+Currently, the Kafka Connector is the only connector available in this Helm chart. Each connector is configured and enabled independently within the [`connectors`](charts/lightstreamer/README.md#connectors) section.
+
+#### Kafka Connector
+
+The Lightstreamer Kafka Connector enables real-time streaming of data from Apache Kafka topics to Lightstreamer clients. It acts as a bridge between Kafka's publish-subscribe messaging system and Lightstreamer's real-time data delivery infrastructure, allowing web and mobile applications to receive Kafka messages with low latency.
+
+**Key Features:**
+- Native integration with Apache Kafka and Kafka-compatible platforms (Amazon MSK, Confluent Cloud, etc.)
+- Support for multiple serialization formats: String, JSON, Avro, Protobuf, and key-value pairs
+- Schema Registry integration for Avro and Protobuf
+- Flexible topic-to-item routing with template-based mapping
+- TLS/SSL encryption and multiple authentication mechanisms (SASL/PLAIN, SCRAM, GSSAPI, AWS IAM)
+- Independent connection configurations for different Kafka clusters
+
+For complete documentation, see the [Lightstreamer Kafka Connector project on GitHub](https://github.com/Lightstreamer/Lightstreamer-kafka-connector).
+
+To configure the Kafka Connector, define its settings in the [`connectors.kafkaConnector`](charts/lightstreamer/README.md#connectorskafkaconnector) section:
+
+```yaml
+connectors:
+  kafkaConnector:
+    enabled: true
+    adapterSetId: "KafkaConnector"
+    
+    provisioning:
+      # Provision method
+    
+    routing:
+      # Topic-to-item mapping
+
+    connections:
+      # Connection configurations
+    
+    logging:
+      # Logging settings
+```
+
+##### Provisioning
+
+The Kafka Connector must be provisioned before it can be used. The Helm chart supports multiple provisioning methods through the [`provisioning`](charts/lightstreamer/README.md#connectorskafkaconnectorprovisioning) section:
+
+1. **From GitHub Release** (Recommended)
+
+   Automatically download and deploy a specific version from GitHub:
+
+   ```yaml
+   connectors:
+     kafkaConnector:
+       enabled: true
+       provisioning:
+         fromGitHubRelease: 1.3.2
+   ```
+
+2. **From URL**
+
+   Download from a custom URL:
+
+   ```yaml
+   connectors:
+     kafkaConnector:
+       enabled: true
+       provisioning:
+         fromUrl: https://example.com/kafka-connector.zip
+   ```
+
+3. **From Volume**
+
+   Use a connector package stored in a mounted volume:
+
+   ```yaml
+   connectors:
+     kafkaConnector:
+       enabled: true
+       provisioning:
+         fromVolume:
+           name: my-volume
+           filePath: kafka-connector/lightstreamer-kafka-connector-1.3.2.zip
+   ```
+
+4. **From Path in Image**
+
+   Use a connector pre-installed in a custom container image:
+
+   ```yaml
+   connectors:
+     kafkaConnector:
+       enabled: true
+       provisioning:
+         fromPathInImage: /lightstreamer/adapters/lightstreamer-kafka-connector-1.3.2
+   ```
+
+##### Connections
+
+The Kafka Connector supports multiple independent connections to different Kafka brokers or clusters. Each connection is defined in the [`connections`](charts/lightstreamer/README.md#connectorskafkaconnectorconnections) map:
+
+```yaml
+connectors:
+  kafkaConnector:
+    enabled: true
+    adapterSetId: "KafkaConnector"
+    
+    provisioning:
+      fromGitHubRelease: 1.3.2
+    
+    connections:
+      # Connection 1: Basic configuration
+      myKafkaCluster:
+        name: "Production-Kafka"
+        enabled: true
+        bootstrapServers: "kafka-broker-1:9092,kafka-broker-2:9092"
+        groupId: "lightstreamer-consumer-group"
+        
+        record:
+          consumeFrom: LATEST  # or EARLIEST
+          keyEvaluator:
+            type: STRING
+          valueEvaluator:
+            type: JSON
+```
+
+**Bootstrap Servers**: Specify one or more Kafka broker addresses using [`bootstrapServers`](charts/lightstreamer/README.md#connectorskafkaconnectorconnectionsaconnectionconfigurationbootstrapservers). For Kafka deployed in Kubernetes, use the service DNS name:
+
+```yaml
+bootstrapServers: "kafka-0.kafka-headless.kafka:9092"
+```
+
+**Record Evaluation**: Configure how Kafka message keys and values are deserialized through [`record.keyEvaluator`](charts/lightstreamer/README.md#connectorskafkaconnectorconnectionsaconnectionconfigurationrecordkeyevaluator) and [`record.valueEvaluator`](charts/lightstreamer/README.md#connectorskafkaconnectorconnectionsaconnectionconfigurationrecordvalueevaluator):
+
+- `STRING`: Plain text
+- `JSON`: JSON objects
+- `AVRO`: Avro serialized data (requires Schema Registry or local schema)
+- `PROTOBUF`: Protocol Buffers (requires Schema Registry or local schema)
+- `INTEGER`, `BOOLEAN`, `FLOAT`, etc.: Primitive types
+
+**Authentication**: For secure Kafka clusters, configure authentication through [`authentication`](charts/lightstreamer/README.md#connectorskafkaconnectorconnectionsaconnectionconfigurationauthentication):
+
+```yaml
+connections:
+  secureKafka:
+    enabled: true
+    bootstrapServers: "secure-kafka:9093"
+    
+    # TLS/SSL Configuration
+    sslConfig:
+      enabled: true
+      enableHostnameVerification: true
+      keystoreRef: myKafkaKeystore
+      truststoreRef: myKafkaTruststore
+    
+    # SASL Authentication
+    authentication:
+      enabled: true
+      mechanism: SCRAM-SHA-512
+      credentialsSecretRef: kafka-credentials
+```
+
+The [`credentialsSecretRef`](charts/lightstreamer/README.md#connectorskafkaconnectorconnectionsaconnectionconfigurationauthenticationcredentialssecretref) must reference a Kubernetes Secret containing `user` and `password` keys.
+
+##### Routing
+
+Routing configuration maps Kafka topics to Lightstreamer items. Define routing rules in the [`routing`](charts/lightstreamer/README.md#connectorskafkaconnectorconnectionsaconnectionconfigurationrouting) section:
+
+```yaml
+connections:
+  myKafkaCluster:
+    enabled: true
+    bootstrapServers: "kafka:9092"
+    
+    record:
+      keyEvaluator:
+        type: STRING
+      valueEvaluator:
+        type: JSON
+    
+    routing:
+      # Define item templates
+      itemTemplates:
+        stockTemplate: stock-#{index=KEY}
+        sensorTemplate: sensor-#{building=VALUE.building}-#{room=VALUE.room}
+      
+      # Map topics to item templates
+      topicMappings:
+        stock-prices:
+          topic: 'stock'
+          itemTemplateRefs:
+            - stockTemplate
+        
+        iot-sensors:
+          topic: 'sensors'
+          itemTemplateRefs:
+            - sensorTemplate
+```
+
+**Item Templates** use extraction expressions to dynamically generate item names from message content:
+- `#{index=KEY}`: Use the message key
+- `#{index=VALUE.fieldName}`: Extract from a JSON field
+- `#{index=PARTITION}`: Use the partition number
+- `#{index=TOPIC}`: Use the topic name
+
+**Topic Mappings** associate Kafka topics with item templates. When a message arrives from a topic, the connector applies the specified templates to generate Lightstreamer item names.
+
+##### Field Mapping
+
+Field mapping defines how Kafka message content is transformed into Lightstreamer fields. Configure mappings in the [`fields`](charts/lightstreamer/README.md#connectorskafkaconnectorconnectionsaconnectionconfigurationfields) section:
+
+```yaml
+connections:
+  myKafkaCluster:
+    enabled: true
+    
+    record:
+      valueEvaluator:
+        type: JSON
+    
+    fields:
+      mappings:
+        # Map all JSON fields
+        "*": "#{VALUE.*}"
+        
+        # Or map specific fields
+        timestamp: "#{VALUE.timestamp}"
+        price: "#{VALUE.price}"
+        volume: "#{VALUE.volume}"
+        symbol: "#{VALUE.symbol}"
+        
+        # Use message metadata
+        kafka_topic: "#{TOPIC}"
+        kafka_partition: "#{PARTITION}"
+        kafka_offset: "#{OFFSET}"
+      
+      enableSkipFailedMapping: true
+```
+
+Extraction expressions support:
+- `#{VALUE.path}`: Extract from message value (supports nested JSON paths)
+- `#{KEY}`: Use the message key
+- `#{TOPIC}`, `#{PARTITION}`, `#{OFFSET}`, `#{TIMESTAMP}`: Kafka metadata
+
+Set [`enableSkipFailedMapping`](charts/lightstreamer/README.md#connectorskafkaconnectorconnectionsaconnectionconfigurationfieldsenableskipfailedmapping) to `true` to continue processing even if some field extractions fail.
+
+##### Logging
+
+Configure connector-specific logging through the [`logging`](charts/lightstreamer/README.md#connectorskafkaconnectorlogging) section:
+
+```yaml
+connectors:
+  kafkaConnector:
+    enabled: true
+    
+    # Global connector logging
+    logging:
+      appenders:
+        console:
+          type: Console
+          pattern: "%d|%-10c{1}|%-5p|%m%n"
+        
+        dailyRolling:
+          type: DailyRollingFile
+          fileName: kafka-connector.log
+          fileNamePattern: kafka-connector-%d{yyyy-MM-dd}.log
+          pattern: "[%d] [%-10c{1}] %-5p %m%n"
+          volumeRef: my-logs-volume
+      
+      loggers:
+        com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter:
+          level: INFO
+          appenders:
+            - console
+        
+        org.apache.kafka:
+          level: WARN
+          appenders:
+            - console
+    
+    connections:
+      myKafkaCluster:
+        enabled: true
+        
+        # Connection-specific logging
+        logger:
+          level: DEBUG
+          appenders:
+            - console
+```
+
+Connection-specific loggers inherit from the global configuration but can be overridden using the [`logger`](charts/lightstreamer/README.md#connectorskafkaconnectorconnectionsaconnectionconfigurationlogger) setting.
+
+**Complete Example**
+
+Here's a complete Kafka Connector configuration example:
+
+```yaml
+connectors:
+  kafkaConnector:
+    enabled: true
+    adapterSetId: "KafkaConnector"
+    
+    provisioning:
+      fromGitHubRelease: 1.3.2
+    
+    logging:
+      appenders:
+        kafkaLogs:
+          type: Console
+          pattern: "%d|%-10c{1}|%-5p|%m%n"
+    
+    connections:
+      stockPrices:
+        name: "Stock-Prices-Connection"
+        enabled: true
+        bootstrapServers: "kafka-0.kafka-headless.kafka:9092"
+        groupId: "lightstreamer-stocks"
+        
+        record:
+          consumeFrom: EARLIEST
+          keyEvaluator:
+            type: STRING
+          valueEvaluator:
+            type: JSON
+        
+        routing:
+          itemTemplates:
+            stockItem: stock-#{index=KEY}
+          
+          topicMappings:
+            stocks:
+              topic: 'stock-prices'
+              itemTemplateRefs:
+                - stockItem
+        
+        fields:
+          mappings:
+            "*": "#{VALUE.*}"
+          enableSkipFailedMapping: true
+        
+        logger:
+          level: INFO
+          appenders:
+            - kafkaLogs
+```
+
+See the [examples/kafka-connector](examples/kafka-connector/) directory for additional configuration examples, and refer to the [`connectors.kafkaConnector`](charts/lightstreamer/README.md#connectorskafkaconnector) section of the _Lightstreamer Helm Chart specification_ for complete configuration details.

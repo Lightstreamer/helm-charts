@@ -22,7 +22,7 @@ data:
   */}}
   kafka-connector-deployer.sh: |-
     #!/bin/sh
-    set -ex
+    set -e
   {{- $provisioning := .Values.connectors.kafkaConnector.provisioning }}
   {{- with $provisioning }}
     KAFKA_CONNECTOR_DEPLOYMENT_PATH=/kafka-connector-deployment/{{ include "lightstreamer.kafka-connector.name" . }}
