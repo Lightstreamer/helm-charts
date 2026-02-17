@@ -552,9 +552,9 @@ license:
 
   # -- Optional. Periodically check whether any Lightstreamer Broker update is
   # available. In such case, a notification is written to the log file.
-  # If set to `true`, perform automatic update check. The following host name
+  # If set to `true`, performs automatic update check. The following host name
   # must be reachable on port 443: https://service.lightstreamer.com/.
-  # If set to `false`, do not perform an automatic update check.
+  # If set to `false`, does not perform an automatic update check.
   enableAutomaticUpdateCheck: true
 
   # -- Optional. Configure a proxy server for outbound Internet access, if
@@ -601,7 +601,7 @@ license:
     # @default -- []
     socksProxies:
 
-      - # -- (string) Optional, but empty values are skipped. Host name or IP
+      - # -- (string) Optional but empty values are skipped. Host name or IP
         # address of the proxy server.
         # Examples: `socks.mycompany.com`, `192.168.0.9`.
         host:
@@ -821,11 +821,11 @@ servers:
       # pool and this setting protects that pool against such unlikely events.
       proxyProtocolTimeoutMillis: 1000
 
-      # -- (int) Optional, but nonzero values forbidden if
-      # `enableProxyProtocol` is set to `true`. Number of entries in the
-      # `X-Forwarded-For` header that are expected to be supplied on each HTTP
-      # request (including Websocket handshake) by the intermediate nodes (e.g.
-      # reverse proxies, load balancers) that stand in the local environment.
+      # -- (int) Optional but nonzero values forbidden if `enableProxyProtocol` 
+      # is set to `true`. Number of entries in the `X-Forwarded-For` header that
+      # are expected to be supplied on each HTTP request (including Websocket 
+      # handshake) by the intermediate nodes (e.g. reverse proxies, load 
+      # balancers) that stand in the local environment.
       # If N entries are expected from local nodes, this means that the
       # Nth-nearest entry corresponds to the node connected to the farthest
       # local intermediate node, hence to the client. So, that entry will be
@@ -878,7 +878,7 @@ servers:
       # keystore configuration.
       keystoreRef: myServerKeystore
 
-      # -- Optional, but forbidden if `removeCipherSuites` is used.
+      # -- Optional but forbidden if `removeCipherSuites` is used.
       # Specifies all the cipher suites allowed for the TLS/SSL interaction,
       # provided that they are included, with the specified name, in the set of
       # "supported" cipher suites of the underlying Security Provider.
@@ -893,7 +893,7 @@ servers:
       allowCipherSuites: []
         # - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
 
-      # -- Optional, but forbidden if `allowCipherSuites` is used.
+      # -- Optional but forbidden if `allowCipherSuites` is used.
       # Pattern to be matched against the names of the enabled cipher suites in
       # order to remove the matching ones from the enabled cipher suites set.
       # Any pattern in java.util.regex.Pattern format can be specified.
@@ -941,7 +941,7 @@ servers:
       # `jdk.tls.rejectClientInitiatedRenegotiation` JVM property to `true`.
       enableTlsRenegotiation: true
 
-      # -- Optional, but forbidden if `removeProtocols` is used.
+      # -- Optional but forbidden if `removeProtocols` is used.
       # Specifies one or more protocols allowed for the TLS/SSL interaction,
       # among the ones supported by the underlying Security Provider.
       # For Oracle JVMs, the available names are the "SSLContext Algorithms"
@@ -954,7 +954,7 @@ servers:
         # - TLSv1.2
         # - TLSv1.3
 
-      # -- Optional, but forbidden if `allowProtocols` is used.
+      # -- Optional but forbidden if `allowProtocols` is used.
       # Pattern to be matched against the names of the enabled TLS/SSL
       # protocols in order to remove the matching ones from the enabled
       # protocols set.
@@ -1759,14 +1759,14 @@ management:
         # Connector may be left unreachable.
         keystoreRef:
 
-        # -- Optional, but forbidden if `removeCipherSuites` is used.
+        # -- Optional but forbidden if `removeCipherSuites` is used.
         # Specifies all the cipher suites allowed for the interaction, in case
         # TLS/SSL is enabled for part or all the communication.
         # See notes for `servers.{}.sslConfig.allowCipherSuites`.
         allowCipherSuites: []
           # - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
 
-        # -- Optional, but forbidden if `allowCipherSuites` is used.
+        # -- Optional but forbidden if `allowCipherSuites` is used.
         # Pattern to be matched against the names of the enabled cipher suites
         # in order to remove the matching ones from the enabled cipher suites
         # set to be used in case TLS/SSL is enabled for part or all the
@@ -1784,7 +1784,7 @@ management:
           # enabled: true
           # order: "JVM"
 
-        # -- Optional, but forbidden if `removeProtocols` is used.
+        # -- Optional but forbidden if `removeProtocols` is used.
         # Specifies one or more protocols allowed for the TLS/SSL interaction,
         # in case TLS/SSL is enabled for part or all the communication.
         # See notes for `servers.{}.sslConfig.allowProtocols`.
@@ -1792,7 +1792,7 @@ management:
           # - TLSv1.2
           # - TLSv1.3
 
-        # -- Optional, but forbidden if `allowProtocols` is used. Pattern
+        # -- Optional but forbidden if `allowProtocols` is used. Pattern
         # to be matched against the names of the enabled TLS/SSL protocols in
         # order to remove the matching ones from the enabled protocols set to be
         # used in case TLS/SSL is enabled for part or all the communication.
@@ -1808,7 +1808,7 @@ management:
       # authentication; the allowed users are set in the "user" elements.
       enablePublicAccess: false
 
-      # -- Optional, but ineffective if `enablePublicAccess` is set to
+      # -- Optional but ineffective if `enablePublicAccess` is set to
       # `true`. The reference to the secrets containing the credentials of the
       # users enabled to access the RMI Connector.
       # Every secret must contains the keys `user` and `password`.
@@ -1930,7 +1930,7 @@ management:
     # any way.
     enablePublicAccess: true
 
-    # -- Optional, but ineffective if `enablePublicAccess` is set to `true`.
+    # -- Optional but ineffective if `enablePublicAccess` is set to `true`.
     # Credentials of users authorized to access the Monitoring Dashboard.
     # If `enablePublicAccess` is set to `false`, at least one set of
     # credentials should be supplied in order to allow access through the
@@ -1965,7 +1965,7 @@ management:
     # affect in any way the special "MONITOR" Data Adapter.
     enableAvailabilityOnAllServers: true
 
-    # -- Optional, but ineffective if `enableAvailabilityOnAllServers` is set
+    # -- Optional but ineffective if `enableAvailabilityOnAllServers` is set
     # to `true`. List of server socket configurations (defined in `servers.{}`)
     # for which requests to the Monitoring Dashboard will be allowed.
     availableOnServers:
@@ -2013,7 +2013,7 @@ management:
     # server sockets specified in the `availableOnServers` setting, if any.
     enableAvailabilityOnAllServers: false
 
-    # -- Optional, but ineffective if `enableAvailabilityOnAllServers` is set
+    # -- Optional but ineffective if `enableAvailabilityOnAllServers` is set
     # to `false`. List of server socket configurations (defined in `servers.{}`)
     # for which health check requests can be issued.
     availableOnServers: []
@@ -3368,7 +3368,7 @@ load:
   # A zero value means a potentially unlimited number of threads.
   serverPoolMaxSize: 1000
 
-  # -- (int) Optional, but mandatory if `load.serverPoolMaxSize` is set to `0`.
+  # -- (int) Optional but mandatory if `load.serverPoolMaxSize` is set to `0`.
   # Maximum number of idle threads allowed for the `SERVER` internal pool,
   # which is devoted to the management of the client requests.
   # Put in a different way, it is the minimum number of threads that can be
@@ -4129,7 +4129,7 @@ adapters:
           # level or above, whereas the passwords won't.
           enabled: false
 
-          # -- Optional, but ineffective if `enabled` is set to `false`. The
+          # -- Optional but ineffective if `enabled` is set to `false`. The
           # reference to the secrets containing the credentials of the users
           # allowed to connect.
           # Every secret must contains the keys `user` and `password`.
@@ -4299,7 +4299,7 @@ adapters:
         # @default -- true
         enableClearingOnSessionClose:
 
-        # -- Optional, but ineffective if `enableClearingOnSessionClose` is set
+        # -- Optional but ineffective if `enableClearingOnSessionClose` is set
         # to `false`. Sets the minimum time cached profile data are kept; these
         # cached data are needed in order to manage request processing before a
         # session is fully started.
@@ -5097,11 +5097,11 @@ connectors:
           # is set to a value greater than 1 (which includes the default value).
           # The order strategy to be used for concurrent processing of the
           # incoming deserialized records.
-          # If set to `ORDER_BY_PARTITION`, maintain the order of records
+          # If set to `ORDER_BY_PARTITION`, maintains the order of records
           # within each partition.
-          # If set to `ORDER_BY_KEY`, maintain the order among the records
+          # If set to `ORDER_BY_KEY`, maintains the order among the records
           # sharing the same key.
-          # If set to `UNORDERED`, provide no ordering guarantees.
+          # If set to `UNORDERED`, provides no ordering guarantees.
           consumeWithOrderStrategy: ORDER_BY_PARTITION
 
           # -- Optional. Key evaluator configuration.
@@ -5293,6 +5293,47 @@ connectors:
           # to the Lightstreamer clients, while other successfully mapped fields
           # from the same record will still be delivered.
           enableSkipFailedMapping: false
+          
+          # -- Optional. If set to `true`, allows mapping of non-scalar values 
+          # to Lightstreamer fields.
+          enableNonScalarValuesMapping: false
+
+          # -- Optional but ineffective if `enableAutoCommandMode` is set to 
+          # `true`. Enables support for the COMMAND mode. A Kafka record must be
+          # structured to allow the Kafka Connector to map the values for the 
+          # `key` and `command` fields:
+          # - `key`: Identifies the unique key for each element in the list 
+          #   generated from the item.
+          # - `command`: Specifies the operation (`ADD`, `UPDATE`, `DELETE`) to 
+          #   be performed on the item.
+          #
+          # For example:
+          #
+          # mappings:
+          #   key: "#{KEY}"
+          #   command: "#{VALUE.command}"
+          #
+          # When `key` is set to `snapshot`, the command can be one of the following:
+          # - `CS`: Clears the current snapshot.
+          # - `EOS`: Marks the end of the snapshot.
+          enableEvaluationAsCommand: false
+
+          # -- Optional. If set to `true`, enables automatic COMMAND mode 
+          # support by generating appropriate command operations for 
+          # Lightstreamer items without requiring your Kafka records to contain 
+          # explicit command fields. When enabled, the connector:
+          # - Automatically adds a Lightstreamer command field to each update
+          # - Assigns the appropriate command value based on the record state:
+          # - `ADD`: For records with a new mapped key (not previously processed)
+          # - `UPDATE`: For records with a mapped key that has been previously processed
+          # - `DELETE`: For records with a null message payload (tombstone records)
+          #
+          # You only need to map the `key` field from your record structure.
+          # For example:
+          #
+          # mappings:
+          #   key: "#{KEY}"
+          enableAutoCommandMode: false
 
         # -- Optional. Logger configuration for the connection.
         logger:
