@@ -431,7 +431,7 @@ spec:
               {{- range $key, $value := .localSchemaFiles }}
                 {{- if $value}}
             - name: kafka-connector-schema-files-{{ $key | lower }}
-              mountPath: {{ include "lightstreamer.kafka-connector.deployment" . }}/schemas/{{ $key }}
+              mountPath: /connectors-source-conf/kafka/schemas/{{ $key }}
                 {{- end }}
               {{- end }}
             {{- end }}
