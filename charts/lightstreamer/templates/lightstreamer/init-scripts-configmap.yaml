@@ -36,16 +36,17 @@ data:
     # link.
     ln -s {{ .fromPathInImage }} ${KAFKA_CONNECTOR_DEPLOYMENT}
       {{- else }}
-    # The connector has already been deployed to the expected path in the by
-    # the "kafka-connector-deployer" init container. Do nothing.
+    # The connector has already been deployed to the expected path by the 
+    # "kafka-connector-deployer" init container. Do nothing.
       {{- end }}
     {{- end }}
-    # In all cases, override the configuration files with the ones rendered by
+    # In all cases, override configuration files and schemas (if any) with the ones rendered by
     # Helm and provided in the ConfigMap.
-    # The rendered schema files, if present, are already mounted from the
-    # related ConfigMaps at the "schema" folder under the Kafka Connector.
     cp /connectors-source-conf/kafka/adapters.xml ${KAFKA_CONNECTOR_DEPLOYMENT}/adapters.xml
     cp /connectors-source-conf/kafka/log4j.properties ${KAFKA_CONNECTOR_DEPLOYMENT}/log4j.properties
+    if [ -d "/connectors-source-conf/kafka/schemas" ]; then
+      cp -a /connectors-source-conf/kafka/schemas ${KAFKA_CONNECTOR_DEPLOYMENT}/schemas
+    fi
   {{- end }}
 
   {{- /*
