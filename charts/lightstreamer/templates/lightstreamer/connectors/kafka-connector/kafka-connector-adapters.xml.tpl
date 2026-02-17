@@ -172,7 +172,7 @@ Render the Lightstreamer Kafka Connector configuration file.
         {{- end }} {{/* of .sslConfig.enabled */}}
 
         {{- with $connection.authentication }}
-        
+
         <!-- ##### AUTHENTICATION SETTINGS ##### -->
 
         <!-- Broker authentication is configured through parameters with the
@@ -196,7 +196,7 @@ Render the Lightstreamer Kafka Connector configuration file.
              - AWS_MSK_IAM
 
              Default value: PLAIN.-->
-            {{- $mechanism := .mechanism | default "PLAIN" }} 
+            {{- $mechanism := .mechanism | default "PLAIN" }}
             {{- if not (mustHas $mechanism (list "PLAIN" "SCRAM-SHA-256" "SCRAM-SHA-512" "GSSAPI" "AWS_MSK_IAM")) }}
               {{- fail (printf "connectors.kafkaConnector.connections.%s.authentication.mechanism must be one of: \"PLAIN\", \"SCRAM-SHA-256\", \"SCRAM-SHA-512\", \"GSSAPI\", \"AWS_MSK_IAM\"" $key) }}
             {{- end }}
@@ -214,7 +214,7 @@ Render the Lightstreamer Kafka Connector configuration file.
             {{- end }} {{/* of .mechanism */}}
 
             {{- if eq $mechanism "GSSAPI"}}
-        <!-- ##### GSSAPI AUTHENTICATION SETTINGS ##### -->            
+        <!-- ##### GSSAPI AUTHENTICATION SETTINGS ##### -->
               {{- with required "connectors.kafkaConnector.connections.%s.authentication.gssapi must be set" .gssapi }}
 
         <!-- When this mechanism is specified, you can configure the following authentication parameters: -->
@@ -288,14 +288,14 @@ Render the Lightstreamer Kafka Connector configuration file.
               {{- end }} {{/* of .gssapi */}}
             {{- else if eq $mechanism "AWS_MSK_IAM" }}
               {{- with .iam }}
-        <!-- ##### IAM AUTHENTICATION SETTINGS ##### -->              
+        <!-- ##### IAM AUTHENTICATION SETTINGS ##### -->
 
         <!-- The AWS_MSK_IAM authentication mechanism enables access to Amazon Managed Streaming for Apache Kafka (MSK)
              clusters through IAM access control.
 
              When specified, the following parameters will be part of the authentication configuration:
         -->
-                {{- if not (quote .credentialProfileName | empty) }} 
+                {{- if not (quote .credentialProfileName | empty) }}
 
         <!-- Optional. The name of the AWS credential profile to use for authentication. These profiles are defined in
              the AWS shared credentials file.
@@ -325,7 +325,7 @@ Render the Lightstreamer Kafka Connector configuration file.
         -->
         <param name="authentication.iam.sts.region">{{ .stsRegion }}</param>
                 {{- end }}
-                
+
               {{- end }} {{/* of .iam */}}
 
             {{- end }} {{/* of .mechanism */}}
@@ -427,7 +427,7 @@ Render the Lightstreamer Kafka Connector configuration file.
              The general format is:
 
              <param name="map.TOPIC_NAME.to">item1,item2,itemN,...</param>
-             
+
              At least one mapping must be provided. -->
           {{- $itemTemplates := .itemTemplates }}
           {{- $usedTopicNames := list }}
@@ -440,7 +440,7 @@ Render the Lightstreamer Kafka Connector configuration file.
               {{- fail (printf "connectors.kafkaConnector.connections.%s.routing.topicMappings.%s.topic %s already mapped" $key $mappingKey $topic) }}
             {{- end }}
             {{- $usedTopicNames = append $usedTopicNames $topic }}
- 
+
             {{- $templateRefs := list }}
             {{- $itemsList := list }}
             {{- range $mapping.itemTemplateRefs }}
@@ -481,7 +481,7 @@ Render the Lightstreamer Kafka Connector configuration file.
              <param name="field.*">#{VALUE.nested.*}</param>
              <param name="field.*">#{VALUE.items.*}</param>
 
-             Static field.fieldName mappings take precedence over field.* wildcards.             
+             Static field.fieldName mappings take precedence over field.* wildcards.
 
              At least one mapping must be provided. -->
           {{- range $fieldName, $extractionExpression := required (printf "connectors.kafkaConnector.connections.%s.fields.mapping must be set" $key) .mappings }}
@@ -498,7 +498,77 @@ Render the Lightstreamer Kafka Connector configuration file.
              Default value: false. -->
         <param name="fields.skip.failed.mapping.enable">{{ .enableSkipFailedMapping }}</param>
           {{- end }} {{/* of .enableSkipFailedMapping */}}
-        {{- end }} {{/* of .mappingsfields */}}
+
+          {{- if .enableNonScalarValuesMapping }}
+
+        <!-- Optional. Enabling this parameter allows mapping of non-scalar values to Lightstreamer fields.
+             For example, in the following mapping:
+
+             <param name="field.structured">#{VALUE.complexAttribute}</param>
+
+             the value of "complexAttribute" will be mapped as generic text (e.g. JSON string) to the "structured" Lightstreamer field.
+
+             Can be one of the following:
+             - true
+             - false
+
+             Default value: false. -->
+        <param name="fields.map.non.scalar.values.enable">{{ .enableNonScalarValuesMapping }}</param>
+          {{- end }} {{/* of .enableNonScalarValuesMapping */}}
+
+          {{- if .enableAutoCommandMode }}
+            {{ required (printf "connectors.kafkaConnector.connections.%s.fields.mapping.key must be set" $key) .mappings.key }}          
+
+        <!-- Optional. Enables automatic COMMAND mode support by generating appropriate command operations for Lightstreamer items
+             without requiring your Kafka records to contain explicit command fields.
+
+             When enabled, the connector:
+
+             - Automatically adds a Lightstreamer command field to each update
+             - Assigns the appropriate command value based on the record state:
+               - "ADD": For records with a new mapped key (not previously processed)
+               - "UPDATE": For records with a mapped key that has been previously processed
+               - "DELETE": For records with a null message payload (tombstone records)
+
+             You only need to map the "key" field from your record structure.
+             For example:
+
+             <param name="fields.auto.command.mode.enable">true</param>
+             <param name="field.key">#{KEY}</param>
+
+             The parameter can be one of the following:
+             - true
+             - false
+
+             Default value: false. -->
+        <param name="fields.auto.command.mode.enable">true</param>
+          {{- else if .enableEvaluationAsCommand }}
+            {{ required (printf "connectors.kafkaConnector.connections.%s.fields.mapping.key must be set" $key) .mappings.key }}
+            {{ required (printf "connectors.kafkaConnector.connections.%s.fields.mapping.command must be set" $key) .mappings.command }}
+
+        <!-- Optional but ineffective if "fields.auto.command.mode.enable" is enabled. Enables support for the COMMAND mode.
+             A Kafka record must be structured to allow the Kafka Connector to map the values for the "key" and "command" fields:
+             - "key": Identifies the unique key for each element in the list generated from the item.
+             - "command": Specifies the operation ("ADD", "UPDATE", "DELETE") to be performed on the item.
+
+             For example:
+
+             <param name="fields.evaluate.as.command.enable">true</param>
+             <param name="field.key">#{KEY}</param>
+             <param name="field.command">#{VALUE.command}</param>
+
+             When "key" is set to "snapshot", the command can be one of the following:
+             - "CS": Clears the current snapshot.
+             - "EOS": Marks the end of the snapshot.
+
+             The parameter can be one of the following:
+             - true
+             - false
+
+             Default value: false. -->
+        <param name="fields.evaluate.as.command.enable">true</param>          
+          {{- end }} {{/* of .enableAutoCommandMode */}}          
+        {{- end }} {{/* of .connection.fields */}}
 
         {{- if ($connection.record).renderSchemaRegistry }} {{/* Flag set by the "lightstreamer.kafka-connector.configuration.record.evaluator" function */}}
 
@@ -509,7 +579,7 @@ Render the Lightstreamer Kafka Connector configuration file.
         <!-- Mandatory if the Confluent Schema Registry is enabled. The URL of the Confluent Schema Registry.
              An encrypted connection is enabled by specifying the "https" protocol. -->
         <param name="schema.registry.url">{{ required (printf "connectors.kafkaConnector.schemaRegistries.%s.url must be set" $schemaRegistryRef) $schemaRegistry.url }}</param>
-          
+
           {{- if ($schemaRegistry.basicAuthentication).enabled }}
 
         <!-- Optional. Enable Basic HTTP authentication of this connection against the Schema Registry. Can be one of the following:
@@ -557,7 +627,7 @@ Render the Lightstreamer Kafka Connector configuration file.
             {{- end }} {{/* of .enableHostnameVerification */}}
 
             {{- if .truststoreRef}}
-        <!-- If required, configure the trust store to trust the Confluent Schema Registry certificates -->            
+        <!-- If required, configure the trust store to trust the Confluent Schema Registry certificates -->
 
               {{- include "lightstreamer.kafka-connector.configuration.truststore" (list "schema.registry.truststore" $.Values.keystores .truststoreRef)  | nindent 8 }}
             {{- end }} {{/* of .truststoreRef */}}
@@ -570,7 +640,7 @@ Render the Lightstreamer Kafka Connector configuration file.
           {{- end }} {{/* of .sslConfig */}}
         {{- end }} {{/* of .schemaRegistryRef */}}
 
-    </data_provider> 
+    </data_provider>
       {{- end }} {{/* of .enabled */}}
     {{- end -}} {{/* of .connections */}}
 
