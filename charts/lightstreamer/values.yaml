@@ -1105,8 +1105,8 @@ keystores:
 # -- Mandatory. Logging configuration for the Lightstreamer Broker.
 logging:
 
-  # -- Optional. Map of appender configurations. Every entry in the map
-  # defines a specific appender configuration.
+  # -- Optional. Map of appender configurations. Every entry in the map defines
+  # a specific appender configuration.
   # Every logger must refer to one or more appenders defined here.
   appenders:
 
@@ -4857,9 +4857,9 @@ connectors:
       # Every logger must refer to one or more appenders defined here.
       appenders:
 
-        # -- An appender configuration. You can use this configuration as a template
-        # to define your own appender configurations. In particular, `dailyRolling`
-        # defines a daily rolling file appender.
+        # -- An appender configuration. You can use this configuration as a 
+        # template to define your own appender configurations. In particular, 
+        # `dailyRolling` defines a daily rolling file appender.
         dailyRolling:
 
           # -- (string) Mandatory. The type of appender.
@@ -4867,19 +4867,21 @@ connectors:
           type: DailyRollingFile
 
           # -- (string) Mandatory. The conversion pattern.
-          # See https://reload4j.qos.ch/apidocs/org/apache/log4j/PatternLayout.html for details.
+          # See https://reload4j.qos.ch/apidocs/org/apache/log4j/PatternLayout.html 
+          # for details.
           pattern: "[%d] [%-10c{1}] %-5p %m%n"
 
-          # -- Mandatory if `type` is set to `DailyRollingFile`. The name of the log
-          # file.
+          # -- Mandatory if `type` is set to `DailyRollingFile`. The name of the
+          # log file.
           fileName: "kafka-connector.log"
 
-          # -- Mandatory if `type` is set to `DailyRollingFile`. The pattern to use
-          # for the log file.
+          # -- Mandatory if `type` is set to `DailyRollingFile`. The pattern to 
+          # use for the log file.
           fileNamePattern: "kafka-connector-%d{yyyy-MM-dd}.log"
 
           # -- (string) Optional but only effective if `type` is set to
-          # `DailyRollingFile`. The reference to a volume to use for the log file.
+          # `DailyRollingFile`. The reference to a volume to use for the log 
+          #file.
           volumeRef:      
 
         # -- The console appender configuration.
