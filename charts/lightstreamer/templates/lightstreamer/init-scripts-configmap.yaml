@@ -22,31 +22,76 @@ metadata:
     {{- include "lightstreamer.labels" . | nindent 4 }}
 data:
   {{- /*
-  Makes the Kafka Connector deployment available in the Lightstreamer container.
+  Sets up the Kafka Connector for the Lightstreamer Server.
+  
+  Flow:
+  1. If provisioning.fromPathInImage is configured:
+     - The connector is expected to be already present in the container image at the specified path
+     - This script copies the entire connector directory from the image to the deployment path
+       in the ephemeral volume "kafka-connector-deployment"
+     - Copying (rather than symlinking) is required because config files need to be overridden,
+       and the image filesystem is read-only
+  
+  2. If provisioning.fromPathInImage is NOT configured:
+     - The connector has already been deployed to the ephemeral volume by the
+       "kafka-connector-deployer" init container (which downloads from GitHub release, URL, or volume)
+     - This script skips the deployment step
+  
+  3. In both cases, configuration files are overridden:
+     - adapters.xml and log4j.properties are copied from the ConfigMap to the deployment path
+     - Schemas (if any) are copied from the ConfigMap to the deployment path
+       (these can be Avro, JSON Schema, or Protobuf descriptors)
+     - This allows Helm to manage the connector configuration independently of the distribution
+  
+  The script is executed at container startup before the Lightstreamer Server starts.
   */}}
   {{- if ((.Values.connectors).kafkaConnector).enabled }}
   setup-kafka-connector.sh: |
     #!/bin/bash
     set -euo pipefail
+
     {{- with ((.Values.connectors).kafkaConnector).provisioning }}
-    # Initialize deployment path
-    KAFKA_CONNECTOR_DEPLOYMENT={{ include "lightstreamer.kafka-connector.deployment" . }}
+    KAFKA_CONNECTOR_DEPLOYMENT={{ include "lightstreamer.kafka-connector.deployment.dir" . }}
+    echo "Target deployment path: ${KAFKA_CONNECTOR_DEPLOYMENT}"
+
       {{- if .fromPathInImage }}
-    # The connector is already available in the image, so just create a soft
-    # link.
-    ln -s {{ .fromPathInImage }} ${KAFKA_CONNECTOR_DEPLOYMENT}
+    echo "Checking for connector at: {{ .fromPathInImage }}"
+    # Check if the connector directory exists in the image
+    if [ ! -d "{{ .fromPathInImage }}" ]; then
+      echo "ERROR: Directory {{ .fromPathInImage }} does not exist in the image!"
+      echo "Available directories in /lightstreamer/adapters:"
+      ls -la /lightstreamer/adapters 2>/dev/null || echo "Parent directory not accessible"
+      exit 1
+    fi
+    # The connector is available in the image
+    echo "Connector found at {{ .fromPathInImage }}"
+    ls -la "{{ .fromPathInImage }}"
+    # Copy the connector from the image to the deployment directory
+    # (we can't symlink because we need to override config files)
+    echo "Copying connector from {{ .fromPathInImage }} to ${KAFKA_CONNECTOR_DEPLOYMENT}"
+    cp -r "{{ .fromPathInImage }}" "${KAFKA_CONNECTOR_DEPLOYMENT}"
+
       {{- else }}
-    # The connector has already been deployed to the expected path by the 
-    # "kafka-connector-deployer" init container. Do nothing.
+
+    # The connector has already been deployed by the "kafka-connector-deployer" init container
+    echo "Connector deployed by init container at ${KAFKA_CONNECTOR_DEPLOYMENT}"
       {{- end }}
+
     {{- end }}
+
     # In all cases, override configuration files and schemas (if any) with the ones rendered by
     # Helm and provided in the ConfigMap.
-    cp /connectors-source-conf/kafka/adapters.xml ${KAFKA_CONNECTOR_DEPLOYMENT}/adapters.xml
-    cp /connectors-source-conf/kafka/log4j.properties ${KAFKA_CONNECTOR_DEPLOYMENT}/log4j.properties
-    if [ -d "/connectors-source-conf/kafka/schemas" ]; then
-      cp -a /connectors-source-conf/kafka/schemas ${KAFKA_CONNECTOR_DEPLOYMENT}/schemas
+    CONFIG_SOURCE={{ include "lightstreamer.connectors.source-config.kafka-connector.dir" . }}
+
+    echo "Copying configuration files from ConfigMap"
+    cp "${CONFIG_SOURCE}/adapters.xml" "${KAFKA_CONNECTOR_DEPLOYMENT}/adapters.xml"
+    cp "${CONFIG_SOURCE}/log4j.properties" "${KAFKA_CONNECTOR_DEPLOYMENT}/log4j.properties"
+    if [ -d "${CONFIG_SOURCE}/schemas" ]; then
+      echo "Copying schemas from ConfigMap"
+      cp -a "${CONFIG_SOURCE}/schemas" "${KAFKA_CONNECTOR_DEPLOYMENT}/schemas"
     fi
+    echo "Creating target logs directory"
+    mkdir -p "${KAFKA_CONNECTOR_DEPLOYMENT}/logs"
   {{- end }}
 
   {{- /*
@@ -54,7 +99,7 @@ data:
   */}}
   setup-adapters.sh: |
     #!/bin/bash
-    set -euo pipefail
+    set -xeuo pipefail
     
     # Copy adapter resources from source to destination
     function copy_resources {
@@ -117,14 +162,15 @@ data:
 
         {{- /*
         List of paths containing the "lib" and "classes" folders to copy from 
-        the Adapter Set directory located in the provisioning source. By 
-        default, include "." to capture even the top-level "lib" and "classes"
-        folders.
+        the Adapter Set directory located in the provisioning source. Only 
+        populated for inProcess adapters. Include "." to capture the top-level 
+        "lib" and "classes" folders.
         */ -}}
-        {{- $paths := list "." }}
+        {{- $paths := list }}
         {{- $configMapRefs := dict }}
         {{- /* Add the installDir of the Metadata Adapter, if any */ -}}
         {{- with $adapterSet.metadataProvider.inProcessMetadataAdapter }}
+          {{- $paths = append $paths "." }}
           {{- if and .installDir (ne .installDir ".") }}
             {{- $paths = append $paths .installDir }}
           {{- end }}
@@ -139,6 +185,7 @@ data:
         {{- range $dataProviderName, $dataProvider := $adapterSet.dataProviders }}
           {{- if $dataProvider.enabled }}
             {{- with $dataProvider.inProcessDataAdapter }}
+              {{- $paths = append $paths "." }}
               {{- if and .installDir (ne .installDir ".") }}
                 {{- $paths = append $paths .installDir }}
               {{- end }}
@@ -153,28 +200,31 @@ data:
         {{- end }}
 
         {{- $paths := $paths | uniq }}
-    echo "Copying the resources for the '{{ $adapterName }}' Adapter Set"
-    paths_to_copy={{ join " " $paths | quote }}
     
+    {{- if $paths }}
+    paths_to_copy={{ join " " $paths | quote }}
+    echo "Copying the resources for the '{{ $adapterName }}' Adapter Set"
     if ! copy_resources "${root_source_path}" "${target_adapter_path}" "${paths_to_copy}" ; then
       echo "Failed to copy resources for the '{{ $adapterName }}' Adapter Set"
       exit 1
     fi
-        
+    {{- end }}
+
         {{- range $installDir, $sourceConfigMapPaths := $configMapRefs }}
           {{- range $sourceConfigMapPaths }}
     cp {{ . }}/* {{ include "lightstreamer.adapters.fullAdaptersDir" . }}/{{ $adapterFolderName }}/{{ $installDir }}
           {{- end }}
-        {{- end }}  
+        {{- end }} 
       {{- end }}
     {{- end }}
+    
   
   launch.sh: |
     #!/bin/bash
     set -eo pipefail
 
     # The working dir is /lightstreamer/bin/unix-like as per the settings of the Docker image
-    mkdir -p {{ include "lightstreamer.adapters.fullAdaptersDir" . }}
+    # mkdir -p {{ include "lightstreamer.adapters.fullAdaptersDir" . }}
 
     {{- if ((.Values.connectors).kafkaConnector).enabled }}
     # Setup the Kafka Connector
@@ -195,3 +245,4 @@ data:
        JAVA_OPTS="${JAVA_OPTS} ${LS_HIBERNATE_SYSTEM_PROPERTIES}"
     fi
     ./LS.sh run
+
