@@ -351,6 +351,34 @@ configuration exists and no duplicate names are used.
 {{- end }}
 
 {{/*
+Create the name of the temp directory to use for storing the connectors' source configuration files
+*/}}
+{{- define "lightstreamer.connectors.source-config.dir" -}}
+{{ print "/tmp/connectors-source-conf" }}
+{{- end }}
+
+{{/*
+  Create the name of the temp directory to use for storing the Lightstreamer Kafka Connector source configuration files
+*/}}
+{{- define "lightstreamer.connectors.source-config.kafka-connector.dir" -}}
+{{ print (include "lightstreamer.connectors.source-config.dir" .) "/kafka" }}
+{{- end }}
+
+{{/*
+Create the name of the temp directory to use for storing the connectors' source zip archives
+*/}}
+{{- define "lightstreamer.connectors.source-archives.dir" -}}
+{{ print "/tmp/connectors-source-archives" }}
+{{- end }}
+
+{{/*
+  Create the name of the temp directory to use for storing the Kafka Connector source zip archive
+*/}}
+{{- define "lightstreamer.kafka.connector.source-archive.dir" -}}
+{{ print (include "lightstreamer.connectors.source-archives.dir" .) "/kafka" }}
+{{- end }}
+
+{{/*
 Validate the Kafka Connector provisioning setting.
 */}}
 {{- define "lightstreamer.kafka-connector.validateProvisioning" -}}
@@ -418,8 +446,15 @@ Create the download URL of the Lightstreamer Kafka Connector.
 {{/*
 Create the name of the deployment folder the Lightstreamer Kafka Connector.
 */}}
-{{- define "lightstreamer.kafka-connector.deployment" -}}
-{{- printf "/lightstreamer/deployed_adapters/kafka-connector" }}
+{{- define "lightstreamer.kafka-connector.deployment.dir" -}}
+{{- printf "/deployed_adapters/kafka-connector" }}
+{{- end }}
+
+{{/*
+Create the name of the logs folder for the Lightstreamer Kafka Connector.
+*/}}
+{{- define "lightstreamer.kafka-connector.logs.dir" -}}
+{{- printf "%s/logs" (include "lightstreamer.kafka-connector.deployment.dir" .) }}
 {{- end }}
 
 {{/*
@@ -431,7 +466,7 @@ Render the truststore settings for the Lightstreamer Kafka Connector configurati
 {{- $key := index . 2 -}}
 {{- $keyStore := required (printf "keystores.%s not defined" $key) (get $top $key) -}}
 
-<param name="{{ $prefix }}.path">../../conf/keystores/{{ $key }}/{{ required (printf "keystores.%s.keystoreFileSecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</param>
+<param name="{{ $prefix }}.path">../../lightstreamer/conf/keystores/{{ $key }}/{{ required (printf "keystores.%s.keystoreFileSecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</param>
 
 <!-- Optional. The password of the trust store.
 
@@ -478,7 +513,7 @@ Render the keystore settings for the Lightstreamer Kafka Connector configuration
 
 <!-- Mandatory if key store is enabled. The path of the key store file, relative to
       the deployment folder (LS_HOME/adapters/lightstreamer-kafka-connector-<version>). -->
-<param name="{{ $prefix }}.path">../../conf/keystores/{{ $key }}/{{ required (printf "keystores.%s.keystoreFilesecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</param>
+<param name="{{ $prefix }}.path">../../lightstreamer/conf/keystores/{{ $key }}/{{ required (printf "keystores.%s.keystoreFilesecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</param>
 
 <!-- Optional. The password of the key store.
 
@@ -773,7 +808,7 @@ Validate the Adapter provisioning setting.
 {{/*
 Create the Adapters path name, relative to the Lightstreamer conf directory.
 */}}
-{{- define "lightstreamer.adapters.adaptersDir" -}}
+{{- define "lightstreamer.adapters.adaptersDir.name" -}}
 {{- printf "deployed_adapters" }}
 {{- end }}
 
@@ -781,7 +816,7 @@ Create the Adapters path name, relative to the Lightstreamer conf directory.
 Create the full Adapters path name
 */}}
 {{- define "lightstreamer.adapters.fullAdaptersDir" -}}
-{{- printf "/lightstreamer/%s" (include "lightstreamer.adapters.adaptersDir" .) }}
+{{- printf "/%s" (include "lightstreamer.adapters.adaptersDir.name" .) }}
 {{- end }}
 
 
