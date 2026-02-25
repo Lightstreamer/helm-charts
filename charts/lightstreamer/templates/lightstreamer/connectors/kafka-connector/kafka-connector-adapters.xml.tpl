@@ -629,13 +629,13 @@ Render the Lightstreamer Kafka Connector configuration file.
             {{- if .truststoreRef}}
         <!-- If required, configure the trust store to trust the Confluent Schema Registry certificates -->
 
-              {{- include "lightstreamer.kafka-connector.configuration.truststore" (list "schema.registry.truststore" $.Values.keystores .truststoreRef)  | nindent 8 }}
+              {{- include "lightstreamer.kafka-connector.configuration.truststore" (list "schema.registry.encryption.truststore" $.Values.keystores .truststoreRef)  | nindent 8 }}
             {{- end }} {{/* of .truststoreRef */}}
 
             {{- if .keystoreRef }}
 
         <!-- If mutual TLS is enabled on the Confluent Schema Registry, enable and configure the key store -->
-              {{- include "lightstreamer.kafka-connector.configuration.keystore" (list "schema.registry.keystore" $.Values.keystores .keystoreRef)  | nindent 8 }}
+              {{- include "lightstreamer.kafka-connector.configuration.keystore" (list "schema.registry.encryption.keystore" $.Values.keystores .keystoreRef)  | nindent 8 }}
             {{- end }} {{/* of .keystoreRef */}}
           {{- end }} {{/* of .sslConfig */}}
         {{- end }} {{/* of .schemaRegistryRef */}}
