@@ -11,21 +11,22 @@ data:
   {{- /*
   Retrieves the Kafka Connector distribution package from one of the
   configurable provisioning sources (GitHub release, URL, or volume) and deploys
-  it to the ephemeral volume "kafka-connector-deployment", which will be
-  soft-linked to expected path in the Lightstreamer image by the
-  "setup-kafka-connector.sh" script launched at the startup.
+  it to the expected deployment path in the ephemeral volume "kafka-connector-deployment",
+  which is mounted by the main Lightstreamer container.
 
   The script is executed by the `kafka-connector-deployer` init container, which
-  is created ony if the "connector.kafkaConnector.provisioning.fromPathInImage"
+  is created only if the "connector.kafkaConnector.provisioning.fromPathInImage"
   setting is not leveraged: in that case, the connector is expected to be
-  already available in the image.
+  already available in the image and will be copied to the deployment path by the
+  "setup-kafka-connector.sh" script launched at container startup.
   */}}
   kafka-connector-deployer.sh: |-
     #!/bin/sh
     set -e
   {{- $provisioning := .Values.connectors.kafkaConnector.provisioning }}
   {{- with $provisioning }}
-    KAFKA_CONNECTOR_DEPLOYMENT_PATH=/kafka-connector-deployment/{{ include "lightstreamer.kafka-connector.name" . }}
+    # Define the expected deployment path
+    KAFKA_CONNECTOR_DEPLOYMENT_PATH={{ include "lightstreamer.kafka-connector.deployment.dir" . }}
     {{- if .fromVolume }}
     # The zip archive is already available in the volume specified through
     # "connectors.kafkaConnector.provisioning.fromVolume", mounted at the
@@ -37,17 +38,19 @@ data:
     # Download the zip archive from the GitHub release to the temporary
     # directory mounted from the ephemeral volume
     # "kafka-connector-source-storage".
-    curl -L -o /tmp/connectors-source-archives/kafka/${ZIP_ARCHIVE} {{ include "lightstreamer.kafka-connector.url" .fromGitHubRelease }}
+    curl -fL -o {{ include "lightstreamer.kafka.connector.source-archive.dir" . }}/${ZIP_ARCHIVE} {{ include "lightstreamer.kafka-connector.url" .fromGitHubRelease }}
       {{- else if .fromUrl }}
     # Download the zip archive from the specified URL to the temporary directory
     # mounted from the ephemeral volume "kafka-connector-source-storage".
-    curl -L -o /tmp/connectors-source-archives/kafka/${ZIP_ARCHIVE} {{ .fromUrl }}
+    curl -fL -o {{ include "lightstreamer.kafka.connector.source-archive.dir" . }}/${ZIP_ARCHIVE} {{ .fromUrl }}
       {{- end }}
     {{- end }}
-    unzip /tmp/connectors-source-archives/kafka/${ZIP_ARCHIVE} -d /kafka-connector-deployment
-    mv /kafka-connector-deployment/* ${KAFKA_CONNECTOR_DEPLOYMENT_PATH}
-    chown -R 10000:10000 ${KAFKA_CONNECTOR_DEPLOYMENT_PATH}
-    ls -la
+    unzip {{ include "lightstreamer.kafka.connector.source-archive.dir" . }}/${ZIP_ARCHIVE} -d /deployed_adapters
+    du -h /deployed_adapters
+    # Renaming the unzipped directory from /deployed_adapters/lightstreamer-kafka-connector-<version> to the 
+    # expected deployment path /deployed_adapters/kafka-connector.
+    mv /deployed_adapters/* ${KAFKA_CONNECTOR_DEPLOYMENT_PATH}
+    
   {{- end }}
 {{- end }}
 {{- end }}
