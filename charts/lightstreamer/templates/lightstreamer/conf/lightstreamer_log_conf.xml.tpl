@@ -105,7 +105,7 @@ Render the Lightstreamer logging configuration file
     </filter>
     -->
       {{ $fileName := required (printf "logging.appenders.%s.fileName must be set" $name) $val.fileName }}
-      {{- $logsDir := "../logs"}}
+      {{- $logsDir := include "lightstreamer.logs.dir" . }}
       {{- if $val.volumeRef }}
         {{- $extraVolumeNames := list }}
         {{- range $.Values.deployment.extraVolumes }}
