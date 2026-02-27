@@ -58,9 +58,21 @@ Render the Kafka Connector logging configuration file.
     {{- end }}
     {{- if eq $type "DailyRollingFile" }}
       {{- $fileName := required (printf "connectors.kafkaConnector.logging.appenders.%s.fileName must be set" $appenderName) $appender.fileName }}
+      {{- $logsDir := include "lightstreamer.kafka-connector.logs.dir" . }}
+      {{- if $appender.volumeRef }}
+        {{- $extraVolumeNames := list }}
+        {{- range $.Values.deployment.extraVolumes }}
+          {{- $extraVolumeNames = append $extraVolumeNames .name }}
+        {{- end }}
+        {{- $extraVolumeNames := $extraVolumeNames | uniq }}
+        {{- if not (has $appender.volumeRef $extraVolumeNames) }}
+          {{- fail (printf "connectors.kafkaConnector.logging.appenders.%s.volumeRef must be set to a volume defined in deployment.extraVolumes" $appenderName) }}
+        {{- end }}
+        {{- $logsDir = printf "%s/%s" $logsDir $appender.volumeRef }}
+      {{- end }}      
 log4j.appender.{{ $appenderName }}=org.apache.log4j.RollingFileAppender
 log4j.appender.{{ $appenderName }}.layout.ConversionPattern={{ required (printf "kafkaConnector.logging.appenders.%s.pattern must be set" $appenderName) $appender.pattern }}
-log4j.appender.{{ $appenderName }}.File=../../logs/{{ $fileName }}
+log4j.appender.{{ $appenderName }}.File={{ $logsDir }}/{{ $fileName }}
     {{- else if eq $type "Console" }}
 log4j.appender.{{ $appenderName }}=org.apache.log4j.ConsoleAppender
 log4j.appender.{{ $appenderName }}.Target=System.out
