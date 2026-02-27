@@ -821,10 +821,10 @@ servers:
       # pool and this setting protects that pool against such unlikely events.
       proxyProtocolTimeoutMillis: 1000
 
-      # -- (int) Optional but nonzero values forbidden if `enableProxyProtocol` 
+      # -- (int) Optional but nonzero values forbidden if `enableProxyProtocol`
       # is set to `true`. Number of entries in the `X-Forwarded-For` header that
-      # are expected to be supplied on each HTTP request (including Websocket 
-      # handshake) by the intermediate nodes (e.g. reverse proxies, load 
+      # are expected to be supplied on each HTTP request (including Websocket
+      # handshake) by the intermediate nodes (e.g. reverse proxies, load
       # balancers) that stand in the local environment.
       # If N entries are expected from local nodes, this means that the
       # Nth-nearest entry corresponds to the node connected to the farthest
@@ -3547,12 +3547,12 @@ adapters:
       # -- (string) The path to the Adapter Set resources in the image,
       # e.g.: `/lightstreamer/adapters/my-adapter-set`. At startup, the path
       # will be me mounted at the designated Adapter Set folder under
-      # the `/lightstreamer/deployed_adapters` directory in the container.
+      # the `/deployed_adapters` directory in the container.
       fromPathInImage:
 
       # -- The reference to a volume where the Adapter Set resources are stored.
       # At startup, the resources will be copied to the designated Adapter Set
-      # folder under the `/lightstreamer/deployed_adapters` directory in the
+      # folder under the `/deployed_adapters` directory in the
       # container.
       fromVolume:
 
@@ -3621,8 +3621,8 @@ adapters:
         # Specifies the directory where the Metadata Adapter's own `lib` and
         # `classes` folders are located in the provisioning source.
         # The full path will be then available at
-        # `/lightstreamer/deployed_adapters/<adapter-set-folder>/<installDir>`
-        # in the container.
+        # `/deployed_adapters/<adapter-set-folder>/<installDir>` in the
+        # container.
         # See `classLoader` for more details.
         # @default -- .
         installDir:
@@ -3630,8 +3630,8 @@ adapters:
         # -- Optional. The reference to a configmap containing extra
         # configuration files of the in-process Metadata Adapter. At startup,
         # the files will be copied to the
-        # `/lightstreamer/deployed_adapters/<adapter-set-folder>/installDir`
-        # directory in the container.
+        # `/deployed_adapters/<adapter-set-folder>/<installDir>` directory in
+        # the container.
         configMapRef:
 
         # -- (string) Optional. Determines the ClassLoader to be used to load
@@ -4373,7 +4373,7 @@ adapters:
         # -- Optional. Enables this Data Provider configuration.
         enabled: false
 
-        # -- (string) Mandatory if multiple Data Adapters (either proxy or 
+        # -- (string) Mandatory if multiple Data Adapters (either proxy or
         # in-process) are defined in the same Adapter Set. The name of the Data Adapter.
         # Example: `MY_REMOTE`
         # @default -- DEFAULT
@@ -4392,8 +4392,8 @@ adapters:
           # Specifies the directory where the Data Adapter's own `lib` and
           # `classes` folders are located in the provisioning source.
           # The full path will be then available at
-          # `/lightstreamer/deployed_adapters/<adapter-set-folder>/<installDir>`
-          # in the container.
+          # `/deployed_adapters/<adapter-set-folder>/<installDir>` in the
+          # container.
           # See `classLoader` for more details.
           # @default -- .
           installDir:
@@ -4401,8 +4401,8 @@ adapters:
           # -- Optional. The reference to a configmap containing extra
           # configuration files of the in-process Data Adapter. At startup,
           # the files will be copied to the
-          # `/lightstreamer/deployed_adapters/<adapter-set-folder>/installDir`
-          # directory in the container.
+          # `/deployed_adapters/<adapter-set-folder>/<installDir>` directory in
+          # the directory in the container.
           configMapRef:
 
           # -- Optional. See
@@ -4806,36 +4806,32 @@ connectors:
     provisioning:
 
       # -- (string) The path to the Kafka Connector deployment in the image,
-      # e.g.: `/lightstreamer/adapters/lightstreamer-kafka-connector-1.3.2`.
+      # e.g.: `/lightstreamer/adapters/lightstreamer-kafka-connector`.
       # At startup, the deployment folder will be mounted at
-      # `/lightstreamer/deployed_adapters/kafka-connector` in the container.
+      # `/deployed_adapters/kafka-connector` in the container.
       fromPathInImage:
 
       # -- (string) The Lightstreamer Kafka Connector release to download from
       # the GitHub official repository at startup. Once downloaded, the package
       # will be deployed to the
-      # `/lightstreamer/deployed_adapters/kafka-connector` directory in the
-      # container.
-      # Example: "1.3.2"
+      # `/deployed_adapters/kafka-connector` directory in the container.
+      # Example: "1.4.1"
       fromGitHubRelease:
 
       # -- (string) The URL from which to download the Kafka Connector zip
       # package at startup. Once downloaded, the package will be deployed to the
-      # `/lightstreamer/deployed_adapters/kafka-connector` directory in the
-      # container.
+      # `/deployed_adapters/kafka-connector` directory in the container.
       fromUrl:
 
       # -- The reference to a volume where the Kafka Connector zip package is
       # stored. At startup, the package will be deployed to the
-      # `/lightstreamer/deployed_adapters/kafka-connector` directory in the
-      # container.
+      # `/deployed_adapters/kafka-connector` directory in the container.
       fromVolume:
-
         # -- (string) Mandatory. The name of the volume.
         name:
 
         # -- (string) The file path to the Kafka Connector zip package in the
-        # volume, e.g.: `/connectors/lightstreamer-kafka-connector-1.3.2.zip`.
+        # volume, e.g.: `/connectors/lightstreamer-kafka-connector-1.4.1.zip`.
         filePath:
 
     # -- Mandatory. Defines the Kafka Connector Adapter Set and its unique ID.
@@ -4857,8 +4853,8 @@ connectors:
       # Every logger must refer to one or more appenders defined here.
       appenders:
 
-        # -- An appender configuration. You can use this configuration as a 
-        # template to define your own appender configurations. In particular, 
+        # -- An appender configuration. You can use this configuration as a
+        # template to define your own appender configurations. In particular,
         # `dailyRolling` defines a daily rolling file appender.
         dailyRolling:
 
@@ -4867,7 +4863,7 @@ connectors:
           type: DailyRollingFile
 
           # -- (string) Mandatory. The conversion pattern.
-          # See https://reload4j.qos.ch/apidocs/org/apache/log4j/PatternLayout.html 
+          # See https://reload4j.qos.ch/apidocs/org/apache/log4j/PatternLayout.html
           # for details.
           pattern: "[%d] [%-10c{1}] %-5p %m%n"
 
@@ -4875,14 +4871,14 @@ connectors:
           # log file.
           fileName: "kafka-connector.log"
 
-          # -- Mandatory if `type` is set to `DailyRollingFile`. The pattern to 
+          # -- Mandatory if `type` is set to `DailyRollingFile`. The pattern to
           # use for the log file.
           fileNamePattern: "kafka-connector-%d{yyyy-MM-dd}.log"
 
           # -- (string) Optional but only effective if `type` is set to
-          # `DailyRollingFile`. The reference to a volume to use for the log 
+          # `DailyRollingFile`. The reference to a volume to use for the log
           #file.
-          volumeRef:      
+          volumeRef:
 
         # -- The console appender configuration.
         stdout:
@@ -5138,10 +5134,10 @@ connectors:
             localSchemaFilePathRef:
 
             # -- Mandatory if `type` is set to `AVRO` or `PROTOBUF` and no
-            # local schema paths are provided. Enables the Confluent Schema 
+            # local schema paths are provided. Enables the Confluent Schema
             # Registry for validation of the key.
             # When enabled, the reference to a Schema Registry configuration is
-            # mandatory through the `record.schemaRegistryRef` parameter.            
+            # mandatory through the `record.schemaRegistryRef` parameter.
             enableSchemaRegistry: false
 
             # -- Mandatory if `type` is set to `PROTOBUF` and a binary
@@ -5180,7 +5176,7 @@ connectors:
             localSchemaFilePathRef:
 
             # -- Mandatory if `type` is set to `AVRO` or `PROTOBUF` and no
-            # local schema paths are provided. Enables the Confluent Schema 
+            # local schema paths are provided. Enables the Confluent Schema
             # Registry for validation of the value.
             # When enabled, the reference to a Schema Registry configuration is
             # mandatory through the `record.schemaRegistryRef` parameter.
@@ -5214,13 +5210,13 @@ connectors:
           extractionErrorStrategy: IGNORE_AND_CONTINUE
 
           # -- Mandatory when either record.keyEvaluator or record.valueEvaluator
-          # require a Schema Registry. The reference to a Schema Registry 
-          # configuration defined in 
+          # require a Schema Registry. The reference to a Schema Registry
+          # configuration defined in
           # `connectors.kafkaConnector.schemaRegistries`.
 
           # -- Mandatory when either record.keyEvaluator or record.valueEvaluator
           # requires a Schema Registry. The reference to a Schema Registry
-          # configuration (defined in 
+          # configuration (defined in
           # `connectors.kafkaConnector.schemaRegistries`).
           schemaRegistryRef:
 
@@ -5277,7 +5273,7 @@ connectors:
           mappings:
 
             # -- At least one must be provided. Maps a Lightstreamer field (key)
-            # to data extracted from Kafka records (value) using extraction 
+            # to data extracted from Kafka records (value) using extraction
             # expressions. The extraction expressions follow the Data Extraction
             # Language syntax. For a complete reference, see:
             # https://github.com/lightstreamer/Lightstreamer-kafka-connector?tab=readme-ov-file#record-mapping-fieldfield_name.
@@ -5295,18 +5291,18 @@ connectors:
           # to the Lightstreamer clients, while other successfully mapped fields
           # from the same record will still be delivered.
           enableSkipFailedMapping: false
-          
-          # -- Optional. If set to `true`, allows mapping of non-scalar values 
+
+          # -- Optional. If set to `true`, allows mapping of non-scalar values
           # to Lightstreamer fields.
           enableNonScalarValuesMapping: false
 
-          # -- Optional but ineffective if `enableAutoCommandMode` is set to 
+          # -- Optional but ineffective if `enableAutoCommandMode` is set to
           # `true`. Enables support for the COMMAND mode. A Kafka record must be
-          # structured to allow the Kafka Connector to map the values for the 
+          # structured to allow the Kafka Connector to map the values for the
           # `key` and `command` fields:
-          # - `key`: Identifies the unique key for each element in the list 
+          # - `key`: Identifies the unique key for each element in the list
           #   generated from the item.
-          # - `command`: Specifies the operation (`ADD`, `UPDATE`, `DELETE`) to 
+          # - `command`: Specifies the operation (`ADD`, `UPDATE`, `DELETE`) to
           #   be performed on the item.
           #
           # For example:
@@ -5320,9 +5316,9 @@ connectors:
           # - `EOS`: Marks the end of the snapshot.
           enableEvaluationAsCommand: false
 
-          # -- Optional. If set to `true`, enables automatic COMMAND mode 
-          # support by generating appropriate command operations for 
-          # Lightstreamer items without requiring your Kafka records to contain 
+          # -- Optional. If set to `true`, enables automatic COMMAND mode
+          # support by generating appropriate command operations for
+          # Lightstreamer items without requiring your Kafka records to contain
           # explicit command fields. When enabled, the connector:
           # - Automatically adds a Lightstreamer command field to each update
           # - Assigns the appropriate command value based on the record state:
@@ -5364,12 +5360,12 @@ connectors:
 
     # -- Optional. Map of Schema Registry definitions. Every entry in the map
     # defines a specific Schema Registry configuration, which can then be
-    # referenced from the connector configurations through the 
+    # referenced from the connector configurations through the
     # `connection.{}.schemaRegistryRef` setting.
     schemaRegistries:
 
-      # Example of Schema Registry configuration. 
-      # This example can be used as a template to define your own Schema 
+      # Example of Schema Registry configuration.
+      # This example can be used as a template to define your own Schema
       # Registry configurations.
       mySchemaRegistry:
 
@@ -5400,7 +5396,7 @@ connectors:
           allowProtocols: []
 
           # -- Optional. List of enabled secure cipher suites.
-          # If not specified, all the available cipher suites in the running JVM 
+          # If not specified, all the available cipher suites in the running JVM
           # will be used.
           allowCipherSuites: []
 
