@@ -831,6 +831,20 @@ Create the Adapters path name, relative to the Lightstreamer conf directory.
 {{- end }}
 
 {{/*
+Create the Adapters source repository path, used as the volume mount base path when the "fromVolume" provisioning method is used.
+*/}}
+{{- define "lightstreamer.adapters.source-repo.dir" -}}
+{{- printf "/tmp/adapters-source-repo" }}
+{{- end }}
+
+{{/*
+Create the Adapters source configuration path, used as the volume mount base path for the source configuration files.
+*/}}
+{{- define "lightstreamer.adapters.source-conf.dir" -}}
+{{- printf "/tmp/adapters-source-conf" }}
+{{- end }}
+
+{{/*
 Create the name of the configmap containing the adapters.xml file of a specific adapter.
 */}}
 {{- define "lightstreamer.adapters.configMapName" -}}
