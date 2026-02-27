@@ -605,7 +605,7 @@ spec:
             name: {{ . }}
       {{- end -}}
       {{- /* END VOLUMES FOR PAC FILES */ -}}
-      {{/* START VOLUMES FOR MPN */}}
+      {{- /* START VOLUMES FOR MPN */ -}}
       {{- if (.Values.mpn).enabled }}
         - name: lightstreamer-mpn-conf
           configMap:
