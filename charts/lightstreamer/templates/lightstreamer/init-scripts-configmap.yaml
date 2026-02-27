@@ -99,7 +99,7 @@ data:
     #!/bin/bash
     set -xeuo pipefail
     
-    # Copy adapter resources from source to destination
+    # Copy the adapter resources from source to destination
     function copy_resources {
       local source_path="$1"
       local dest_path="$2"
@@ -135,27 +135,21 @@ data:
     {{- range $adapterName, $adapterSet := .Values.adapters }}
       {{- if $adapterSet.enabled }}
         {{- $adapterFolderName := $adapterName | kebabcase }}
+    echo "Creating deployment directory for the '{{ $adapterName }}' Adapter Set"
     target_adapter_path="{{ include "lightstreamer.adapters.deployment.dir" . }}/{{ $adapterFolderName }}"
     mkdir -p "$target_adapter_path"
 
     echo "Copy the adapters.xml file for the '{{ $adapterName }}' Adapter Set"
-    cp /adapters-source-conf/{{ $adapterFolderName }}/adapters.xml $target_adapter_path/adapters.xml
+    cp {{ include "lightstreamer.adapters.source-conf.dir" . }}/{{ $adapterFolderName }}/adapters.xml $target_adapter_path/adapters.xml
 
-        {{- if ($adapterSet.provisioning).fromPathInImage}}
-          {{- /* 
-            Here we cannot use /tmp/adapters-repo because it is used as prefix for other volume 
-            mount paths that may be already in use. So let's use a different path.
-          */}}
-    root_source_path="/tmp/adapters-repo-from-image"
-    mkdir -p "$root_source_path"
-    ln -s {{ $adapterSet.provisioning.fromPathInImage }} $root_source_path/{{ $adapterFolderName }}
-    root_source_path="/tmp/adapters-repo-from-image/{{ $adapterFolderName }}"
+        {{- if ($adapterSet.provisioning).fromPathInImage }}
+    root_source_path="{{ $adapterSet.provisioning.fromPathInImage }}"
         {{- else }}
           {{- $rootSourcePathSuffix := "" }}
           {{- if (($adapterSet.provisioning).fromVolume).path }}
             {{- $rootSourcePathSuffix = printf "/%s" $adapterSet.provisioning.fromVolume.path }}
           {{- end }}
-    root_source_path="/tmp/adapters-repo/{{ $adapterFolderName }}{{ $rootSourcePathSuffix }}"        
+    root_source_path="{{ include "lightstreamer.adapters.source-repo.dir" . }}/{{ $adapterFolderName }}{{ $rootSourcePathSuffix }}"        
         {{- end }}
 
         {{- /*
@@ -174,7 +168,7 @@ data:
           {{- end }}
           {{- if .configMapRef }}
             {{- $key := .installDir | default "." }}
-            {{- $sourceConfigMapPaths := list (printf "/adapters-source-conf/%s/%s-config" $adapterFolderName .configMapRef) }}
+            {{- $sourceConfigMapPaths := list (printf "%s/%s/%s-config" (include "lightstreamer.adapters.source-conf.dir" .) $adapterFolderName .configMapRef) }}
             {{- $_ := set $configMapRefs $key $sourceConfigMapPaths }}
           {{- end }}
         {{- end }}
@@ -190,7 +184,7 @@ data:
               {{- if .configMapRef }}
                 {{- $key := .installDir | default "." }}
                 {{- $sourceConfigMapPaths := get $configMapRefs $key | default list }}
-                {{- $sourceConfigMapPaths = append $sourceConfigMapPaths (printf "/adapters-source-conf/%s/%s-config" $adapterFolderName .configMapRef) }}
+                {{- $sourceConfigMapPaths = append $sourceConfigMapPaths (printf "%s/%s/%s-config" (include "lightstreamer.adapters.source-conf.dir" .) $adapterFolderName .configMapRef) }}
                 {{- $_ := set $configMapRefs $key ($sourceConfigMapPaths | uniq) }}
               {{- end }}
             {{- end }}
