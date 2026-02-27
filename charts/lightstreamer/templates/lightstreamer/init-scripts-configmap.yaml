@@ -42,7 +42,7 @@ data:
      - Schemas (if any) are copied from the ConfigMap to the deployment path
        (these can be Avro, JSON Schema, or Protobuf descriptors)
      - This allows Helm to manage the connector configuration independently of the distribution
-  
+
   The script is executed at container startup before the Lightstreamer Server starts.
   */}}
   {{- if ((.Values.connectors).kafkaConnector).enabled }}
@@ -88,10 +88,8 @@ data:
     cp "${CONFIG_SOURCE}/log4j.properties" "${KAFKA_CONNECTOR_DEPLOYMENT}/log4j.properties"
     if [ -d "${CONFIG_SOURCE}/schemas" ]; then
       echo "Copying schemas from ConfigMap"
-      cp -a "${CONFIG_SOURCE}/schemas" "${KAFKA_CONNECTOR_DEPLOYMENT}/schemas"
+      cp -a "${CONFIG_SOURCE}/schemas" "${KAFKA_CONNECTOR_DEPLOYMENT}/{{ include "lightstreamer.kafka-connector.schemas.dir.name" . }}"
     fi
-    echo "Creating target logs directory"
-    mkdir -p "${KAFKA_CONNECTOR_DEPLOYMENT}/logs"
   {{- end }}
 
   {{- /*
@@ -137,7 +135,7 @@ data:
     {{- range $adapterName, $adapterSet := .Values.adapters }}
       {{- if $adapterSet.enabled }}
         {{- $adapterFolderName := $adapterName | kebabcase }}
-    target_adapter_path="{{ include "lightstreamer.adapters.fullAdaptersDir" . }}/{{ $adapterFolderName }}"
+    target_adapter_path="{{ include "lightstreamer.adapters.deployment.dir" . }}/{{ $adapterFolderName }}"
     mkdir -p "$target_adapter_path"
 
     echo "Copy the adapters.xml file for the '{{ $adapterName }}' Adapter Set"
@@ -212,7 +210,7 @@ data:
 
         {{- range $installDir, $sourceConfigMapPaths := $configMapRefs }}
           {{- range $sourceConfigMapPaths }}
-    cp {{ . }}/* {{ include "lightstreamer.adapters.fullAdaptersDir" . }}/{{ $adapterFolderName }}/{{ $installDir }}
+    cp {{ . }}/* {{ include "lightstreamer.adapters.deployment.dir" . }}/{{ $adapterFolderName }}/{{ $installDir }}
           {{- end }}
         {{- end }} 
       {{- end }}
@@ -224,7 +222,6 @@ data:
     set -eo pipefail
 
     # The working dir is /lightstreamer/bin/unix-like as per the settings of the Docker image
-    # mkdir -p {{ include "lightstreamer.adapters.fullAdaptersDir" . }}
 
     {{- if ((.Values.connectors).kafkaConnector).enabled }}
     # Setup the Kafka Connector
