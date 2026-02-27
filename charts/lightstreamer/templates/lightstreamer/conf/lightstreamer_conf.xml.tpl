@@ -1570,7 +1570,7 @@ Render the Lightstreamer configuration file.
     <!--
     <adapters_dir>../my_adapters</adapters_dir>
     -->
-    <adapters_dir>../{{ include "lightstreamer.adapters.adaptersDir" . }}</adapters_dir>
+    <adapters_dir>{{ include "lightstreamer.adapters.deployment.dir" . }}</adapters_dir>
 
     <!-- Optional. If Y, enables the $propname syntax on the "adapters.xml"
          files. It is the same variable-expansion feature available on this file.
