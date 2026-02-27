@@ -462,11 +462,11 @@ spec:
             {{- if $adapterSet.enabled }}
               {{- /* Mount the volume containing the adapters.xml file */}}
             - name: lightstreamer-{{ $adapterName | kebabcase }}-adapter-conf
-              mountPath: /adapters-source-conf/{{ $adapterName | kebabcase}}/adapters.xml
+              mountPath: {{ include "lightstreamer.adapters.source-conf.dir" . }}/{{ $adapterName | kebabcase}}/adapters.xml
               subPath: adapters.xml
               {{- with ($adapterSet.provisioning).fromVolume }}
             - name: {{ .name }}
-              mountPath: /tmp/adapters-repo/{{ $adapterName | kebabcase}}
+              mountPath: {{ include "lightstreamer.adapters.source-repo.dir" . }}/{{ $adapterName | kebabcase}}
               {{- end }}
               {{- $configMapRefs := list }}
               {{- with $adapterSet.metadataProvider.inProcessMetadataAdapter }}
@@ -482,7 +482,7 @@ spec:
               {{- $configMapRefs := $configMapRefs | uniq }}
               {{- range $configMapRefs }}
             - name: {{ . }}
-              mountPath: /adapters-source-conf/{{ $adapterName | kebabcase}}/{{ . }}-config
+              mountPath: {{ include "lightstreamer.adapters.source-conf.dir" . }}/{{ $adapterName | kebabcase}}/{{ . }}-config
               {{- end }}
             {{- end }}
           {{- end }}
