@@ -67,11 +67,19 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/lightstreamer/bin/init-scripts/launch.sh"]
-          {{- if .Values.management.jmx }}
+          {{- with (.Values.management.jmx).rmiConnector }}
+          {{- /*
+          Only render the preStop hook if the RMI connector is accessible, i.e.:
+          - enablePublicAccess is true (no authentication required), or
+          - credentialsSecrets are set (authentication credentials available).
+          Without RMI access, LS.sh stop would fail and the hook would be useless.
+          */}}
+            {{- if or .enablePublicAccess (and .credentialsSecrets (not (empty .credentialsSecrets))) }}
           lifecycle:
             preStop:
               exec:
                 command: ["/lightstreamer/bin/unix-like/LS.sh", "stop"]
+          {{- end }}
           {{- end }}
           ports:
           {{- /* START CONTAINER PORTS */ -}}
@@ -289,7 +297,7 @@ spec:
             {{- $authSecretRefs := list }}
             {{- range $key, $connection := $.Values.connectors.kafkaConnector.connections }}
               {{- if ($connection.authentication).enabled }}
-                {{- $mechanism := $connection.authentication.mechanism | default "PLAIN" }} 
+                {{- $mechanism := $connection.authentication.mechanism | default "PLAIN" }}
                 {{- if has $mechanism (list "PLAIN" "SCRAM-SHA-256" "SCRAM-SHA-512") }}
                   {{- $authSecretRefs = append $authSecretRefs ($connection.authentication.credentialsSecretRef) }}
                 {{- end }}
@@ -336,6 +344,12 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           volumeMounts:
+            - name: deployed-adapters
+              mountPath: {{ include "lightstreamer.adapters.deployment.dir" . }}
+            - name: keystores
+              mountPath: {{ include "lightstreamer.keystores.dir" . }}
+            - name: logs
+              mountPath: {{ include "lightstreamer.logs.dir" . }}
             - name: lightstreamer-init-scripts
               mountPath: /lightstreamer/bin/init-scripts
             - name: lightstreamer-configuration
@@ -384,7 +398,7 @@ spec:
           {{- $volumeRefs = $volumeRefs | uniq }}
           {{- range $volumeRefs }}
             - name: {{ . }}
-              mountPath: /lightstreamer/logs/{{ . }}
+              mountPath: {{ include "lightstreamer.logs.dir" . }}/{{ . }}
           {{- end }}
           {{- /* END VOLUME MOUNTS FOR DAILY ROLLING FILE APPENDER */ -}}
           {{- /* START VOLUME MOUNTS FOR LICENSE FILE */ -}}
@@ -414,7 +428,7 @@ spec:
           {{- range $key, $value := .Values.keystores }}
             {{- if $value }}
             - name: keystore-{{ $key | lower }}
-              mountPath: /lightstreamer/conf/keystores/{{ $key }}
+              mountPath: {{ include "lightstreamer.keystores.dir" . }}/{{ $key }}
             {{- end }}
           {{- end }}
           {{- /* END VOLUME MOUNTS FOR KEYSTORES */ -}}
@@ -422,18 +436,24 @@ spec:
           {{- with .Values.connectors.kafkaConnector }}
             {{- if .enabled }}
             - name: kafka-connector-configuration
-              mountPath: /connectors-source-conf/kafka
-              {{- if not .provisioning.fromPathInImage }}
-            - name: kafka-connector-deployment
-              mountPath: {{ include "lightstreamer.kafka-connector.deployment" . }}
-              subPath: {{ include "lightstreamer.kafka-connector.name" . }}
-              {{- end }}
+              mountPath: {{ include "lightstreamer.connectors.source-config.kafka-connector.dir" . }}
               {{- range $key, $value := .localSchemaFiles }}
                 {{- if $value}}
             - name: kafka-connector-schema-files-{{ $key | lower }}
-              mountPath: /connectors-source-conf/kafka/schemas/{{ $key }}
+              mountPath: {{ include "lightstreamer.connectors.source-config.kafka-connector.dir" . }}/{{ include "lightstreamer.kafka-connector.schemas.dir.name" . }}/{{ $key }}
                 {{- end }}
               {{- end }}
+            {{- $volumeRefs := list }}
+            {{- range $key, $appender := .logging.appenders }}
+              {{- if and ($appender.type | eq "DailyRollingFile") ($appender.volumeRef) }}
+                {{- $volumeRefs = append $volumeRefs $appender.volumeRef }}
+              {{- end }}
+            {{- end }}
+            {{- $volumeRefs = $volumeRefs | uniq }}
+            {{- range $volumeRefs }}
+            - name: {{ . }}
+              mountPath: {{ include "lightstreamer.kafka-connector.logs.dir" . }}/{{ . }}
+            {{- end }}
             {{- end }}
           {{- end }}
           {{- /* END VOLUME MOUNTS FOR KAFKA CONNECTOR */ -}}
@@ -501,9 +521,9 @@ spec:
               {{- else }}
             - name: {{ .fromVolume.name }}
               {{- end }}
-              mountPath: /tmp/connectors-source-archives/kafka
-            - name: kafka-connector-deployment
-              mountPath: /kafka-connector-deployment
+              mountPath: {{ include "lightstreamer.kafka.connector.source-archive.dir" . }}
+            - name: deployed-adapters
+              mountPath: {{ include "lightstreamer.adapters.deployment.dir" . }}
             {{- end }}
           {{- end }}
         {{- end }}
@@ -511,6 +531,12 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       volumes:
+        - name: deployed-adapters
+          emptyDir: {}
+        - name: keystores
+          emptyDir: {}
+        - name: logs
+          emptyDir: {}
         - name: lightstreamer-init-scripts
           configMap:
             name: {{ include "lightstreamer.fullname" . }}-init-scripts
@@ -540,7 +566,7 @@ spec:
             {{- if and .enabled (.inProcessDataAdapter).configMapRef }}
               {{- $configMapRefs = append $configMapRefs .inProcessDataAdapter.configMapRef }}
             {{- end }}
-          {{- end }}            
+          {{- end }}
         {{- end }}
       {{- end }}
       {{- $configMapRefs := $configMapRefs | uniq }}
@@ -625,8 +651,6 @@ spec:
         - name: kafka-connector-deployer-script
           configMap:
             name: {{ include "lightstreamer.kafka-connector.name" . }}-deployer-script
-        - name: kafka-connector-deployment
-          emptyDir: {}
         {{- end }}
         - name: kafka-connector-configuration
           configMap:
