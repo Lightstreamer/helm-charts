@@ -229,7 +229,7 @@ Render the keystore settings for the main configuration file.
          of the box, obviously contains an invalid certificate. In order to
          use it for your experiments, remember to add a security exception
          to your browser. -->
-    <keystore_file>./keystores/{{ $key }}/{{ required (printf "keystores.%s.keystoreFilesecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</keystore_file>
+    <keystore_file>{{ include "lightstreamer.keystores.dir" . }}/{{ $key }}/{{ required (printf "keystores.%s.keystoreFilesecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</keystore_file>
 
     <!-- Specified the password for the keystore. The factory setting below
          refers to the test keystore "myserver.keystore", provided out of the box.
@@ -265,7 +265,7 @@ Render the truststore settings for the Lightstreamer configuration file.
          of the box, obviously contains an invalid certificate. In order to
          use it for your experiments, remember to add a security exception
          to your browser. -->
-    <truststore_file>./keystores/{{ $key }}/{{ $keyStore.keystoreFileSecretRef.key }}</truststore_file>
+    <truststore_file>{{ include "lightstreamer.keystores.dir" . }}/{{ $key }}/{{ $keyStore.keystoreFileSecretRef.key }}</truststore_file>
 
     <!-- Specified the password for the keystore. The factory setting below
          refers to the test keystore "myserver.keystore", provided out of the box.
@@ -324,6 +324,20 @@ Create the logging level attribute for subloggers.
     {{- end }}
 {{- printf " level=%s" ($loggerLevel | quote) }}
 {{- end }}
+{{- end }}
+
+{{/*
+Create the name of the logs folder for the Lightstreamer Server and the connectors.
+*/}}
+{{- define "lightstreamer.logs.dir" -}}
+{{- printf "/logs" }}
+{{- end }}
+
+{{/*
+Create the name of the keystores folder for storing the keystore files used by the Lightstreamer Server and the connectors
+*/}}
+{{- define "lightstreamer.keystores.dir" -}}
+{{- print "/keystores" }}
 {{- end }}
 
 {{/*
@@ -447,14 +461,18 @@ Create the download URL of the Lightstreamer Kafka Connector.
 Create the name of the deployment folder the Lightstreamer Kafka Connector.
 */}}
 {{- define "lightstreamer.kafka-connector.deployment.dir" -}}
-{{- printf "/deployed_adapters/kafka-connector" }}
+{{- printf "%s/kafka-connector" (include "lightstreamer.adapters.deployment.dir" .) }}
+{{- end }}
+
+{{- define "lightstreamer.kafka-connector.schemas.dir.name" -}}
+{{- printf "schemas" }}
 {{- end }}
 
 {{/*
 Create the name of the logs folder for the Lightstreamer Kafka Connector.
 */}}
 {{- define "lightstreamer.kafka-connector.logs.dir" -}}
-{{- printf "%s/logs" (include "lightstreamer.kafka-connector.deployment.dir" .) }}
+{{- printf (include "lightstreamer.logs.dir" .)  }}
 {{- end }}
 
 {{/*
@@ -466,7 +484,7 @@ Render the truststore settings for the Lightstreamer Kafka Connector configurati
 {{- $key := index . 2 -}}
 {{- $keyStore := required (printf "keystores.%s not defined" $key) (get $top $key) -}}
 
-<param name="{{ $prefix }}.path">../../lightstreamer/conf/keystores/{{ $key }}/{{ required (printf "keystores.%s.keystoreFileSecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</param>
+<param name="{{ $prefix }}.path">{{ include "lightstreamer.keystores.dir" . }}/{{ $key }}/{{ required (printf "keystores.%s.keystoreFileSecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</param>
 
 <!-- Optional. The password of the trust store.
 
@@ -513,7 +531,7 @@ Render the keystore settings for the Lightstreamer Kafka Connector configuration
 
 <!-- Mandatory if key store is enabled. The path of the key store file, relative to
       the deployment folder (LS_HOME/adapters/lightstreamer-kafka-connector-<version>). -->
-<param name="{{ $prefix }}.path">../../lightstreamer/conf/keystores/{{ $key }}/{{ required (printf "keystores.%s.keystoreFilesecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</param>
+<param name="{{ $prefix }}.path">{{ include "lightstreamer.keystores.dir" . }}/{{ $key }}/{{ required (printf "keystores.%s.keystoreFilesecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</param>
 
 <!-- Optional. The password of the key store.
 
@@ -600,7 +618,7 @@ Render the key/value record evaluator settings for the Lightstreamer Kafka Conne
 <!-- Mandatory if evaluator type is set to "AVRO" or "PROTOBUF" and the Confluent Schema Registry is disabled. The path of the local schema
       (or binary descriptor) file relative to the deployment folder (LS_HOME/adapters/lightstreamer-kafka-connector-<version>) for
       message validation respectively of the key and the value. -->
-<param name="record.{{ $keyOrValue }}.evaluator.schema.path">schemas/{{ . }}/{{ required (printf "connectors.kafkaConnector.localSchemaFiles.%s.key must be set" .) $localSchema.key }}</param>
+<param name="record.{{ $keyOrValue }}.evaluator.schema.path">{{ include "lightstreamer.kafka-connector.schemas.dir.name" . }}/{{ . }}/{{ required (printf "connectors.kafkaConnector.localSchemaFiles.%s.key must be set" .) $localSchema.key }}</param>
         {{ if (eq $type "PROTOBUF") }}
 
 <!-- Mandatory when the evaluator type is set to "PROTOBUF" and a binary descriptor file is provided through the "record.key/value.evaluator.schema.path" 
@@ -808,17 +826,9 @@ Validate the Adapter provisioning setting.
 {{/*
 Create the Adapters path name, relative to the Lightstreamer conf directory.
 */}}
-{{- define "lightstreamer.adapters.adaptersDir.name" -}}
-{{- printf "deployed_adapters" }}
+{{- define "lightstreamer.adapters.deployment.dir" -}}
+{{- printf "/deployed_adapters" }}
 {{- end }}
-
-{{/*
-Create the full Adapters path name
-*/}}
-{{- define "lightstreamer.adapters.fullAdaptersDir" -}}
-{{- printf "/%s" (include "lightstreamer.adapters.adaptersDir.name" .) }}
-{{- end }}
-
 
 {{/*
 Create the name of the configmap containing the adapters.xml file of a specific adapter.
