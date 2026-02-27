@@ -788,7 +788,7 @@ Adapter Sets can be provisioned using different methods, configured through the 
 
 1. Embed the Adapter Set's resources in the image
 
-   - Build a custom Lightstreamer-based container image by copying the adapter's resources to into the `/lightstreamer/adapters` directory of the image:
+   - Build a custom Lightstreamer-based container image by copying the adapter's resources into the `/lightstreamer/adapters` directory of the image:
    
      ```yaml
      # Dockerfile example
@@ -817,7 +817,7 @@ Adapter Sets can be provisioned using different methods, configured through the 
      ...
      ```
    
-   At startup, the the resources will be copied path will be mounted at the `/lightstreamer/deployed_adapters` directory in the container.
+   At startup, the resources will be copied path will be mounted at the `/deployed_adapters` directory in the container.
 
 2. Deploy the Adapter Set's resource to a persistent storage
 
@@ -846,7 +846,7 @@ Adapter Sets can be provisioned using different methods, configured through the 
      ...
      ```
 
-     At startup, the resources will be copied to the designated Adapter Set folder under the `/lightstreamer/deployed_adapters` directory in the container.
+     At startup, the resources will be copied to the designated Adapter Set folder under the `/deployed_adapters` directory in the container.
 
 ##### Configure Metadata Adapters and Data Adapters
 
