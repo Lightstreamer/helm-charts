@@ -23,7 +23,7 @@ metadata:
 data:
   {{- /*
   Sets up the Kafka Connector for the Lightstreamer Server.
-  
+
   Flow:
   1. If provisioning.fromPathInImage is configured:
      - The connector is expected to be already present in the container image at the specified path
@@ -31,12 +31,12 @@ data:
        in the ephemeral volume "kafka-connector-deployment"
      - Copying (rather than symlinking) is required because config files need to be overridden,
        and the image filesystem is read-only
-  
+
   2. If provisioning.fromPathInImage is NOT configured:
      - The connector has already been deployed to the ephemeral volume by the
        "kafka-connector-deployer" init container (which downloads from GitHub release, URL, or volume)
      - This script skips the deployment step
-  
+
   3. In both cases, configuration files are overridden:
      - adapters.xml and log4j.properties are copied from the ConfigMap to the deployment path
      - Schemas (if any) are copied from the ConfigMap to the deployment path
@@ -98,7 +98,7 @@ data:
   setup-adapters.sh: |
     #!/bin/bash
     set -xeuo pipefail
-    
+
     # Copy the adapter resources from source to destination
     function copy_resources {
       local source_path="$1"
@@ -113,7 +113,7 @@ data:
 
       for path in $subdirs; do
         local destination_path="${dest_path}/$path"
-        #[[ "$path" !=  "." ]] && 
+        #[[ "$path" !=  "." ]] &&
 
         # Create destination directory
         mkdir -p $destination_path
@@ -142,20 +142,22 @@ data:
     echo "Copy the adapters.xml file for the '{{ $adapterName }}' Adapter Set"
     cp {{ include "lightstreamer.adapters.source-conf.dir" . }}/{{ $adapterFolderName }}/adapters.xml $target_adapter_path/adapters.xml
 
-        {{- if ($adapterSet.provisioning).fromPathInImage }}
+        {{- with $adapterSet.provisioning }}
+          {{- if .fromPathInImage }}
     root_source_path="{{ $adapterSet.provisioning.fromPathInImage }}"
-        {{- else }}
-          {{- $rootSourcePathSuffix := "" }}
-          {{- if (($adapterSet.provisioning).fromVolume).path }}
-            {{- $rootSourcePathSuffix = printf "/%s" $adapterSet.provisioning.fromVolume.path }}
+          {{- else }}
+            {{- $rootSourcePathSuffix := "" }}
+            {{- if .fromVolume.path }}
+              {{- $rootSourcePathSuffix = printf "/%s" $adapterSet.provisioning.fromVolume.path }}
+            {{- end }}
+    root_source_path="{{ include "lightstreamer.adapters.source-repo.dir" . }}/{{ $adapterFolderName }}{{ $rootSourcePathSuffix }}"
           {{- end }}
-    root_source_path="{{ include "lightstreamer.adapters.source-repo.dir" . }}/{{ $adapterFolderName }}{{ $rootSourcePathSuffix }}"        
         {{- end }}
 
         {{- /*
-        List of paths containing the "lib" and "classes" folders to copy from 
-        the Adapter Set directory located in the provisioning source. Only 
-        populated for inProcess adapters. Include "." to capture the top-level 
+        List of paths containing the "lib" and "classes" folders to copy from
+        the Adapter Set directory located in the provisioning source. Only
+        populated for inProcess adapters. Include "." to capture the top-level
         "lib" and "classes" folders.
         */ -}}
         {{- $paths := list }}
@@ -192,25 +194,25 @@ data:
         {{- end }}
 
         {{- $paths := $paths | uniq }}
-    
-    {{- if $paths }}
+
+        {{- if $adapterSet.provisioning }}
     paths_to_copy={{ join " " $paths | quote }}
     echo "Copying the resources for the '{{ $adapterName }}' Adapter Set"
     if ! copy_resources "${root_source_path}" "${target_adapter_path}" "${paths_to_copy}" ; then
       echo "Failed to copy resources for the '{{ $adapterName }}' Adapter Set"
       exit 1
     fi
-    {{- end }}
+        {{- end }}
 
         {{- range $installDir, $sourceConfigMapPaths := $configMapRefs }}
           {{- range $sourceConfigMapPaths }}
     cp {{ . }}/* {{ include "lightstreamer.adapters.deployment.dir" . }}/{{ $adapterFolderName }}/{{ $installDir }}
           {{- end }}
-        {{- end }} 
+        {{- end }}
       {{- end }}
     {{- end }}
-    
-  
+
+
   launch.sh: |
     #!/bin/bash
     set -eo pipefail
