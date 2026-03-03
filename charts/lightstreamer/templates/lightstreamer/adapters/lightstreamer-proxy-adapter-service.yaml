@@ -19,7 +19,7 @@ limitations under the License.
 {{- $metaCounter := 0}}
 {{- range $adapterName, $adapterSet := .Values.adapters }}
   {{- if $adapterSet.enabled }}
-    {{- with $adapterSet.metadataProvider.proxyMetadataAdapter }}
+    {{- with ($adapterSet.metadataProvider).proxyMetadataAdapter }}
       {{- if not .remoteHost }}
         {{- $metaCounter = add1 $metaCounter }}
         {{- $key := printf "proxy-meta-%d" $metaCounter }}
@@ -28,7 +28,7 @@ limitations under the License.
     {{- end }}
     {{- $dataCounter := 0}}
     {{- range $dataProviderName, $dataProvider := $adapterSet.dataProviders }}
-      {{- if $dataProvider.enabled }}
+      {{- if ($dataProvider).enabled }}
         {{- with $dataProvider.proxyDataAdapter }}
           {{- if not .remoteHost }}
             {{- $dataCounter = add1 $dataCounter }}
