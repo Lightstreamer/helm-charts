@@ -765,6 +765,7 @@ Validate all the adapter set configurations, ensuring that:
     {{- end }}
     {{- /* Check the provisioning settings */ -}}
     {{- if $requireProvisioning }}
+      {{- $_ := set $adapterSet "requireProvisioning" true }}
       {{- include "lightstreamer.adapters.validateProvisioning" (list $ $adapterName $adapterSet) }}
     {{- end }}
 
