@@ -684,31 +684,31 @@ Validate all the adapter set configurations, ensuring that:
       {{- fail (printf "adapters.%s.id \"%s\" already used" $adapterName $adapterId ) }}
     {{- end }}
     {{- $userAdapterIds = append $userAdapterIds $adapterId }}
-    {{- /* Check the provisioning settings */ -}}
-    {{- include "lightstreamer.adapters.validateProvisioning" (list $ $adapterName $adapterSet) }}
 
+    {{- $requireProvisioning := false }}
     {{- $metadataProvider := required (printf "adapters.%s.metadataProvider must be set" $adapterName) $adapterSet.metadataProvider -}}
     {{- if hasKey $metadataProvider "inProcessMetadataAdapter" }}
       {{- /* Check the in-process metadata adapter class name */}}
       {{- $inProcess := $metadataProvider.inProcessMetadataAdapter | default dict }}
       {{- $adapterClass := required (printf "adapters.%s.metadataProvider.inProcessMetadataAdapter.adapterClass must be set" $adapterName) $inProcess.adapterClass }}
+      {{- $requireProvisioning = not (eq $adapterClass "com.lightstreamer.adapters.metadata.LiteralBasedProvider") }}
 
       {{- /* Check the ClassLoader */}}
       {{- $classLoaderErrMsg := include "lightstreamer.adapters.in-process.common.validateClassLoader" $inProcess }}
       {{- if $classLoaderErrMsg }}
-        {{- printf "adapters.%s.metadataAdapter.inProcessMetadataAdapter.classLoader %s" $adapterName $classLoaderErrMsg | fail }}
+        {{- printf "adapters.%s.metadataProvider.inProcessMetadataAdapter.classLoader %s" $adapterName $classLoaderErrMsg | fail }}
       {{- end }}
 
       {{- /* Check the install dir */}}
       {{- if and ($inProcess.classLoader | eq "dedicated") (not $inProcess.installDir) }}
-        {{- fail (printf "adapters.%s.metadataProvider.proxyMetadataAdapters.installDir must be set when using a dedicated class loader" $adapterName) }}
+        {{- fail (printf "adapters.%s.metadataProvider.inProcessMetadataAdapter.installDir must be set when using a dedicated class loader" $adapterName) }}
       {{- end }}
     {{- else if hasKey $metadataProvider "proxyMetadataAdapter" }}
       {{- $proxy := $metadataProvider.proxyMetadataAdapter | default dict }}
       {{- /* Check the proxy metadata adapter request/reply port */ -}}
-      {{- $requestReplyPort := int (required (printf "adapters.%s.metadataProvider.proxyMetadataAdapters.requestReplyPort must be set" $adapterName) $proxy.requestReplyPort) }}
+      {{- $requestReplyPort := int (required (printf "adapters.%s.metadataProvider.proxyMetadataAdapter.requestReplyPort must be set" $adapterName) $proxy.requestReplyPort) }}
       {{- if has $requestReplyPort $usedPorts }}
-        {{- fail (printf "adapters.%s.metadataProvider.proxyMetadataAdapters.requestReplyPort \"%d\" already used" $adapterName $requestReplyPort ) }}
+        {{- fail (printf "adapters.%s.metadataProvider.proxyMetadataAdapter.requestReplyPort \"%d\" already used" $adapterName $requestReplyPort ) }}
       {{- end }}
       {{- $usedPorts = append $usedPorts $requestReplyPort }}
     {{- else }}
@@ -721,6 +721,7 @@ Validate all the adapter set configurations, ensuring that:
       {{- if not $dataProvider }}
         {{- fail (printf "adapters.%s.dataProviders.%s must be set" $adapterName $dataProviderKey) }}
       {{- end }}
+      
       {{- if $dataProvider.enabled }}
         {{- /* Check the data provider name */ -}}
         {{- $dataProviderName := required (printf "adapters.%s.dataProviders.%s.name must be set" $adapterName $dataProviderKey) $dataProvider.name }}
@@ -730,6 +731,7 @@ Validate all the adapter set configurations, ensuring that:
         {{- $enabledDataProviders = append $enabledDataProviders $dataProviderName }}
 
         {{- if hasKey $dataProvider "inProcessDataAdapter" }}
+          {{- $requireProvisioning = true }}
           {{- $inProcess := $dataProvider.inProcessDataAdapter | default dict }}
           {{- /* Check the in-process data adapter class name */ -}}
           {{- $adapterClass := required (printf "adapters.%s.dataProviders.%s.inProcessDataAdapter.adapterClass must be set" $adapterName $dataProviderKey) $inProcess.adapterClass }}
@@ -761,6 +763,11 @@ Validate all the adapter set configurations, ensuring that:
     {{- if $enabledDataProviders | empty }}
       {{- fail (printf "At least one enabled data provider must be defined for adapters.%s" $adapterName) }}
     {{- end }}
+    {{- /* Check the provisioning settings */ -}}
+    {{- if $requireProvisioning }}
+      {{- include "lightstreamer.adapters.validateProvisioning" (list $ $adapterName $adapterSet) }}
+    {{- end }}
+
   {{- end }}
 {{- end }}
 {{- end }}
@@ -784,41 +791,44 @@ Validate the Adapter provisioning setting.
 {{- $ := index . 0 }}
 {{- $adapterSetName := index . 1 }}
 {{- $adapterSet := index . 2 }}
-{{- if $adapterSet.provisioning }}
-  {{- /* List of admitted provisioning methods */ -}}
-  {{- $admittedProvisioningMethods := list "fromPathInImage" "fromVolume" }}
-  {{- $methods := list }}
-  {{- range $methodName, $method := $adapterSet.provisioning }}
-    {{- if and (has $methodName $admittedProvisioningMethods) $method }}
-      {{- $methods = append $methods $methodName }}
+{{- /* List of admitted provisioning methods */ -}}
+{{- $admittedProvisioningMethods := list "fromPathInImage" "fromVolume" }}
+
+{{- if not $adapterSet.provisioning }}
+  {{- fail (printf "adapters.%s.provisioning must be set as at least one in-process (metadata/data) adapter has been defined" $adapterSetName) }}
+{{- end }}
+
+{{- $methods := list }}
+{{- range $methodName, $method := $adapterSet.provisioning }}
+  {{- if and (has $methodName $admittedProvisioningMethods) $method }}
+    {{- $methods = append $methods $methodName }}
+  {{- end }}
+{{- end }}
+
+{{- /* Check that only one provisioning method is set */ -}}
+{{- if or (not $methods) (gt (len $methods) 1) }}
+  {{- fail (printf "adapters.%s.provisioning must be one of %s" $adapterSetName $admittedProvisioningMethods) }}
+{{- end }}
+{{- $chosenMethodName := $methods | first }}
+{{- if eq $chosenMethodName "fromVolume" }}
+
+  {{- /* Check that fromVolume.name is set */ -}}
+  {{- with $adapterSet.provisioning.fromVolume }}
+    {{- if not .name }}
+      {{- printf "adapters.%s.provisioning.fromVolume.name must be set" $adapterSetName | fail }}
+    {{- end }}
+
+    {{- /* Check that fromVolume.name references an extra volume defined in deployment.extraVolumes */ -}}
+    {{- $extraVolumeNames := list }}
+    {{- range $.Values.deployment.extraVolumes }}
+      {{- $extraVolumeNames = append $extraVolumeNames .name }}
+    {{- end }}
+    {{- $extraVolumeNames := $extraVolumeNames | uniq }}
+    {{- if not (has .name $extraVolumeNames) }}
+      {{- printf "adapters.%s.provisioning.fromVolume.name must be set to a volume defined in deployment.extraVolumes" $adapterSetName | fail }}
     {{- end }}
   {{- end }}
 
-  {{- /* Check that only one provisioning method is set */ -}}
-  {{- if or (not $methods) (gt (len $methods) 1) }}
-    {{- fail (printf "adapters.%s.provisioning must be one of %s" $adapterSetName $admittedProvisioningMethods) }}
-  {{- end }}
-  {{- $chosenMethodName := $methods | first }}
-  {{- if eq $chosenMethodName "fromVolume" }}
-
-    {{- /* Check that fromVolume.name is set */ -}}
-    {{- with $adapterSet.provisioning.fromVolume }}
-      {{- if not .name }}
-        {{- printf "adapters.%s.provisioning.fromVolume.name must be set" $adapterSetName | fail }}
-      {{- end }}
-
-      {{- /* Check that fromVolume.name references an extra volume defined in deployment.extraVolumes */ -}}
-      {{- $extraVolumeNames := list }}
-      {{- range $.Values.deployment.extraVolumes }}
-        {{- $extraVolumeNames = append $extraVolumeNames .name }}
-      {{- end }}
-      {{- $extraVolumeNames := $extraVolumeNames | uniq }}
-      {{- if not (has .name $extraVolumeNames) }}
-        {{- printf "adapters.%s.provisioning.fromVolume.name must be set to a volume defined in deployment.extraVolumes" $adapterSetName | fail }}
-      {{- end }}
-    {{- end }}
-
-  {{- end }}
 {{- end }}
 
 {{- end }}
@@ -995,12 +1005,12 @@ Render the <mpn_pool> block for the Metadata Adapter.
 {{- define "lightstreamer.adapters.metadata-provider.mpnPool" -}}
 {{- $adapterName := index . 0 }}
 {{- $parent := index . 1 }}
-{{- with $parent.mpnPool }}
+{{- if hasKey $parent "mpnPool" }}
 
 <!-- MPN POOL -->
 <mpn_pool>
-  <max_size>{{ int (required (printf "adapters.%s.metadataProviders.{}.mpnPool.maxSize must be set" $adapterName) .maxSize) }}</max_size>
-  <max_free>{{ int (required (printf "adapters.%s.metadataProviders.{}.mpnPool.maxFree must be set" $adapterName) .maxFree) }}</max_free>
+  <max_size>{{ int (required (printf "adapters.%s.metadataProviders.{}.mpnPool.maxSize must be set" $adapterName) ($parent.mpnPool).maxSize) }}</max_size>
+  <max_free>{{ int (required (printf "adapters.%s.metadataProviders.{}.mpnPool.maxFree must be set" $adapterName) ($parent.mpnPool).maxFree) }}</max_free>
 </mpn_pool>
 <!-- END MPN POOL -->
 {{- end }}
@@ -1137,7 +1147,7 @@ Render the keystore settings for the proxy adapters.
 <param name="tls.keystore.type">{{ $keyStore.type }}</param>
 
 {{- /* tls.keystore.keystore_file */}}
-<param name="tls.keystore.keystore_file">../../conf/keystores/{{ $key }}/{{ required (printf "keystores.%s.keystoreFileSecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</param>
+<param name="tls.keystore.keystore_file">{{ include "lightstreamer.keystores.dir" . }}/{{ $key }}/{{ required (printf "keystores.%s.keystoreFileSecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</param>
 
 {{- /* tls.keystore.keystore_password.type */}}
 <param name="tls.keystore.keystore_password.type">text</param>
@@ -1159,7 +1169,7 @@ Render the truststore settings for the proxy adapters.
 <param name="tls.truststore.type">{{ $keyStore.type }}</param>
 
 {{- /* tls.truststore.keystore_file */}}
-<param name="tls.truststore.truststore_file">../../conf/keystores/{{ $key }}/{{ required (printf "keystores.%s.keystoreFileSecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</param>
+<param name="tls.truststore.truststore_file">{{ include "lightstreamer.keystores.dir" . }}/{{ $key }}/{{ required (printf "keystores.%s.keystoreFileSecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</param>
 
 {{- /* tls.truststore.truststore_password.type */}}
 <param name="tls.truststore.truststore_password.type">text</param>
