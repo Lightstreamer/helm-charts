@@ -142,15 +142,17 @@ data:
     echo "Copy the adapters.xml file for the '{{ $adapterName }}' Adapter Set"
     cp {{ include "lightstreamer.adapters.source-conf.dir" . }}/{{ $adapterFolderName }}/adapters.xml $target_adapter_path/adapters.xml
 
-        {{- with $adapterSet.provisioning }}
-          {{- if .fromPathInImage }}
+        {{- if $adapterSet.requireProvisioning }}
+          {{- with $adapterSet.provisioning }}
+            {{- if .fromPathInImage }}
     root_source_path="{{ $adapterSet.provisioning.fromPathInImage }}"
-          {{- else }}
-            {{- $rootSourcePathSuffix := "" }}
-            {{- if .fromVolume.path }}
-              {{- $rootSourcePathSuffix = printf "/%s" $adapterSet.provisioning.fromVolume.path }}
-            {{- end }}
+            {{- else }}
+              {{- $rootSourcePathSuffix := "" }}
+              {{- if .fromVolume.path }}
+                {{- $rootSourcePathSuffix = printf "/%s" $adapterSet.provisioning.fromVolume.path }}
+              {{- end }}
     root_source_path="{{ include "lightstreamer.adapters.source-repo.dir" . }}/{{ $adapterFolderName }}{{ $rootSourcePathSuffix }}"
+            {{- end }}
           {{- end }}
         {{- end }}
 
@@ -195,7 +197,7 @@ data:
 
         {{- $paths := $paths | uniq }}
 
-        {{- if $adapterSet.provisioning }}
+        {{- if $adapterSet.requireProvisioning }}
     paths_to_copy={{ join " " $paths | quote }}
     echo "Copying the resources for the '{{ $adapterName }}' Adapter Set"
     if ! copy_resources "${root_source_path}" "${target_adapter_path}" "${paths_to_copy}" ; then
