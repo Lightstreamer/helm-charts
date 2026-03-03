@@ -14,12 +14,12 @@ Render the Lightstreamer configuration file of an Adapter Set
 <adapters_conf id={{ .id | quote }}>
 
   {{- /* START ADAPTER SET POOL */ -}}
-  {{- with .adapterSetPool }}
+  {{- if hasKey . "adapterSetPool" }}
 
   <!-- ADAPTER SET POOL -->
   <adapter_set_pool>
-    <max_size>{{ int (required (printf "adapters.%s.adapterSetPool.maxSize must be set" $adapterName) .maxSize) }}</max_size>
-    <max_free>{{ int (required (printf "adapters.%s.adapterSetPool.maxFree must be set" $adapterName) .maxFree) }}</max_free>
+    <max_size>{{ int (required (printf "adapters.%s.adapterSetPool.maxSize must be set" $adapterName) (.adapterSetPool).maxSize) }}</max_size>
+    <max_free>{{ int (required (printf "adapters.%s.adapterSetPool.maxFree must be set" $adapterName) (.adapterSetPool).maxFree) }}</max_free>
   </adapter_set_pool>
   <!-- END ADAPTER SET POOL -->
   {{- end }}
@@ -48,56 +48,13 @@ Render the Lightstreamer configuration file of an Adapter Set
         {{- include "lightstreamer.adapters.in-process.metadata-provider.authenticationPool" . | indent 4 -}}
         {{- include "lightstreamer.adapters.in-process.metadata-provider.messagesPool" . | indent 4 -}}
         {{- include "lightstreamer.adapters.in-process.metadata-provider.mpnPool" (list $adapterName .) | indent 4 -}}
-        {{- include "lightstreamer.adapters.in-process.common.initParams" . | indent 4 -}}
 
         {{- if not (quote .enableTableNotificationsSequentialization | empty) }}
-    <metadata_adapter_initialised_first>{{ .enableTableNotificationsSequentialization | ternary "Y" "N" }}</metadata_adapter_initialised_first>
+    <sequentialize_table_notifications>{{ .enableTableNotificationsSequentialization | ternary "Y" "N" }}</sequentialize_table_notifications>
         {{- end }}
 
-        {{- if not (quote .maxBandwidth | empty) }}
-    <param name="max_bandwidth">{{ .maxBandwidth }}</param>
-        {{- end }}
+        {{- include "lightstreamer.adapters.in-process.common.initParams" . | indent 4 -}}
 
-        {{- if not (quote .maxFrequency | empty) }}
-    <param name="max_frequency">{{ .maxFrequency }}</param>
-        {{- end }}
-
-        {{- if not (quote .bufferSize | empty) }}
-    <param name="buffer_size">{{ .bufferSize }}</param>
-        {{- end }}
-
-        {{- if not (quote .prefilterFrequency | empty) }}
-    <param name="prefilter_frequency">{{ .prefilterFrequency }}</param>
-        {{- end }}
-
-        {{- if not (quote .distinctSnapshotLength | empty) }}
-    <param name="distinct_snapshot_length">{{ .distinctSnapshotLength }}</param>
-        {{- end }}
-
-        {{- if not (quote .allowedUsers | empty) }}
-    <param name="allowed_users">{{ .allowedUsers }}</param>
-        {{- end }}
-
-        {{- /* START ITEM FAMILIES */ -}}
-        {{- $counter := 0 }}
-        {{- range $familyName, $family := .itemFamilies }}
-          {{- if $family }}
-            {{- $counter = add1 $counter }}
-
-    <param name="item_family_{{ $counter }}">{{ required (printf "adapters.%s.metadataProvider.inProcessMetadataAdapter.itemFamilies.%s.itemPattern must be set" $adapterName $familyName) $family.itemPattern }}</param>
-        {{- if not (quote $family.dataAdapter | empty) }}
-    <param name="data_adapter_for_item_family_{{ $counter }}">{{ required (printf "adapters.%s.metadataProvider.inProcessMetadataAdapter.itemFamilies.%s.dataAdapter must be set" $adapterName $familyName) $family.dataAdapter }}</param>
-            {{- $modes := regexSplit "," (required (printf "adapters.%s.metadataProvider.inProcessMetadataAdapter.itemFamilies.%s.modes must be set" $adapterName $familyName) $family.modes) -1 }}
-            {{- range $modes}}
-              {{- if not (has . (list "DISTINCT" "COMMAND" "MERGE" "RAW")) }}
-                {{ printf "adapters.%s.metadataProvider.inProcessMetadataAdapter.itemFamilies.%s.modes must be a comma-separated list of DISTINCT, COMMAND, MERGE, RAW" $adapterName $familyName | fail }}
-              {{- end }}
-            {{- end }}
-        {{- end }}
-    <param name="modes_for_item_family_{{ $counter }}">{{ $family.modes }}</param>
-          {{- end }}
-        {{- end }}
-        {{- /* END ITEM FAMILIES */ -}}
       {{- /* END IN-PROCESS METADATA ADAPTER */ -}}
       {{- end }}
     {{- else if hasKey . "proxyMetadataAdapter" }}
@@ -112,7 +69,7 @@ Render the Lightstreamer configuration file of an Adapter Set
         {{- include "lightstreamer.adapters.proxy.metadata-provider.mpnPool" (list $adapterName .) | indent 4 -}}
 
         {{- if not (quote .enableTableNotificationsSequentialization | empty) }}
-    <metadata_adapter_initialised_first>{{ .enableTableNotificationsSequentialization | ternary "Y" "N" }}</metadata_adapter_initialised_first>
+    <sequentialize_table_notifications>{{ .enableTableNotificationsSequentialization | ternary "Y" "N" }}</sequentialize_table_notifications>
         {{- end }}
 
         {{- include "lightstreamer.adapters.proxy.common.sslConfig" (list $adapterName $.Values.keystores .) | indent 4 -}}
