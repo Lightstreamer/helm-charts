@@ -973,9 +973,9 @@ servers:
         # - TLSv1$
         # - TLSv1.1
 
-      # -- Optional. Instructs the underlying Security Provider on whether to
-      # use stateless (when `true`) or stateful (when `false`) session
-      # resumption on this port, if supported (possibly depending on the
+      # -- (bool) Optional. Instructs the underlying Security Provider on 
+      # whether to use stateless (when `true`) or stateful (when `false`) 
+      # session resumption on this port, if supported (possibly depending on the
       # protocol version in use).
       # Note that stateful resumption implies the management of a TLS session
       # cache, whereas stateless resumption is slightly more demanding in terms
@@ -1692,8 +1692,8 @@ management:
         # @default -- the same as configured in `rmiConnector.port.value`
         value:
 
-        # -- Optional. If set to `true`, enables TLS/SSL communication by the
-        # connector; TLS/SSL at this level is supported by some JMX clients,
+        # -- (bool) Optional. If set to `true`, enables TLS/SSL communication by 
+        # the connector; TLS/SSL at this level is supported by some JMX clients,
         # like jconsole, that don't support TLS/SSL on the main  port.
         # @default -- the same as configured in `rmiConnector.port.enableSsl`
         enableSsl:
@@ -3540,7 +3540,10 @@ adapters:
     # Example: `MY_ADAPTER_SET`.
     id:
 
-    # -- Optional. Defines the provisioning method of the Adapter Set.
+    # -- Optional but mandatory if either 
+    # `metadataProvider.proxyMetadataAdapter` or at least one 
+    # `dataProviders.{}.proxyDataAdapter` is defined. Defines the provisioning
+    # method of the Adapter Set.
     # Either specify one of `fromPathInImage` or `fromVolume`.
     provisioning:
 
@@ -3552,8 +3555,7 @@ adapters:
 
       # -- The reference to a volume where the Adapter Set resources are stored.
       # At startup, the resources will be copied to the designated Adapter Set
-      # folder under the `/deployed_adapters` directory in the
-      # container.
+      # folder under the `/deployed_adapters` directory in the container.
       fromVolume:
 
         # -- (string) Mandatory. The name of the volume.
@@ -3576,12 +3578,11 @@ adapters:
     # If defined, the `maxSize` and `maxFree` settings are mandatory, with
     # meaning similar to that of the global `load.serverPoolMaxSize` and
     # `load.serverPoolMaxFree` settings. Note that `maxSize` also indicates the
-    # maximum number of pending requests to the Remote Adapters (see
-    # `XXXX`).
+    # maximum number of pending requests to the Remote Adapters in case Proxy
+    # Adapters are defined.
     # Using a specific thread pool is advisable if the implementation of any of
     # the Adapter methods introduces delays and more specific thread pools are
     # not being used.
-    # @default -- nil
     adapterSetPool:
 
       # -- (int) Mandatory. Maximum number of threads allowed for the `SET`
@@ -3624,8 +3625,7 @@ adapters:
         # `/deployed_adapters/<adapter-set-folder>/<installDir>` in the
         # container.
         # See `classLoader` for more details.
-        # @default -- .
-        installDir:
+        installDir: .
 
         # -- Optional. The reference to a configmap containing extra
         # configuration files of the in-process Metadata Adapter. At startup,
@@ -3703,13 +3703,12 @@ adapters:
 
           # -- (int) Optional. Maximum number pending requests to the Metadata
           # Adapter.
-          maxPendingRequests: -1
+          maxPendingRequests: 0
 
           # -- (int) Optional. Maximum number of tasks allowed to be queued to
           # enter the `AUTHENTICATION` thread pool before undertaking
           # backpressure actions.
-          # See `load.serverPoolMaxQueue`.
-          maxQueue: -1
+          maxQueue:
 
         # -- Optional. Configures the specific `MSG` thread pool, expressly
         # devoted to the calls of `notifyUserMessage`, which handle messages
@@ -3750,12 +3749,11 @@ adapters:
 
           # -- (int) Optional. Maximum number pending requests to the Metadata
           # Adapter.
-          maxPendingRequests: -1
+          maxPendingRequests: 0
 
           # -- (int) Optional. Maximum number of tasks allowed to be queued to
           # enter the `MSG` thread pool before undertaking backpressure actions.
-          # See `load.serverPoolMaxQueue`.
-          maxQueue: -1
+          maxQueue:
 
         # -- Optional. Requests the creation of a specific `MPN REQUESTS` thread
         # pool, devoted to the submission to the Remote Metadata Adapter of all
@@ -3788,94 +3786,7 @@ adapters:
         # then concurrent invocations will be possible.
         # Note that the final invocation to `notifySessionClose` is always
         # guaranteed to occur after all the above notifications have terminated.
-        # @default -- false
-        enableTableNotificationsSequentialization:
-
-        # -- (int) Optional and specific for adapters that inherit from
-        # `com.lightstreamer.adapters.metadata.LiteralBasedProvider`.
-        # Defines values to be returned in the `getAllowedMaxBandwidth` method
-        # for any User and Item supplied.
-        # See [LiteralBaseProvider javadoc](https://lightstreamer.com/api/ls-adapter-inprocess/latest/com/lightstreamer/adapters/metadata/LiteralBasedProvider.html) javadoc
-        maxBandwidth:
-
-        # -- (int) Optional and specific for adapters that inherit from
-        # `com.lightstreamer.adapters.metadata.LiteralBasedProvider`.
-        # Defines values to be returned in the `getAllowedMaxItemFrequency`
-        # method for any User and Item supplied.
-        # See [LiteralBaseProvider javadoc](https://lightstreamer.com/api/ls-adapter-inprocess/latest/com/lightstreamer/adapters/metadata/LiteralBasedProvider.html) javadoc
-        maxFrequency:
-
-        # -- (int) Optional and specific for adapters that inherit from
-        # `com.lightstreamer.adapters.metadata.LiteralBasedProvider`.
-        # Defines values to be returned in the `getAllowedBufferSize` method for
-        # any User and Item supplied.
-        # See [LiteralBaseProvider javadoc](https://lightstreamer.com/api/ls-adapter-inprocess/latest/com/lightstreamer/adapters/metadata/LiteralBasedProvider.html) javadoc
-        bufferSize:
-
-        # -- (int) Optional and specific for adapters that inherit from
-        # `com.lightstreamer.adapters.metadata.LiteralBasedProvider`.
-        # Defines values to be returned in the `getMinSourceFrequency` method
-        # for any User and Item supplied.
-        # See [LiteralBaseProvider javadoc](https://lightstreamer.com/api/ls-adapter-inprocess/latest/com/lightstreamer/adapters/metadata/LiteralBasedProvider.html) javadoc
-        prefilterFrequency:
-
-        # -- (int) Optional and specific for adapters that inherit from
-        # `com.lightstreamer.adapters.metadata.LiteralBasedProvider`.
-        # Defines values to be returned in the `getDistinctSnapshotLength`
-        # method for any User and Item supplied.
-        # See [LiteralBaseProvider javadoc](https://lightstreamer.com/api/ls-adapter-inprocess/latest/com/lightstreamer/adapters/metadata/LiteralBasedProvider.html) javadoc
-        distinctSnapshotLength:
-
-        # -- (string) Optional and specific for adapters that inherit from
-        # `com.lightstreamer.adapters.metadata.LiteralBasedProvider`.
-        # Comma-separated list of User names to be allowed by the `notifyUser`
-        # method.
-        # See [LiteralBaseProvider javadoc](https://lightstreamer.com/api/ls-adapter-inprocess/latest/com/lightstreamer/adapters/metadata/LiteralBasedProvider.html) javadoc
-        allowedUsers:
-
-        # -- Optional and specific for adapters that inherit from
-        # `com.lightstreamer.adapters.metadata.LiteralBasedProvider`).
-        # Defines how the `modeMayBeAllowed` method should behave, by
-        # associating to each item the modes in which it can be managed by the
-        # Server.
-        # Each item is assigned to the first family that matches its name and
-        # (if supplied) the related Data Adapter.
-        # If no families are specified at all, then `modeMayBeAllowed` always
-        # returns `true`, though this is not recommended, because the Server
-        # does not support more than one mode out of `MERGE`, `DISTINCT`, and
-        # `COMMAND` for the same item. In such a case, the Server would just
-        # manage each item in the mode specified by the first Client request it
-        # receives for the item and would be up to the Clients to ensure that
-        # the same item cannot be requested in two conflicting Modes.
-        # See [LiteralBaseProvider javadoc](https://lightstreamer.com/api/ls-adapter-inprocess/latest/com/lightstreamer/adapters/metadata/LiteralBasedProvider.html) javadoc
-        itemFamilies:
-
-          # -- Optional. Defines a family of items.
-          itemFamily1:
-
-            # -- (string) Mandatory. The item name pattern (in
-            # java.util.regex.Pattern format).
-            itemPattern:
-
-            # -- (string) Optional. The related Data Adapter.
-            dataAdapter:
-
-            # -- (string) Mandatory. The allowed modes (in comma separated
-            # format) for the family of items.
-            modes:
-
-          # itemFamily2:
-          #   itemPattern: monitor_.*
-          #   dataAdapter: MONITOR
-          #   modes: MERGE
-          # itemFamily3:
-          #   itemPattern: monitor_.*
-          #   dataAdapter: MONITOR
-          #   modes: MERGE
-          # itemFamily4:
-          #   itemPattern: monitor_.*
-          #   dataAdapter: MONITOR
-          #   modes: MERGE,COMMAND,COMMAND
+        enableTableNotificationsSequentialization: false
 
         # -- Optional. List of initialization parameters specific to the
         # adapter.
@@ -3956,13 +3867,12 @@ adapters:
 
           # -- (int) Optional. Maximum number pending requests to the Remote
           # Metadata Adapter.
-          maxPendingRemoteRequests: -1
+          maxPendingRemoteRequests: 0
 
           # -- (int) Optional. Maximum number of tasks allowed to be queued to
           # enter the `AUTHENTICATION` thread pool before undertaking
           # backpressure actions.
-          # See `load.serverPoolMaxQueue`.
-          maxQueue: -1
+          maxQueue:
 
         # -- Optional. Configures the specific `MSG` thread pool, expressly
         # devoted to the calls of Notify User Message, which handle messages
@@ -4002,12 +3912,11 @@ adapters:
 
           # -- (int) Optional. Maximum number pending requests to the Remote
           # Metadata Adapter.
-          maxPendingRemoteRequests: -1
+          maxPendingRemoteRequests: 0
 
           # -- (int) Optional. Maximum number of tasks allowed to be queued to
           # enter the `MSG` thread pool before undertaking backpressure actions.
-          # See `load.serverPoolMaxQueue`.
-          maxQueue: -1
+          maxQueue:
 
         # -- Optional. Requests the creation of a specific `MPN REQUESTS` thread
         # pool, devoted to the submission to the Remote Metadata Adapter of all
@@ -4092,16 +4001,16 @@ adapters:
           # -- See `servers.{}.sslConfig.removeCipherSuites`.
           removeCipherSuites:
 
-          # -- See `servers.{}.sslConfig.enforceServerCipherPreference`.
+          # -- (object) See `servers.{}.sslConfig.enforceServerCipherPreference`.
           enforceServerCipherSuitePreference:
 
-          # -- See `servers.{}.sslConfig.allowProtocols`.
+          # -- (list) See `servers.{}.sslConfig.allowProtocols`.
           allowProtocols:
 
-          # -- See `servers.{}.sslConfig.removeProtocols`.
+          # -- (list) See `servers.{}.sslConfig.removeProtocols`.
           removeProtocols:
 
-          # -- See `servers.{}.sslConfig.enableMandatoryClientAuth`.
+          # -- (bool) See `servers.{}.sslConfig.enableMandatoryClientAuth`.
           enableMandatoryClientAuth:
 
           # -- Mandatory if `enableMandatoryClientAuth` is set to `true`. The
@@ -4116,8 +4025,7 @@ adapters:
           # Server.
           # Setting to `false` is only meant to be used in a development/test
           # scenario.
-          # @default -- true
-          enableHostnameVerification:
+          enableHostnameVerification: true
 
         # -- Optional. Authentication settings for the connection.
         authentication:
@@ -4125,7 +4033,7 @@ adapters:
           # -- Optional. If set to `true`, enforces Remote Adapter
           # authentication on the connection based on a user/password credential
           # check.
-          # Note that the user names will be used in log messages at `INFO`
+          # Note that the user names will be used in   messages at `INFO`
           # level or above, whereas the passwords won't.
           enabled: false
 
@@ -4296,8 +4204,7 @@ adapters:
         # profile data for a user when no sessions for the user are active. This
         # is only for troubleshooting purpose, as profile data are always
         # refreshed upon Notify User requests.
-        # @default -- true
-        enableClearingOnSessionClose:
+        enableClearingOnSessionClose: true
 
         # -- Optional but ineffective if `enableClearingOnSessionClose` is set
         # to `false`. Sets the minimum time cached profile data are kept; these
@@ -4321,8 +4228,7 @@ adapters:
         # By setting `true`, responses obtained from a previous Remote Metadata
         # Adapter instance will never be used to fulfill requests from the
         # Server targeted to the new instance.
-        # @default -- false
-        enableClearingOnNewRemote:
+        enableClearingOnNewRemote: false
 
         # -- (string) Optional. Specifies a comma-separated list of hosts
         # allowed to connect to this proxy adapter in order to act as remote
@@ -4395,8 +4301,7 @@ adapters:
           # `/deployed_adapters/<adapter-set-folder>/<installDir>` in the
           # container.
           # See `classLoader` for more details.
-          # @default -- .
-          installDir:
+          installDir: .
 
           # -- Optional. The reference to a configmap containing extra
           # configuration files of the in-process Data Adapter. At startup,
@@ -4537,8 +4442,7 @@ adapters:
           sslConfig:
 
             # -- Optional. Enables the encryption.
-            # @default -- false
-            enabled:
+            enabled: false
 
             # -- Mandatory. The reference to a keystore configuration (defined
             # in `keystores`).
@@ -4552,16 +4456,16 @@ adapters:
             # -- See `servers.{}.sslConfig.removeCipherSuites`.
             removeCipherSuites:
 
-            # -- See `servers.{}.sslConfig.enforceServerCipherPreference`.
+            # -- (bool). See `servers.{}.sslConfig.enforceServerCipherPreference`.
             enforceServerCipherSuitePreference:
 
-            # -- See `servers.{}.sslConfig.allowProtocols`.
+            # -- (list). See `servers.{}.sslConfig.allowProtocols`.
             allowProtocols:
 
-            # -- See `servers.{}.sslConfig.removeProtocols`.
+            # -- (list). See `servers.{}.sslConfig.removeProtocols`.
             removeProtocols:
 
-            # -- See `servers.{}.sslConfig.enableMandatoryClientAuth`.
+            # -- (bool). See `servers.{}.sslConfig.enableMandatoryClientAuth`.
             enableClientAuth:
 
             # -- See `adapters.{}.metadataProvider.proxyMetadataAdapter.sslConfig.truststoreRef`.
@@ -4573,8 +4477,7 @@ adapters:
             # Server.
             # Setting to `false` is only meant to be used in a development/test
             # scenario.
-            # @default -- true
-            enableHostnameVerification:
+            enableHostnameVerification: true
 
           # -- Optional. Authentication settings for the connection.
           authentication:
@@ -4584,8 +4487,7 @@ adapters:
             # credential check.
             # Note that the user names will be used in log messages at `INFO`
             # level or above, whereas the passwords won't.
-            # @default -- false
-            enabled:
+            enabled: false
 
             # -- Mandatory if `enabled` is set to `true`. The reference to the
             # secrets containing the credentials of the users allowed to
