@@ -1,0 +1,20 @@
+adapters:
+  # Define the adapter set
+  helloWorldAdapterSet:
+    enabled: true
+    id: NODE_HELLOWORLD
+    
+    # Define the metadata provider
+    metadataProvider:
+      # Define the in-process Metadata Adapter
+      inProcessMetadataAdapter:
+        adapterClass: com.lightstreamer.adapters.metadata.LiteralBasedProvider
+    
+    dataProviders:  
+      # Define the data provider
+      myDataProvider:
+        enabled: true
+        name: HELLOWORLD
+        # Define the Proxy Data Adapter
+        proxyDataAdapter:
+          requestReplyPort: 6661
