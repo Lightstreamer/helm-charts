@@ -724,7 +724,8 @@ Validate all the adapter set configurations, ensuring that:
       
       {{- if $dataProvider.enabled }}
         {{- /* Check the data provider name */ -}}
-        {{- $dataProviderName := required (printf "adapters.%s.dataProviders.%s.name must be set" $adapterName $dataProviderKey) $dataProvider.name }}
+        {{- $dataProviderName := default "DEFAULT" $dataProvider.name }}
+        
         {{- if has $dataProviderName $enabledDataProviders }}
           {{- fail (printf "adapters.%s.dataProviders.%s.name \"%s\" already used" $adapterName $dataProviderKey $dataProviderName ) }}
         {{- end }}
