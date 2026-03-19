@@ -1073,7 +1073,7 @@ Render the tls parameters for the proxy adapters.
     {{- end }}
   {{- end }}
 
-  {{- /* tls.allow_protocol */ -}}
+  {{- /* tls.allow_protocols */ -}}
   {{- $counter := 0}}
   {{- range .allowProtocols }}
     {{- $counter = add1 $counter }}
@@ -1271,7 +1271,7 @@ Render the remote parameters for the proxy adapters.
       {{- if not (hasPrefix $prefix $paramName) }}
        {{ printf "adapters.%s.{...}.remoteParamsConfig.params.%s key must start with the prefix \"%s\"" $adapterName $paramName $prefix | fail }}
       {{- end }}
-<param name={{ printf "%s%s" $prefix $paramName | quote }}>{{ $paramValue }}</param>
+<param name={{ printf "%s" $paramName | quote }}>{{ $paramValue }}</param>
     {{- end }}
   {{- end }}
 <!-- END REMOTE PARAMS SETTINGS -->
@@ -1303,18 +1303,18 @@ Render the common parameters for the proxy adapters.
 <param name="timeout">{{ int $proxy.timeoutMillis }}</param>
 {{- end }}
 
-{{- /* remote_address_white_list */ -}}
+{{- /* remote_address_whitelist */ -}}
 {{- if $proxy.remoteAddressWhitelist }}
-<param name="remote_address_white_list">{{ $proxy.remoteAddressWhitelist }}</param>
+<param name="remote_address_whitelist">{{ $proxy.remoteAddressWhitelist }}</param>
 {{- end }}
 
-{{- /* keep_alive */ -}}
+{{- /* keepalive_timeout_millis */ -}}
 {{- if not (quote $proxy.keepaliveTimeoutMillis | empty) }}
-<param name="keep_alive">{{ int $proxy.keepaliveTimeoutMillis }}</param>
+<param name="keepalive_timeout_millis">{{ int $proxy.keepaliveTimeoutMillis }}</param>
 {{- end }}
 
-{{- /* keep_alive_hint */ -}}
+{{- /* keepalive_hint_millis */ -}}
 {{- if not (quote $proxy.keepaliveHintMillis | empty) }}
-<param name="keep_alive_hint">{{ int $proxy.keepaliveHintMillis }}</param>
+<param name="keepalive_hint_millis">{{ int $proxy.keepaliveHintMillis }}</param>
 {{- end }}
 {{- end }}
