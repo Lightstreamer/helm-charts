@@ -102,8 +102,9 @@ Render the Lightstreamer configuration file of an Adapter Set
   {{- /* START DATA PROVIDERS */ -}}
   {{- range $dataProviderName, $dataProvider := .dataProviders }}
     {{- if $dataProvider.enabled }}
+    {{- $dataProviderName := default "DEFAULT" $dataProvider.name }}
 
-  <data_provider name={{ $dataProvider.name | quote }}>
+  <data_provider name={{ $dataProviderName | quote }}>
       {{- /* IN-PROCESS DATA ADAPTER */ -}}
       {{- if $dataProvider.inProcessDataAdapter }}
         {{- with $dataProvider.inProcessDataAdapter }}
