@@ -3970,7 +3970,7 @@ adapters:
         # - `interface`
         # - sslConfig.enforceServerCipherSuitePreference
         # - sslConfig.enableClientAuth
-        # - remote_address_whitelist
+        # - remoteAddressWhitelist
         # Note, in particular, that the keystore parameters are available,
         # though optional. This allows for authentication of the Proxy Adapter
         # by the Remote Server by requesting the Proxy Adapter's TLS client
@@ -3996,22 +3996,22 @@ adapters:
           keystoreRef:
 
           # -- See `servers.{}.sslConfig.allowCipherSuites`.
-          allowCipherSuites:
+          allowCipherSuites: []
 
           # -- See `servers.{}.sslConfig.removeCipherSuites`.
-          removeCipherSuites:
+          removeCipherSuites: []
 
           # -- (object) See `servers.{}.sslConfig.enforceServerCipherPreference`.
           enforceServerCipherSuitePreference:
 
-          # -- (list) See `servers.{}.sslConfig.allowProtocols`.
-          allowProtocols:
+          # -- See `servers.{}.sslConfig.allowProtocols`.
+          allowProtocols: []
 
-          # -- (list) See `servers.{}.sslConfig.removeProtocols`.
-          removeProtocols:
+          # -- See `servers.{}.sslConfig.removeProtocols`.
+          removeProtocols: []
 
-          # -- (bool) See `servers.{}.sslConfig.enableMandatoryClientAuth`.
-          enableMandatoryClientAuth:
+          # -- See `servers.{}.sslConfig.enableMandatoryClientAuth`.
+          enableMandatoryClientAuth: false
 
           # -- Mandatory if `enableMandatoryClientAuth` is set to `true`. The
           # reference to a keystore configuration (defined in `keystores`).
@@ -4027,7 +4027,7 @@ adapters:
           # scenario.
           enableHostnameVerification: true
 
-        # -- Optional. Authentication settings for the connection.
+        # -- Optional. Authentication settings for the connection.  
         authentication:
 
           # -- Optional. If set to `true`, enforces Remote Adapter
@@ -4210,8 +4210,7 @@ adapters:
         # to `false`. Sets the minimum time cached profile data are kept; these
         # cached data are needed in order to manage request processing before a
         # session is fully started.
-        # @default -- 10000
-        userDataTimeoutMillis:
+        userDataTimeoutMillis: 10000
 
         # -- Optional but only effective if `enableRobust` is set to `true`. If
         # set to `true`, enforces the clearing of all internal caches when a new
@@ -4238,8 +4237,7 @@ adapters:
         # The addresses can be in any form accepted by the Java
         # `InetAddress.getByName` method.
         # Example: `localhost,192.168.0.190`
-        # @default -- ""
-        remoteAddressWhitelist:
+        remoteAddressWhitelist: ""
 
         # -- (int) Optional. Timeout for inactivity on the connection with
         # respect to messages coming from the Remote Metadata Adapter.
@@ -4252,8 +4250,7 @@ adapters:
         # obey the keepalive interval requested by this Proxy (see
         # `keepaliveHintMillis`).
         # A zero or negative value stands for an unlimited timeout.
-        # @default -- -1
-        keepaliveTimeoutMillis:
+        keepaliveTimeoutMillis: -1
 
         # -- (int) Optional. Keepalive interval to be requested to the Remote
         # Metadata Adapter.
@@ -4426,7 +4423,7 @@ adapters:
           # - `interface`
           # - sslConfig.enforceServerCipherSuitePreference
           # - sslConfig.enableClientAuth
-          # - remote_address_whitelist
+          # - remoteAddressWhitelist
           # Note, in particular, that the keystore parameters are available,
           # though optional. This allows for authentication of the Proxy Adapter
           # by the Remote Server by requesting the Proxy Adapter's TLS client
