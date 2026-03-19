@@ -61,7 +61,7 @@ helm install lightstreamer lightstreamer/lightstreamer \
 
 > The namespace must exist beforehand (`kubectl create namespace lightstreamer` or `oc new-project lightstreamer` on OpenShift). Any name can be used, but it must be applied consistently — if you change it, update [`helloworld-deployment.yaml.tmpl`](nodejs-adapter/helloworld-deployment.yaml.tmpl) accordingly, as the namespace is also part of the Lightstreamer service DNS hostname.
 
-The relevant configuration in `values.yaml`:
+The [`values.yaml`](values.yaml) configuration:
 
 ```yaml
 adapters:
