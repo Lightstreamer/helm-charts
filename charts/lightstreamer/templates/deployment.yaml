@@ -115,6 +115,7 @@ spec:
             {{- /* END JMXMP CONNECTOR PORT */ -}}
           {{- /* START PROXY ADAPTER PORTS */ -}}
           {{- $metaCounter := 0}}
+          {{- $dataCounter := 0}}
           {{- range $adapterName, $adapterSet := .Values.adapters }}
             {{- if $adapterSet.enabled }}
               {{- with $adapterSet.metadataProvider.proxyMetadataAdapter }}
@@ -126,7 +127,6 @@ spec:
               protocol: TCP
                 {{- end }}
               {{- end }}
-              {{- $dataCounter := 0}}
               {{- range $dataProviderName, $dataProvider := $adapterSet.dataProviders }}
                 {{- if $dataProvider.enabled }}
                   {{- with $dataProvider.proxyDataAdapter }}
