@@ -3788,8 +3788,8 @@ adapters:
         # guaranteed to occur after all the above notifications have terminated.
         enableTableNotificationsSequentialization: false
 
-        # -- Optional. List of initialization parameters specific to the
-        # adapter.
+        # -- (object) Optional. Map of initialization parameters specific to 
+        # the adapter.
         # The various settings are not interpreted by Lightstreamer, but they
         # are forwarded to the `init` method of the adapter.
         #
@@ -4033,8 +4033,8 @@ adapters:
           # -- Optional. If set to `true`, enforces Remote Adapter
           # authentication on the connection based on a user/password credential
           # check.
-          # Note that the user names will be used in   messages at `INFO`
-          # level or above, whereas the passwords won't.
+          # Note that the user names will be used in messages at `INFO` level or
+          # above, whereas the passwords won't.
           enabled: false
 
           # -- Optional but ineffective if `enabled` is set to `false`. The
@@ -4069,7 +4069,7 @@ adapters:
         # Note that, when the Lightstreamer Broker startup completes, as long as
         # a connection to a remote server is still missing, all client requests
         # will be refused.
-        firstConnectionTimeoutMillis: 10000
+        firstConnectionTimeoutMillis: -1
 
         # -- (string) Optional but only effective if `enableRobustAdapter` is
         # set to `true`. The strategy to be adopted whenever a new remote
@@ -4187,8 +4187,9 @@ adapters:
           # @default -- "" (no custom initialization parameters will be sent)
           prefix:
 
-          # -- Optional but only effective when `prefix` is set. Set of custom
-          # initialization parameters to be sent to the remote counterpart.
+          # -- (object) Optional but only effective when `prefix` is set. Map of 
+          # custom initialization parameters to be sent to the remote 
+          # counterpart.
           # Every key is the name of the parameter and must start with the value
           # specified in the `prefix` setting.
           params:
@@ -4279,8 +4280,7 @@ adapters:
         # -- (string) Mandatory if multiple Data Adapters (either proxy or
         # in-process) are defined in the same Adapter Set. The name of the Data Adapter.
         # Example: `MY_REMOTE`
-        # @default -- DEFAULT
-        name:
+        name: DEFAULT
 
         # -- One of this or `proxyDataAdapter` must be provided. Configuration
         # of an in-process Data Adapter.
@@ -4327,7 +4327,6 @@ adapters:
           # `load`.serverPoolMaxFree settings.
           # Using a specific thread pool is advisable if the implementation
           # of any of the involved Adapter methods introduces delays.
-          # @default -- nil
           dataAdapterPool:
 
             # -- (int) Mandatory. Maximum number of threads allowed for the
@@ -4338,8 +4337,8 @@ adapters:
             # `DATA` thread pool.
             maxFree:
 
-          # -- Optional. List of initialization parameters specific to the
-          # adapter.
+          # -- (object) Optional. Map of initialization parameters specific to 
+          # the adapter.
           # The various parameters are not interpreted by Lightstreamer, but
           # they are forwarded to the `init` method of the adapter.
           #
@@ -4441,39 +4440,34 @@ adapters:
             # -- Optional. Enables the encryption.
             enabled: false
 
-            # -- Mandatory. The reference to a keystore configuration (defined
+            # -- (string) Mandatory. The reference to a keystore configuration (defined
             # in `keystores`).
             # See the `keystores.myServerKeystore` settings for general details
             # on keystore configuration.
             keystoreRef:
 
             # -- See `servers.{}.sslConfig.allowCipherSuites`.
-            allowCipherSuites:
+            allowCipherSuites: []
 
             # -- See `servers.{}.sslConfig.removeCipherSuites`.
-            removeCipherSuites:
+            removeCipherSuites: []
 
-            # -- (bool). See `servers.{}.sslConfig.enforceServerCipherPreference`.
+            # -- (object). See `servers.{}.sslConfig.enforceServerCipherPreference`.
             enforceServerCipherSuitePreference:
 
-            # -- (list). See `servers.{}.sslConfig.allowProtocols`.
-            allowProtocols:
+            # -- See `servers.{}.sslConfig.allowProtocols`.
+            allowProtocols: []
 
-            # -- (list). See `servers.{}.sslConfig.removeProtocols`.
-            removeProtocols:
+            # -- See `servers.{}.sslConfig.removeProtocols`.
+            removeProtocols: []
 
             # -- (bool). See `servers.{}.sslConfig.enableMandatoryClientAuth`.
-            enableClientAuth:
+            enableMandatoryClientAuth:
 
             # -- See `adapters.{}.metadataProvider.proxyMetadataAdapter.sslConfig.truststoreRef`.
             truststoreRef:
 
-            # -- Optional. Only used if `remoteHost` is configured.
-            # If set to `false`, suppresses the check of the hostname in the TLS
-            # certificate, which, in this context, is received from the Remote
-            # Server.
-            # Setting to `false` is only meant to be used in a development/test
-            # scenario.
+            # -- See `adapters.{}.metadataProvider.proxyMetadataAdapter.sslConfig.enableHostnameVerification`.
             enableHostnameVerification: true
 
           # -- Optional. Authentication settings for the connection.
@@ -4490,15 +4484,13 @@ adapters:
             # secrets containing the credentials of the users allowed to
             # connect.
             # Every secret must contains the keys `user` and `password`.
-            # @default -- []
-            credentialsSecrets:
+            credentialsSecrets: []
 
           # -- (int) Optional but only effective when `remoteHost` is set.
           # Delay to be enforced before retrying a connection attempt to the
           # Remote Server, to prevent a possible strict loop of unsuccessful
           # attempts.
-          # @default -- 10000
-          connectionRetryMillis:
+          connectionRetryMillis: 10000
 
           # -- (int) Optional but only effective if `enableRobustAdapter` is
           # set to `true`. The timeout for initialization errors. After an
@@ -4509,7 +4501,7 @@ adapters:
           # previous attempt.
           # A negative value prevents further attempts, so that no remote server
           # will be available.
-          connectionRecoveryTimeoutMillis: 10000
+          connectionRecoveryTimeoutMillis: -1
 
           # -- (int) Optional but only effective if `enableRobustAdapter` is
           # set to `true`. The timeout for the first connection attempt. Upon
@@ -4523,8 +4515,7 @@ adapters:
           # subscription requests will get an empty snapshot; then, when the
           # connection is established, the data flow will be restored according
           # to the `eventsRecovery` setting.
-          # @default -- 0
-          firstConnectionTimeoutMillis:
+          firstConnectionTimeoutMillis: 0
 
           # -- (string) Optional but only effective if `enableRobustAdapter` is
           # set to `true`. The strategy to be adopted whenever a new remote
@@ -4634,8 +4625,8 @@ adapters:
             # @default -- "" (no custom initialization parameters will be sent)
             prefix:
 
-            # -- Optional but only effective when `prefix` is set. Set of
-            # custom initialization parameters to be sent to the remote
+            # -- (object) Optional but only effective when `prefix` is set. Map
+            # of custom initialization parameters to be sent to the remote
             # counterpart.
             # Every key is the name of the parameter and must start with the
             # value specified in the `prefix` setting.
