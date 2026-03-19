@@ -17,6 +17,7 @@ limitations under the License.
 {{/* Extract the list of proxy adapters*/}}
 {{- $proxyAdapters := dict }}
 {{- $metaCounter := 0}}
+{{- $dataCounter := 0}}
 {{- range $adapterName, $adapterSet := .Values.adapters }}
   {{- if $adapterSet.enabled }}
     {{- with ($adapterSet.metadataProvider).proxyMetadataAdapter }}
@@ -26,7 +27,6 @@ limitations under the License.
         {{- $_ := set $proxyAdapters $key .requestReplyPort }}
       {{- end }}
     {{- end }}
-    {{- $dataCounter := 0}}
     {{- range $dataProviderName, $dataProvider := $adapterSet.dataProviders }}
       {{- if ($dataProvider).enabled }}
         {{- with $dataProvider.proxyDataAdapter }}
