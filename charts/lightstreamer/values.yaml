@@ -70,8 +70,7 @@ deployment:
   # -- Number of replicas.
   # See https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/.
   # Used only if `autoscaling.enabled` is set to `false`.
-  # @default -- 1
-  replicas:
+  replicas: 1
 
   # -- Additional Deployment annotations
   annotations: []
@@ -96,7 +95,7 @@ deployment:
   podLabels: {}
 
   # -- The security context for the Pods.
-  #  See https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod.
+  # See https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod.
   podSecurityContext: {}
     # fsGroup: 2000
 
@@ -131,8 +130,7 @@ deployment:
     liveness:
 
       # -- Optional. Enables the liveness probe.
-      # @default -- false
-      enabled:
+      enabled: false
 
       # -- Mandatory if enabled is set to `true` and `liveness.default` is not
       # specified. Liveness probe configuration based on the default
@@ -973,8 +971,8 @@ servers:
         # - TLSv1$
         # - TLSv1.1
 
-      # -- (bool) Optional. Instructs the underlying Security Provider on 
-      # whether to use stateless (when `true`) or stateful (when `false`) 
+      # -- (bool) Optional. Instructs the underlying Security Provider on
+      # whether to use stateless (when `true`) or stateful (when `false`)
       # session resumption on this port, if supported (possibly depending on the
       # protocol version in use).
       # Note that stateful resumption implies the management of a TLS session
@@ -1043,7 +1041,7 @@ servers:
       # consequence of `enableClientAuth`.
       enableMandatoryClientAuth: false
 
-      # -- Mandatory if at least one of `enableClientAuth` and
+      # -- (string) Mandatory if at least one of `enableClientAuth` and
       # `enableMandatoryClientAuth` is set to `true`. The reference to a
       # keystore to be used by the HTTPS service to accept client certificates.
       # It can be used to supply client certificates that should be accepted,
@@ -1692,7 +1690,7 @@ management:
         # @default -- the same as configured in `rmiConnector.port.value`
         value:
 
-        # -- (bool) Optional. If set to `true`, enables TLS/SSL communication by 
+        # -- (bool) Optional. If set to `true`, enables TLS/SSL communication by
         # the connector; TLS/SSL at this level is supported by some JMX clients,
         # like jconsole, that don't support TLS/SSL on the main  port.
         # @default -- the same as configured in `rmiConnector.port.enableSsl`
@@ -1750,9 +1748,9 @@ management:
       # the RMI Connector.
       sslConfig:
 
-        # -- Mandatory, The reference to a keystore configuration (defined in
-        # `keystores`) to be used in case TLS/SSL is enabled for part or all of
-        # the communication.
+        # -- (string) Mandatory, The reference to a keystore configuration
+        # (defined in `keystores`) to be used in case TLS/SSL is enabled for
+        # part or all of the communication.
         # See the `keystores.myServerKeystore` for general details on keystore
         # configuration. These include the runtime replacement of the keystore,
         # with one difference: if the load of the new keystore fails, the RMI
@@ -2952,7 +2950,7 @@ mpn:
         # notifications. Use either `production` or `test`.
         serviceLevel: test
 
-        # -- Mandatory if `serviceLevel` is set to `development` or
+        # -- (string) Mandatory if `serviceLevel` is set to `development` or
         # `production`.
         # The reference to the keystore (defined in
         # `mpn.appleNotifierConfig.keystores`) where Apple's certificate for
@@ -3540,8 +3538,8 @@ adapters:
     # Example: `MY_ADAPTER_SET`.
     id:
 
-    # -- Optional but mandatory if either 
-    # `metadataProvider.proxyMetadataAdapter` or at least one 
+    # -- Optional but mandatory if either
+    # `metadataProvider.proxyMetadataAdapter` or at least one
     # `dataProviders.{}.proxyDataAdapter` is defined. Defines the provisioning
     # method of the Adapter Set.
     # Either specify one of `fromPathInImage` or `fromVolume`.
@@ -3788,7 +3786,7 @@ adapters:
         # guaranteed to occur after all the above notifications have terminated.
         enableTableNotificationsSequentialization: false
 
-        # -- (object) Optional. Map of initialization parameters specific to 
+        # -- (object) Optional. Map of initialization parameters specific to
         # the adapter.
         # The various settings are not interpreted by Lightstreamer, but they
         # are forwarded to the `init` method of the adapter.
@@ -4013,10 +4011,10 @@ adapters:
           # -- See `servers.{}.sslConfig.enableMandatoryClientAuth`.
           enableMandatoryClientAuth: false
 
-          # -- Mandatory if `enableMandatoryClientAuth` is set to `true`. The
-          # reference to a keystore configuration (defined in `keystores`).
-          # See the `keystores.myServerKeystore` settings for general details on
-          # keystore configuration.
+          # -- (string) Mandatory if `enableMandatoryClientAuth` is set to
+          # `true`. The reference to a keystore configuration (defined in
+          # `keystores`). See the `keystores.myServerKeystore` settings for
+          # general details on keystore configuration.
           truststoreRef:
 
           # -- Optional. Only used if `remoteHost` is configured.
@@ -4027,7 +4025,7 @@ adapters:
           # scenario.
           enableHostnameVerification: true
 
-        # -- Optional. Authentication settings for the connection.  
+        # -- Optional. Authentication settings for the connection.
         authentication:
 
           # -- Optional. If set to `true`, enforces Remote Adapter
@@ -4154,8 +4152,7 @@ adapters:
         # Remote Metadata Adapter.
         # The message will be used in association with the error code configured
         # through `notifyUserDisconnectionCode`.
-        # @default -- the error message is supplied by the Robust Proxy Metadata
-        # Adapter
+        # @default -- the error message is supplied by the Robust Proxy Metadata Adapter
         notifyUserDisconnectionMsg:
 
         # -- Optional. Configuration of the custom initialization parameters to
@@ -4187,8 +4184,8 @@ adapters:
           # @default -- "" (no custom initialization parameters will be sent)
           prefix:
 
-          # -- (object) Optional but only effective when `prefix` is set. Map of 
-          # custom initialization parameters to be sent to the remote 
+          # -- (object) Optional but only effective when `prefix` is set. Map of
+          # custom initialization parameters to be sent to the remote
           # counterpart.
           # Every key is the name of the parameter and must start with the value
           # specified in the `prefix` setting.
@@ -4265,7 +4262,7 @@ adapters:
         # - if not configured: `-1`
         # - if less than `4` seconds: half the `keepaliveTimeoutMillis`
         # - otherwise: `2` seconds less than the `keepaliveTimeoutMillis`
-        # @default -- See description
+        # @default -- see description
         keepaliveHintMillis:
 
     # -- Mandatory. List of data provider configurations.
@@ -4278,7 +4275,8 @@ adapters:
         enabled: false
 
         # -- (string) Mandatory if multiple Data Adapters (either proxy or
-        # in-process) are defined in the same Adapter Set. The name of the Data Adapter.
+        # in-process) are defined in the same Adapter Set. The name of the Data
+        # Adapter.
         # Example: `MY_REMOTE`
         name: DEFAULT
 
@@ -4337,7 +4335,7 @@ adapters:
             # `DATA` thread pool.
             maxFree:
 
-          # -- (object) Optional. Map of initialization parameters specific to 
+          # -- (object) Optional. Map of initialization parameters specific to
           # the adapter.
           # The various parameters are not interpreted by Lightstreamer, but
           # they are forwarded to the `init` method of the adapter.
@@ -4440,8 +4438,8 @@ adapters:
             # -- Optional. Enables the encryption.
             enabled: false
 
-            # -- (string) Mandatory. The reference to a keystore configuration (defined
-            # in `keystores`).
+            # -- (string) Mandatory. The reference to a keystore configuration
+            # (defined in `keystores`).
             # See the `keystores.myServerKeystore` settings for general details
             # on keystore configuration.
             keystoreRef:
@@ -4464,7 +4462,7 @@ adapters:
             # -- (bool). See `servers.{}.sslConfig.enableMandatoryClientAuth`.
             enableMandatoryClientAuth:
 
-            # -- See `adapters.{}.metadataProvider.proxyMetadataAdapter.sslConfig.truststoreRef`.
+            # -- (string) See `adapters.{}.metadataProvider.proxyMetadataAdapter.sslConfig.truststoreRef`.
             truststoreRef:
 
             # -- See `adapters.{}.metadataProvider.proxyMetadataAdapter.sslConfig.enableHostnameVerification`.
@@ -4677,7 +4675,7 @@ adapters:
           # - if not configured: `-1`
           # - if less than `4` seconds: half the `keepaliveTimeoutMillis`
           # - otherwise: `2` seconds less than the `keepaliveTimeoutMillis`
-          # @default -- See description
+          # @default -- see description
           keepaliveHintMillis:
 
 # -- Optional. Connectors configuration.
@@ -4705,7 +4703,7 @@ connectors:
       # the GitHub official repository at startup. Once downloaded, the package
       # will be deployed to the
       # `/deployed_adapters/kafka-connector` directory in the container.
-      # Example: "1.4.1"
+      # Example: "1.5.0"
       fromGitHubRelease:
 
       # -- (string) The URL from which to download the Kafka Connector zip
@@ -4721,7 +4719,7 @@ connectors:
         name:
 
         # -- (string) The file path to the Kafka Connector zip package in the
-        # volume, e.g.: `/connectors/lightstreamer-kafka-connector-1.4.1.zip`.
+        # volume, e.g.: `/connectors/lightstreamer-kafka-connector-1.5.0.zip`.
         filePath:
 
     # -- Mandatory. Defines the Kafka Connector Adapter Set and its unique ID.
@@ -4868,22 +4866,23 @@ connectors:
           allowProtocols: []
 
           # -- Optional. List of enabled secure cipher suites.
-          # If not specified, all the available cipher suites in the running JVM will be used.
+          # If not specified, all the available cipher suites in the running JVM
+          # will be used.
           allowCipherSuites: []
 
           # -- Optional. Enables the hostname verification.
           enableHostnameVerification: false
 
-          # -- Optional. The reference to a keystore (defined in 'keystores')
-          # used to validate the certificates provided by the Kafka brokers.
-          # See the `keystores.myServerKeystore` settings for general details on
-          # keystore configuration for the Kafka Connector.
+          # -- (string) Optional. The reference to a keystore (defined in
+          # 'keystores') used to validate the certificates provided by the Kafka
+          # brokers. See the `keystores.myServerKeystore` settings for general
+          # details on keystore configuration for the Kafka Connector.
           truststoreRef:
 
-          # -- Optional. The reference to a keystore (defined in 'keystores')
-          # used if mutual TLS is enabled on Kafka brokers.
-          # See the `keystores.myServerKeystore` settings for general
-          # details on keystore configuration for the Kafka Connector.
+          # -- (string) Optional. The reference to a keystore (defined in
+          # 'keystores') used if mutual TLS is enabled on Kafka brokers. See the
+          # `keystores.myServerKeystore` settings for general details on
+          # keystore configuration for the Kafka Connector.
           keystoreRef:
 
         # -- Optional. Authentication settings for the connection.
@@ -4974,6 +4973,20 @@ connectors:
           # internal Kafka Consumer.
           # See https://kafka.apache.org/documentation/#consumerconfigs_auto.offset.reset
           consumeFrom: LATEST
+
+          # -- (int) Optional. The maximum number of records fetched in each
+          # polling cycle.
+          consumeWithMaxPollRecords: 500
+
+          # -- (int) Optional. The timeout used to detect client failures when
+          # using Kafka's group management facility.
+          consumeWithSessionTimeoutMillis: 45000
+
+          # -- (int) Optional.  The maximum delay between invocations of poll()
+          # when using consumer group management. This places an upper bound on
+          # the amount of time that the consumer can be idle before fetching
+          # more records.
+          consumeWithMaxPollIntervalMillis: 30000
 
           # -- (int) Optional. The number of threads to be used for parallel
           # processing of the incoming deserialized records. If set to `-1`,
@@ -5099,14 +5112,9 @@ connectors:
           # Lightstreamer clients subscribed to this connection is forced.
           extractionErrorStrategy: IGNORE_AND_CONTINUE
 
-          # -- Mandatory when either record.keyEvaluator or record.valueEvaluator
-          # require a Schema Registry. The reference to a Schema Registry
-          # configuration defined in
-          # `connectors.kafkaConnector.schemaRegistries`.
-
-          # -- Mandatory when either record.keyEvaluator or record.valueEvaluator
-          # requires a Schema Registry. The reference to a Schema Registry
-          # configuration (defined in
+          # -- (string) Mandatory when either `record.keyEvaluator` or
+          # `record.valueEvaluator` requires a Schema Registry. The reference to
+          # a Schema Registry configuration (defined in
           # `connectors.kafkaConnector.schemaRegistries`).
           schemaRegistryRef:
 
@@ -5201,7 +5209,8 @@ connectors:
           #   key: "#{KEY}"
           #   command: "#{VALUE.command}"
           #
-          # When `key` is set to `snapshot`, the command can be one of the following:
+          # When `key` is set to `snapshot`, the command can be one of the
+          # following:
           # - `CS`: Clears the current snapshot.
           # - `EOS`: Marks the end of the snapshot.
           enableEvaluationAsCommand: false
@@ -5212,9 +5221,12 @@ connectors:
           # explicit command fields. When enabled, the connector:
           # - Automatically adds a Lightstreamer command field to each update
           # - Assigns the appropriate command value based on the record state:
-          # - `ADD`: For records with a new mapped key (not previously processed)
-          # - `UPDATE`: For records with a mapped key that has been previously processed
-          # - `DELETE`: For records with a null message payload (tombstone records)
+          # - `ADD`: For records with a new mapped key (not previously
+          #   processed)
+          # - `UPDATE`: For records with a mapped key that has been previously
+          #   processed
+          # - `DELETE`: For records with a null message payload (tombstone
+          #   records)
           #
           # You only need to map the `key` field from your record structure.
           # For example:
@@ -5259,48 +5271,72 @@ connectors:
       # Registry configurations.
       mySchemaRegistry:
 
-        # -- Mandatory. The URL of the Confluent Schema Registry. An encrypted
-        # connection is enabled by specifying the `https` protocol.
+        # -- Optional. Specifies the Schema Registry provider to use. Possible
+        # values: `CONFLUENT`, `AZURE`.
+        provider: CONFLUENT
+
+        # -- (string) Mandatory. The URL of the Confluent Schema Registry. An
+        # encrypted connection is enabled by specifying the `https` protocol.
         # Example: `https://schema-registry:8084`
         url:
 
-        # -- Optional. Basic HTTP authentication of a connection against the
-        # Schema Registry.
-        basicAuthentication:
+        # -- Optional but only effective if `provider` is set to `CONFLUENT`.
+        # The
+        confluent:
 
-          # -- Optional. Enables Basic HTTP authentication.
-          enabled: false
+          # -- Optional. Basic HTTP authentication of a connection against the
+          # Schema Registry.
+          basicAuthentication:
 
-          # -- (string) Mandatory if `enabled` is set to `true`. The name of the
-          # secret containing the credentials.
-          # The secret must contain the keys `user` and `password`.
+            # -- Optional. Enables Basic HTTP authentication.
+            enabled: false
+
+            # -- (string) Mandatory if `enabled` is set to `true`. The name of
+            # the secret containing the credentials.
+            # The secret must contain the keys `user` and `password`.
+            credentialsSecretRef:
+
+          # -- Mandatory if the https protocol is specified in `url`. TLS/SSL
+          # settings.
+          sslConfig:
+
+            # -- (string) Optional. The SSL protocol to be used. Possible
+            # values: `TLSv1.2`, `TLSv1.3`.
+            # If not specified, the default value is `TLSv1.3` when running on
+            # Java 11 or newer, `TLSv1.2` otherwise.
+            protocol:
+
+            # -- Optional. List of enabled secure communication protocols.
+            # If not specified, the default value is `[TLSv1.2, TLSv1.3]` when
+            # running on Java 11 or newer, `[TLSv1.2]` otherwise.
+            allowProtocols: []
+
+            # -- Optional. List of enabled secure cipher suites.
+            # If not specified, all the available cipher suites in the running
+            # JVM will be used.
+            allowCipherSuites: []
+
+            # -- Optional. Enables the hostname verification.
+            enableHostnameVerification: false
+
+            # -- (string) Optional. The reference to a keystore (defined in
+            # 'keystores') used to validate the certificates provided by the
+            # Schema Registry.See the `keystores.myKafkaConnectorKeystore`
+            # settings for general details on keystore configuration for the
+            # Kafka Connector.
+            truststoreRef:
+
+            # -- (string) Optional. The reference to a keystore (defined in
+            # 'keystores') used if mutual TLS is enabled on the Schema Registry.
+            # See the `keystores.myKafkaConnectorKeystore` settings for general
+            # details on keystore configuration for the Kafka Connector.
+            keystoreRef:
+
+        # -- Optional but only effective if `provider` is set to `AZURE`. The Azure
+        azure:
+
+          # -- (string) Mandatory. The name of the secret containing the
+          # credentials for authentication with the Azure Schema Registry. The
+          # secret must contain the keys `client_id`, `tenant_id`, and
+          # `client_secret`.
           credentialsSecretRef:
-
-        # -- Mandatory if the https protocol is specified in `url`. TLS/SSL
-        # settings.
-        sslConfig:
-
-          # -- Optional. List of enabled secure communication protocols.
-          # If not specified, the default value is `[TLSv1.2, TLSv1.3]` when
-          # running on Java 11 or newer, `[TLSv1.2]` otherwise.
-          allowProtocols: []
-
-          # -- Optional. List of enabled secure cipher suites.
-          # If not specified, all the available cipher suites in the running JVM
-          # will be used.
-          allowCipherSuites: []
-
-          # -- Optional. Enables the hostname verification.
-          enableHostnameVerification: false
-
-          # -- Optional. The reference to a keystore (defined in 'keystores')
-          # used to validate the certificates provided by the Schema Registry.
-          # See the `keystores.myKafkaConnectorKeystore` settings for general
-          # details on keystore configuration for the Kafka Connector.
-          truststoreRef:
-
-          # -- Optional. The reference to a keystore (defined in 'keystores')
-          # used if mutual TLS is enabled on the Schema Registry.
-          # See the `keystores.myKafkaConnectorKeystore` settings for general
-          # details on keystore configuration for the Kafka Connector.
-          keystoreRef:
