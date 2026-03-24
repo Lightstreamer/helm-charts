@@ -862,7 +862,7 @@ You can configure in-process Metadata Adapters and Data Adapters by populating t
 - [`metadataProvider.inProcessMetadataAdapter`](charts/lightstreamer/values.yaml#L3614)
 - [`dataProviders.<dataProviderName>.inProcessDataAdapter`](charts/lightstreamer/values.yaml#L4287)
 
-Both sections support the following settings. Each link points to the Metadata Adapter entry first, followed by the Data Adapter equivalent:
+The following settings are available in one or both sections. Where a setting exists in both, links point to the Metadata Adapter entry first, followed by the Data Adapter equivalent:
 
 - `adapterClass` ([Metadata Adapter](charts/lightstreamer/values.yaml#L3617), [Data Adapter](charts/lightstreamer/values.yaml#L4290)): The fully qualified name of the Java class implementing the Adapter.
 
@@ -896,18 +896,17 @@ Both sections support the following settings. Each link points to the Metadata A
             dbPort: "5432"
   ```
 
-- [`enableTableNotificationsSequentialization`](charts/lightstreamer/values.yaml#L3787) (Metadata Adapter only): When `true`, all subscription lifecycle notifications (`notifyNewTables`, `notifyTablesClose`) for the same session are delivered sequentially with no overlap. Useful when the Metadata Adapter implementation is not designed for concurrent table notifications.
+- [`enableTableNotificationsSequentialization`](charts/lightstreamer/values.yaml#L3787) (Metadata Adapter only): When `true`, all subscription lifecycle notifications for the same session are delivered sequentially with no overlap. Useful when the Metadata Adapter implementation is not designed for concurrent table notifications.
 
 **Advanced: thread pool tuning**
 
-For production environments, dedicated thread pools can be configured to isolate and tune the performance of specific adapter operations:
-
 - **Metadata Adapter**:
-  - [`authenticationPool`](charts/lightstreamer/values.yaml#L3692): Thread pool for `notifyUser` calls.
-  - [`messagesPool`](charts/lightstreamer/values.yaml#L3738): Thread pool for `notifyUserMessage` calls.
-  - [`mpnPool`](charts/lightstreamer/values.yaml#L3784): Thread pool for mobile push notification requests.
+  - [`authenticationPool`](charts/lightstreamer/values.yaml#L3692): Dedicated thread pool for `notifyUser` calls.
+  - [`messagesPool`](charts/lightstreamer/values.yaml#L3738): Dedicated thread pool for `notifyUserMessage` calls.
+  - [`mpnPool`](charts/lightstreamer/values.yaml#L3784): Dedicated thread pool for mobile push notification requests.
 - **Data Adapter**:
-  - [`dataAdapterPool`](charts/lightstreamer/values.yaml#L4328): Thread pool for subscription/unsubscription management.
+  - [`dataAdapterPool`](charts/lightstreamer/values.yaml#L4328): Dedicated thread pool for subscription/unsubscription management.
+
 
 See the linked values.yaml entries for the full set of sub-settings (`maxSize`, `maxFree`, `maxPendingRequests`, `maxQueue`).
 
@@ -1081,7 +1080,7 @@ You can configure a Proxy Metadata Adapter and Proxy Data Adapters by populating
 - [`metadataProvider.proxyMetadataAdapter`](charts/lightstreamer/values.yaml#L3810)
 - [`dataProviders.<dataProviderName>.proxyDataAdapter`](charts/lightstreamer/values.yaml#L4360)
 
-Both sections support the following settings. Where a setting exists in both, links point to the Proxy Metadata Adapter entry first, followed by the Proxy Data Adapter equivalent:
+The following settings are available in one or both sections. Where a setting exists in both, links point to the Proxy Metadata Adapter entry first, followed by the Proxy Data Adapter equivalent:
 
 - `requestReplyPort` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L3954), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4406)): The mandatory TCP port the Proxy Adapter listens on for the Remote Server to connect.
 
