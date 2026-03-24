@@ -13,8 +13,7 @@ For installation instructions, custom configuration, and deployment guidance, se
 
 **Homepage:** <https://github.com/Lightstreamer/helm-charts>
 
-## Source Code
-
+## Source code
 * <https://github.com/Lightstreamer/helm-charts/tree/main/charts/lightstreamer>
 
 ## Settings
@@ -31,11 +30,11 @@ each focusing on a specific aspect of the Lightstreamer deployment:
 - [Keystores](#keystores-settings)
 - [Logging](#logging-settings)
 - [Management](#management-settings)
-- [Global Socket](#global-socket-settings)
+- [Global socket](#global-socket-settings)
 - [Security](#security-settings)
-- [Push Session](#push-session-settings)
+- [Push session](#push-session-settings)
 - [Mpn](#mpn-settings)
-- [Web Server](#web-server-settings)
+- [Web server](#web-server-settings)
 - [Cluster](#cluster-settings)
 - [Load](#load-settings)
 - [Adapters](#adapters-settings)
@@ -1678,7 +1677,7 @@ Optional. Threshold time for long Adapter call alerts. All Data and Metadata Ada
 **Type:** int
 
 **Default:** `0`
-## Global Socket settings
+## Global socket settings
  
 ### [globalSocket](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2021)
      
@@ -1870,7 +1869,7 @@ Optional. Server identification policy to be used for all server responses. Upon
 **Type:** string
 
 **Default:** `"FULL"`
-## Push Session settings
+## Push session settings
  
 ### [pushSession](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2258)
      
@@ -2556,7 +2555,7 @@ Optional. Timeout for MPN request processing. As each MPN request interacts with
 **Type:** int
 
 **Default:** `15000`
-## Web Server settings
+## Web server settings
  
 ### [webServer](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3105)
      
