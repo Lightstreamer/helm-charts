@@ -293,17 +293,32 @@ spec:
           {{- /* END ENV VARIABLES FOR THE ADAPTERS CONFIGURATION */ -}}
           {{- /* START ENV VARIABLES FOR THE KAFKA CONNECTOR */ -}}
           {{- if ((.Values.connectors).kafkaConnector).enabled }}
-            {{- /* AUTHENTICATION */ -}}
+            {{- /* Collect all the secret refs used for authentication in the Kafka Connector configuration, to render the corresponding environment variables */ -}}
             {{- $authSecretRefs := list }}
+            {{- $confluentSchemaRegistryAuthSecretRefs := list }}
+            {{- $azureSchemaRegistryAuthSecretRefs := list }}
             {{- range $key, $connection := $.Values.connectors.kafkaConnector.connections }}
               {{- if ($connection.authentication).enabled }}
                 {{- $mechanism := $connection.authentication.mechanism | default "PLAIN" }}
                 {{- if has $mechanism (list "PLAIN" "SCRAM-SHA-256" "SCRAM-SHA-512") }}
                   {{- $authSecretRefs = append $authSecretRefs ($connection.authentication.credentialsSecretRef) }}
                 {{- end }}
+                {{- $record := $connection.record }}
+                {{- with $record.schemaRegistry }}
+                  {{- if eq .provider "CONFLUENT" }}
+                    {{- if ((.confluent).basicAuthentication).enabled }}
+                      {{- $confluentSchemaRegistryAuthSecretRefs = append $confluentSchemaRegistryAuthSecretRefs .confluent.basicAuthentication.credentialsSecretRef }}
+                    {{- end }}
+                  {{- else if eq .provider "AZURE" }}
+                    {{- $azureSchemaRegistryAuthSecretRefs = append $azureSchemaRegistryAuthSecretRefs .azure.credentialsSecretRef }}
+                  {{- end }}
+                {{- end }}
               {{- end }}
             {{- end }}
             {{- $authSecretRefs = $authSecretRefs | uniq }}
+            {{- $confluentSchemaRegistryAuthSecretRefs = $confluentSchemaRegistryAuthSecretRefs | uniq }}
+            {{- $azureSchemaRegistryAuthSecretRefs = $azureSchemaRegistryAuthSecretRefs | uniq }}
+            {{- /* AUTHENTICATION */ -}}
             {{- range $authSecretRefs }}
             - name: LS_KAFKA_PLAIN_AUTH_{{ . | upper | replace "-" "_" }}_USER
               valueFrom:
@@ -318,21 +333,6 @@ spec:
             {{- end }} {{- /* end of range $authSecretRefs */ -}}
             {{- /* END AUTHENTICATION */ -}}
             {{- /* SCHEMA REGISTRY */ -}}
-            {{- $confluentSchemaRegistryAuthSecretRefs := list }}
-            {{- $azureSchemaRegistryAuthSecretRefs := list }}
-            {{- range $key, $schemaRegistry := $.Values.connectors.kafkaConnector.schemaRegistries }}
-              {{- $schemaRegistryProvider := $schemaRegistry.provider | default "CONFLUENT" }}
-              {{- if eq $schemaRegistryProvider "CONFLUENT" }}
-                {{- $confluent := $schemaRegistry.confluent | default dict }}
-                {{- if ($confluent.basicAuthentication).enabled }}
-                  {{- $confluentSchemaRegistryAuthSecretRefs = append $confluentSchemaRegistryAuthSecretRefs ($confluent.basicAuthentication.credentialsSecretRef) }}
-                {{- end }}
-              {{- else if eq $schemaRegistry.provider "AZURE" }}
-                {{- $azure := $schemaRegistry.azure | default dict }}
-                {{- $azureSchemaRegistryAuthSecretRefs = append $azureSchemaRegistryAuthSecretRefs $azure.credentialsSecretRef }}
-              {{- end }}
-            {{- end }}
-            {{- $confluentSchemaRegistryAuthSecretRefs = $confluentSchemaRegistryAuthSecretRefs | uniq }}
             {{- range $confluentSchemaRegistryAuthSecretRefs }}
             - name: LS_KAFKA_CONFLUENT_SCHEMA_REGISTRY_{{ . | upper | replace "-" "_" }}_USERNAME
               valueFrom:
@@ -363,6 +363,7 @@ spec:
                   name: {{ . }}
                   key: client_secret
             {{- end }} {{- /* end of range $azureSchemaRegistryAuthSecretRefs */ -}}
+            {{- /* END SCHEMA REGISTRY */ -}}
           {{- end }} {{- /* end of if kafkaConnector.enabled */ -}}
           {{- /* END SCHEMA REGISTRY */ -}}
           {{- /* END ENV VARIABLES FOR THE KAFKA CONNECTOR */ -}}
