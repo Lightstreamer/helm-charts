@@ -40,6 +40,7 @@ This guide provides step-by-step instructions on how to deploy the Lightstreamer
         - [`log-enabled` ClassLoader](#log-enabled-classloader)
         - [Summary of ClassLoader types](#summary-of-classloader-types)
     - [Proxy Adapters](#proxy-adapters)
+    - [Mixed configuration](#mixed-configuration)
   - [Connectors](#connectors)
     - [Kafka Connector](#kafka-connector)
       - [Provisioning](#provisioning-1)
@@ -1124,6 +1125,32 @@ The following settings are available in one or both sections. Where a setting ex
 - `remoteParamsConfig` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4160), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4600)): Custom initialization parameters to forward to the Remote Adapter on connection. Uses a `prefix` to select which parameters to send, plus a `params` map of key/value pairs.
 
 See the linked `values.yaml` entries for the full set of available options.
+
+##### Mixed configuration
+
+Within the same Adapter Set, it is possible to mix in-process and proxy adapters. For example, you can pair an in-process Metadata Adapter with one or more Proxy Data Adapters, or vice versa.
+
+When both `inProcessMetadataAdapter` and `proxyMetadataAdapter` are defined under `metadataProvider`, the in-process adapter takes precedence and the proxy configuration is ignored. The same rule applies per Data Adapter: when both `inProcessDataAdapter` and `proxyDataAdapter` are defined, the in-process adapter takes precedence.
+
+Example — in-process Metadata Adapter with a Proxy Data Adapter:
+
+```yaml
+adapters:
+  myAdapterSet:
+    enabled: true
+    id: MY_MIXED_ADAPTER_SET
+    provisioning:
+      fromPathInImage: /lightstreamer/adapters/myadapter
+
+    metadataProvider:
+      inProcessMetadataAdapter:
+        adapterClass: com.lightstreamer.adapters.metadata.LiteralBasedProvider
+
+    dataProviders:
+      myDataProvider:
+        proxyDataAdapter:
+          requestReplyPort: 7003
+```
 
 
 ### Connectors
