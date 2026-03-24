@@ -167,7 +167,7 @@ Render the Lightstreamer Kafka Connector configuration file.
             {{- if .keystoreRef }}
 
               {{- include "lightstreamer.kafka-connector.configuration.keystore" (list "encryption.keystore" $.Values.keystores .keystoreRef)  | nindent 8 }}
-            {{- end }} {{/* of .enableKeyStore */}}
+            {{- end }} {{/* of .keystoreRef */}}
           {{- end }} {{/* of .sslConfig */}}
         {{- end }} {{/* of .sslConfig.enabled */}}
 
@@ -243,7 +243,7 @@ Render the Lightstreamer Kafka Connector configuration file.
         <!--
         <param name="authentication.gssapi.key.tab.path">gssapi/kafka-connector.keytab</param>
         -->
-                {{- end }} {{/* of .keytabRef */}}
+                {{- end }} {{/* of .keytabFilePathRef */}}
 
         <!--  Optional. Enable storage of the principal key. Can be one of the following:
             - true
@@ -332,7 +332,7 @@ Render the Lightstreamer Kafka Connector configuration file.
           {{- end }} {{/* of .authentication.enable */}}
         {{- end }} {{/* of connection.authentication */}}
 
-        <!-- ##### RECORD EVALUATION SETTINGS ##### -->
+        <!-- ##### RECORD PROCESSING SETTINGS ##### -->
 
         {{- with $connection.record }}
           {{- if .consumeFrom }}
@@ -348,6 +348,40 @@ Render the Lightstreamer Kafka Connector configuration file.
             {{- end }}
         <param name="record.consume.from">{{ .consumeFrom }}</param>
           {{- end }} {{/* of .consumeFrom */}}
+
+          {{- if not (quote .consumeWithMaxPollRecords | empty) }}
+
+        <!-- Optional. The maximum number of records fetched in each polling cycle.
+
+             The parameter sets the value of the "max.poll.records" key to configure the internal Kafka Consumer.
+             See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_max.poll.records for more details.
+
+             Default value: 500. -->
+        <param name="record.consume.with.max.poll.records">{{ .consumeWithMaxPollRecords }}</param>
+          {{- end }} {{/* of .consumeWithMaxPollRecords */}}
+
+          {{- if not (quote .consumeWithMaxSessionTimeoutMillis | empty) }}
+
+        <!-- Optional. The timeout used to detect client failures when using Kafka's group management facility.
+
+             The parameter sets the value of the "session.timeout.ms" key to configure the internal Kafka Consumer.
+             See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_session.timeout.ms for more details.
+
+             Default value: 45000. -->
+        <param name="record.consume.with.session.timeout.ms">{{ .consumeWithMaxSessionTimeoutMillis }}</param>
+        {{- end }} {{/* of .consumeWithMaxSessionTimeoutMillis */}}
+
+        {{- if not (quote .consumeWithMaxPollIntervalMillis | empty) }}
+
+        <!-- Optional. The maximum delay between invocations of poll() when using consumer group management.
+             This places an upper bound on the amount of time that the consumer can be idle before fetching more records.
+
+             The parameter sets the value of the "max.poll.interval.ms" key to configure the internal Kafka Consumer.
+             See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_max.poll.interval.ms for more details.
+
+             Default value: 30000. -->
+        <param name="record.consume.with.max.poll.interval.ms">{{ .consumeWithMaxPollIntervalMillis }}</param>
+          {{- end }} {{/* of .consumeWithMaxPollIntervalMillis */}}
 
           {{- if not (quote .consumeWithThreadNumber | empty) }}
 
@@ -381,17 +415,17 @@ Render the Lightstreamer Kafka Connector configuration file.
             {{- end }}
           {{- end }} {{/* of .consumeWithOrderStrategy */}}
 
-          {{- include "lightstreamer.kafka-connector.configuration.record.evaluator" (list $connection "key" $.Values.connectors.kafkaConnector.localSchemaFiles $key) | nindent 8 }}
-          {{- include "lightstreamer.kafka-connector.configuration.record.evaluator" (list $connection "value" $.Values.connectors.kafkaConnector.localSchemaFiles $key) | nindent 8 }}
+          {{- include "lightstreamer.kafka-connector.configuration.record.evaluator" (list $ $connection "key" $key) | nindent 8 }}
+          {{- include "lightstreamer.kafka-connector.configuration.record.evaluator" (list $ $connection "value" $key) | nindent 8 }}
 
           {{- if .extractionErrorStrategy }}
 
         <!-- Optional. The error handling strategy to be used if an error occurs while extracting data from incoming
              deserialized records.
              Can be one of the following:
-             - IGNORE_AND_CONTINUE: ignore the error and continue to process the next record
-             - FORCE_UNSUBSCRIPTION: stop processing records and force unsubscription of the items
-                                     requested by all the Lightstreamer clients subscribed to this connection
+             - IGNORE_AND_CONTINUE: Ignore the error and continue to process the next record.
+             - FORCE_UNSUBSCRIPTION: Stop processing records and force unsubscription of the items
+                                     requested by all the Lightstreamer clients subscribed to this connection.
 
              Default: "IGNORE_AND_CONTINUE". -->
             {{- if not (mustHas .extractionErrorStrategy (list "IGNORE_AND_CONTINUE" "FORCE_UNSUBSCRIPTION")) }}
@@ -517,7 +551,7 @@ Render the Lightstreamer Kafka Connector configuration file.
           {{- end }} {{/* of .enableNonScalarValuesMapping */}}
 
           {{- if .enableAutoCommandMode }}
-            {{ required (printf "connectors.kafkaConnector.connections.%s.fields.mapping.key must be set" $key) .mappings.key }}          
+            {{ required (printf "connectors.kafkaConnector.connections.%s.fields.mapping.key must be set" $key) .mappings.key }}
 
         <!-- Optional. Enables automatic COMMAND mode support by generating appropriate command operations for Lightstreamer items
              without requiring your Kafka records to contain explicit command fields.
@@ -566,79 +600,115 @@ Render the Lightstreamer Kafka Connector configuration file.
              - false
 
              Default value: false. -->
-        <param name="fields.evaluate.as.command.enable">true</param>          
-          {{- end }} {{/* of .enableAutoCommandMode */}}          
+        <param name="fields.evaluate.as.command.enable">true</param>
+          {{- end }} {{/* of .enableAutoCommandMode */}}
         {{- end }} {{/* of .connection.fields */}}
 
         {{- if ($connection.record).renderSchemaRegistry }} {{/* Flag set by the "lightstreamer.kafka-connector.configuration.record.evaluator" function */}}
 
         <!-- ##### SCHEMA REGISTRY SETTINGS ##### -->
-          {{- $schemaRegistryRef := $connection.record.schemaRegistryRef }}
-          {{- $schemaRegistry := required (printf "connectors.kafkaConnector.schemaRegistries.%s not defined" $schemaRegistryRef) (get ($.Values.connectors.kafkaConnector.schemaRegistries | default dict) $connection.record.schemaRegistryRef) }}
+          {{- $schemaRegistryRef := $connection.record.schemaRegistryRef  }}
+          {{- $schemaRegistry := $connection.record.schemaRegistry }}
+
+        <!-- Optional. Specifies the Schema Registry provider to use. Can be one of the following:
+
+             - CONFLUENT: Use the Confluent Schema Registry.
+             - AZURE: Use the Azure Schema Registry.
+
+             Default value: CONFLUENT. -->
+        <param name="schema.registry.provider">{{ $schemaRegistry.provider }}</param>
 
         <!-- Mandatory if the Confluent Schema Registry is enabled. The URL of the Confluent Schema Registry.
              An encrypted connection is enabled by specifying the "https" protocol. -->
-        <param name="schema.registry.url">{{ required (printf "connectors.kafkaConnector.schemaRegistries.%s.url must be set" $schemaRegistryRef) $schemaRegistry.url }}</param>
+        <param name="schema.registry.url">{{ $schemaRegistry.url }}</param>
 
-          {{- if ($schemaRegistry.basicAuthentication).enabled }}
+          {{- if eq $schemaRegistry.provider "CONFLUENT" -}}
+            {{- $confluent := $schemaRegistry.confluent | default dict }}
+            {{- with $confluent }}
+              {{- if (.basicAuthentication).enabled }}
 
         <!-- Optional. Enable Basic HTTP authentication of this connection against the Schema Registry. Can be one of the following:
              - true
              - false
 
              Default value: false. -->
-            {{- with $schemaRegistry.basicAuthentication }}
-        <param name="schema.registry.basic.authentication.enable">true</param>
-              {{- with required (printf "connectors.kafkaConnector.schemaRegistries.%s.basicAuthentication.credentialsSecretRef must be set" $schemaRegistryRef) .credentialsSecretRef }}
+                {{- with .basicAuthentication }}
+        <param name="schema.registry.confluent.basic.authentication.enable">true</param>
+                  {{- with required (printf "connectors.kafkaConnector.schemaRegistries.%s.basicAuthentication.credentialsSecretRef must be set" $schemaRegistryRef) .credentialsSecretRef }}
 
         <!-- Mandatory if Basic HTTP authentication is enabled. The credentials. -->
-        <param name="schema.registry.basic.authentication.username">$env.LS_KAFKA_SCHEMA_REGISTRY_{{ . | upper | replace "-" "_" }}_USERNAME</param>
-        <param name="schema.registry.basic.authentication.password">$env.LS_KAFKA_SCHEMA_REGISTRY_{{ . | upper | replace "-" "_" }}_PASSWORD</param>
-              {{- end }} {{/* of .basicAuthentication */}}
-            {{- end }} {{/* of .basicAuthentication.enabled */}}
-          {{- end }} {{/* of .basicAuthentication.enabled */}}
+        <param name="schema.registry.confluent.basic.authentication.username">$env.LS_KAFKA_CONFLUENT_SCHEMA_REGISTRY_{{ . | upper | replace "-" "_" }}_USERNAME</param>
+        <param name="schema.registry.confluent.basic.authentication.password">$env.LS_KAFKA_CONFLUENT_SCHEMA_REGISTRY_{{ . | upper | replace "-" "_" }}_PASSWORD</param>
+                  {{- end }} {{/* of .credentialsSecretRef */}}
+                {{- end }} {{/* of .basicAuthentication */}}
+              {{- end }} {{/* of .basicAuthentication.enabled */}}
 
-          {{- with $schemaRegistry.sslConfig }}
+              {{- with .sslConfig }}
 
         <!-- The following parameters have the same meaning as the homologous ones defined in
              the ENCRYPTION SETTINGS section. -->
 
         <!-- Set general encryption settings -->
-            {{- if .allowProtocols }}
-              {{- range $protocol := .allowProtocols}}
-                {{- if not (mustHas $protocol (list "TLSv1.2" "TLSv1.3")) }}
-                  {{- fail (printf "connectors.kafkaConnector.schemaRegistries.%s.sslConfig.allowProtocols must be a list of \"TLSv1.2\", \"TLSv1.3\"" $schemaRegistryRef) }}
-                {{- end }}
-              {{- end }}
-        <param name="schema.registry.encryption.enabled.protocols">{{ join "," .allowProtocols }}</param>
-            {{- end }} {{/* of .allowProtocols */}}
+                {{- if .protocol }}
+                  {{- if not (mustHas .protocol (list "TLSv1.2" "TLSv1.3")) }}
+                    {{- fail (printf "connectors.kafkaConnector.schemaRegistries.%s.sslConfig.protocol must be one of: \"TLSv1.2\", \"TLSv1.3\"" $schemaRegistryRef) }}
+                  {{- end }}
+        <param name="schema.registry.confluent.encryption.protocol">{{ .protocol }}</param>
+                {{- end }} {{/* of .protocol */}}
+                {{- if .allowProtocols }}
+                  {{- range $protocol := .allowProtocols}}
+                    {{- if not (mustHas $protocol (list "TLSv1.2" "TLSv1.3")) }}
+                      {{- fail (printf "connectors.kafkaConnector.schemaRegistries.%s.sslConfig.allowProtocols must be a list of \"TLSv1.2\", \"TLSv1.3\"" $schemaRegistryRef) }}
+                    {{- end }}
+                  {{- end }}
+        <param name="schema.registry.confluent.encryption.enabled.protocols">{{ join "," .allowProtocols }}</param>
+                {{- end }} {{/* of .allowProtocols */}}
 
-            {{- if .allowCipherSuites }}
-              {{- range $cipherSuite := .allowCipherSuites}}
-                {{- if $cipherSuite | empty }}
-                  {{- fail (printf "connectors.kafkaConnector.schemaRegistries.%s.sslConfig.allowCipherSuites must be a list of valid values" $schemaRegistryRef) }}
-                {{- end }}
-              {{- end }}
-        <param name="schema.registry.encryption.cipher.suites">{{ join "," .allowCipherSuites }}</param>
-            {{- end }} {{/* of .allowCipherSuites */}}
+                {{- if .allowCipherSuites }}
+                  {{- range $cipherSuite := .allowCipherSuites}}
+                    {{- if $cipherSuite | empty }}
+                      {{- fail (printf "connectors.kafkaConnector.schemaRegistries.%s.sslConfig.allowCipherSuites must be a list of valid values" $schemaRegistryRef) }}
+                    {{- end }}
+                  {{- end }}
+        <param name="schema.registry.confluent.encryption.cipher.suites">{{ join "," .allowCipherSuites }}</param>
+                {{- end }} {{/* of .allowCipherSuites */}}
 
-            {{- if .enableHostnameVerification }}
-        <param name="schema.registry.encryption.hostname.verification.enable">true</param>
-            {{- end }} {{/* of .enableHostnameVerification */}}
+                {{- if .enableHostnameVerification }}
+        <param name="schema.registry.confluent.encryption.hostname.verification.enable">true</param>
+                {{- end }} {{/* of .enableHostnameVerification */}}
 
-            {{- if .truststoreRef}}
+                {{- if .truststoreRef }}
         <!-- If required, configure the trust store to trust the Confluent Schema Registry certificates -->
 
-              {{- include "lightstreamer.kafka-connector.configuration.truststore" (list "schema.registry.encryption.truststore" $.Values.keystores .truststoreRef)  | nindent 8 }}
-            {{- end }} {{/* of .truststoreRef */}}
+                  {{- include "lightstreamer.kafka-connector.configuration.truststore" (list "schema.registry.encryption.truststore" $.Values.keystores .truststoreRef)  | nindent 8 }}
+                {{- end }} {{/* of .truststoreRef */}}
 
-            {{- if .keystoreRef }}
+                {{- if .keystoreRef }}
 
         <!-- If mutual TLS is enabled on the Confluent Schema Registry, enable and configure the key store -->
-              {{- include "lightstreamer.kafka-connector.configuration.keystore" (list "schema.registry.encryption.keystore" $.Values.keystores .keystoreRef)  | nindent 8 }}
-            {{- end }} {{/* of .keystoreRef */}}
-          {{- end }} {{/* of .sslConfig */}}
-        {{- end }} {{/* of .schemaRegistryRef */}}
+                  {{- include "lightstreamer.kafka-connector.configuration.keystore" (list "schema.registry.encryption.keystore" $.Values.keystores .keystoreRef)  | nindent 8 }}
+                {{- end }} {{/* of .keystoreRef */}}
+              {{- end }} {{/* of .sslConfig */}}
+            {{- end }} {{/* of with $confluent */}}
+          {{- else if eq $schemaRegistry.provider "AZURE" -}}
+              {{- $azure := $schemaRegistry.azure | default dict }}
+              {{- with required (printf "connectors.kafkaConnector.schemaRegistries.%s.azure.credentialsSecretRef must be set " $schemaRegistryRef) $azure.credentialsSecretRef }}
+        <!-- ##### Azure Schema Registry settings ##### -->
+
+        <!-- Mandatory if the Azure Schema Registry is enabled. The Application (client) ID assigned to the application
+             registered in Microsoft Entra ID with appropriate permissions to access the Schema Registry. -->
+        <param name="schema.registry.azure.client.id">$env.LS_KAFKA_AZURE_SCHEMA_REGISTRY_{{ . | upper | replace "-" "_" }}_CLIENT_ID </param>
+
+        <!-- Mandatory if the Azure Schema Registry is enabled. The Directory (tenant) ID of the Microsoft Entra ID tenant
+             where the application is registered. -->
+        <param name="schema.registry.azure.tenant.id">$env.LS_KAFKA_AZURE_SCHEMA_REGISTRY_{{ . | upper | replace "-" "_" }}_TENANT_ID </param>
+
+        <!-- Mandatory if the Azure Schema Registry is enabled. The client secret value of the application registered
+             in Microsoft Entra ID. -->
+        <param name="schema.registry.azure.client.secret">$env.LS_KAFKA_AZURE_SCHEMA_REGISTRY_{{ . | upper | replace "-" "_" }}_CLIENT_SECRET </param>
+              {{- end }} {{/* of .credentialsSecretRef */}}
+            {{- end }} {{/* of $schemaRegistry.provider */}}
+          {{- end }} {{/* of .record.renderSchemaRegistry */}}
 
     </data_provider>
       {{- end }} {{/* of .enabled */}}
