@@ -2,46 +2,50 @@
 
 This guide provides step-by-step instructions on how to deploy the Lightstreamer Broker to a Kubernetes cluster using the Lightstreamer Helm Chart.
 
-## Table of Contents
+## Table of contents
 - [Prerequisites](#prerequisites)
-- [Deployment Steps](#deployment-steps)
+- [Deployment steps](#deployment-steps)
 - [Customize Lightstreamer Broker](#customize-lightstreamer-broker)
   - [License](#license)
-    - [Community Edition](#community-edition)
-    - [Enterprise Edition](#enterprise-edition)
-  - [Server Socket](#server-socket)
-    - [Multiple Servers](#multiple-servers)
+    - [Community edition](#community-edition)
+    - [Enterprise edition](#enterprise-edition)
+  - [Server socket](#server-socket)
+    - [Multiple servers](#multiple-servers)
     - [TLS/SSL](#tlsssl)
   - [Logging](#logging)
-    - [Primary Loggers](#primary-loggers)
+    - [Primary loggers](#primary-loggers)
     - [Subloggers](#subloggers)
-    - [Other Loggers](#other-loggers)
-    - [Extra Loggers](#extra-loggers)
+    - [Other loggers](#other-loggers)
+    - [Extra loggers](#extra-loggers)
     - [Appenders](#appenders)
-      - [Log to Persistent Storage](#log-to-persistent-storage)
+      - [Log to persistent storage](#log-to-persistent-storage)
   - [JMX](#jmx)
-    - [RMI Connector](#rmi-connector)
+    - [RMI connector](#rmi-connector)
       - [TLS/SSL](#tlsssl-1)
       - [Authentication](#authentication)
   - [Monitoring Dashboard](#monitoring-dashboard)
     - [Authentication](#authentication-1)
     - [Availability on specific server](#availability-on-specific-server)
-    - [Custom Dashboard URL path](#custom-dashboard-url-path)
+    - [Custom dashboard URL path](#custom-dashboard-url-path)
     - [Hands-on example](#hands-on-example)
   - [Adapters](#adapters)
-    - [In-process Adapters](#in-process-adapters)
+    - [Defining an Adapter Set](#defining-an-adapter-set)
+    - [Other adapter set options](#other-adapter-set-options)
+    - [In-process adapters](#in-process-adapters)
       - [Provisioning](#provisioning)
       - [Configure Metadata Adapters and Data Adapters](#configure-metadata-adapters-and-data-adapters)
+      - [ClassLoader types](#classloader-types)
         - [`common` ClassLoader](#common-classloader)
         - [`dedicated` ClassLoader](#dedicated-classloader)
         - [`log-enabled` ClassLoader](#log-enabled-classloader)
         - [Summary of ClassLoader types](#summary-of-classloader-types)
+    - [Proxy Adapters](#proxy-adapters)
   - [Connectors](#connectors)
     - [Kafka Connector](#kafka-connector)
       - [Provisioning](#provisioning-1)
       - [Connections](#connections)
       - [Routing](#routing)
-      - [Field Mapping](#field-mapping)
+      - [Field mapping](#field-mapping)
       - [Logging](#logging-1)
 
 ## Prerequisites
@@ -158,8 +162,8 @@ See the [Software License Agreement](https://lightstreamer.com/distros/ls-server
 
 To configure the Community edition:
 
-1. Set `license.edition` to `COMMUNITY`
-2. Set `license.enabledCommunityEditionClientApi` with the Client API to use with the free license
+1. Set [`license.edition`](charts/lightstreamer/values.yaml#L388) to `COMMUNITY`
+2. Set [`license.enabledCommunityEditionClientApi`](charts/lightstreamer/values.yaml#L403) with the Client API to use with the free license
 
 Example:
 
@@ -473,7 +477,7 @@ logging:
 
 #### Extra loggers
 
-To define additional loggers, add entries to the `extraLoggers` section. This is useful for custom logging requirements.
+To define additional loggers, add entries to the [`extraLoggers`](charts/lightstreamer/values.yaml#L1578) section. This is useful for custom logging requirements.
 
 Example configuration:
 ```yaml
@@ -522,7 +526,7 @@ To persist log files, you can configure the `DailyRollingFile` appender to write
 
 1. **Define a volume**
 
-   Configure a volume in the `deployment.extraVolumes` section. You can use various volume types:
+   Configure a volume in the [`deployment.extraVolumes`](charts/lightstreamer/values.yaml#L240) section. You can use various volume types:
 
    ```yaml
    deployment:
@@ -567,7 +571,7 @@ JMX support is designed to integrate with monitoring and management tools via tw
 
 See the [JMX API documentation](https://lightstreamer.com/ls-jmx-sdk/latest/api/index.html) for details on available metrics and operations.
 
-#### RMI Connector
+#### RMI connector
 
 The default configuration enables an RMI Connector listening on TCP port `8888`. You can verify this by checking the pod's exposed ports:
 
@@ -712,7 +716,7 @@ management:
         enableJmxTreeVisibility: true  # Allow JMX Tree access
 ```
 
-#### Custom Dashboard URL path
+#### Custom dashboard URL path
 
 To change the default Dashboard url:
 
@@ -740,7 +744,7 @@ Lightstreamer Adapters are custom server-side components attached to the Lightst
 Each Adapter Set consists of:
 
 - A **Metadata Adapter**: Handles client authentication, authorization, and item validation
-- One or more **Data Adapters**: Receive data from back-end systems and forward it to the Kernel for delivery to users
+- One or more **Data Adapters**: Receives data from back-end systems and forward it to the Kernel for delivery to users
 
 Lightstreamer Adapters can be implemented in two ways:
 - **In-Process Adapters**: Java classes running within the Lightstreamer Broker's JVM
@@ -748,21 +752,24 @@ Lightstreamer Adapters can be implemented in two ways:
 
 See the _The Adapters_ chapter of the [_General Concepts_](https://lightstreamer.com/ls-server/latest/docs/General%20Concepts.pdf) document to learn more about Lightstreamer Adapters.
 
-To define an Adapter Set, add a new configuration to [`adapters`](charts/lightstreamer/README.md#adapters) section with the following mandatory settings:
+#### Defining an Adapter Set
+
+To define an Adapter Set, add a new configuration to the [`adapters`](charts/lightstreamer/README.md#adapters) section with the following mandatory settings:
 
 - [`id`](charts/lightstreamer/README.md#adaptersmyadaptersetid): A unique id for the adapter set
 - [`metadataProvider`](charts/lightstreamer/README.md#adaptersmyadaptersetmetadataprovider): A Metadata Adapter configuration
-- [`dataProviders`](charts/lightstreamer/README.md#adaptersmyadaptersetmetadataprovider): One or more Data Adapter configurationA Metadata Adapter configuration
+- [`dataProviders`](charts/lightstreamer/README.md#adaptersmyadaptersetmetadataprovider): One or more Data Adapter configurations
 
-Moreover, set the [`enabled`](charts/lightstreamer/README.md#adaptersmyadaptersetenabled) flag to `true` to include the adapter set in in the deployment.
+Moreover, set the [`enabled`](charts/lightstreamer/README.md#adaptersmyadaptersetenabled) flag to `true` to include the adapter set in the deployment.
 
 Example configuration:
 
 ```yaml
 adapters:
+
   # Define an Adapter Set configuration
   myAdapterSet:
-    
+
     enabled: true
 
     id: "MY_ADAPTER_SET"
@@ -772,15 +779,15 @@ adapters:
 
     dataProviders:
     ...
-    
 ```
 
-#### In-process Adapters
+#### Other adapter set options
 
-To configure in-process Metadata Adapter, you have to accomplish the following steps:
+Additional optional settings are available for each Adapter Set — see [`adapterSetPool`](charts/lightstreamer/values.yaml#L3584) to configure a dedicated thread pool, and [`enableMetadataInitializedFirst`](charts/lightstreamer/values.yaml#L3605) to control the initialization order of Metadata and Data Adapters.
 
-1. Provision the Adapter Set's resources.
-3. Configure Metadata Adapter and Data Adapter(s).
+#### In-process adapters
+
+In-process adapters are Java classes that run directly within the Lightstreamer Broker's JVM. To deploy them, you need to first provision the Adapter Set's resources and then configure the Metadata Adapter and Data Adapter(s).
 
 ##### Provisioning
 
@@ -821,7 +828,7 @@ Adapter Sets can be provisioned using different methods, configured through the 
 
 2. Deploy the Adapter Set's resource to a persistent storage
 
-   - Configure a volume in the `deployment.extraVolumes` section:
+   - Configure a volume in the [`deployment.extraVolumes`](charts/lightstreamer/values.yaml#L240) section:
 
      ```yaml
      deployment:
@@ -852,16 +859,53 @@ Adapter Sets can be provisioned using different methods, configured through the 
 
 You can configure in-process Metadata Adapters and Data Adapters by populating the following sections in your Helm chart values:
 
-- [`metadataProvider.inProcessMetadataAdapter`](charts/lightstreamer/README.md#adaptersmyadaptersetmetadataproviderinprocessmetadataadapter)
-- [`dataProviders.<dataProviderName>.inProcessDataAdapter`](charts/lightstreamer/README.md#adaptersmyadaptersetdataprovidersmydataproviderinprocessdataadapter)
+- [`metadataProvider.inProcessMetadataAdapter`](charts/lightstreamer/values.yaml#L3614)
+- [`dataProviders.<dataProviderName>.inProcessDataAdapter`](charts/lightstreamer/values.yaml#L4287)
 
 These sections share the following key settings:
 
-- `adapterClass`: The fully qualified name of the Java class implementing the Adapter.
+- `adapterClass` ([Metadata Adapter](charts/lightstreamer/values.yaml#L3617), [Data Adapter](charts/lightstreamer/values.yaml#L4290)): The fully qualified name of the Java class implementing the Adapter.
 
-- `installDir`:  The optional location in the provisioning source of top-level directory containing the `lib` and/or `classes` folders.
+- `installDir` ([Metadata Adapter](charts/lightstreamer/values.yaml#L3626), [Data Adapter](charts/lightstreamer/values.yaml#L4299)): The optional location in the provisioning source of the top-level directory containing the `lib` and/or `classes` folders.
 
-- `classLoader`: The type of ClassLoader to use for loading the Adapter's classes, how explained in the subsequent sections.
+- `classLoader` ([Metadata Adapter](charts/lightstreamer/values.yaml#L3663), [Data Adapter](charts/lightstreamer/values.yaml#L4310)): The ClassLoader strategy for loading the Adapter's classes. See [ClassLoader types](#classloader-types) for details.
+
+- `configMapRef` ([Metadata Adapter](charts/lightstreamer/values.yaml#L3633), [Data Adapter](charts/lightstreamer/values.yaml#L4306)): An optional reference to a Kubernetes ConfigMap whose files are copied into the adapter's deployment directory at startup. This is useful for injecting adapter-specific configuration files without rebuilding the container image.
+
+  Example:
+  ```yaml
+  adapters:
+    myAdapterSet:
+      metadataProvider:
+        inProcessMetadataAdapter:
+          adapterClass: com.mycompany.adapters.metadata.MyMetadataAdapter
+          configMapRef: my-adapter-config   # Name of the ConfigMap
+  ```
+
+- `initParams` ([Metadata Adapter](charts/lightstreamer/values.yaml#L3799), [Data Adapter](charts/lightstreamer/values.yaml#L4349)): An optional map of key/value pairs forwarded as-is to the adapter's `init()` method. Use this to pass adapter-specific configuration without hardcoding it into the adapter's code.
+
+  Example:
+  ```yaml
+  adapters:
+    myAdapterSet:
+      metadataProvider:
+        inProcessMetadataAdapter:
+          adapterClass: com.mycompany.adapters.metadata.MyMetadataAdapter
+          initParams:
+            dbHost: "my-db-host"
+            dbPort: "5432"
+  ```
+
+**Advanced: thread pool tuning**
+
+For production environments, dedicated thread pools can be configured to isolate and tune the performance of specific adapter operations:
+
+- **Metadata Adapter**: [`authenticationPool`](charts/lightstreamer/values.yaml#L3692) (for `notifyUser` calls), [`messagesPool`](charts/lightstreamer/values.yaml#L3738) (for `notifyUserMessage` calls), [`mpnPool`](charts/lightstreamer/values.yaml#L3784) (for mobile push notification requests), and [`enableTableNotificationsSequentialization`](charts/lightstreamer/values.yaml#L3787) to enforce sequential table notifications per session.
+- **Data Adapter**: [`dataAdapterPool`](charts/lightstreamer/values.yaml#L4328) for subscription/unsubscription management.
+
+See the linked values.yaml entries for the full set of sub-settings (`maxSize`, `maxFree`, `maxPendingRequests`, `maxQueue`).
+
+##### ClassLoader types
 
 ###### `common` ClassLoader
 
@@ -1018,11 +1062,17 @@ adapters:
 |------------------|-------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------|
 | `common`         | Uses the Adapter Set ClassLoader, which includes all classes in the `lib` and `classes` folders | Suitable for simple setups where all adapters share the same resources   |
 | `dedicated`      | Assigns a dedicated ClassLoader to the Adapter, inheriting from the Adapter Set ClassLoader     | Useful when adapters require isolated resources or specific dependencies |
-| `log-enabled`    | Includes the `slf4j` library and shares the Broker's logging configuration                     | Suitable for adapters that need to integrate with the Broker's logging   |
+| `log-enabled`    | Includes the `slf4j` library and shares the Broker's logging configuration                      | Suitable for adapters that need to integrate with the Broker's logging   |
 
 By carefully organizing your Adapter Set's directory structure and selecting the appropriate `classLoader` type, you can optimize resource sharing and ensure proper isolation between adapters.
 
 ##### Proxy Adapters
+
+You can configure Proxy Metadata Adapters and Proxy Data Adapters by populating the following sections in your Helm chart values:
+
+- [`metadataProvider.proxyMetadataAdapter`](charts/lightstreamer/values.yaml#3810)
+- [`dataProviders.<dataProviderName>.proxyDataAdapter`](charts/lightstreamer/values.yaml#4360)
+
 
 ### Connectors
 
@@ -1235,7 +1285,7 @@ connections:
 
 **Topic Mappings** associate Kafka topics with item templates. When a message arrives from a topic, the connector applies the specified templates to generate Lightstreamer item names.
 
-##### Field Mapping
+##### Field mapping
 
 Field mapping defines how Kafka message content is transformed into Lightstreamer fields. Configure mappings in the [`fields`](charts/lightstreamer/README.md#connectorskafkaconnectorconnectionsaconnectionconfigurationfields) section:
 
