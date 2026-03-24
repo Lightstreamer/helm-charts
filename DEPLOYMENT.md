@@ -900,10 +900,16 @@ These sections share the following key settings:
 
 For production environments, dedicated thread pools can be configured to isolate and tune the performance of specific adapter operations:
 
-- **Metadata Adapter**: [`authenticationPool`](charts/lightstreamer/values.yaml#L3692) (for `notifyUser` calls), [`messagesPool`](charts/lightstreamer/values.yaml#L3738) (for `notifyUserMessage` calls), [`mpnPool`](charts/lightstreamer/values.yaml#L3784) (for mobile push notification requests), and [`enableTableNotificationsSequentialization`](charts/lightstreamer/values.yaml#L3787) to enforce sequential table notifications per session.
-- **Data Adapter**: [`dataAdapterPool`](charts/lightstreamer/values.yaml#L4328) for subscription/unsubscription management.
+- **Metadata Adapter**:
+  - [`authenticationPool`](charts/lightstreamer/values.yaml#L3692): Thread pool for `notifyUser` calls.
+  - [`messagesPool`](charts/lightstreamer/values.yaml#L3738): Thread pool for `notifyUserMessage` calls.
+  - [`mpnPool`](charts/lightstreamer/values.yaml#L3784): Thread pool for mobile push notification requests.
+- **Data Adapter**:
+  - [`dataAdapterPool`](charts/lightstreamer/values.yaml#L4328): Thread pool for subscription/unsubscription management.
 
 See the linked values.yaml entries for the full set of sub-settings (`maxSize`, `maxFree`, `maxPendingRequests`, `maxQueue`).
+
+[`enableTableNotificationsSequentialization`](charts/lightstreamer/values.yaml#L3787) (**Metadata Adapter** only): When set to `true`, all subscription notifications (`notifyNewTables`, `notifyTablesClose`) for the same session are serialized — no two will run concurrently.
 
 ##### ClassLoader types
 
@@ -1108,13 +1114,15 @@ These sections share the following key settings:
 
 **Advanced: thread pool tuning and connection settings**
 
-- **Proxy Metadata Adapter**: [`authenticationPool`](charts/lightstreamer/values.yaml#L3856), [`messagesPool`](charts/lightstreamer/values.yaml#L3901), [`mpnPool`](charts/lightstreamer/values.yaml#L3933), [`enableTableNotificationsSequentialization`](charts/lightstreamer/values.yaml#L3950) — same tuning options as for in-process Metadata Adapters.
+- **Proxy Metadata Adapter**: [`authenticationPool`](charts/lightstreamer/values.yaml#L3856), [`messagesPool`](charts/lightstreamer/values.yaml#L3901), [`mpnPool`](charts/lightstreamer/values.yaml#L3933) — same tuning options as for in-process Metadata Adapters.
 - **Proxy Data Adapter**: [`dataAdapterPool`](charts/lightstreamer/values.yaml#L4394) — dedicated thread pool for subscription/unsubscription management (`maxSize`, `maxFree`).
 - `connectionRetryMillis` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4048), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4491)), `keepaliveTimeoutMillis` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4251), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4664)), `keepaliveHintMillis` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4266), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4679)), `timeoutMillis` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4199), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4638)): Connection reliability settings.
 
 - `remoteAddressWhitelist` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4238), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4650)): Comma-separated list of hosts allowed to connect as Remote Adapters. When not set, any host is accepted.
 
 - `remoteParamsConfig` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4160), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4600)): Custom initialization parameters to forward to the Remote Adapter on connection. Uses a `prefix` to select which parameters to send, plus a `params` map of key/value pairs.
+
+[`enableTableNotificationsSequentialization`](charts/lightstreamer/values.yaml#L3950) (**Proxy Metadata Adapter** only): When set to `true`, all subscription notifications for the same session are serialized — no two will run concurrently.
 
 See the linked `values.yaml` entries for the full set of available options.
 
