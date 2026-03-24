@@ -862,7 +862,7 @@ You can configure in-process Metadata Adapters and Data Adapters by populating t
 - [`metadataProvider.inProcessMetadataAdapter`](charts/lightstreamer/values.yaml#L3614)
 - [`dataProviders.<dataProviderName>.inProcessDataAdapter`](charts/lightstreamer/values.yaml#L4287)
 
-These sections share the following key settings:
+Both sections support the following settings. Each link points to the Metadata Adapter entry first, followed by the Data Adapter equivalent:
 
 - `adapterClass` ([Metadata Adapter](charts/lightstreamer/values.yaml#L3617), [Data Adapter](charts/lightstreamer/values.yaml#L4290)): The fully qualified name of the Java class implementing the Adapter.
 
@@ -896,6 +896,8 @@ These sections share the following key settings:
             dbPort: "5432"
   ```
 
+- [`enableTableNotificationsSequentialization`](charts/lightstreamer/values.yaml#L3787) (Metadata Adapter only): When `true`, all subscription lifecycle notifications (`notifyNewTables`, `notifyTablesClose`) for the same session are delivered sequentially with no overlap. Useful when the Metadata Adapter implementation is not designed for concurrent table notifications.
+
 **Advanced: thread pool tuning**
 
 For production environments, dedicated thread pools can be configured to isolate and tune the performance of specific adapter operations:
@@ -908,8 +910,6 @@ For production environments, dedicated thread pools can be configured to isolate
   - [`dataAdapterPool`](charts/lightstreamer/values.yaml#L4328): Thread pool for subscription/unsubscription management.
 
 See the linked values.yaml entries for the full set of sub-settings (`maxSize`, `maxFree`, `maxPendingRequests`, `maxQueue`).
-
-[`enableTableNotificationsSequentialization`](charts/lightstreamer/values.yaml#L3787) (**Metadata Adapter** only): When set to `true`, all subscription notifications (`notifyNewTables`, `notifyTablesClose`) for the same session are serialized — no two will run concurrently.
 
 ##### ClassLoader types
 
@@ -1081,7 +1081,7 @@ You can configure a Proxy Metadata Adapter and Proxy Data Adapters by populating
 - [`metadataProvider.proxyMetadataAdapter`](charts/lightstreamer/values.yaml#L3810)
 - [`dataProviders.<dataProviderName>.proxyDataAdapter`](charts/lightstreamer/values.yaml#L4360)
 
-These sections share the following key settings:
+Both sections support the following settings. Where a setting exists in both, links point to the Proxy Metadata Adapter entry first, followed by the Proxy Data Adapter equivalent:
 
 - `requestReplyPort` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L3954), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4406)): The mandatory TCP port the Proxy Adapter listens on for the Remote Server to connect.
 
@@ -1108,6 +1108,8 @@ These sections share the following key settings:
 
 - `enableRobustAdapter` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L3828), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4374)): Enables the _Robust_ variant of the Proxy Adapter, which handles the temporary absence of the Remote Server gracefully — accepting subscriptions and waiting for reconnection rather than failing immediately.
 
+- [`enableTableNotificationsSequentialization`](charts/lightstreamer/values.yaml#L3950) (Proxy Metadata Adapter only): When `true`, all subscription lifecycle notifications for the same session are delivered sequentially with no overlap. Useful when the Metadata Adapter implementation is not designed for concurrent table notifications.
+
 - `connectionRecoveryTimeoutMillis` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4059), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4502)): Only effective when `enableRobustAdapter` is set. After a failed connection attempt, the Proxy Adapter waits at least this long before retrying. A negative value prevents further attempts.
 
 - `firstConnectionTimeoutMillis` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4070), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4516)): Only effective when `enableRobustAdapter` is set. How long the Broker startup may be delayed waiting for the first Remote Server connection. A negative value means unlimited.
@@ -1121,8 +1123,6 @@ These sections share the following key settings:
 - `remoteAddressWhitelist` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4238), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4650)): Comma-separated list of hosts allowed to connect as Remote Adapters. When not set, any host is accepted.
 
 - `remoteParamsConfig` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4160), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4600)): Custom initialization parameters to forward to the Remote Adapter on connection. Uses a `prefix` to select which parameters to send, plus a `params` map of key/value pairs.
-
-[`enableTableNotificationsSequentialization`](charts/lightstreamer/values.yaml#L3950) (**Proxy Metadata Adapter** only): When set to `true`, all subscription notifications for the same session are serialized — no two will run concurrently.
 
 See the linked `values.yaml` entries for the full set of available options.
 
