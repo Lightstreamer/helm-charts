@@ -805,8 +805,8 @@ Adapter Sets can be provisioned using different methods, configured through the 
      
      ```
 
-     > [!IMPORTANT]
-     > Do not include the usual `adapters.xml` file, which is normally required to deploy an Adapter Set in a non-Kubernetes environment, as the file will be dynamically rendered according to the provided configuration in the Helm chart values.
+   > [!IMPORTANT]
+   > Do not include the usual `adapters.xml` file, which is normally required to deploy an Adapter Set in a non-Kubernetes environment, as the file will be dynamically rendered according to the provided configuration in the Helm chart values.
    
    - Update [`image.repository`](charts/lightstreamer/README.md#imagerepository) with the reference to the new image:
 
