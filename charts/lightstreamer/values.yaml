@@ -5281,7 +5281,7 @@ connectors:
         url:
 
         # -- Optional but only effective if `provider` is set to `CONFLUENT`.
-        # The
+        # Confluent Schema Registry settings.
         confluent:
 
           # -- Optional. Basic HTTP authentication of a connection against the
@@ -5332,7 +5332,8 @@ connectors:
             # details on keystore configuration for the Kafka Connector.
             keystoreRef:
 
-        # -- Optional but only effective if `provider` is set to `AZURE`. The Azure
+        # -- Optional but only effective if `provider` is set to `AZURE`. Azure
+        # Schema Registry settings.
         azure:
 
           # -- (string) Mandatory. The name of the secret containing the
