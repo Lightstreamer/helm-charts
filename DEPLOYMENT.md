@@ -1070,20 +1070,20 @@ By carefully organizing your Adapter Set's directory structure and selecting the
 
 Proxy Adapters are built-in adapter implementations that act as bridges between the Lightstreamer Broker and external Remote Adapter processes. Instead of running Java code in-process, the adapter logic runs in a separate process (the _Remote Server_), which communicates with the Broker over a standard TCP socket connection.
 
-You can configure Proxy Metadata Adapters and Proxy Data Adapters by populating the following sections in your Helm chart values:
+You can configure a Proxy Metadata Adapter and Proxy Data Adapters by populating the following sections in your Helm chart values:
 
 - [`metadataProvider.proxyMetadataAdapter`](charts/lightstreamer/values.yaml#L3810)
 - [`dataProviders.<dataProviderName>.proxyDataAdapter`](charts/lightstreamer/values.yaml#L4360)
 
 These sections share the following key settings:
 
-- [`requestReplyPort`](charts/lightstreamer/values.yaml#L3954) ([Data Adapter](charts/lightstreamer/values.yaml#L4406)): The mandatory TCP port the Proxy Adapter listens on for the Remote Server to connect.
+- `requestReplyPort` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L3954), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4406)): The mandatory TCP port the Proxy Adapter listens on for the Remote Server to connect.
 
-- [`remoteHost`](charts/lightstreamer/values.yaml#L3976) ([Data Adapter](charts/lightstreamer/values.yaml#L4428)): Optional. When set, inverts the connection direction — the Proxy Adapter connects out to the Remote Server instead of waiting for an inbound connection. Useful when the Broker cannot accept incoming connections from outside.
+- `remoteHost` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L3976), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4428)): Optional. When set, inverts the connection direction — the Proxy Adapter connects out to the Remote Server instead of waiting for an inbound connection. Useful when the Broker cannot accept incoming connections from outside.
 
-- [`sslConfig`](charts/lightstreamer/values.yaml#L3985) ([Data Adapter](charts/lightstreamer/values.yaml#L4436)): Optional TLS/SSL settings for the connection to the Remote Server. Supports the same keystore/truststore configuration as server sockets. See [`sslConfig`](charts/lightstreamer/README.md#serversdefaultserversslconfig) for details.
+- `sslConfig` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L3985), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4436)): Optional TLS/SSL settings for the connection to the Remote Server. Supports the same keystore/truststore configuration as server sockets. See [`sslConfig`](charts/lightstreamer/README.md#serversdefaultserversslconfig) for details.
 
-- [`authentication`](charts/lightstreamer/values.yaml#L4029) ([Data Adapter](charts/lightstreamer/values.yaml#L4472)): Optional. When enabled, enforces credential-based authentication of Remote Server connections. Credentials are referenced from Kubernetes secrets (each containing `user` and `password` keys).
+- `authentication` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4029), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4472)): Optional. When enabled, enforces credential-based authentication of Remote Server connections. Credentials are referenced from Kubernetes secrets (each containing `user` and `password` keys).
 
   Example:
   ```yaml
@@ -1098,12 +1098,12 @@ These sections share the following key settings:
               - remote-adapter-secret
   ```
 
-- [`enableRobustAdapter`](charts/lightstreamer/values.yaml#L3828) ([Data Adapter](charts/lightstreamer/values.yaml#L4374)): Optional. Enables the _Robust_ variant of the Proxy Adapter, which handles the temporary absence of the Remote Server gracefully — accepting subscriptions and waiting for reconnection rather than failing immediately.
+- `enableRobustAdapter` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L3828), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4374)): Optional. Enables the _Robust_ variant of the Proxy Adapter, which handles the temporary absence of the Remote Server gracefully — accepting subscriptions and waiting for reconnection rather than failing immediately.
 
 **Advanced: thread pool tuning and connection settings**
 
-- **Data Adapter**: [`dataAdapterPool`](charts/lightstreamer/values.yaml#L4394) — dedicated thread pool for subscription/unsubscription management (`maxSize`, `maxFree`).
-- **Metadata Adapter**: [`authenticationPool`](charts/lightstreamer/values.yaml#L3856), [`messagesPool`](charts/lightstreamer/values.yaml#L3901), [`mpnPool`](charts/lightstreamer/values.yaml#L3933), [`enableTableNotificationsSequentialization`](charts/lightstreamer/values.yaml#L3950) — same tuning options as for in-process Metadata Adapters.
+- **Proxy Metadata Adapter**: [`authenticationPool`](charts/lightstreamer/values.yaml#L3856), [`messagesPool`](charts/lightstreamer/values.yaml#L3901), [`mpnPool`](charts/lightstreamer/values.yaml#L3933), [`enableTableNotificationsSequentialization`](charts/lightstreamer/values.yaml#L3950) — same tuning options as for in-process Metadata Adapters.
+- **Proxy Data Adapter**: [`dataAdapterPool`](charts/lightstreamer/values.yaml#L4394) — dedicated thread pool for subscription/unsubscription management (`maxSize`, `maxFree`).
 - [`connectionRetryMillis`](charts/lightstreamer/values.yaml#L4048), [`keepaliveTimeoutMillis`](charts/lightstreamer/values.yaml#L4251), [`timeoutMillis`](charts/lightstreamer/values.yaml#L4199): Connection reliability settings.
 
 See the linked `values.yaml` entries for the full set of available options.
