@@ -1079,11 +1079,11 @@ These sections share the following key settings:
 
 - `requestReplyPort` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L3954), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4406)): The mandatory TCP port the Proxy Adapter listens on for the Remote Server to connect.
 
-- `remoteHost` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L3976), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4428)): Optional. When set, inverts the connection direction — the Proxy Adapter connects out to the Remote Server instead of waiting for an inbound connection. Useful when the Broker cannot accept incoming connections from outside.
+- `remoteHost` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L3976), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4428)): When set, inverts the connection direction — the Proxy Adapter connects out to the Remote Server instead of waiting for an inbound connection. Useful when the Broker cannot accept incoming connections from outside.
 
 - `sslConfig` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L3985), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4436)): Optional TLS/SSL settings for the connection to the Remote Server. Supports the same keystore/truststore configuration as server sockets. See [`sslConfig`](charts/lightstreamer/README.md#serversdefaultserversslconfig) for details.
 
-- `authentication` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4029), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4472)): Optional. When enabled, enforces credential-based authentication of Remote Server connections. Credentials are referenced from Kubernetes secrets (each containing `user` and `password` keys).
+- `authentication` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4029), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4472)): When enabled, enforces credential-based authentication of Remote Server connections. Credentials are referenced from Kubernetes secrets (each containing `user` and `password` keys).
 
   Example:
   ```yaml
@@ -1098,7 +1098,7 @@ These sections share the following key settings:
               - remote-adapter-secret
   ```
 
-- `enableRobustAdapter` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L3828), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4374)): Optional. Enables the _Robust_ variant of the Proxy Adapter, which handles the temporary absence of the Remote Server gracefully — accepting subscriptions and waiting for reconnection rather than failing immediately.
+- `enableRobustAdapter` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L3828), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4374)): Enables the _Robust_ variant of the Proxy Adapter, which handles the temporary absence of the Remote Server gracefully — accepting subscriptions and waiting for reconnection rather than failing immediately.
 
 **Advanced: thread pool tuning and connection settings**
 
