@@ -422,8 +422,8 @@ The [`logging.loggers`](charts/lightstreamer/README.md#loggingloggers) section d
 
 For each logger, you can configure the following settings:
 
-- `level`: Specifies the logging level. Available levels are `OFF`, `FATAL`, `ERROR`, `WARN`, `INFO`, `DEBUG`, and `TRACE`.
-- `appenders`: Lists the appenders used to log messages. Each entry must reference an appender defined in the [`logging.appenders`](charts/lightstreamer/README.md#loggingappenders) section.
+- [`level`](charts/lightstreamer/values.yaml#L1212): Specifies the logging level. Available levels are `OFF`, `FATAL`, `ERROR`, `WARN`, `INFO`, `DEBUG`, and `TRACE`.
+- [`appenders`](charts/lightstreamer/values.yaml#L1208): Lists the appenders used to log messages. Each entry must reference an appender defined in the [`logging.appenders`](charts/lightstreamer/README.md#loggingappenders) section.
 
 Example configuration:
 ```yaml
@@ -805,7 +805,8 @@ Adapter Sets can be provisioned using different methods, configured through the 
      
      ```
 
-     **IMPORTANT** Do not include the usual `adapters.xml` file, which is normally required to deploy an Adapter Set in a non-Kubernetes environment, as the file will be dynamically rendered according to the provided configuration in the Helm chart values.
+     > [!IMPORTANT]
+     > Do not include the usual `adapters.xml` file, which is normally required to deploy an Adapter Set in a non-Kubernetes environment, as the file will be dynamically rendered according to the provided configuration in the Helm chart values.
    
    - Update [`image.repository`](charts/lightstreamer/README.md#imagerepository) with the reference to the new image:
 
