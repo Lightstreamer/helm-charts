@@ -564,11 +564,12 @@ Render the keystore settings for the Lightstreamer Kafka Connector configuration
 Render the key/value record evaluator settings for the Lightstreamer Kafka Connector configuration file.
 */}}
 {{- define "lightstreamer.kafka-connector.configuration.record.evaluator" -}}
-{{- $connection := index . 0 -}}
-{{- $keyOrValue := index . 1 -}}
+{{- $ := index . 0 -}}
+{{- $connection := index . 1 -}}
+{{- $keyOrValue := index . 2 -}}
 {{- $evaluator := get $connection.record (printf "%sEvaluator" $keyOrValue) }}
 {{- if $evaluator }}
-  {{- $localSchemaFiles := index . 2 -}}
+  {{- $localSchemaFiles := $.Values.connectors.kafkaConnector.localSchemaFiles }}
   {{- $key := index . 3 -}}
   {{- $type := $evaluator.type | default "STRING" }}
   {{- $protobufMessageType := $evaluator.protobufMessageType }}
@@ -598,11 +599,27 @@ Render the key/value record evaluator settings for the Lightstreamer Kafka Conne
 
   {{- if has $type (list "AVRO" "JSON" "PROTOBUF") -}}
     {{- if $evaluator.enableSchemaRegistry }}
-      {{- if not $connection.record.schemaRegistryRef }}
+      {{- $schemaRegistryRef := $connection.record.schemaRegistryRef }}
+      {{- if not $schemaRegistryRef }}
         {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.record.schemaRegistryRef or disable connectors.kafkaConnector.connections.%s.record.%sEvaluator.enableSchemaRegistry" $key $key $keyOrValue) }}
       {{- end }}
-      {{- /* Triggers rendering of the Schema Registry settings - */ -}}
+      
+      {{- $schemaRegistry := required (printf "connectors.kafkaConnector.schemaRegistries.%s not defined" $schemaRegistryRef) (get ($.Values.connectors.kafkaConnector.schemaRegistries | default (dict)) $schemaRegistryRef) }}
+      {{- $schemaRegistryProvider := $schemaRegistry.provider | default "CONFLUENT" }}
+      {{- $_ := set $schemaRegistry "provider" $schemaRegistryProvider }}
+      {{- if not (mustHas $schemaRegistryProvider (list "CONFLUENT" "AZURE")) }}
+        {{- fail (printf "connectors.kafkaConnector.schemaRegistries.%s.provider must be one of: \"CONFLUENT\", \"AZURE\"" $schemaRegistryRef) }}
+      {{- end }}
+      {{- required (printf "connectors.kafkaConnector.schemaRegistries.%s.url must be set" $schemaRegistryRef) $schemaRegistry.url }}
+
+      {{- if and (eq $schemaRegistryProvider "AZURE") (eq $type "PROTOBUF") }}
+        {{- fail (printf "connectors.kafkaConnector.schemaRegistries.%s with provider AZURE does not support PROTOBUF evaluator type" $schemaRegistryRef) }}
+      {{- end }}
+
+      {{- /* Triggers rendering of the Schema Registry settings */ -}}
       {{- $_ := set $connection.record "renderSchemaRegistry" true }}
+      {{- /* Set the whole schema registry configuration in the current context, to be used for rendering the schema registry settings */ -}}
+      {{- $_ := set $connection.record "schemaRegistry" $schemaRegistry }}
 
 <!-- Mandatory when the evaluator type is set to "AVRO" or "PROTOBUF" and no local schema paths are provided.
      Enable the use of the Confluent Schema Registry for validation respectively of the key and value. Can be one of the following:
