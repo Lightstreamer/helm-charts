@@ -45,10 +45,10 @@ data:
     curl -fL -o {{ include "lightstreamer.kafka.connector.source-archive.dir" . }}/${ZIP_ARCHIVE} {{ .fromUrl }}
       {{- end }}
     {{- end }}
-    unzip {{ include "lightstreamer.kafka.connector.source-archive.dir" . }}/${ZIP_ARCHIVE} -d /deployed_adapters
+    unzip {{ include "lightstreamer.kafka.connector.source-archive.dir" . }}/${ZIP_ARCHIVE} -d {{ include "lightstreamer.adapters.deployment.dir" . }}
     # Renaming the unzipped directory from /deployed_adapters/lightstreamer-kafka-connector-<version> to the 
     # expected deployment path /deployed_adapters/kafka-connector.
-    mv /deployed_adapters/* ${KAFKA_CONNECTOR_DEPLOYMENT_PATH}
+    mv {{ include "lightstreamer.adapters.deployment.dir" . }}/* ${KAFKA_CONNECTOR_DEPLOYMENT_PATH}
     # Set permissions to ensure that subsequent copy operations from the main container's startup script work correctly, 
     # regardless of the user ID used by the init container to perform the deployment.
     chmod -R 777 ${KAFKA_CONNECTOR_DEPLOYMENT_PATH}
