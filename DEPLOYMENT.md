@@ -9,6 +9,7 @@ This guide provides step-by-step instructions on how to deploy the Lightstreamer
   - [License](#license)
     - [Community edition](#community-edition)
     - [Enterprise edition](#enterprise-edition)
+  - [Keystores](#keystores)
   - [Server socket](#server-socket)
     - [Multiple servers](#multiple-servers)
     - [TLS/SSL](#tlsssl)
@@ -250,6 +251,61 @@ To configure the `ENTERPRISE` edition with a customer license:
 
 See the [License settings](charts/lightstreamer/README.md#license) section of the _Lightstreamer Helm Chart specification_ for additional license configuration options.
 
+### Keystores
+
+The [`keystores`](charts/lightstreamer/values.yaml#L1061) section defines named credential bundles referenced by any TLS/SSL-related setting across the chart — server socket TLS, Proxy Adapter TLS, and JMX connector TLS. Define each keystore once and reference it by name wherever a `keystoreRef` or `truststoreRef` is required.
+
+#### Creating a keystore
+
+Before defining a keystore entry, create the required Kubernetes secrets:
+
+1. Create a secret containing the keystore file:
+
+   ```sh
+   kubectl create secret generic <keystore-secret-name> \
+     --from-file=<key>=<path/to/keystore.file> \
+     --namespace <namespace>
+   ```
+
+2. Create a secret containing the keystore password:
+
+   ```sh
+   kubectl create secret generic <keystore-password-secret-name> \
+     --from-literal=<key>=<keystore-password> \
+     --namespace <namespace>
+   ```
+
+3. Optionally, if the private key in the keystore uses a distinct password, create an additional secret for it:
+
+   ```sh
+   kubectl create secret generic <key-password-secret-name> \
+     --from-literal=<key>=<key-password> \
+     --namespace <namespace>
+   ```
+
+Then add a named entry to the [`keystores`](charts/lightstreamer/values.yaml#L1061) section:
+
+```yaml
+keystores:
+  myKeystore:
+    type: JKS                                # JKS (default) or PKCS12
+    keystoreFileSecretRef:
+      name: <keystore-secret-name>           # Secret from step 1
+      key: <key>                             # Secret key from step 1
+    keystorePasswordSecretRef:
+      name: <keystore-password-secret-name>  # Secret from step 2
+      key: <key>                             # Secret key from step 2
+    # keyPasswordSecretRef:                  # Only if private key password differs from keystore password
+    #   name: <key-password-secret-name>
+    #   key: <key>
+```
+
+Supported [`type`](charts/lightstreamer/values.yaml#L1075) values:
+- `JKS`: Sun/Oracle proprietary format, available in every Java installation.
+- `PKCS12`: Industry-standard format supported by all modern Java installations; recommended for new deployments.
+
+Once defined, reference the entry by its name wherever a `keystoreRef` or `truststoreRef` is required — for example in a server socket [`sslConfig`](charts/lightstreamer/values.yaml#L849), a Proxy Adapter [`sslConfig`](charts/lightstreamer/values.yaml#L3985), or the JMX [`rmiConnector`](charts/lightstreamer/values.yaml#L1710).
+
 ### Server socket
 
 To configure a new server socket, add a new entry to the [`servers`](charts/lightstreamer/README.md#servers) section with the following mandatory settings:
@@ -343,50 +399,9 @@ To configure TLS/SSL settings for a server socket configuration, perform the fol
      $ kubectl create secret generic <keystore-password-secret-name> --from-literal=password=<keystore-password> --namespace <namespace>
      ```
 
-  3. Define a new keystore in the [`keystores`](charts/lightstreamer/README.md#keystores) section:
+  3. Define a new entry in the [`keystores`](charts/lightstreamer/values.yaml#L1061) section. See [Keystores](#keystores) for full details.
 
-     ```yaml
-     keystores:
-       ...
-
-       serverKeystore:
-         # The keystore type, here we assume JKS
-         type: JKS
-
-         keystoreFileSecretRef:
-           name: <keystore-secret-name> # The name used at step 1
-           key: server.keystore         # The secret key as specified at step 1
-
-         keystorePasswordSecretRef:
-           name: <keystore-password-secret-name> # The name used at step 2
-           key: password                         # The secret key as specified at step 2
-     ```
-
-- If required, configure a truststore by repeating similar actions of the previous section:
-
-  1. Create the truststore secrets:
-
-     ```sh
-     $ kubectl create secret generic <truststore-secret-name> --from-file=server.truststore=<path/to/truststore> --namespace <namespace>
-     $ kubectl create secret generic <truststore-password-secret-name> --from-literal=password=<truststore-password> --namespace <namespace>
-     ```
-
-  2. Define a truststore:
-
-     ```yaml
-     keystores:
-       serverTruststore:
-         # The truststore type, here we assume JKS
-         type: JKS
-
-         keystoreFileSecretRef:
-           name: <truststore-secret-name>
-           key: server.truststore
-
-         keystorePasswordSecretRef:
-           name: <truststore-password-secret-name>
-           key: password
-     ```
+- If required, configure a truststore the same way and reference it via `truststoreRef` in the `sslConfig` section below.
 
 - Configure the [`sslConfig`](charts/lightstreamer/README.md#serversdefaultserversslconfig) section:
 
