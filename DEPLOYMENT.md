@@ -6,6 +6,8 @@ This guide provides step-by-step instructions on how to deploy the Lightstreamer
 ## Table of contents
 - [Prerequisites](#prerequisites)
 - [Deployment steps](#deployment-steps)
+- [Upgrading](#upgrading)
+- [Uninstalling](#uninstalling)
 - [Customize Lightstreamer Broker](#customize-lightstreamer-broker)
   - [Getting started](#getting-started)
   - [Name overrides](#name-overrides)
@@ -131,6 +133,66 @@ Follow these steps to deploy the Lightstreamer Broker to your Kubernetes cluster
 This will deploy the Lightstreamer Broker and other related components with the default configuration.
 
 For more detailed configuration options, refer to the [Lightstreamer Helm Chart Specification](https://github.com/Lightstreamer/helm-charts/tree/main/charts/lightstreamer).
+
+## Upgrading
+
+To apply configuration changes or upgrade to a newer chart version, use `helm upgrade`:
+
+```sh
+helm upgrade lightstreamer lightstreamer/lightstreamer \
+    --values my-values.yaml \
+    --namespace <namespace>
+```
+
+Before upgrading, review the changes that will be applied:
+
+```sh
+helm diff upgrade lightstreamer lightstreamer/lightstreamer \
+    --values my-values.yaml \
+    --namespace <namespace>
+```
+
+> [!TIP]
+> The `helm diff` command requires the [Helm Diff plugin](https://github.com/databus23/helm-diff). Install it with `helm plugin install https://github.com/databus23/helm-diff`.
+
+When upgrading to a new chart version, update the repository first:
+
+```sh
+helm repo update
+helm upgrade lightstreamer lightstreamer/lightstreamer \
+    --values my-values.yaml \
+    --namespace <namespace>
+```
+
+To check available chart versions:
+
+```sh
+helm search repo lightstreamer --versions
+```
+
+> [!IMPORTANT]
+> Always review the chart's release notes before upgrading to a new version. Breaking changes to `values.yaml` keys may require updates to your values files.
+
+## Uninstalling
+
+To remove the Lightstreamer Broker from your cluster:
+
+```sh
+helm uninstall lightstreamer --namespace <namespace>
+```
+
+This deletes all Kubernetes resources created by the Helm release (Deployment, Service, Ingress, ConfigMaps, etc.). However, resources you created manually — such as Secrets for licenses, keystores, or adapter credentials — and PersistentVolumeClaims are **not** removed automatically. Delete them separately if they are no longer needed:
+
+```sh
+kubectl delete secret <secret-name> --namespace <namespace>
+kubectl delete pvc <pvc-name> --namespace <namespace>
+```
+
+If no other releases use the namespace, you can remove it entirely:
+
+```sh
+kubectl delete namespace <namespace>
+```
 
 ## Customize Lightstreamer Broker
 
@@ -901,7 +963,7 @@ See the [`management.jmx.rmiConnector`](charts/lightstreamer/values.yaml#L1903) 
 
 ###### TLS/SSL
 
-To enable TLS/SSL communication, turn on the optional [`management.jmx.rmiConnector.port.enableSsl`](charts/lightstreamer/values.yaml#L1918) flag and reference a keystore trough [`management.jmx.rmiConnector.keystoreRef`](charts/lightstreamer/values.yaml#L1995) (as already explained in the [_TLS/SSL_](#tlsssl) ):
+To enable TLS/SSL communication, turn on the optional [`management.jmx.rmiConnector.port.enableSsl`](charts/lightstreamer/values.yaml#L1918) flag and reference a keystore through [`management.jmx.rmiConnector.keystoreRef`](charts/lightstreamer/values.yaml#L1995) (as already explained in the [_TLS/SSL_](#tlsssl) ):
 
 ```yaml
 management:
@@ -924,7 +986,7 @@ To restrict access to authorized users, first create the relative secrets (every
 
 ```sh
 kubectl create secret generic rmi-user-1-secret --from-literal=user=<user-1> --from-literal=password='<user1-password>' --namespace <namespace>
-kubectl create secret generic rmi-user-2-secret --from-literal=user=<user-2>' --from-literal=password='<user2-password>' --namespace <namespace>
+kubectl create secret generic rmi-user-2-secret --from-literal=user=<user-2> --from-literal=password='<user2-password>' --namespace <namespace>
 ```
 
 Then, disable public access turning off the [`management.jmx.rmiConnector.enablePublicAccess`](charts/lightstreamer/values.yaml#L2044) flag and populate the [`management.jmx.rmiConnector.credentialsSecrets`](charts/lightstreamer/values.yaml#L2055) list with the references to the secrets.
@@ -1212,7 +1274,7 @@ Adapter Sets can be provisioned using different methods, configured through the 
      ...
      ```
    
-   At startup, the resources will be copied path will be mounted at the `/deployed_adapters` directory in the container.
+   At startup, the resources will be copied to the designated Adapter Set folder under the `/deployed_adapters` directory in the container.
 
 2. Deploy the Adapter Set's resource to a persistent storage
 
@@ -1316,7 +1378,7 @@ This ClassLoader load classes included in the `lib` and `classes` subfolders fro
      exampleAdapterSet:
        metadataProvider:
          inProcessMetadataAdapter:
-           adapterClass: com.lightstreamer.adapters.example.first.
+           adapterClass: com.lightstreamer.adapters.example.first.FirstAdapter
            classLoader: common 
            ...
        dataProviders:
@@ -1423,7 +1485,7 @@ adapters:
 ###### `log-enabled` ClassLoader
 
 When the `classLoader` is set to `log-enabled`, the Adapter is assigned a dedicated ClassLoader which also includes the `slf4j` library used by the Lightstreamer Broker.
-This implies that the Adapter the Broker's logging configuration. 
+This implies that the Adapter shares the Broker's logging configuration.
 The ClassLoader does not inherit from the Adapter Set ClassLoader, hence the Adapter cannot share classes with other Adapters.
 
 ```yaml
