@@ -387,7 +387,7 @@ Set `deployment.replicas` when [autoscaling](#autoscaling) is disabled. The defa
 
 #### Resources
 
-Set resource requests and limits to match your expected load profile. The default JVM heap allocation is 1–4 GB, so memory limits should be set above the JVM ceiling to leave room for off-heap usage (see [JVM and environment](#jvm-and-environment) below):
+Set resource requests and limits to match your expected load profile. Memory limits should account for JVM heap plus off-heap usage (see [JVM and environment](#jvm-and-environment) below):
 
 ```yaml
 deployment:
@@ -409,6 +409,12 @@ deployment:
 ```yaml
 deployment:
   probes:
+    startup:
+      enabled: true
+      healthCheck:
+        serverRef: defaultServer
+        failureThreshold: 30
+        periodSeconds: 10
     liveness:
       enabled: true
       healthCheck:
@@ -419,6 +425,9 @@ deployment:
         serverRef: defaultServer
         initialDelaySeconds: 10
 ```
+
+> [!TIP]
+> A `startup` probe prevents the `liveness` probe from killing the pod during initialization. This is especially useful when the broker needs time to load adapters or establish connector connections.
 
 #### JVM and environment
 
