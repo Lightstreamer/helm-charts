@@ -8,6 +8,7 @@ This guide provides step-by-step instructions on how to deploy the Lightstreamer
 - [Deployment steps](#deployment-steps)
 - [Upgrading](#upgrading)
 - [Uninstalling](#uninstalling)
+- [Troubleshooting](#troubleshooting)
 - [Customize Lightstreamer Broker](#customize-lightstreamer-broker)
   - [Getting started](#getting-started)
   - [Name overrides](#name-overrides)
@@ -20,6 +21,8 @@ This guide provides step-by-step instructions on how to deploy the Lightstreamer
     - [Probes](#probes)
     - [JVM and environment](#jvm-and-environment)
     - [Scheduling](#scheduling)
+    - [Annotations](#annotations)
+    - [Security context](#security-context)
     - [Additional volumes](#additional-volumes)
   - [Service](#service)
   - [Ingress](#ingress)
@@ -123,7 +126,7 @@ Follow these steps to deploy the Lightstreamer Broker to your Kubernetes cluster
     kubectl rollout status deployment lightstreamer --namespace <namespace> --watch
     ```
 
-    Expected output upon the broker is ready:
+    Expected output once the broker is ready:
 
     ```sh
     deployment "lightstreamer" successfully rolled out
@@ -194,6 +197,73 @@ If no other releases use the namespace, you can remove it entirely:
 kubectl delete namespace <namespace>
 ```
 
+## Troubleshooting
+
+This section covers common issues encountered during deployment. For Lightstreamer Broker configuration and runtime troubleshooting, refer to the [official documentation](https://lightstreamer.com/docs).
+
+### Checking pod status
+
+Start by inspecting the pod state:
+
+```sh
+kubectl get pods -l app.kubernetes.io/name=lightstreamer --namespace <namespace>
+```
+
+For more detail on a specific pod:
+
+```sh
+kubectl describe pod <pod-name> --namespace <namespace>
+```
+
+### Viewing broker logs
+
+Retrieve the broker's stdout logs:
+
+```sh
+kubectl logs <pod-name> --namespace <namespace>
+```
+
+To follow logs in real-time:
+
+```sh
+kubectl logs <pod-name> --namespace <namespace> --follow
+```
+
+If the pod is crash-looping, inspect logs from the previous run:
+
+```sh
+kubectl logs <pod-name> --namespace <namespace> --previous
+```
+
+For more granular logging, adjust log levels as described in the [Logging](#logging) section.
+
+### Inspecting rendered configuration
+
+To see the Kubernetes manifests the chart generates without deploying them:
+
+```sh
+helm template lightstreamer lightstreamer/lightstreamer \
+    --values my-values.yaml \
+    --namespace <namespace>
+```
+
+To inspect the manifests of an existing release:
+
+```sh
+helm get manifest lightstreamer --namespace <namespace>
+```
+
+### Common issues
+
+| Symptom | Likely cause | Resolution |
+|---|---|---|
+| `ImagePullBackOff` | Wrong `image.repository` or `image.tag`, or missing pull secret | Verify the image exists in the registry and that `imagePullSecrets` is configured correctly. See [Image settings](#image-settings) |
+| `CrashLoopBackOff` | Invalid license, port conflict, missing keystore, or misconfigured adapter | Check pod logs with `kubectl logs --previous`. Verify [License](#license) and [Keystores](#keystores) configuration |
+| `Pending` | Insufficient CPU/memory, unsatisfiable `nodeSelector`, or no available PersistentVolumes | Run `kubectl describe pod` to check the Events section. Review [Resources](#resources) and [Scheduling](#scheduling) |
+| Pod running but Service unreachable | `service.ports[].targetPort` does not match any server socket name | Ensure each `targetPort` references a server name defined in [Server socket](#server-socket) |
+| Ingress returns 502/504 | Ingress controller is timing out long-lived streaming connections | Set appropriate proxy timeout annotations on the Ingress. See [Ingress](#ingress) |
+| JMX/Dashboard not accessible | Port not exposed, or firewall/NetworkPolicy blocking access | Verify the port appears in `kubectl describe pod` and that the Service exposes it. See [Management](#management) |
+
 ## Customize Lightstreamer Broker
 
 You can customize the deployment by overriding the default values in two different ways:
@@ -207,7 +277,7 @@ You can customize the deployment by overriding the default values in two differe
      --create-namespace
    ```
 
-2. Use the `--values` to specify one or more YAMLs file with overrides. For example:
+2. Use the `--values` to specify one or more YAML files with overrides. For example:
 
    - Edit the file `default-server.yaml` as follows:
 
@@ -384,6 +454,39 @@ deployment:
       operator: Equal
       value: lightstreamer
       effect: NoSchedule
+```
+
+#### Annotations
+
+Use [`deployment.annotations`](charts/lightstreamer/values.yaml#L76) to add annotations to the Deployment resource itself, and [`deployment.podAnnotations`](charts/lightstreamer/values.yaml#L91) to add annotations to every Pod created by the Deployment. Pod annotations are commonly used to integrate with tools like Prometheus, HashiCorp Vault, or Istio:
+
+```yaml
+deployment:
+  annotations:
+    app.kubernetes.io/managed-by: my-team
+
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8888"
+    vault.hashicorp.com/agent-inject: "true"
+```
+
+#### Security context
+
+Use [`deployment.podSecurityContext`](charts/lightstreamer/values.yaml#L99) to set pod-level security options (applied to all containers), and [`deployment.securityContext`](charts/lightstreamer/values.yaml#L104) to set container-level security options for the Lightstreamer container:
+
+```yaml
+deployment:
+  podSecurityContext:
+    fsGroup: 2000
+
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
 ```
 
 #### Additional volumes
@@ -963,7 +1066,7 @@ See the [`management.jmx.rmiConnector`](charts/lightstreamer/values.yaml#L1903) 
 
 ###### TLS/SSL
 
-To enable TLS/SSL communication, turn on the optional [`management.jmx.rmiConnector.port.enableSsl`](charts/lightstreamer/values.yaml#L1918) flag and reference a keystore through [`management.jmx.rmiConnector.keystoreRef`](charts/lightstreamer/values.yaml#L1995) (as already explained in the [_TLS/SSL_](#tlsssl) ):
+To enable TLS/SSL communication, turn on the optional [`management.jmx.rmiConnector.port.enableSsl`](charts/lightstreamer/values.yaml#L1918) flag and reference a keystore through [`management.jmx.rmiConnector.keystoreRef`](charts/lightstreamer/values.yaml#L1995) (as already explained in the [_TLS/SSL_](#tlsssl)):
 
 ```yaml
 management:
@@ -1013,7 +1116,7 @@ Since the Dashboard enables remote management, including server shutdown, it is 
 
 - Require authentication for Dashboard access.
 - Create users with different levels of access to the JMX Tree.
-- Restrict the Dashboard to HTTPS servers only (if TLS/SSL is allowed by our license)
+- Restrict the Dashboard to HTTPS servers only (if TLS/SSL is allowed by your license)
 - Customize the dashboard URL path.
 
 ##### Authentication
@@ -1064,7 +1167,7 @@ management:
     enableAvailabilityOnAllServers: false  # Disable availability on all servers
 
     availableOnServers:
-      - serverRef: httpsServer         # Reference to a socket configuration defined the servers section
+      - serverRef: httpsServer         # Reference to a socket configuration defined in the servers section
         enableJmxTreeVisibility: true  # Allow JMX Tree access
 ```
 
@@ -1154,13 +1257,13 @@ webServer:
 
 The [`cluster`](charts/lightstreamer/values.yaml#L3187) section configures session affinity for multi-instance deployments. When multiple Lightstreamer replicas run behind a load balancer, all requests for the same client session must reach the same instance.
 
-If the load balancer already provides sticky sessions, no configuration is needed here. Otherwise, set `cluster.controlLinkAddress` to the address of each specific instance so client SDKs can independently route their control and rebind connections to it.
+If the load balancer already provides sticky sessions, no configuration is needed here. Otherwise, set `cluster.controlLinkAddress` to the public hostname or IP through which clients can reach a specific Lightstreamer instance directly, bypassing the load balancer. This address must be reachable by external clients — it is sent to client SDKs so they can route control and rebind requests to the correct instance. For a detailed explanation of the control link mechanism and deployment architectures, see the [Clustering](https://lightstreamer.com/distros/ls-server/7.4.7/docs/Clustering.pdf) document.
 
 Setting `cluster.maxSessionDurationMinutes` bounds session lifetime — when the limit is reached, the session closes gracefully, allowing the next session to be assigned to a different replica. This is particularly useful in combination with [autoscaling](#autoscaling).
 
 ```yaml
 cluster:
-  controlLinkAddress: "$(POD_IP)"   # resolved at runtime via Downward API
+  controlLinkAddress: "push1.example.com"
   maxSessionDurationMinutes: 30
 ```
 
@@ -1196,7 +1299,7 @@ Lightstreamer Adapters are custom server-side components attached to the Lightst
 Each Adapter Set consists of:
 
 - A **Metadata Adapter**: Handles client authentication, authorization, and item validation
-- One or more **Data Adapters**: Receives data from back-end systems and forward it to the Kernel for delivery to users
+- One or more **Data Adapters**: Receive data from back-end systems and forward it to the Kernel for delivery to users
 
 Lightstreamer Adapters can be implemented in two ways:
 - **In-Process Adapters**: Java classes running within the Lightstreamer Broker's JVM
@@ -1247,7 +1350,7 @@ Adapter Sets can be provisioned using different methods, configured through the 
 
    - Build a custom Lightstreamer-based container image by copying the adapter's resources into the `/lightstreamer/adapters` directory of the image:
    
-     ```yaml
+     ```dockerfile
      # Dockerfile example
      FROM lightstreamer
      COPY myadapter /lightstreamer/adapters/myadapter
@@ -1363,7 +1466,7 @@ See the linked `values.yaml` entries for full details on sub-settings (`maxSize`
 ###### `common` ClassLoader
 
 When the `classLoader` is set to `common`, the _Adapter Set ClassLoader_ is used. 
-This ClassLoader load classes included in the `lib` and `classes` subfolders from three different sources:
+This ClassLoader loads classes included in the `lib` and `classes` subfolders from three different sources:
 
 1. The Adapter Set's directory:
 
@@ -1415,7 +1518,7 @@ This ClassLoader load classes included in the `lib` and `classes` subfolders fro
        dataProviders:
          myDataProvider:
            inProcessDataAdapter:
-             adapterClass: com.mycompany.adapters.metadata.MyMetadataAdapter
+             adapterClass: com.mycompany.adapters.data.MyDataAdapter
              installDir: data # Data Adapter-specific resources
              classLoader: common
              ...
@@ -1461,7 +1564,7 @@ adapters/my-adapter-set/
     └── lib     # Jar files loaded by the dedicated Metadata Adapter's ClassLoader
 └── data        
     ├── classes # Classes and resources loaded by the dedicated Data Adapter's ClassLoader
-    └── lib     # Jar files loaded by the dedicated Data Adapters's ClassLoader
+    └── lib     # Jar files loaded by the dedicated Data Adapter's ClassLoader
 ```
 
 ```yaml
@@ -1476,7 +1579,7 @@ adapters:
     dataProviders:
       myDataProvider:
         inProcessDataAdapter:
-          adapterClass: com.mycompany.adapters.metadata.MyMetadataAdapter
+          adapterClass: com.mycompany.adapters.data.MyDataAdapter
           installDir: data 
           classLoader: dedicated 
           ...
@@ -1487,6 +1590,13 @@ adapters:
 When the `classLoader` is set to `log-enabled`, the Adapter is assigned a dedicated ClassLoader which also includes the `slf4j` library used by the Lightstreamer Broker.
 This implies that the Adapter shares the Broker's logging configuration.
 The ClassLoader does not inherit from the Adapter Set ClassLoader, hence the Adapter cannot share classes with other Adapters.
+
+```mermaid
+flowchart BT
+    A1[Adapter Set ClassLoader]-->G[Global ClassLoader]
+    LE1[Log-Enabled ClassLoader]-->G
+    LE2[Log-Enabled ClassLoader]-->G
+```
 
 ```yaml
 adapters:
@@ -1594,13 +1704,7 @@ adapters:
 
 ### Connectors
 
-Lightstreamer Connectors are specialized adapter sets that enable seamless integration between Lightstreamer Broker and external messaging systems or data sources. Unlike general-purpose adapters, connectors are purpose-built to bridge Lightstreamer with specific platforms, providing optimized data flow and simplified configuration.
-
-Connectors handle:
-- **Data Ingestion**: Consuming data from external systems and transforming it into Lightstreamer-compatible formats
-- **Protocol Translation**: Managing communication protocols between Lightstreamer and external platforms
-- **Schema Management**: Handling data serialization formats (JSON, Avro, Protobuf, etc.)
-- **Connection Management**: Maintaining reliable connections to external systems with automatic reconnection and error handling
+Lightstreamer Connectors are ready-made adapter sets that enable seamless integration between Lightstreamer Broker and external messaging systems or data sources, handling data ingestion, protocol translation, schema management, and connection reliability out of the box.
 
 Currently, the Kafka Connector is the only connector available in this Helm chart. Each connector is configured and enabled independently within the [`connectors`](charts/lightstreamer/values.yaml#L4682) section.
 
