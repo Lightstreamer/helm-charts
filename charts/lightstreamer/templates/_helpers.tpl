@@ -114,9 +114,24 @@ Create the port used health check.
 {{- $ := index . 0 }}
 {{- $probeName := index . 1 }}
 {{- $serverKeyName := printf "deployment.probes.%s.healthCheck.serverRef" $probeName }}
-{{- $serverKey := (index . 2).serverRef }}
+{{- $serverKey := index . 2 }}
 {{- include "lightstreamer.configuration.servers.validateServerRef" (list $ $serverKeyName $serverKey) }}
 {{- include "lightstreamer.configuration.servers.serverPortName" $serverKey -}}
+{{- end }}
+
+{{/*
+Render all the probes for the deployment descriptor.
+*/}}
+{{- define "lightstreamer.deployment.all-probes" -}}
+{{- $probes := .Values.deployment.probes }}
+{{- $allowedProbeNames := list "startup" "liveness" "readiness" }}
+{{- range $probeName, $probe := $probes }}
+{{- if has $probeName $allowedProbeNames }}
+{{- include "lightstreamer.deployment.probe" (list $ $probe $probeName) }}
+{{- else }}
+{{- fail (printf "deployment.probes.%s is not a valid probe name. Allowed values are: %s" $probeName $allowedProbeNames) }}
+{{- end }}
+{{- end }}
 {{- end }}
 
 {{/*
@@ -127,12 +142,16 @@ Render a probe for the deployment descriptor.
 {{- $probe := index . 1 }}
 {{- $probeName := index . 2 }}
 {{- if ($probe).enabled }}
+{{- with $probe }}
 {{ printf "%sProbe:" $probeName }}
-  {{- with $probe.healthCheck }}
+  {{- if .serverRef }}
   httpGet:
     path: /lightstreamer/healthcheck
-    port: {{ include "lightstreamer.deployment.healthcheckPort" (list $ $probeName .) }}
+    port: {{ include "lightstreamer.deployment.healthcheckPort" (list $ $probeName .serverRef) }}
     scheme: {{ (get $.Values.servers .serverRef).enableHttps | default false | ternary "HTTPS" "HTTP" }}
+  {{- else }}
+    {{- toYaml (required (printf "either specify deployment.probes.%s.serverRef or deployment.probes.%s.default" $probeName $probeName) $probe.default) | nindent 2 }}
+  {{- end }}
   initialDelaySeconds: {{ .initialDelaySeconds }}
   periodSeconds: {{ .periodSeconds }}
   failureThreshold: {{ .failureThreshold }}
@@ -143,21 +162,9 @@ Render a probe for the deployment descriptor.
     {{- if ne $probeName "readiness" }}
   terminationGracePeriodSeconds: {{ .terminationGracePeriodSeconds }}
     {{- end }}
-  {{- else }}
-    {{- toYaml (required (printf "either specify %s.healthCheck or %s.default" $probeName $probeName) $probe.default) | nindent 2 }}
   {{- end }}
-{{- end }}
 {{- end -}}
-
-{{/*
-Render all the probes for the deployment descriptor.
-*/}}
-{{- define "lightstreamer.deployment.all-probes" -}}
-{{- $probes := .Values.deployment.probes }}
-{{- range $probeName, $probe := $probes }}
-{{- include "lightstreamer.deployment.probe" (list $ $probe $probeName) }}
-{{- end }}
-{{- end }}
+{{- end -}}
 
 {{/*
 Validate all the server configurations, ensuring that at least one enabled
@@ -1143,10 +1150,10 @@ Render the authentication parameters for the proxy adapters.
   {{- range .credentialsSecrets }}
     {{- $counter = add1 $counter }}
     {{- /* auth.credentials.<N>.user */}}
-<param name="auth.credentials.{{ $counter }}.user">$env.LS_PROXY_ADAPTER_CREDENTIAL_{{ . | upper | replace "-" "_" }}_USER></param>
+<param name="auth.credentials.{{ $counter }}.user">$env.LS_PROXY_ADAPTER_CREDENTIAL_{{ . | upper | replace "-" "_" }}_USER</param>
 
     {{- /* auth.credentials.<N>.password */}}
-<param name="auth.credentials.{{ $counter }}.password">$env.LS_PROXY_ADAPTER_CREDENTIAL_{{ . | upper | replace "-" "_" }}_PASSWORD></param>
+<param name="auth.credentials.{{ $counter }}.password">$env.LS_PROXY_ADAPTER_CREDENTIAL_{{ . | upper | replace "-" "_" }}_PASSWORD</param>
 
   {{- end }}
 {{- end }}
