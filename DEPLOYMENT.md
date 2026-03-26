@@ -1,6 +1,6 @@
 # Deploying Lightstreamer Broker to Kubernetes
 
-This guide provides step-by-step instructions on how to deploy the Lightstreamer Broker to a Kubernetes cluster using the Lightstreamer Helm Chart.
+This guide covers deploying, configuring, and managing the Lightstreamer Broker on a Kubernetes cluster using the Lightstreamer Helm Chart.
 
 
 ## Table of contents
@@ -139,15 +139,7 @@ For more detailed configuration options, refer to the [Lightstreamer Helm Chart 
 
 ## Upgrading
 
-To apply configuration changes or upgrade to a newer chart version, use `helm upgrade`:
-
-```sh
-helm upgrade lightstreamer lightstreamer/lightstreamer \
-    --values my-values.yaml \
-    --namespace <namespace>
-```
-
-Before upgrading, review the changes that will be applied:
+Before applying changes, review what will be modified:
 
 ```sh
 helm diff upgrade lightstreamer lightstreamer/lightstreamer \
@@ -157,6 +149,14 @@ helm diff upgrade lightstreamer lightstreamer/lightstreamer \
 
 > [!TIP]
 > The `helm diff` command requires the [Helm Diff plugin](https://github.com/databus23/helm-diff). Install it with `helm plugin install https://github.com/databus23/helm-diff`.
+
+Then apply configuration changes or upgrade to a newer chart version with `helm upgrade`:
+
+```sh
+helm upgrade lightstreamer lightstreamer/lightstreamer \
+    --values my-values.yaml \
+    --namespace <namespace>
+```
 
 When upgrading to a new chart version, update the repository first:
 
@@ -298,7 +298,7 @@ You can customize the deployment by overriding the default values in two differe
 
 For more details about general chart customization, refer to the [official Helm documentation](https://helm.sh/docs/intro/using_helm/#customizing-the-chart-before-installing).
 
-In the following sections, we will guide you on how to customize the values of the Lightstreamer Helm chart to configure the most critical aspects of deploying a Lightstreamer Broker to Kubernetes.
+The following sections cover how to customize the Lightstreamer Helm chart values to configure the most critical aspects of deploying a Lightstreamer Broker to Kubernetes.
 
 ### Getting started
 
