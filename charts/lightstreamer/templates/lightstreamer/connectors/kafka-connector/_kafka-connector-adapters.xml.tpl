@@ -697,15 +697,15 @@ Render the Lightstreamer Kafka Connector configuration file.
 
         <!-- Mandatory if the Azure Schema Registry is enabled. The Application (client) ID assigned to the application
              registered in Microsoft Entra ID with appropriate permissions to access the Schema Registry. -->
-        <param name="schema.registry.azure.client.id">$env.LS_KAFKA_AZURE_SCHEMA_REGISTRY_{{ . | upper | replace "-" "_" }}_CLIENT_ID </param>
+        <param name="schema.registry.azure.client.id">$env.LS_KAFKA_AZURE_SCHEMA_REGISTRY_{{ . | upper | replace "-" "_" }}_CLIENT_ID</param>
 
         <!-- Mandatory if the Azure Schema Registry is enabled. The Directory (tenant) ID of the Microsoft Entra ID tenant
              where the application is registered. -->
-        <param name="schema.registry.azure.tenant.id">$env.LS_KAFKA_AZURE_SCHEMA_REGISTRY_{{ . | upper | replace "-" "_" }}_TENANT_ID </param>
+        <param name="schema.registry.azure.tenant.id">$env.LS_KAFKA_AZURE_SCHEMA_REGISTRY_{{ . | upper | replace "-" "_" }}_TENANT_ID</param>
 
         <!-- Mandatory if the Azure Schema Registry is enabled. The client secret value of the application registered
              in Microsoft Entra ID. -->
-        <param name="schema.registry.azure.client.secret">$env.LS_KAFKA_AZURE_SCHEMA_REGISTRY_{{ . | upper | replace "-" "_" }}_CLIENT_SECRET </param>
+        <param name="schema.registry.azure.client.secret">$env.LS_KAFKA_AZURE_SCHEMA_REGISTRY_{{ . | upper | replace "-" "_" }}_CLIENT_SECRET</param>
               {{- end }} {{/* of .credentialsSecretRef */}}
             {{- end }} {{/* of $schemaRegistry.provider */}}
           {{- end }} {{/* of .record.renderSchemaRegistry */}}
