@@ -365,14 +365,17 @@ imagePullSecrets:
 
 ### Service account
 
-By default, no ServiceAccount is created and Lightstreamer pods run under the namespace's `default` account. Enable a dedicated ServiceAccount when your deployment needs to interact with the Kubernetes API, or when your cloud provider uses ServiceAccount annotations to bind IAM roles (e.g. AWS IRSA, GCP Workload Identity):
+By default, the chart creates a dedicated ServiceAccount named after the release. This isolates RBAC bindings and audit trail from other workloads in the namespace — and on OpenShift, allows administrators to assign Security Context Constraints directly to the Lightstreamer ServiceAccount.
+
+Use `serviceAccount.annotations` to integrate with cloud IAM systems (e.g. AWS IRSA, GCP Workload Identity):
 
 ```yaml
 serviceAccount:
-  create: true
   annotations:
     eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/lightstreamer-role
 ```
+
+To disable creation and fall back to the namespace's `default` ServiceAccount, set `serviceAccount.create: false`.
 
 ### Deployment
 
