@@ -41,7 +41,7 @@ For installation instructions, custom configuration, and deployment guidance, se
 {{- end }}
 
 {{- define "chart.valuesTable" }}
-{{- $sections := list "common" "license" "servers" "keystores" "logging" "management" "globalSocket" "security" "pushSession" "mpn" "webServer" "cluster" "load" "adapters" "connectors" }}
+{{- $sections := list "common" "license" "servers" "keystores" "globalSocket" "security" "logging" "management" "pushSession" "mpn" "webServer" "cluster" "load" "adapters" "connectors" }}
 
 ## Settings
 
@@ -57,12 +57,14 @@ each focusing on a specific aspect of the Lightstreamer deployment:
 {{- end }}
 
 ## Common settings
-{{- $commons := list "nameOverride" "fullnameOverride" "commonLabels" "image" "image.repository" "image.pullRepository" "image.tag"}}
-{{ range $.Values }}
-  {{- if has .Key $commons }}
+{{- $commons := list "nameOverride" "fullnameOverride" "commonLabels" "image" "serviceAccount" "deployment" "service" "ingress" "autoscaling" }}
+{{- range $section := $commons }}
+  {{ range $.Values }}
+    {{- if hasPrefix $section .Key }}
 ### [{{ .Key }}](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L{{ .LineNumber }})
       {{ template "chart.extractValues" . }}
     {{- end }}
+  {{- end }}
 {{- end }}
 
 {{- /* Render all the remaining sections */ -}}
