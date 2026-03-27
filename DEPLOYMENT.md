@@ -19,7 +19,7 @@ This guide covers deploying, configuring, and managing the Lightstreamer Broker 
     - [Replicas and update strategy](#replicas-and-update-strategy)
     - [Resources](#resources)
     - [Probes](#probes)
-    - [JVM and environment](#jvm-and-environment)
+    - [Environment and initialization](#environment-and-initialization)
     - [Scheduling](#scheduling)
     - [Annotations](#annotations)
     - [Security context](#security-context)
@@ -403,35 +403,34 @@ deployment:
 #### Probes
 
 `deployment.probes` supports two modes for each probe type:
-- `healthCheck`: routes the probe through the built-in Lightstreamer health check endpoint; set `serverRef` to a server socket defined in the [`servers`](#server-socket) section.
+- `serverRef`: routes the probe through the built-in Lightstreamer health check endpoint; set it to a server socket key defined in the [`servers`](#server-socket) section.
 - `default`: a raw Kubernetes probe spec (e.g. `httpGet`, `tcpSocket`) for custom setups.
+
+Probe tuning fields (`initialDelaySeconds`, `periodSeconds`, `failureThreshold`, etc.) are set directly on the probe, alongside the mode.
 
 ```yaml
 deployment:
   probes:
     startup:
       enabled: true
-      healthCheck:
-        serverRef: defaultServer
-        failureThreshold: 30
-        periodSeconds: 10
+      serverRef: defaultServer
+      failureThreshold: 30
+      periodSeconds: 10
     liveness:
       enabled: true
-      healthCheck:
-        serverRef: defaultServer
+      serverRef: defaultServer
     readiness:
       enabled: true
-      healthCheck:
-        serverRef: defaultServer
-        initialDelaySeconds: 10
+      serverRef: defaultServer
+      initialDelaySeconds: 10
 ```
 
 > [!TIP]
 > A `startup` probe prevents the `liveness` probe from killing the pod during initialization. This is especially useful when the broker needs time to load adapters or establish connector connections.
 
-#### JVM and environment
+#### Environment and initialization
 
-Override `deployment.extraEnv` to tune the JVM or inject runtime configuration:
+`deployment.extraEnv` injects environment variables into the Lightstreamer container. For example, the Lightstreamer Broker reads the `JAVA_OPTS` variable at startup to configure JVM options:
 
 ```yaml
 deployment:
@@ -440,7 +439,7 @@ deployment:
       value: "-server -Xms2g -Xmx8g -XX:+UseG1GC"
 ```
 
-Use `deployment.preCommands` for any shell initialization that must run before the broker starts.
+`deployment.preCommands` runs shell commands before the broker starts.
 
 #### Scheduling
 
@@ -501,6 +500,9 @@ deployment:
     readOnlyRootFilesystem: true
 ```
 
+> [!NOTE]
+> On OpenShift, the default `restricted` SCC assigns UIDs and fsGroups from namespace-specific ranges. Avoid hardcoding `runAsUser` or `fsGroup` values unless the ServiceAccount has been granted a permissive SCC (e.g. `anyuid`). Omit these fields to let OpenShift assign values automatically.
+
 #### Additional volumes
 
 `deployment.extraVolumes` and `deployment.extraVolumeMounts` attach arbitrary volumes to the pods. These are used throughout this guide — for example to [persist log files](#log-to-persistent-storage) or to [provision adapter resources](#provisioning).
@@ -519,7 +521,7 @@ deployment:
 
 ### Service
 
-The [`service`](charts/lightstreamer/values.yaml#L280) section configures the Kubernetes Service that exposes Lightstreamer. Each entry in `service.ports` maps a Service port to a Lightstreamer server socket by name — the chart resolves `targetPort` to the actual container port defined in the [`servers`](#server-socket) section.
+The [`service`](charts/lightstreamer/values.yaml#L280) section configures the Kubernetes Service that exposes Lightstreamer. Each entry in `service.ports` maps a Service port to a Lightstreamer [enabled](charts/lightstreamer/values.yaml#L662) server socket by name — the chart resolves `targetPort` to the actual container port defined in the [`servers`](#server-socket) section.
 
 ```yaml
 service:
@@ -537,7 +539,12 @@ Use `NodePort` or `LoadBalancer` for direct external access outside of Ingress.
 
 ### Ingress
 
-The [`ingress`](charts/lightstreamer/values.yaml#L329) section creates a Kubernetes Ingress resource to route external HTTP/S traffic to the Lightstreamer Service. Ingress is disabled by default.
+The [`ingress`](charts/lightstreamer/values.yaml#L324) section creates a Kubernetes Ingress resource to route external HTTP/S traffic to the Lightstreamer Service. Ingress is disabled by default.
+
+Each entry in `ingress.rules` defines a host and its routing paths. The optional `backendPort` on each path defaults to the first port defined in [`service.ports`](#service). When no rules are defined, the Ingress uses a `defaultBackend` that routes all traffic to the first port in [`service.ports`](#service).
+
+> [!NOTE]
+> `backendPort` is a chart-level shorthand — the template resolves it to the full Kubernetes `backend.service.port.number` in the rendered Ingress manifest. This keeps the values file compact while still allowing per-path routing to different Service ports.
 
 ```yaml
 ingress:
@@ -546,7 +553,7 @@ ingress:
   annotations:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
-  hosts:
+  rules:
     - host: lightstreamer.example.com
       paths:
         - path: /
@@ -557,8 +564,37 @@ ingress:
       secretName: lightstreamer-tls-secret
 ```
 
+To route different URL paths to different Service ports — for example, separating client traffic from management traffic:
+
+```yaml
+service:
+  ports:
+    - port: 8080
+      targetPort: httpServer
+      name: http
+    - port: 8443
+      targetPort: httpsServer
+      name: https
+
+ingress:
+  enabled: true
+  className: nginx
+  rules:
+    - host: lightstreamer.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+          backendPort: 8080    # client traffic → service port 8080
+        - path: /dashboard
+          pathType: Prefix
+          backendPort: 8443    # management traffic → service port 8443
+```
+
 > [!TIP]
 > Lightstreamer uses long-lived streaming connections. Configure appropriate proxy read/write timeouts on your Ingress controller (as shown above) to prevent connections from being dropped prematurely.
+
+> [!NOTE]
+> On OpenShift, the built-in HAProxy router processes standard Ingress resources automatically. Replace the `className` and nginx-specific annotations with the equivalent OpenShift annotations — for example, `haproxy.router.openshift.io/timeout: 3600s` for connection timeouts. For advanced TLS modes such as re-encrypt, use an OpenShift Route instead.
 
 ### Autoscaling
 
