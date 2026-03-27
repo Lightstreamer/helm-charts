@@ -39,12 +39,28 @@ spec:
   {{- if not .Values.service.ports }}
    {{ printf "service.ports must be set " | fail }}
   {{- end }}
-  {{- range .Values.service.ports }}
-    - port: {{ .port }}
-      targetPort: {{ include "lightstreamer.service.targetPort" (list $ .targetPort) }}
+  {{- $serviceCount := len .Values.service.ports }}
+  {{- $usedNames := list}}
+  {{- range $serviceIndex, $service:= .Values.service.ports }}
+    - port: {{ $service.port }}
+      targetPort: {{ include "lightstreamer.service.targetPort" (list $ $service.targetPort) }}
       protocol: TCP
-      nodePort: {{ .nodePort }}
-      name: {{ .name }}
+      {{- if $service.nodePort }}
+      nodePort: {{ $service.nodePort }}
+      {{- end }}
+      {{- $serviceName := $service.name | kebabcase | trunc 15 | trimSuffix "-" }}
+      {{- if gt $serviceCount 1 }}
+        {{- if not $serviceName }}
+          {{ printf "service.ports[%d].name must be set when multiple ports are defined" $serviceIndex | fail }}
+        {{- end }}
+        {{- if has $serviceName $usedNames }}
+          {{ printf "service.ports[%d].name '%s' is duplicated, names must be unique" $serviceIndex $serviceName | fail }}
+        {{- end }}
+        {{- $usedNames = append $usedNames $serviceName }}
+      {{- end }}
+      {{- if $serviceName }}
+      name: {{ $serviceName }}
+      {{- end }}
   {{- end }}
   selector:
     {{- include "lightstreamer.selectorLabels" . | nindent 4 }}
