@@ -93,7 +93,7 @@ Create the name of the service account to use.
 Create the Service name.
 */}}
 {{- define "lightstreamer.service.name" -}}
-{{ .Values.service.name | default (printf "%s-%s" (include "lightstreamer.fullname" . ) "service") }}
+{{- .Values.service.name | default (printf "%s-%s" (include "lightstreamer.fullname" . ) "service") }}
 {{- end }}
 
 {{/*
@@ -105,6 +105,67 @@ Create the Service target port.
 {{- $serverKey := index . 1 }}
 {{- include "lightstreamer.configuration.servers.validateServerRef" (list $ $serverKeyName $serverKey) }}
 {{- include "lightstreamer.configuration.servers.serverPortName" $serverKey -}}
+{{- end }}
+
+{{/*
+Validate the Service port name, ensuring that it matches one of the port names defined in service.ports.
+*/}}
+{{- define "lightstreamer.service.validateServicePortName" -}}
+{{- $ := index . 0}}
+{{- $portName := index . 1 }}
+{{- $portNames := list }}
+{{- range $.Values.service.ports | default list }}
+{{- $portNames = append $portNames .name }}
+{{- end }}
+{{- if not (has $portName $portNames) }}
+{{- fail (printf "service.ports[].name \"%s\" does not match any port name defined in service.ports" $portName) }}
+{{- end }}
+{{- end }}
+
+{{/*
+Resolve and validate the ingress backend port from a given port name.
+Accepts ($ portName) where portName may be empty (unnamed single port fallback).
+Emits either "name: <x>" or "number: <x>" as appropriate.
+*/}}
+{{- define "lightstreamer.ingress.backendPort" -}}
+{{- $ := index . 0 }}
+{{- $portName := index . 1 | kebabcase | trunc 15 | trimSuffix "-" }}
+{{- if $portName }}
+{{- include "lightstreamer.service.validateServicePortName" (list $ $portName) }}
+name: {{ $portName }}
+{{- else }}
+number: {{ (first $.Values.service.ports).port }}
+{{- end }}
+{{- end }}
+
+{{/*
+Validate and render the defaultBackend block for the Ingress.
+Enforces:
+- If no rules and multiple ports: defaultBackend is required.
+- If defaultBackend set but single port has no name: error.
+- If no rules and single port: auto-defaults to that port.
+Accepts the root context $.
+*/}}
+{{- define "lightstreamer.ingress.defaultBackend" -}}
+{{- $ := . }}
+{{- $firstPort := first $.Values.service.ports }}
+{{- $firstPortName := $firstPort.name | kebabcase | trunc 15 | trimSuffix "-" }}
+{{- $singlePort := eq (len $.Values.service.ports) 1 }}
+{{- $defaultBackend := $.Values.ingress.defaultBackend }}
+{{- $hasRules := $.Values.ingress.rules }}
+{{- if and $defaultBackend $singlePort (not $firstPortName) }}
+  {{- fail "ingress.defaultBackend cannot be set when the single service port has no name" }}
+{{- end }}
+{{- if and (not $hasRules) (not $singlePort) (not $defaultBackend) }}
+  {{- fail "ingress.defaultBackend must be set when no rules are defined and multiple service ports exist" }}
+{{- end }}
+{{- if or $defaultBackend (and (not $hasRules) $singlePort) }}
+defaultBackend:
+  service:
+    name: {{ include "lightstreamer.service.name" $ }}
+    port:
+      {{ include "lightstreamer.ingress.backendPort" (list $ ($defaultBackend | default $firstPortName)) | indent 6 | trim }}
+{{- end }}
 {{- end }}
 
 {{/*
@@ -1292,9 +1353,9 @@ Render the remote parameters for the proxy adapters.
 <param name="remote_params_prefix">{{ $prefix }}</param>
 
     {{- /* remote:xxx */}}
-    {{- range $paramName, $paramValue := .params}}
+    {{- range $paramName, $paramValue := .initParams}}
       {{- if not (hasPrefix $prefix $paramName) }}
-       {{ printf "adapters.%s.{...}.remoteParamsConfig.params.%s key must start with the prefix \"%s\"" $adapterName $paramName $prefix | fail }}
+       {{ printf "adapters.%s.{...}.remoteParamsConfig.initParams.%s key must start with the prefix \"%s\"" $adapterName $paramName $prefix | fail }}
       {{- end }}
 <param name={{ printf "%s" $paramName | quote }}>{{ $paramValue }}</param>
     {{- end }}
