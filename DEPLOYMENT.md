@@ -597,7 +597,7 @@ ingress:
 
 ### Autoscaling
 
-The [`autoscaling`](charts/lightstreamer/values.yaml#L357) section enables a Kubernetes Horizontal Pod Autoscaler (HPA). When enabled, the HPA overrides [`deployment.replicas`](#replicas-and-update-strategy) and manages the replica count automatically.
+The [`autoscaling`](charts/lightstreamer/values.yaml#L371) section enables a Kubernetes Horizontal Pod Autoscaler (HPA). When enabled, the HPA overrides [`deployment.replicas`](#replicas-and-update-strategy) and manages the replica count automatically.
 
 > [!IMPORTANT]
 > Lightstreamer sessions are stateful — a pod removed by scale-down will drop its active client connections. Consider setting [`cluster.maxSessionDurationMinutes`](#cluster) to bound session lifetime so connections are closed gracefully before a pod is terminated.
@@ -612,7 +612,7 @@ autoscaling:
 
 ### License
 
-The [`license`](charts/lightstreamer/values.yaml#L382) section configures the edition and license type for the Lightstreamer Broker.
+The [`license`](charts/lightstreamer/values.yaml#L396) section configures the edition and license type for the Lightstreamer Broker.
 
 Two editions are available:
 
@@ -631,13 +631,13 @@ See the [Software License Agreement](https://lightstreamer.com/distros/ls-server
 
 To configure the Community edition:
 
-1. Set [`license.edition`](charts/lightstreamer/values.yaml#L388) to `COMMUNITY`
-2. Set [`license.enabledCommunityEditionClientApi`](charts/lightstreamer/values.yaml#L403) with the Client API to use with the free license
+1. Set [`license.edition`](charts/lightstreamer/values.yaml#L402) to `COMMUNITY`
+2. Set [`license.enabledCommunityEditionClientApi`](charts/lightstreamer/values.yaml#L417) with the Client API to use with the free license
 
 ```yaml
 license:
   edition: COMMUNITY
-  enabledCommunityEditionClientApi:  "javascript_client"
+  enabledCommunityEditionClientApi: "javascript_client"
 ```
 
 #### Enterprise edition
@@ -651,9 +651,9 @@ Contact *_info@lightstreamer.com_* for evaluation without session limits or for 
 
 To configure the `ENTERPRISE` edition with a customer license:
 
-1. Set [`license.edition`](charts/lightstreamer/values.yaml#L388) to `ENTERPRISE`.
-2. Set [`license.enterprise.licenseType`](charts/lightstreamer/values.yaml#L409) to specify license type.
-3. Set [`license.enterprise.contractId`](charts/lightstreamer/values.yaml#L415) with your contract identifier.
+1. Set [`license.edition`](charts/lightstreamer/values.yaml#L402) to `ENTERPRISE`.
+2. Set [`license.enterprise.licenseType`](charts/lightstreamer/values.yaml#L427) to specify license type.
+3. Set [`license.enterprise.contractId`](charts/lightstreamer/values.yaml#L431) with your contract identifier.
 4. Configure license validation using one of these methods:
 
    **Online Validation**
@@ -667,9 +667,9 @@ To configure the `ENTERPRISE` edition with a customer license:
      --namespace <namespace>
    ```
 
-   2. Set [`license.enterprise.licenseValidation`](charts/lightstreamer/values.yaml#L419) to `ONLINE`.
+   2. Set [`license.enterprise.licenseValidation`](charts/lightstreamer/values.yaml#L444) to `ONLINE`.
    
-   3. Configure [`license.enterprise.onlinePasswordSecretRef`](charts/lightstreamer/values.yaml#L431) with the name and the key of the secret generated at step 1.
+   3. Configure [`license.enterprise.onlinePasswordSecretRef`](charts/lightstreamer/values.yaml#L450) with the name and the key of the secret generated at step 1.
 
    ```yaml
    license:
@@ -694,9 +694,9 @@ To configure the `ENTERPRISE` edition with a customer license:
      --namespace <namespace>
    ```
 
-   2. Set [`license.enterprise.licenseValidation`](charts/lightstreamer/values.yaml#L419) to `FILE`. 
+   2. Set [`license.enterprise.licenseValidation`](charts/lightstreamer/values.yaml#L444) to `FILE`. 
 
-   3. Configure [`license.enterprise.filePathSecretRef`](charts/lightstreamer/values.yaml#L439) with the name and the key of the secret generated at step 1.
+   3. Configure [`license.enterprise.filePathSecretRef`](charts/lightstreamer/values.yaml#L456) with the name and the key of the secret generated at step 1.
 
    ```yaml
    license:
@@ -710,7 +710,7 @@ To configure the `ENTERPRISE` edition with a customer license:
          key: license.lic             # Secret key from step 1
    ```
 
-See the [`license`](charts/lightstreamer/values.yaml#L382) section of `values.yaml` for full details.
+See the [`license`](charts/lightstreamer/values.yaml#L396) section of `values.yaml` for full details.
 
 ### Server socket
 
