@@ -521,7 +521,7 @@ deployment:
 
 ### Service
 
-The [`service`](charts/lightstreamer/values.yaml#L280) section configures the Kubernetes Service that exposes Lightstreamer. Each entry in `service.ports` maps a Service port to a Lightstreamer [enabled](charts/lightstreamer/values.yaml#L662) server socket by name — the chart resolves `targetPort` to the actual container port defined in the [`servers`](#server-socket) section.
+The [`service`](charts/lightstreamer/values.yaml#L275) section configures the Kubernetes Service that exposes Lightstreamer. Each entry in `service.ports` maps a Service port to a Lightstreamer [enabled](charts/lightstreamer/values.yaml#L679) server socket by name — the chart resolves `targetPort` to the actual container port defined in the [`servers`](#server-socket) section.
 
 ```yaml
 service:
@@ -535,16 +535,13 @@ service:
       name: https
 ```
 
-Use `NodePort` or `LoadBalancer` for direct external access outside of Ingress.
+Use `NodePort` or `LoadBalancer` for direct external access outside of Ingress. When using `LoadBalancer`, set `service.loadBalancerClass` to select a specific load balancer implementation if the cluster offers more than one.
 
 ### Ingress
 
 The [`ingress`](charts/lightstreamer/values.yaml#L324) section creates a Kubernetes Ingress resource to route external HTTP/S traffic to the Lightstreamer Service. Ingress is disabled by default.
 
-Each entry in `ingress.rules` defines a host and its routing paths. The optional `backendPort` on each path defaults to the first port defined in [`service.ports`](#service). When no rules are defined, the Ingress uses a `defaultBackend` that routes all traffic to the first port in [`service.ports`](#service).
-
-> [!NOTE]
-> `backendPort` is a chart-level shorthand — the template resolves it to the full Kubernetes `backend.service.port.number` in the rendered Ingress manifest. This keeps the values file compact while still allowing per-path routing to different Service ports.
+Each entry in `ingress.rules` defines a host and its routing paths. The optional `backendPortName` on each path references a Service port by name (matching an entry in [`service.ports`](#service)) and defaults to the first port name. When no rules are defined and a single Service port exists, the Ingress automatically creates a `defaultBackend` routing to that port. With multiple Service ports and no rules, [`ingress.defaultBackend`](charts/lightstreamer/values.yaml#L355) must be set explicitly. `defaultBackend` can also coexist with `rules` to catch requests that do not match any rule.
 
 ```yaml
 ingress:
@@ -564,7 +561,7 @@ ingress:
       secretName: lightstreamer-tls-secret
 ```
 
-To route different URL paths to different Service ports — for example, separating client traffic from management traffic:
+To route different hosts to different Service ports — for example, separating public client traffic from internal management traffic:
 
 ```yaml
 service:
@@ -580,14 +577,16 @@ ingress:
   enabled: true
   className: nginx
   rules:
-    - host: lightstreamer.example.com
+    - host: app.example.com
       paths:
         - path: /
           pathType: Prefix
-          backendPort: 8080    # client traffic → service port 8080
-        - path: /dashboard
+          backendPortName: https         # public client traffic
+    - host: internal.example.com
+      paths:
+        - path: /
           pathType: Prefix
-          backendPort: 8443    # management traffic → service port 8443
+          backendPortName: http          # internal / management traffic
 ```
 
 > [!TIP]
