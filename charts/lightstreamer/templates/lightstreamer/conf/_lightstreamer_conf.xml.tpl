@@ -653,7 +653,13 @@ Render the Lightstreamer configuration file.
          body part separately.
          For a request over a WebSocket, the limit applies to the request
          message payload. -->
-    <request_limit>{{ int .requestLimit | default 5000 }}</request_limit>
+  {{- if not (quote .requestLimit | empty) }}
+    <request_limit>{{ int .requestLimit }}</request_limit>
+  {{- else }}
+    <!-- 
+    <request_limit>5000</request_limit>
+    -->
+  {{- end }}
 
     <!-- Optional. Longest operation time accepted while writing data on a
          socket. If this value is exceeded, the socket is closed. Note that
