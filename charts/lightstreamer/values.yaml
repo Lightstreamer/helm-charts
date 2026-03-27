@@ -50,7 +50,7 @@ imagePullSecrets: []
 serviceAccount:
 
   # -- Specifies whether a service account should be created.
-  create: false
+  create: true
 
   # -- Specifies whether a service account should automatically mount a
   # ServiceAccount's API credentials.
@@ -132,31 +132,29 @@ deployment:
       # -- Optional. Enables the liveness probe.
       enabled: false
 
-      # -- Mandatory if enabled is set to `true` and `liveness.default` is not
-      # specified. Liveness probe configuration based on the default
-      # Lightstreamer health check.
-      healthCheck:
+      # -- Mandatory if `enabled` is set to `true` and `liveness.default` is
+      # not specified. The reference to a server socket configuration (defined
+      # in `servers`). When set, the liveness probe uses the built-in
+      # Lightstreamer health check endpoint on that server.
+      # If left empty, use `default` to specify a raw Kubernetes probe instead.
+      serverRef:
 
-        # -- Mandatory. The reference to a server socket configuration (see
-        # `servers` section below).
-        serverRef:
-
-        # Optional fields to be used to control the liveness probe behavior.
-        # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
-        initialDelaySeconds:
-        periodSeconds:
-        failureThreshold:
-        timeoutSeconds:
-        terminationGracePeriodSeconds:
-
-      # -- Mandatory if enabled is set to `true` and `liveness.healthCheck` is
-      # not specified. Default startup probe configuration to be used if no
-      # `probes.liveness.healthCheck` is specified.
+      # -- Mandatory if `enabled` is set to `true` and `liveness.serverRef` is
+      # not specified. Default liveness probe configuration to be used if no
+      # `probes.liveness.serverRef` is specified.
       # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
       default:
         # httpGet:
         #   path:
         #   port:
+
+      # Optional fields to be used to control the liveness probe behavior.
+      # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
+      initialDelaySeconds:
+      periodSeconds:
+      failureThreshold:
+      timeoutSeconds:
+      terminationGracePeriodSeconds:
 
     # -- Optional. Readiness probe configuration.
     readiness:
@@ -165,25 +163,24 @@ deployment:
       enabled: false
 
       # -- Mandatory if `enabled` is set to `true` and `readiness.default` is
-      # not specified. Readiness probe configuration based on the default
-      # Lightstreamer health check.
-      healthCheck:
+      # not specified. The reference to a server socket configuration (defined
+      # in `servers`). When set, the readiness probe uses the built-in
+      # Lightstreamer health check endpoint on that server.
+      # If left empty, use `default` to specify a raw Kubernetes probe instead.
+      serverRef:
 
-        # -- Mandatory. The reference to a server socket configuration (see
-        # `servers` section below).
-        serverRef:
+      # Optional fields to be used to control the readiness probe behavior.
+      # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
+      initialDelaySeconds:
+      periodSeconds:
+      failureThreshold:
+      timeoutSeconds:
+      successThreshold:
 
-        # Optional fields to be used to control the readiness probe behavior.
-        # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
-        initialDelaySeconds:
-        periodSeconds:
-        failureThreshold:
-        timeoutSeconds:
-        successThreshold:
-
-      # -- Mandatory if `enabled` is set to `true` and `readiness.healthCheck`
-      # is not specified. Default startup probe configuration to be used if no
-      # `probes.readiness.healthCheck` is specified.
+      # -- Mandatory if `enabled` is set to `true` and
+      # `readiness.serverRef` is not specified. Default readiness probe
+      # configuration to be used if no `probes.readiness.serverRef` is
+      # specified.
       # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
       default:
         # httpGet:
@@ -196,31 +193,29 @@ deployment:
       # -- Optional. Enables the startup probe.
       enabled: false
 
-      # -- Mandatory if `enabled` is set to `true` and `startup.default` is not
-      # specified. Startup probe configuration based on the default
-      # Lightstreamer health check.
-      healthCheck:
+      # -- Mandatory if `enabled` is set to `true` and `startup.default` is
+      # not specified. The reference to a server socket configuration (defined
+      # in `servers`). When set, the startup probe uses the built-in
+      # Lightstreamer health check endpoint on that server.
+      # If left empty, use `default` to specify a raw Kubernetes probe instead.
+      serverRef:
 
-        # -- Mandatory. The reference to a server socket configuration (see
-        # `servers` section below).
-        serverRef:
-
-        # Optional fields to be used to control the startup probe behavior.
-        # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
-        initialDelaySeconds:
-        periodSeconds:
-        failureThreshold:
-        timeoutSeconds:
-        terminationGracePeriodSeconds:
-
-      # -- Mandatory if `enabled` is set to `true` and `startup.healthCheck` is
-      # not specified. Default startup probe configuration to be used if no
-      # `probes.startup.healthCheck` is specified.
+      # -- Mandatory if `enabled` is set to `true` and
+      # `startup.serverRef` is not specified. Default startup probe
+      # configuration to be used if no `probes.startup.serverRef` is specified.
       # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
       default:
         # httpGet:
         #   path:
         #   port:
+
+      # Optional fields to be used to control the startup probe behavior.
+      # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
+      initialDelaySeconds:
+      periodSeconds:
+      failureThreshold:
+      timeoutSeconds:
+      terminationGracePeriodSeconds:
 
   # -- Resource management for Pod and the container.
   # See https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/.
@@ -243,9 +238,9 @@ deployment:
   extraVolumeMounts: []
 
   # -- Additional environment variables.
-  extraEnv:
-    - name: JAVA_OPTS
-      value: "-server -Xms1g -Xmx4g"
+  extraEnv: []
+    # - name: JAVA_OPTS
+    #   value: "-server -Xms1g -Xmx4g"
 
   # -- Extra containers configuration.
   # See https://kubernetes.io/docs/concepts/workloads/pods/init-containers/.
@@ -294,7 +289,7 @@ service:
 
   # -- Optional. The service type.
   # See https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types.
-    type: ClusterIP
+  type: ClusterIP
 
   # -- Optional. The IP address of the service.
   # @default -- Allocated by the Kubernetes control plane
@@ -337,16 +332,35 @@ ingress:
   # -- Additional Ingress labels.
   labels: {}
 
-  # -- The name of the Ingress class.
+  # -- (string) Optional. The name of the Ingress class.
   className:
 
-  # -- List of Ingress rules.
-  # if not set, the ingress will be backed by the service.
-  hosts:
+  # -- Optional. List of Ingress rules.
+  # If not set and a single service port is defined, a default backend is
+  # automatically configured to route all traffic to that port, unless
+  # `defaultBackend` is explicitly specified, in which case that value is used.
+  # If not set and multiple service ports are defined, `defaultBackend` must be
+  # explicitly specified.
+  # See https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-rules.
+  rules:
     # - host:
     #   paths:
     #     - path: /
     #       pathType: Prefix
+    #       # -- (string) Optional. The name of the service port to route to.
+    #       # Must match one of the names defined in `service.ports`.
+    #       # Defaults to the first port defined in `service.ports`.
+    #       backendPortName:
+
+  # -- (string) Optional. Name of the service port to use as the default
+  # backend, for requests that do not match any rule.
+  # Must match one of the names defined in `service.ports`.
+  # Can coexist with `rules`.
+  # Required when `rules` is not set and multiple service ports are defined.
+  # Must not be set when the single service port has no name
+  # (auto-defaulted in that case).
+  # See https://kubernetes.io/docs/concepts/services-networking/ingress/#default-backend.
+  defaultBackend:
 
   # -- TLS configuration for the Ingress.
   # See https://kubernetes.io/docs/concepts/services-networking/ingress/#tls.
@@ -1100,6 +1114,243 @@ keystores:
       # name:
       # key:
 
+# -- Mandatory. Global socket configuration.
+globalSocket:
+
+  # -- (int) Mandatory. Longest inactivity time accepted while waiting for a
+  # slow request to be received. If this value is exceeded, the socket is
+  # closed. Reusable HTTP connections are also closed if they are not reused
+  # for longer than this time.
+  # The time actually considered may be approximated and may be a few seconds
+  # higher, for internal performance reasons.
+  # A `0` value suppresses the check.
+  readTimeoutMillis: 20000
+
+  # -- (int) Optional. Longest inactivity time accepted while waiting for a
+  # slow operation during a TLS/SSL handshake. This involves both reads, writes,
+  # and encryption tasks managed by the `TLS-SSL HANDSHAKE` or
+  # `TLS-SSL AUTHENTICATION` internal pools. If this value is exceeded, the
+  # socket is closed.
+  # The time actually considered may be approximated and may be a few seconds
+  # higher, for internal performance reasons.
+  # A `0` value suppresses the check.
+  handshakeTimeoutMillis: 4000
+
+  # -- (int) Optional. Maximum length in bytes accepted for a request.
+  # For an HTTP GET request, the limit applies to the whole request, including
+  # the headers.
+  # For an HTTP POST request, the limit applies to the header part and the body
+  # part separately.
+  # For a request over a WebSocket, the limit applies to the request message
+  # payload.
+  # If not specified, the check is suppressed.
+  requestLimit: 50000
+
+  # -- Optional. Longest operation time accepted while writing data on a socket.
+  # If this value is exceeded, the socket is closed. Note that this may also
+  # affect very slow clients.
+  # The time actually considered may be approximated and may be a few seconds
+  # higher, for internal performance reasons.
+  # If not specified or `0`, the check is suppressed.
+  writeTimeoutMillis: 120000
+
+  # -- Mandatory. WebSocket support configuration.
+  webSocket:
+
+    # -- (int) Optional. Maximum time the Server is allowed to wait before
+    # answering to a client "ping" request. In case a client sends very
+    # frequent "ping" requests, only the "pong" associated with the most recent
+    # request received is sent, while the previous requests will be ignored.
+    # Note that the above is possible also when `0` is specified.
+    maxPongDelayMillis: 0
+
+    # -- (int) Optional. Maximum time the Server is allowed to wait for the
+    # client "close" frame, in case the Server is sending its own close" frame
+    # first, in order to try to close the connection in a clean way.
+    # If not specified, no timeout is set and the global
+    # `globalSocket.readTimeoutMillis` value applies.
+    maxClosingWaitMillis:
+
+    # -- (int) Optional. Maximum payload size allowed for an outbound frame.
+    # When larger updates have to be sent, the related WebSocket messages will
+    # be split into multiple frames.
+    # The Server may enforce a lower limit for this setting.
+    maxOutboundFrameSize: 16384
+
+# -- Mandatory. Security configuration.
+security:
+
+  # -- Optional. Disabling of the protection for JavaScript pages, supplied by
+  # the Server, that carry user data.
+  # JavaScript pages can be supplied upon requests by old versions of the Web
+  # and Node.js (Unified API) Client Libraries, whereas recent versions no
+  # longer make use of this kind of pages. The protection prevents such pages
+  # from being imported in a _<script>_ block and, as a consequence, from being
+  # directly executed within a hosting page regardless of its origin.
+  # This protection allows the Server to fully comply with the prescriptions to
+  # prevent the so-called "JavaScript Hijacking".
+  # If set to `true`, the protection is enabled.
+  # If set to `false`, the protection is disabled. It can be set in order to
+  # support communication between the application front-end pages and the
+  # Lightstreamer Broker in specific use cases; see the Client Guide for the
+  # Web (Unified API) Client SDK earlier than 8.0.0 for details. It can also be
+  # set in order to ensure compatibility with even older Web Client Libraries
+  # (version 4.1 build 1308 or previous). Note, however, that basic protection
+  # against JavaScript Hijacking can still be granted, simply by ensuring that
+  # request authorization is never based on information got from the request
+  # cookies. This already holds for any session-related request other than
+  # session-creation ones, for which the request URL is always checked against
+  # the Server-generated session ID. For session-creation requests, this
+  # depends on the Metadata Adapter implementation, but can be enforced by
+  # setting `enableForwardCookies` to `false`.
+  enableProtectedJs: false
+
+  # -- Optional. Use this setting to enable the forwarding of the cookies to
+  # the Metadata Adapter through the `httpHeaders` argument of the `notifyUser`
+  # method.
+  # Please note that in any case cookies should not be used to authenticate
+  # users, otherwise, having `enableProtectedJs` set to `false` and/or a too
+  # permissive policy in the `crossDomainPolicy` will expose the server to CSRF
+  # attacks.
+  # If set to `true`, cookies are forwarded to the Metadata Adapter.
+  # If set to `false`, cookies are hidden from the Metadata Adapter.
+  enableCookiesForwarding: false
+
+  # -- Optional. Configuration of the origins to be allowed by the browsers to
+  # consume responses to requests sent to this Server through cross-origin XHR
+  # or through WebSockets; in fact, when a requesting page asks for streaming
+  # data in this way, the browser should specify the page origin through the
+  # `Origin` HTTP header, to give the Server a chance to accept or refuse the
+  # request. This is the most common way streaming data is requested by the Web
+  # (Unified API) Client Library. You can see the Client Guide for the Web
+  # (Unified API) Client SDK earlier than 8.0.0 for details on all the possible
+  # use cases.
+  # If a request origin is not matched against any of the configured rules, a
+  # Websocket initiation request will be refused, whereas a HTTP request will
+  # not be denied (i.e.: a 200 OK will be returned) but the response body will
+  # be left empty, in accordance with the CORS specifications.
+  # If no origin is specified by the user-agent, the request will always be
+  # accepted.
+  # Note that sending the Origin header is a client-side duty. In fact, most
+  # modern browsers, upon a request for a cross-origin XHR or WebSocket by a
+  # page, will send the Origin header, while older browsers will directly fail
+  # to send the request. Non-browser clients usually don't have to perform
+  # origin checks; so they don't send the Origin header and thus their requests
+  # are always authorized.
+  crossDomainPolicy:
+
+    # -- Optional. Enables this cross-domain policy configuration.
+    enabled: true
+
+    # -- (int) Optional. In case an HTTP OPTIONS request is sent to authorize
+    # future requests, the server allows the client to store the result of such
+    # OPTIONS for the specified number of seconds. Thus a previously authorized
+    # client may not give up its authorization, even if the related origin is
+    # removed from the list and the server is restarted, until its
+    # authorization expires.
+    optionsMaxAgeSeconds: 3600
+
+    # -- (string) Optional. In case the client wishes to send custom headers to
+    # the server, it requires approval from the server itself. This setting
+    # permits to specify a comma separated list of extra headers to be allowed
+    # in the client requests. Note that a space is expected after each comma
+    # (e.g.: `acceptExtraHeaders: "custom-header1, custom-header2"`).
+    acceptExtraHeaders: ""
+
+    # -- Optional. Specify if the server should authorize the client to send its
+    # credentials on a CORS request. This setting does not impact the
+    # user/password sent over the Lightstreamer protocol, but, if set to
+    # `false`, might prevent, or force a fallback connection, on clients
+    # sending CORS requests carrying cookies, http-basic-authentication or
+    # client-side certificates.
+    acceptCredentials: true
+
+    # -- Optional. Map of Origins allowed to consume responses to cross-origin
+    # requests. Every entry in the map is a rule against which the Origin header
+    # will be checked.
+    allowAccessFrom:
+
+      # -- Optional. Defines a rule against which Origin headers will be
+      # checked.
+      fromEveryWhere:
+
+        # -- (string) Mandatory. A valid scheme name (usually http or https)
+        # or `*`; the latter matches both http and https scheme, but it doesn't
+        # match other schemes.
+        scheme: "*"
+
+        # -- (string) Mandatory. A valid host name, IPv4 or IPv6 representing,
+        # an authorized Origin. Also a `*` is accepted with the meaning of
+        # "any host or IP".
+        # If a host name is specified it can be prefixed with a wildcard as long
+        # as at least the second level domain is explicitly specified (i.e.:
+        # `*.my-domain.com` and `*.sites.my-domain.com` are valid entries while
+        # `*.com` is not).
+        host: "*"
+
+        # -- Mandatory. A a valid port or `*` to specify any port.
+        port: "*"
+
+      # fromWwwMyDomain:
+      #   scheme: https
+      #   host: "www.my-domain.com"
+      #   port: 443
+      # fromMyDomain:
+      #   scheme: https
+      #   host: "*.my-domain.com"
+      #   port: 443
+      # fromLocal:
+      #   scheme: https
+      #   host: "192.168.0.101"
+      #   port: "*"
+      # fromHttpsIpv6:
+      #   scheme: https
+      #   host: "2001:0db8:aaaa:0000:0000:dddd:eeee:0000"
+      #   port: 443
+      # fromIpvs:
+      #   scheme: "*"
+      #   host: "2001:0db8:aaaa::dddd:eeee:0"
+      #   port: "*"
+
+  # -- Optional. List of Origin domains or subdomains to be allowed by the
+  # browsers to access data on HTML pages supplied by this Server.
+  # This was one of the ways used by the Web (Unified API) Client SDK earlier
+  # than 8.0.0 to request streaming data; see the Client Guide for these Web
+  # (Unified API) Client SDK versions for details on which use cases involve
+  # accessing data through HTML pages.
+  # In this kind of requests, the requesting page should be allowed by the
+  # browser to access data contained in the Server-originated page only if
+  # both pages declare a common subdomain. So, the page should declare a
+  # subdomain as its `document.domain` property and will ask the Server to
+  # declare the same subdomain on the response page.
+  # In that case, the Server will be allowed to set the requested subdomain
+  # as the `document.domain` property of the data page only if configured
+  # here, otherwise the whole request will be refused.
+  # On the other hand, if no setting is provided, then this check is
+  # disabled. Note that, in any case, the consistency of the declared
+  # subdomain with the url used to request the data page must be ensured by
+  # the browser.
+  # If the requesting page doesn't specify any subdomain for the response,
+  # the request will always be allowed; in this case, a same-domain access to
+  # the Server data page will be performed by the browser.
+  allowedDomains: []
+    # - "my-domain.com"
+    # - "my-alt-domain.com"
+
+  # -- (string) Optional. Server identification policy to be used for all server
+  # responses. Upon any HTTP request, the Server identifies itself through the
+  # `Server` HTTP response header. However, omitting version information may
+  # make external attacks more difficult.
+  # If set to `FULL`, the Server identifies itself as:
+  # `Lightstreamer Server/X.Y.Z build BBBB (Lightstreamer Push Server -
+  # www.lightstreamer.com) EEEEEE edition`.
+  # If set to `MINIMAL`, the Server identifies itself, depending on the
+  # Edition:
+  # - for Enterprise edition, as `Lightstreamer Server`;
+  # - for Community edition, as `Lightstreamer Server (Lightstreamer Push Server
+  # - www.lightstreamer.com) COMMUNITY edition`.
+  serverIdentificationPolicy: FULL
+
 # -- Mandatory. Logging configuration for the Lightstreamer Broker.
 logging:
 
@@ -1220,7 +1471,7 @@ logging:
         # -- Optional. Logging of system components initialization.
         # At `DEBUG` level, initialization details, error details and all
         # configuration settings are reported.
-        init: INFO
+        init: DEBUG
 
         # -- Optional. Logging of license check phase.
         # At `DEBUG` level, check details and error details can be found in case
@@ -2017,243 +2268,6 @@ management:
     availableOnServers: []
       # - defaultServer
 
-# -- Mandatory. Global socket configuration.
-globalSocket:
-
-  # -- (int) Mandatory. Longest inactivity time accepted while waiting for a
-  # slow request to be received. If this value is exceeded, the socket is
-  # closed. Reusable HTTP connections are also closed if they are not reused
-  # for longer than this time.
-  # The time actually considered may be approximated and may be a few seconds
-  # higher, for internal performance reasons.
-  # A `0` value suppresses the check.
-  readTimeoutMillis: 20000
-
-  # -- (int) Optional. Longest inactivity time accepted while waiting for a
-  # slow operation during a TLS/SSL handshake. This involves both reads, writes,
-  # and encryption tasks managed by the `TLS-SSL HANDSHAKE` or
-  # `TLS-SSL AUTHENTICATION` internal pools. If this value is exceeded, the
-  # socket is closed.
-  # The time actually considered may be approximated and may be a few seconds
-  # higher, for internal performance reasons.
-  # A `0` value suppresses the check.
-  handshakeTimeoutMillis: 4000
-
-  # -- (int) Optional. Maximum length in bytes accepted for a request.
-  # For an HTTP GET request, the limit applies to the whole request, including
-  # the headers.
-  # For an HTTP POST request, the limit applies to the header part and the body
-  # part separately.
-  # For a request over a WebSocket, the limit applies to the request message
-  # payload.
-  # If not specified, the check is suppressed.
-  requestLimit: 50000
-
-  # -- Optional. Longest operation time accepted while writing data on a socket.
-  # If this value is exceeded, the socket is closed. Note that this may also
-  # affect very slow clients.
-  # The time actually considered may be approximated and may be a few seconds
-  # higher, for internal performance reasons.
-  # If not specified or `0`, the check is suppressed.
-  writeTimeoutMillis: 120000
-
-  # -- Mandatory. WebSocket support configuration.
-  webSocket:
-
-    # -- (int) Optional. Maximum time the Server is allowed to wait before
-    # answering to a client "ping" request. In case a client sends very
-    # frequent "ping" requests, only the "pong" associated with the most recent
-    # request received is sent, while the previous requests will be ignored.
-    # Note that the above is possible also when `0` is specified.
-    maxPongDelayMillis: 0
-
-    # -- (int) Optional. Maximum time the Server is allowed to wait for the
-    # client "close" frame, in case the Server is sending its own close" frame
-    # first, in order to try to close the connection in a clean way.
-    # If not specified, no timeout is set and the global
-    # `globalSocket.readTimeoutMillis` value applies.
-    maxClosingWaitMillis:
-
-    # -- (int) Optional. Maximum payload size allowed for an outbound frame.
-    # When larger updates have to be sent, the related WebSocket messages will
-    # be split into multiple frames.
-    # The Server may enforce a lower limit for this setting.
-    maxOutboundFrameSize: 16384
-
-# -- Mandatory. Security configuration.
-security:
-
-  # -- Optional. Disabling of the protection for JavaScript pages, supplied by
-  # the Server, that carry user data.
-  # JavaScript pages can be supplied upon requests by old versions of the Web
-  # and Node.js (Unified API) Client Libraries, whereas recent versions no
-  # longer make use of this kind of pages. The protection prevents such pages
-  # from being imported in a _<script>_ block and, as a consequence, from being
-  # directly executed within a hosting page regardless of its origin.
-  # This protection allows the Server to fully comply with the prescriptions to
-  # prevent the so-called "JavaScript Hijacking".
-  # If set to `true`, the protection is enabled.
-  # If set to `false`, the protection is disabled. It can be set in order to
-  # support communication between the application front-end pages and the
-  # Lightstreamer Broker in specific use cases; see the Client Guide for the
-  # Web (Unified API) Client SDK earlier than 8.0.0 for details. It can also be
-  # set in order to ensure compatibility with even older Web Client Libraries
-  # (version 4.1 build 1308 or previous). Note, however, that basic protection
-  # against JavaScript Hijacking can still be granted, simply by ensuring that
-  # request authorization is never based on information got from the request
-  # cookies. This already holds for any session-related request other than
-  # session-creation ones, for which the request URL is always checked against
-  # the Server-generated session ID. For session-creation requests, this
-  # depends on the Metadata Adapter implementation, but can be enforced by
-  # setting `enableForwardCookies` to `false`.
-  enableProtectedJs: false
-
-  # -- Optional. Use this setting to enable the forwarding of the cookies to
-  # the Metadata Adapter through the `httpHeaders` argument of the `notifyUser`
-  # method.
-  # Please note that in any case cookies should not be used to authenticate
-  # users, otherwise, having `enableProtectedJs` set to `false` and/or a too
-  # permissive policy in the `crossDomainPolicy` will expose the server to CSRF
-  # attacks.
-  # If set to `true`, cookies are forwarded to the Metadata Adapter.
-  # If set to `false`, cookies are hidden from the Metadata Adapter.
-  enableCookiesForwarding: false
-
-  # -- Optional. Configuration of the origins to be allowed by the browsers to
-  # consume responses to requests sent to this Server through cross-origin XHR
-  # or through WebSockets; in fact, when a requesting page asks for streaming
-  # data in this way, the browser should specify the page origin through the
-  # `Origin` HTTP header, to give the Server a chance to accept or refuse the
-  # request. This is the most common way streaming data is requested by the Web
-  # (Unified API) Client Library. You can see the Client Guide for the Web
-  # (Unified API) Client SDK earlier than 8.0.0 for details on all the possible
-  # use cases.
-  # If a request origin is not matched against any of the configured rules, a
-  # Websocket initiation request will be refused, whereas a HTTP request will
-  # not be denied (i.e.: a 200 OK will be returned) but the response body will
-  # be left empty, in accordance with the CORS specifications.
-  # If no origin is specified by the user-agent, the request will always be
-  # accepted.
-  # Note that sending the Origin header is a client-side duty. In fact, most
-  # modern browsers, upon a request for a cross-origin XHR or WebSocket by a
-  # page, will send the Origin header, while older browsers will directly fail
-  # to send the request. Non-browser clients usually don't have to perform
-  # origin checks; so they don't send the Origin header and thus their requests
-  # are always authorized.
-  crossDomainPolicy:
-
-    # -- Optional. Enables this cross-domain policy configuration.
-    enabled: true
-
-    # -- (int) Optional. In case an HTTP OPTIONS request is sent to authorize
-    # future requests, the server allows the client to store the result of such
-    # OPTIONS for the specified number of seconds. Thus a previously authorized
-    # client may not give up its authorization, even if the related origin is
-    # removed from the list and the server is restarted, until its
-    # authorization expires.
-    optionsMaxAgeSeconds: 3600
-
-    # -- (string) Optional. In case the client wishes to send custom headers to
-    # the server, it requires approval from the server itself. This setting
-    # permits to specify a comma separated list of extra headers to be allowed
-    # in the client requests. Note that a space is expected after each comma
-    # (e.g.: `acceptExtraHeaders: "custom-header1, custom-header2"`).
-    acceptExtraHeaders: ""
-
-    # -- Optional. Specify if the server should authorize the client to send its
-    # credentials on a CORS request. This setting does not impact the
-    # user/password sent over the Lightstreamer protocol, but, if set to
-    # `false`, might prevent, or force a fallback connection, on clients
-    # sending CORS requests carrying cookies, http-basic-authentication or
-    # client-side certificates.
-    acceptCredentials: true
-
-    # -- Optional. Map of Origins allowed to consume responses to cross-origin
-    # requests. Every entry in the map is a rule against which the Origin header
-    # will be checked.
-    allowAccessFrom:
-
-      # -- Optional. Defines a rule against which Origin headers will be
-      # checked.
-      fromEveryWhere:
-
-        # -- (string) Mandatory. A valid scheme name (usually http or https)
-        # or `*`; the latter matches both http and https scheme, but it doesn't
-        # match other schemes.
-        scheme: "*"
-
-        # -- (string) Mandatory. A valid host name, IPv4 or IPv6 representing,
-        # an authorized Origin. Also a `*` is accepted with the meaning of
-        # "any host or IP".
-        # If a host name is specified it can be prefixed with a wildcard as long
-        # as at least the second level domain is explicitly specified (i.e.:
-        # `*.my-domain.com` and `*.sites.my-domain.com` are valid entries while
-        # `*.com` is not).
-        host: "*"
-
-        # -- Mandatory. A a valid port or `*` to specify any port.
-        port: "*"
-
-      # fromWwwMyDomain:
-      #   scheme: https
-      #   host: "www.my-domain.com"
-      #   port: 443
-      # fromMyDomain:
-      #   scheme: https
-      #   host: "*.my-domain.com"
-      #   port: 443
-      # fromLocal:
-      #   scheme: https
-      #   host: "192.168.0.101"
-      #   port: "*"
-      # fromHttpsIpv6:
-      #   scheme: https
-      #   host: "2001:0db8:aaaa:0000:0000:dddd:eeee:0000"
-      #   port: 443
-      # fromIpvs:
-      #   scheme: "*"
-      #   host: "2001:0db8:aaaa::dddd:eeee:0"
-      #   port: "*"
-
-  # -- Optional. List of Origin domains or subdomains to be allowed by the
-  # browsers to access data on HTML pages supplied by this Server.
-  # This was one of the ways used by the Web (Unified API) Client SDK earlier
-  # than 8.0.0 to request streaming data; see the Client Guide for these Web
-  # (Unified API) Client SDK versions for details on which use cases involve
-  # accessing data through HTML pages.
-  # In this kind of requests, the requesting page should be allowed by the
-  # browser to access data contained in the Server-originated page only if
-  # both pages declare a common subdomain. So, the page should declare a
-  # subdomain as its `document.domain` property and will ask the Server to
-  # declare the same subdomain on the response page.
-  # In that case, the Server will be allowed to set the requested subdomain
-  # as the `document.domain` property of the data page only if configured
-  # here, otherwise the whole request will be refused.
-  # On the other hand, if no setting is provided, then this check is
-  # disabled. Note that, in any case, the consistency of the declared
-  # subdomain with the url used to request the data page must be ensured by
-  # the browser.
-  # If the requesting page doesn't specify any subdomain for the response,
-  # the request will always be allowed; in this case, a same-domain access to
-  # the Server data page will be performed by the browser.
-  allowedDomains: []
-    # - "my-domain.com"
-    # - "my-alt-domain.com"
-
-  # -- (string) Optional. Server identification policy to be used for all server
-  # responses. Upon any HTTP request, the Server identifies itself through the
-  # `Server` HTTP response header. However, omitting version information may
-  # make external attacks more difficult.
-  # If set to `FULL`, the Server identifies itself as:
-  # `Lightstreamer Server/X.Y.Z build BBBB (Lightstreamer Push Server -
-  # www.lightstreamer.com) EEEEEE edition`.
-  # If set to `MINIMAL`, the Server identifies itself, depending on the
-  # Edition:
-  # - for Enterprise edition, as `Lightstreamer Server`;
-  # - for Community edition, as `Lightstreamer Server (Lightstreamer Push Server
-  # - www.lightstreamer.com) COMMUNITY edition`.
-  serverIdentificationPolicy: FULL
-
 # -- Mandatory. Push session configuration.
 pushSession:
 
@@ -2272,6 +2286,8 @@ pushSession:
   # However, this support does not apply to the Internal Web Server and to the
   # Monitoring Dashboard.
   serviceUrlPrefixes: []
+    # - "/server1"
+    # - "/server1ws"
 
   # -- Mandatory. Maximum size of HTTP streaming responses; when the maximum
   # size is reached, the connection is closed but the session remains active
@@ -4189,7 +4205,7 @@ adapters:
           # counterpart.
           # Every key is the name of the parameter and must start with the value
           # specified in the `prefix` setting.
-          params:
+          initParams:
             # "remote:xxxx": my value for the remote counterpart
 
         # -- (int) Optional. Timeout for sent requests. A negative value stands
@@ -4628,7 +4644,7 @@ adapters:
             # counterpart.
             # Every key is the name of the parameter and must start with the
             # value specified in the `prefix` setting.
-            params:
+            initParams:
               # "remote:xxxx": my value for the remote counterpart
 
           # -- (int) Optional. Timeout for sent requests. A negative value
@@ -4677,6 +4693,78 @@ adapters:
           # - otherwise: `2` seconds less than the `keepaliveTimeoutMillis`
           # @default -- see description
           keepaliveHintMillis:
+
+  welcomeAdapterSet:
+    enabled: true
+    id: "WELCOME"
+
+    provisioning:
+      fromPathInImage: /lightstreamer/adapters/welcome_res
+
+    metadataProvider:
+      inProcessMetadataAdapter:
+        adapterClass: com.lightstreamer.welcome.adapters.metadata.MixedMetadataAdapter
+        installDir: metadata
+        initParams:
+          # The length of the snapshot for items subscribed to in DISTINCT mode.
+          distinct_snapshot_length: 30
+
+          # Items supplied by the CHAT Data Adapter
+          item_family_3: chat_room
+          modes_for_item_family_3: DISTINCT
+
+          # Items supplied by the STOCKS Data Adapter
+          item_family_4: item.*
+          modes_for_item_family_4: MERGE
+
+          # Items supplied by the TELEMETRY Data Adapter
+          item_family_5: L_driver_1
+          modes_for_item_family_5: DISTINCT
+          item_family_6: P_driver_1
+          modes_for_item_family_6: MERGE
+
+          # Items supplied bye the ROOMBALL Data Adapter
+          item_family_7: Players_list*
+          modes_for_item_family_7: COMMAND
+
+          # Size of the room and max number of players in the Room-Ball Demo
+          word_size_x: 478
+          word_size_y: 200
+          max_players: 100
+    
+    dataProviders:
+      stocks:
+        enabled: true
+        name: "STOCKS"
+        inProcessDataAdapter:
+          adapterClass: com.lightstreamer.examples.stocklist_demo.adapters.StockQuotesDataAdapter
+          installDir: stocklist
+
+      roomBall:
+        enabled: true
+        name: "ROOMBALL"
+        inProcessDataAdapter:
+          adapterClass: com.lightstreamer.examples.roomball_demo.adapters.RoomBallAdapter
+          installDir: roomball
+          initParams:
+            # Frame rate for physics calculations (expressed as an interval in milliseconds)
+            frameRate: 10
+            # Number of steps for a single frame
+            stepsPerFrame: 4
+
+      chat:
+        enabled: true
+        name: "CHAT"
+        inProcessDataAdapter:
+          adapterClass: com.lightstreamer.examples.chat_demo.adapters.ChatDataAdapter
+          installDir: chat
+
+      telemetry:
+        enabled: true
+        name: "TELEMETRY"
+        inProcessDataAdapter:
+          adapterClass: com.lightstreamer.examples.race_telemetry_demo.adapters.DataProviderImpl
+          installDir: telemetry
 
 # -- Optional. Connectors configuration.
 connectors:
