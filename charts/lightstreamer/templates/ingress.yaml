@@ -42,27 +42,24 @@ spec:
       secretName: {{ .secretName }}
     {{- end }}
   {{- end }}
-  {{- range .Values.ingress.hosts }}
+  {{- if .Values.ingress.rules }}
   rules:
-    - host: {{ .host | quote }}
+    {{- range $ruleIndex, $rule := .Values.ingress.rules }}
+    - host: {{ $rule.host | quote }}
+      {{- if $rule.paths }}
       http:
         paths:
-          {{- range .paths }}
-          - path: {{ .path }}
-            {{- with .pathType }}
-            pathType: {{ . }}
-            {{- end }}
+          {{- range $pathIndex, $path := $rule.paths }}
+          - path: {{ $path.path }}
+            pathType: {{ required (printf "rules[%d].paths[%d].pathType is required" $ruleIndex $pathIndex) $path.pathType }}
             backend:
               service:
-                name: {{ include "lightstreamer.service.name" . }}
+                name: {{ include "lightstreamer.service.name" $ }}
                 port:
-                  number: {{ (first .Values.service.ports).port }}
+                  {{ include "lightstreamer.ingress.backendPort" (list $ ($path.backendPortName | default (first $.Values.service.ports).name)) | indent 18 | trim }}
           {{- end }}
-  {{- else }}
-  defaultBackend:
-    service:
-      name: {{ include "lightstreamer.service.name" . }}
-      port:
-        number: {{ (first .Values.service.ports).port }}
-   {{- end }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+  {{ include "lightstreamer.ingress.defaultBackend" . | indent 2 | trim }}
 {{- end }}
