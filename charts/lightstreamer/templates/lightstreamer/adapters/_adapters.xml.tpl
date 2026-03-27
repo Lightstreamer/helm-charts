@@ -59,8 +59,8 @@ Render the Lightstreamer configuration file of an Adapter Set
       {{- end }}
     {{- else if hasKey . "proxyMetadataAdapter" }}
       {{- /* PROXY METADATA ADAPTER */ -}}
-      {{- with .proxyMetadataAdapter}}
-        {{- $isRobust := .enableRobustAdapter | default false -}}
+      {{- with .proxyMetadataAdapter }}
+        {{- $isRobust := .enableRobustAdapter | default false }}
     <adapter_class>{{ include "lightstreamer.adapters.proxy.common.class" . }}</adapter_class>
     <classloader>log-enabled</classloader>
 
