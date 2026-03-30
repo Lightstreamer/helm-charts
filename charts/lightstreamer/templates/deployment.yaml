@@ -457,6 +457,12 @@ spec:
             - name: lightstreamer-error-page
               mountPath: /lightstreamer/conf/error-page
           {{- end }}
+          {{- with (.Values.webServer).pagesVolume }}
+            {{- if .name }}
+            - name: {{ .name }}
+              mountPath: {{ include "lightstreamer.webServer.pages-source.dir" . }}
+            {{- end }}
+          {{- end }}
           {{- /* START VOLUME MOUNTS FOR KEYSTORES */ -}}
           {{- range $key, $value := .Values.keystores }}
             {{- if $value }}
