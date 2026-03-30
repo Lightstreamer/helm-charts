@@ -2,7 +2,6 @@
 
 This guide covers deploying, configuring, and managing the Lightstreamer Broker on a Kubernetes cluster using the Lightstreamer Helm Chart.
 
-
 ## Table of contents
 - [Prerequisites](#prerequisites)
 - [Deployment steps](#deployment-steps)
@@ -1270,8 +1269,35 @@ mpn:
       dialect: "org.hibernate.dialect.MySQL5Dialect"
 ```
 
-See the [`mpn`](charts/lightstreamer/values.yaml#L2699) section of `values.yaml` for full details.
+In addition to the database, at least one Apple or Google application must be configured under `mpn.appleNotifierConfig.apps` or `mpn.googleNotifierConfig.apps` respectively, together with the required credentials (APNs certificate keystore for Apple, Firebase service account JSON for Google). For example, to enable Google FCM notifications:
 
+1. Create a ConfigMap from the Firebase service account JSON:
+
+   ```sh
+   kubectl create configmap fcm-service-account \
+     --from-file=service-account.json=<path/to/service-account.json> \
+     --namespace <namespace>
+   ```
+
+2. Configure the app:
+
+   ```yaml
+   mpn:
+     googleNotifierConfig:
+       apps:
+         myApp:
+           enabled: true
+           packageName: "com.example.myapp"
+           serviceLevel: production
+           serviceJsonFileRef:
+             name: fcm-service-account
+             key: service-account.json
+   ```
+
+> [!NOTE]
+> Mobile Push Notification support is an optional Enterprise edition feature.
+
+See the [`mpn`](charts/lightstreamer/values.yaml#L2699) section of `values.yaml` for full details.
 
 ### Web server
 
@@ -1740,7 +1766,6 @@ adapters:
         proxyDataAdapter:
           requestReplyPort: 7003
 ```
-
 
 ### Connectors
 
