@@ -1071,8 +1071,7 @@ Render the Lightstreamer configuration file.
              (by default, available at /dashboard). -->
         <rmi_connector>
     {{- with required "management.jmx.rmiConnector must be set" .rmiConnector }}
-      {{- $rmiConnectorEnabled := not (eq .enabled false) }}
-      {{- if $rmiConnectorEnabled}}
+      {{- if .enabled}}
 
             <!-- Mandatory for this block. TCP port on which the RMI Connector will
                  be available. This is the port that has to be specified in the
@@ -1383,8 +1382,7 @@ Render the Lightstreamer configuration file.
          by the custom Metadata Adapter included. -->
     <dashboard>
   {{- with required "management.dashboard must be set" .dashboard }}
-    {{- $dashboardEnabled := not (eq .enabled false) }}
-    {{- if $dashboardEnabled }}
+    {{- if .enabled }}
 
         <!-- Optional. Enabling of the requests for the JMX Tree page, which is
              part of the Monitoring Dashboard.
@@ -1510,8 +1508,7 @@ Render the Lightstreamer configuration file.
     </dashboard>
 
   {{- with required "management.healthCheck must be set" .healthCheck }}
-    {{- $healthCheckEnabled := not (eq .enabled false) }}
-    {{- if $healthCheckEnabled }}
+    {{- if .enabled }}
     <!-- Optional. Configuration of the "/lightstreamer/healthcheck" request
          url, which allows a load balancer to test for Server responsiveness
          to external requests. The Server should always answer to the
