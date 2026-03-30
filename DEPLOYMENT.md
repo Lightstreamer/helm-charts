@@ -1319,6 +1319,8 @@ webServer:
   persistencyMinutes: 10    # allow browser caching
 ```
 
+See the [`webServer`](charts/lightstreamer/values.yaml#L3143) section of `values.yaml` for full details.
+
 ### Cluster
 
 The [`cluster`](charts/lightstreamer/values.yaml#L3225) section configures session affinity for multi-instance deployments. When multiple Lightstreamer replicas run behind a load balancer, all requests for the same client session must reach the same instance.
