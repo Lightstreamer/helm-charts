@@ -2607,8 +2607,16 @@ Render the Lightstreamer configuration file.
              hence, subdirectories of the pages directory with conflicting
              names would be ignored.
              Default: ../pages -->
-        {{- if .pagesDir }}
-        <pages_dir>{{ .pagesDir }}</pages_dir>
+        {{- if (.pagesVolume).name }}
+        {{- $extraVolumeNames := list }}
+        {{- range $.Values.deployment.extraVolumes }}
+          {{- $extraVolumeNames = append $extraVolumeNames .name }}
+        {{- end }}
+        {{- $extraVolumeNames := $extraVolumeNames | uniq }}
+        {{- if not (has .pagesVolume.name $extraVolumeNames) }}
+          {{- fail "webServer.pagesVolume.name must be set to a volume defined in deployment.extraVolumes" }}
+        {{- end }}
+        <pages_dir>{{ include "lightstreamer.webServer.pages-source.dir" . }}{{ with .pagesVolume.path }}/{{ . }}{{ end }}</pages_dir>
         {{- else }}
         <!--
         <pages_dir>../my_pages</pages_dir>
