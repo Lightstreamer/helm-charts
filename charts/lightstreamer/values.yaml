@@ -3160,20 +3160,14 @@ webServer:
     # name: resources
     # key: ErrorPage.html
 
-  # -- Optional. Path of the file system directory to be used by the internal
-  # web server as the root for URL path mapping.
-  # The path is relative to the conf directory. Note that the `/lightstreamer`
-  # URL path (as any alternative paths defined through
-  # `pushSession.serviceUrlPrefix`) is reserved, as well as the base URL path
-  # of the Monitoring Dashboard(see `management.dashboard.urlPath`); hence,
-  # subdirectories of the pages directory with conflicting names would be
-  # ignored.
-  pagesDir: ../pages
-
   # -- Optional. The reference to a volume where the static page files are
-  # stored. When set, the volume is mounted into the container and the
-  # `pagesDir` setting is automatically overridden to point to the mounted
-  # content.
+  # stored. When set, the volume is mounted into the container and used as the
+  # root directory for URL path mapping by the internal web server.
+  # Note that the `/lightstreamer` URL path (as any alternative paths defined
+  # through `pushSession.serviceUrlPrefix`) is reserved, as well as the base
+  # URL path of the Monitoring Dashboard (see `management.dashboard.urlPath`);
+  # hence, subdirectories of the pages directory with conflicting names would
+  # be ignored.
   # The volume must be defined in `deployment.extraVolumes`.
   pagesVolume:
 
