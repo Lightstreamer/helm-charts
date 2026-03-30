@@ -68,18 +68,20 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/lightstreamer/bin/init-scripts/launch.sh"]
           {{- with (.Values.management.jmx).rmiConnector }}
-          {{- /*
-          Only render the preStop hook if the RMI connector is accessible, i.e.:
-          - enablePublicAccess is true (no authentication required), or
-          - credentialsSecrets are set (authentication credentials available).
-          Without RMI access, LS.sh stop would fail and the hook would be useless.
-          */}}
+            {{- if .enabled }}
+            {{- /*
+            Only render the preStop hook if the RMI connector is accessible, i.e.:
+            - enablePublicAccess is true (no authentication required), or
+            - credentialsSecrets are set (authentication credentials available).
+            Without RMI access, LS.sh stop would fail and the hook would be useless.
+            */}}
             {{- if or .enablePublicAccess (and .credentialsSecrets (not (empty .credentialsSecrets))) }}
           lifecycle:
             preStop:
               exec:
                 command: ["/lightstreamer/bin/unix-like/LS.sh", "stop"]
-          {{- end }}
+            {{- end }}
+            {{- end }}
           {{- end }}
           ports:
           {{- /* START CONTAINER PORTS */ -}}
@@ -92,16 +94,18 @@ spec:
           {{- end }}
             {{- /* START RMI CONNECTOR PORTS */ -}}
           {{- with (.Values.management.jmx).rmiConnector }}
-            {{- $rmiPortValue := .port.value }}
+            {{- if .enabled }}
+            {{- $rmiPortValue := int .port.value }}
             - name: jmx-port
               containerPort: {{ $rmiPortValue }}
               protocol: TCP
-            {{- $dataPortValue := (.dataPort).value | default $rmiPortValue}}
+            {{- $dataPortValue := (.dataPort).value | default $rmiPortValue | int }}
             {{- if ne $dataPortValue $rmiPortValue }}
             - name: jmx-data-port
               containerPort: {{ $dataPortValue }}
               protocol: TCP
             {{- end }}
+            {{- end}}
           {{- end }}
             {{- /* END RMI CONNECTOR PORTS */ -}}
             {{- /* START JMXMP CONNECTOR PORT */ -}}
@@ -198,6 +202,7 @@ spec:
           {{- /* END VARIABLES FOR LICENSE */ -}}
           {{- /* START ENV VARIABLES FOR LIGHTSTREAMER MANAGEMENT */ -}}
           {{- with (.Values.management.jmx).rmiConnector }}
+            {{- if .enabled }}
             {{- if not .enablePublicAccess }}
               {{- range .credentialsSecrets }}
             - name: LS_RMI_CREDENTIAL_{{ . | upper | replace "-" "_" }}_USER
@@ -211,6 +216,7 @@ spec:
                   name: {{ . }}
                   key: password
               {{- end }}
+            {{- end }}
             {{- end }}
           {{- end }}
           {{- with (.Values.management).dashboard }}
