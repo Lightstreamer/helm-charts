@@ -928,6 +928,13 @@ Validate the Adapter provisioning setting.
 {{- end }}
 
 {{/*
+Create the pages source path, used as the volume mount base path when the "pagesVolume" is configured.
+*/}}
+{{- define "lightstreamer.webServer.pages-source.dir" -}}
+{{- printf "/pages-source" }}
+{{- end }}
+
+{{/*
 Create the Adapters path name, relative to the Lightstreamer conf directory.
 */}}
 {{- define "lightstreamer.adapters.deployment.dir" -}}
