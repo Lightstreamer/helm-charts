@@ -40,7 +40,8 @@ spec:
    {{ printf "service.ports must be set " | fail }}
   {{- end }}
   {{- $serviceCount := len .Values.service.ports }}
-  {{- $usedNames := list}}
+  {{- $usedNames := list }}
+  {{- $usedPorts := list }}
   {{- range $serviceIndex, $service:= .Values.service.ports }}
     - port: {{ $service.port }}
       targetPort: {{ include "lightstreamer.service.targetPort" (list $ $service.targetPort) }}
@@ -49,6 +50,11 @@ spec:
       nodePort: {{ $service.nodePort }}
       {{- end }}
       {{- $serviceName := $service.name | kebabcase | trunc 15 | trimSuffix "-" }}
+      {{- $servicePort := int $service.port }}
+      {{- if has $servicePort $usedPorts }}
+        {{ printf "service.ports[%d].port %d is duplicated, ports must be unique" $serviceIndex $servicePort | fail }}
+      {{- end }}
+      {{- $usedPorts = append $usedPorts $servicePort }}
       {{- if gt $serviceCount 1 }}
         {{- if not $serviceName }}
           {{ printf "service.ports[%d].name must be set when multiple ports are defined" $serviceIndex | fail }}
