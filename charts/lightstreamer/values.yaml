@@ -1382,6 +1382,7 @@ logging:
 
       # -- (string) Optional but only effective if `type` is set to
       # `DailyRollingFile`. The reference to a volume to use for the log file.
+      # The volume must be defined in `deployment.extraVolumes`.
       volumeRef:
 
     # -- The console appender configuration.
@@ -3169,6 +3170,21 @@ webServer:
   # ignored.
   pagesDir: ../pages
 
+  # -- Optional. The reference to a volume where the static page files are
+  # stored. When set, the volume is mounted into the container and the
+  # `pagesDir` setting is automatically overridden to point to the mounted
+  # content.
+  # The volume must be defined in `deployment.extraVolumes`.
+  pagesVolume:
+
+    # -- (string) Mandatory. The name of the volume, as defined in
+    # `deployment.extraVolumes`.
+    name:
+
+    # -- (string) Optional. The path within the volume to the directory
+    # containing the page files.
+    path:
+
   # -- (int) Optional. Caching time, in minutes, to be allowed to the browser
   # (through the `expires` HTTP header) for all the resources supplied by the
   # internal web server.
@@ -3592,6 +3608,7 @@ adapters:
       # -- The reference to a volume where the Adapter Set resources are stored.
       # At startup, the resources will be copied to the designated Adapter Set
       # folder under the `/deployed_adapters` directory in the container.
+      # The volume must be defined in `deployment.extraVolumes`.
       fromVolume:
 
         # -- (string) Mandatory. The name of the volume.
@@ -4824,6 +4841,7 @@ connectors:
       # -- The reference to a volume where the Kafka Connector zip package is
       # stored. At startup, the package will be deployed to the
       # `/deployed_adapters/kafka-connector` directory in the container.
+      # The volume must be defined in `deployment.extraVolumes`.
       fromVolume:
         # -- (string) Mandatory. The name of the volume.
         name:
@@ -4875,7 +4893,7 @@ connectors:
 
           # -- (string) Optional but only effective if `type` is set to
           # `DailyRollingFile`. The reference to a volume to use for the log
-          #file.
+          # file. The volume must be defined in `deployment.extraVolumes`.
           volumeRef:
 
         # -- The console appender configuration.
