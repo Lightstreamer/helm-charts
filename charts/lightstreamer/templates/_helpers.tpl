@@ -97,6 +97,13 @@ Create the Service name.
 {{- end }}
 
 {{/*
+Create the management Service name.
+*/}}
+{{- define "lightstreamer.management.service.name" -}}
+{{- printf "%s-%s" (include "lightstreamer.fullname" .) "management" }}
+{{- end }}
+
+{{/*
 Create the Service target port.
 */}}
 {{- define "lightstreamer.service.targetPort" -}}
