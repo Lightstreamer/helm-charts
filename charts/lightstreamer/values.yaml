@@ -1899,6 +1899,28 @@ management:
   # `/dashboard`).
   jmx:
 
+    # -- Optional. JMX Service configuration.
+    # When enabled, creates a dedicated Kubernetes Service that exposes JMX
+    # connector ports (RMI and/or JMXMP). The chart auto-discovers which
+    # connectors are enabled and includes their ports in the Service.
+    # This is useful for in-cluster monitoring tools that need a stable DNS
+    # name to reach the JMX endpoint.
+    service:
+
+      # -- Enables the JMX Service.
+      enabled: false
+
+      # -- Optional. The service type. ClusterIP is recommended to keep
+      # management traffic internal to the cluster.
+      # See https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types.
+      type: ClusterIP
+
+      # -- Optional. Additional Service annotations.
+      annotations: {}
+
+      # -- Optional. Additional Service labels.
+      labels: {}
+
     # -- Mandatory. Enables the standard RMI Connector, which is used by the
     # provided "stop" script to stop the Server. The remote MBean server will be
     # accessible through this url:
