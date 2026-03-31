@@ -314,6 +314,13 @@ service:
       # the service port.
       name: default-service
 
+  # -- Optional. The external traffic policy for the service. Applies when
+  # `type` is `NodePort` or `LoadBalancer`. Set to `Local` to preserve the
+  # client source IP and keep traffic on the receiving node; set to `Cluster`
+  # (default) to allow kube-proxy to forward traffic to any pod in the cluster.
+  # See https://kubernetes.io/docs/concepts/services-networking/service/#traffic-policies.
+  externalTrafficPolicy:
+
   # -- The load balancer implementation when the `type` is set to
   # `LoadBalancer`.
   # See https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-class.
