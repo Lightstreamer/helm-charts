@@ -1490,7 +1490,7 @@ The [`load`](charts/lightstreamer/values.yaml#L3328) section controls thread poo
 The most commonly adjusted settings are:
 
 - `load.maxSessions`: caps the total number of concurrent client sessions. Unset by default (unlimited). Set a limit as a safety ceiling against overload.
-- `load.serverPoolMaxSize` / `load.serverPoolMaxQueue`: the `SERVER` pool handles client request processing (including blocking Adapter calls). Increase `maxSize` if you see thread starvation under load; lower `serverPoolMaxQueue` to shed load earlier rather than queue up.
+- `load.serverPoolMaxSize` / `load.serverPoolMaxQueue`: the `SERVER` pool handles client request processing (including blocking Adapter calls). Increase `maxSize` (default: `1000`) if you see thread starvation under load; lower `serverPoolMaxQueue` (default: `100`) to shed load earlier rather than queue up.
 - `load.eventsPoolSize`, `load.pumpPoolSize`: CPU-bound pools for dispatching update events. Defaults to the number of available cores; raise on high core-count machines with heavy update traffic.
 
 ```yaml
@@ -1549,7 +1549,7 @@ adapters:
 
 #### Other adapter set options
 
-Additional optional settings are available for each Adapter Set — see [`adapterSetPool`](charts/lightstreamer/values.yaml#L3661) to configure a dedicated thread pool, and [`enableMetadataInitializedFirst`](charts/lightstreamer/values.yaml#L3682) to control the initialization order of Metadata and Data Adapters.
+Additional optional settings are available for each Adapter Set — see [`adapterSetPool`](charts/lightstreamer/values.yaml#L3661) to configure a dedicated thread pool, and [`enableMetadataInitializedFirst`](charts/lightstreamer/values.yaml#L3682) (defaults to `true`) to control the initialization order of Metadata and Data Adapters.
 
 #### In-process adapters
 
@@ -1679,9 +1679,9 @@ See the linked `values.yaml` entries for full details on sub-settings (`maxSize`
 ###### `common` ClassLoader
 
 When the `classLoader` is set to `common`, the _Adapter Set ClassLoader_ is used. 
-This ClassLoader loads classes included in the `lib` and `classes` subfolders from three different sources:
+This ClassLoader loads classes from the `lib` and `classes` subfolders found in the following locations:
 
-1. The Adapter Set's directory:
+1. The Adapter Set's root directory:
 
    ```sh
    my-adapter-set/
@@ -1709,11 +1709,11 @@ This ClassLoader loads classes included in the `lib` and `classes` subfolders fr
 
    ```sh
    my-adapter-set/
-   ├── classes # Common classes
-   ├── lib     # Common jar files
-   └── metadata    # Metadata Adapter-specific resources
-       ├── classes 
-       └── lib     
+   ├── classes     # Common classes
+   ├── lib         # Common jar files
+   ├── metadata    # Metadata Adapter-specific resources
+   │   ├── classes 
+   │   └── lib     
    └── data        # Data Adapter-specific resources
        ├── classes 
        └── lib     
@@ -1772,9 +1772,9 @@ flowchart BT
 adapters/my-adapter-set/
 ├── classes     # Common classes loaded by the Adapter Set ClassLoader
 ├── lib         # Common jar files loaded by the Adapter Set ClassLoader
-└── metadata    
-    ├── classes # Classes and resources loaded by the dedicated Metadata Adapter's ClassLoader
-    └── lib     # Jar files loaded by the dedicated Metadata Adapter's ClassLoader
+├── metadata    
+│   ├── classes # Classes and resources loaded by the dedicated Metadata Adapter's ClassLoader
+│   └── lib     # Jar files loaded by the dedicated Metadata Adapter's ClassLoader
 └── data        
     ├── classes # Classes and resources loaded by the dedicated Data Adapter's ClassLoader
     └── lib     # Jar files loaded by the dedicated Data Adapter's ClassLoader
@@ -1846,7 +1846,7 @@ You can configure a Proxy Metadata Adapter and Proxy Data Adapters by populating
 
 The following settings are available in one or both sections. Where a setting exists in both, links point to the Proxy Metadata Adapter entry first, followed by the Proxy Data Adapter equivalent:
 
-- `requestReplyPort` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4031), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4437)): The mandatory TCP port the Proxy Adapter listens on for the Remote Server to connect.
+- `requestReplyPort` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4031), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4483)): The mandatory TCP port the Proxy Adapter listens on for the Remote Server to connect.
 
 - `remoteHost` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4053), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4505)): When set, inverts the connection direction — the Proxy Adapter connects out to the Remote Server instead of waiting for an inbound connection. Useful when the Broker cannot accept incoming connections from outside.
 
@@ -1868,7 +1868,7 @@ The following settings are available in one or both sections. Where a setting ex
               - remote-adapter-secret
   ```
 
-- `enableRobustAdapter` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L3887), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4437)): Enables the _Robust_ variant of the Proxy Adapter, which handles the temporary absence of the Remote Server gracefully — accepting subscriptions and waiting for reconnection rather than failing immediately.
+- `enableRobustAdapter` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L3905), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4451)): Enables the _Robust_ variant of the Proxy Adapter, which handles the temporary absence of the Remote Server gracefully — accepting subscriptions and waiting for reconnection rather than failing immediately.
 
 - [`enableTableNotificationsSequentialization`](charts/lightstreamer/values.yaml#L4027) (Proxy Metadata Adapter only): When `true`, all subscription lifecycle notifications for the same session are delivered sequentially with no overlap. Useful when the Metadata Adapter implementation is not designed for concurrent table notifications.
 
