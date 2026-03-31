@@ -947,6 +947,46 @@ Create the pages source path, used as the volume mount base path when the "pages
 {{- end }}
 
 {{/*
+Validate the sharedDir provisioning setting.
+*/}}
+{{- define "lightstreamer.sharedDir.validateProvisioning" -}}
+{{- with .Values.sharedDir }}
+  {{- $admittedProvisioningMethods := list "fromPathInImage" "fromVolume" }}
+  {{- $methods := list }}
+  {{- if .fromPathInImage }}
+    {{- $methods = append $methods "fromPathInImage" }}
+  {{- end }}
+  {{- if (.fromVolume).name }}
+    {{- $methods = append $methods "fromVolume" }}
+  {{- end }}
+
+  {{- /* Check that at most one provisioning method is set */ -}}
+  {{- if gt (len $methods) 1 }}
+    {{- fail (printf "sharedDir: only one of %s can be set" $admittedProvisioningMethods) }}
+  {{- end }}
+
+  {{- /* When fromVolume is the chosen method, check that it is correctly set */ -}}
+  {{- if and $methods (eq ($methods | first) "fromVolume") }}
+    {{- $extraVolumeNames := list }}
+    {{- range $.Values.deployment.extraVolumes }}
+      {{- $extraVolumeNames = append $extraVolumeNames .name }}
+    {{- end }}
+    {{- $extraVolumeNames := $extraVolumeNames | uniq }}
+    {{- if not (has .fromVolume.name $extraVolumeNames) }}
+      {{- fail "sharedDir.fromVolume.name must be set to a volume defined in deployment.extraVolumes" }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
+Create the shared directory source path, used as the volume mount base path when the "sharedDir.fromVolume" provisioning method is used.
+*/}}
+{{- define "lightstreamer.shared.source.dir" -}}
+{{- printf "/shared-source" }}
+{{- end }}
+
+{{/*
 Create the Adapters path name, relative to the Lightstreamer conf directory.
 */}}
 {{- define "lightstreamer.adapters.deployment.dir" -}}
