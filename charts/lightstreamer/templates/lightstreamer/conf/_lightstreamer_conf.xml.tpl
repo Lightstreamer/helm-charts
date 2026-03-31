@@ -1251,8 +1251,8 @@ Render the Lightstreamer configuration file.
                  This is also needed if you wish to use the provided "stop" script;
                  the script will always use the first user supplied. -->
         {{- if not .enablePublicAccess }}
-          {{- range $index, $secretRef := .credentialsSecrets}}
-            {{- $_ := required (printf "management.jmx.rmiConnector.credentialsSecrets[%d] must be set" (int $index)) $secretRef }}
+          {{- range $index, $secretRef := .credentialSecrets}}
+            {{- $_ := required (printf "management.jmx.rmiConnector.credentialSecrets[%d] must be set" (int $index)) $secretRef }}
             <user id="$env.LS_RMI_CREDENTIAL_{{ $secretRef | upper | replace "-" "_" }}_USER" password="$env.LS_RMI_CREDENTIAL_{{ $secretRef | upper | replace "-" "_"}}_PASSWORD" />
           {{- end }}
         {{- else}}
@@ -1508,7 +1508,6 @@ Render the Lightstreamer configuration file.
     </dashboard>
 
   {{- with required "management.healthCheck must be set" .healthCheck }}
-    {{- if .enabled }}
     <!-- Optional. Configuration of the "/lightstreamer/healthcheck" request
          url, which allows a load balancer to test for Server responsiveness
          to external requests. The Server should always answer to the
@@ -1541,8 +1540,8 @@ Render the Lightstreamer configuration file.
              that can be identified through the mandatory "name" attribute. -->
       {{- if not .enableAvailabilityOnAllServers }}
         {{- range $index, $value := .availableOnServers }}
-          {{- include "lightstreamer.configuration.servers.validateServerRef" (list $ (printf "management.healthCheck.availableOnServers[%d].serverRef" (int $index)) $value.serverRef) }}
-        <available_on_server name={{ (get $.Values.servers $value.serverRef).name | quote }} />
+          {{- include "lightstreamer.configuration.servers.validateServerRef" (list $ (printf "management.healthCheck.availableOnServers[%d]" (int $index)) $value) }}
+        <available_on_server name={{ (get $.Values.servers $value).name | quote }} />
         {{- else }}
         <!--
         <available_on_server name="Lightstreamer HTTP Server" />
@@ -1551,7 +1550,6 @@ Render the Lightstreamer configuration file.
       {{- end }}
       </healthcheck>
     {{- end }}
-  {{- end }}
 {{- end }}
 
 <!--
