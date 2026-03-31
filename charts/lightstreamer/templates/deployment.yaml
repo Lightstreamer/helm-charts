@@ -72,10 +72,10 @@ spec:
             {{- /*
             Only render the preStop hook if the RMI connector is accessible, i.e.:
             - enablePublicAccess is true (no authentication required), or
-            - credentialsSecrets are set (authentication credentials available).
+            - credentialSecrets are set (authentication credentials available).
             Without RMI access, LS.sh stop would fail and the hook would be useless.
             */}}
-            {{- if or .enablePublicAccess (and .credentialsSecrets (not (empty .credentialsSecrets))) }}
+            {{- if or .enablePublicAccess (and .credentialSecrets (not (empty .credentialSecrets))) }}
           lifecycle:
             preStop:
               exec:
@@ -204,7 +204,7 @@ spec:
           {{- with (.Values.management.jmx).rmiConnector }}
             {{- if .enabled }}
             {{- if not .enablePublicAccess }}
-              {{- range .credentialsSecrets }}
+              {{- range .credentialSecrets }}
             - name: LS_RMI_CREDENTIAL_{{ . | upper | replace "-" "_" }}_USER
               valueFrom:
                 secretKeyRef:
@@ -272,12 +272,12 @@ spec:
           {{- range $adapter := .Values.adapters }}
             {{- if $adapter.enabled }}
               {{- if (((.metadataProvider).proxyMetadataAdapter).authentication).enabled }}
-                {{- $authSecretRefs = concat $authSecretRefs .metadataProvider.proxyMetadataAdapter.authentication.credentialsSecrets }}
+                {{- $authSecretRefs = concat $authSecretRefs .metadataProvider.proxyMetadataAdapter.authentication.credentialSecrets }}
               {{- end }}
               {{- range $dataProvider := .dataProviders}}
                 {{- if ($dataProvider).enabled }}
                   {{- if ((.proxyDataAdapter).authentication).enabled }}
-                    {{- $authSecretRefs = concat $authSecretRefs .proxyDataAdapter.authentication.credentialsSecrets }}
+                    {{- $authSecretRefs = concat $authSecretRefs .proxyDataAdapter.authentication.credentialSecrets }}
                   {{- end }}
                 {{- end }}
               {{- end }}
