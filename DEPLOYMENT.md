@@ -1378,18 +1378,29 @@ Provision one worker node for each Lightstreamer replica you plan to deploy. Eac
 
 ```mermaid
 graph TB
-    subgraph Node 1
-        R1[LS Replica 1]
-    end
-    subgraph Node 2
-        R2[LS Replica 2]
-    end
-    subgraph Node 3
-        R3[LS Replica 3]
+    Clients([Clients])
+    LB[Load Balancer]
+
+    Clients --> LB
+
+    subgraph Kubernetes Cluster
+        subgraph Node 1
+            R1[LS Replica 1]
+        end
+        subgraph Node 2
+            R2[LS Replica 2]
+        end
+        subgraph Node 3
+            R3[LS Replica 3]
+        end
     end
 
-    R1 -. "anti-affinity" .- R2
-    R2 -. "anti-affinity" .- R3
+    LB --> R1
+    LB --> R2
+    LB --> R3
+
+    R1 -. anti-affinity .- R2
+    R2 -. anti-affinity .- R3
 ```
 
 Use a hard pod anti-affinity rule to enforce one replica per node:
