@@ -1372,7 +1372,12 @@ For a detailed explanation of the control link mechanism and deployment architec
 
 #### Number of nodes
 
-Provision one worker node for each Lightstreamer replica you plan to deploy. Each node must have at least 2 CPUs and 1 GB of memory. Each broker instance should run on a dedicated node for the following reasons:
+Provision one worker node for each Lightstreamer replica you plan to deploy. Each node must meet the following minimum requirements:
+
+- **2 CPUs**
+- **1 GB of memory**
+
+Each broker instance should run on a dedicated node for the following reasons:
 
 - **Resource isolation**: the Lightstreamer Broker is designed to fully utilise available CPU and memory. Sharing a node with another replica — or with other workloads — introduces contention on CPU scheduling, garbage collection pauses, and network I/O, degrading throughput and latency for both instances.
 - **Fault tolerance**: if a node fails, only one replica is lost. The remaining replicas continue serving their sessions without disruption.
