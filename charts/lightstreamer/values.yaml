@@ -3598,6 +3598,29 @@ load:
   # scaling in case many clients subscribe to the same item.
   forceEarlyConversions: true
 
+# -- Optional. Provisioning of the shared directory, which contains Java classes
+# and JAR files shared by all Adapter Sets through the Global ClassLoader.
+# Classes and JAR files must be placed under the `classes` and `lib`
+# subdirectories, respectively.
+# Either specify one of `fromPathInImage` or `fromVolume`.
+sharedDir:
+
+  # -- (string) Optional. The path to the shared directory already present in
+  # the container image, e.g.: `/lightstreamer/shared`.
+  fromPathInImage:
+
+  # -- Optional. The reference to a volume where the shared resources are
+  # stored. The volume must be defined in `deployment.extraVolumes`.
+  fromVolume:
+
+    # -- (string) Mandatory. The name of the volume, as defined in
+    # `deployment.extraVolumes`.
+    name:
+
+    # -- (string) Optional. The path within the volume to the directory
+    # containing the `lib` and `classes` subdirectories.
+    path:
+
 # -- Optional. Map of Adapter Set configurations. Every entry in the map defines
 # a specific configuration of an Adapter Set pluggable into the Lightstreamer
 # Broker.
