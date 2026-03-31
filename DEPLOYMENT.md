@@ -414,6 +414,8 @@ deployment:
       memory: 4Gi
 ```
 
+For production cluster sizing — including why CPU limits are best omitted — see [Resource sizing](#resource-sizing).
+
 #### Probes
 
 [`deployment.probes`](charts/lightstreamer/values.yaml#L127) supports two modes for each probe type:
@@ -450,7 +452,7 @@ deployment:
 deployment:
   extraEnv:
     - name: JAVA_OPTS
-      value: "-server -Xms2g -Xmx8g -XX:+UseG1GC"
+      value: "-server -Xms2g -Xmx2g -XX:+UseG1GC"
 ```
 
 `deployment.preCommands` runs shell commands before the broker starts.
@@ -551,7 +553,7 @@ service:
       name: https
 ```
 
-Use `NodePort` or `LoadBalancer` for direct external access outside of Ingress. When using `LoadBalancer`, set `service.loadBalancerClass` to select a specific load balancer implementation if the cluster offers more than one.
+Use `NodePort` or `LoadBalancer` for direct external access outside of Ingress. When using `LoadBalancer`, set `service.loadBalancerClass` to select a specific load balancer implementation if the cluster offers more than one. For `NodePort` deployments that require per-node addressing, set `service.externalTrafficPolicy: Local` to keep traffic on the receiving node — see [Session affinity approaches](#session-affinity-approaches) for details.
 
 ### Ingress
 
