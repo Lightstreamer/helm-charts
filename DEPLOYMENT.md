@@ -553,7 +553,7 @@ service:
       name: https
 ```
 
-Use `NodePort` or `LoadBalancer` for direct external access outside of Ingress. When using `LoadBalancer`, set `service.loadBalancerClass` to select a specific load balancer implementation if the cluster offers more than one. For `NodePort` deployments that require per-node addressing, set `service.externalTrafficPolicy: Local` to keep traffic on the receiving node — see [Session affinity approaches](#session-affinity-approaches) for details.
+Use `NodePort` or `LoadBalancer` for direct external access outside of Ingress. When using `LoadBalancer`, set `service.loadBalancerClass` to select a specific load balancer implementation if the cluster offers more than one.
 
 ### Ingress
 
@@ -1457,20 +1457,6 @@ If the load balancer provides sticky sessions (cookie-based or IP-hash), all req
 
 When sticky sessions are not available, `controlLinkAddress` must resolve to a specific replica. The most common approaches to achieve per-pod addressability are:
 
-- **NodePort with dedicated nodes**: set the Service type to `NodePort` with a fixed port and `externalTrafficPolicy: Local` to ensure traffic arriving at a node stays on that node (the default `Cluster` policy can forward to any pod, defeating per-node addressing). Each node has a public IP (or a 1:1 NAT), and each replica runs on its own node thanks to the [pod anti-affinity](#number-of-nodes) rule. The `controlLinkAddress` for each instance is the node's public hostname.
-
-  To make a node reachable by hostname, assign a DNS A record pointing to its public IP — either statically through the DNS provider, or dynamically via an external-dns controller. On cloud providers the node's external IP is typically assigned automatically; on bare-metal or VPS clusters, configure a public IP on the node's network interface or set up a 1:1 NAT rule on the upstream firewall.
-
-  ```yaml
-  service:
-    type: NodePort
-    externalTrafficPolicy: Local   # keep traffic on the receiving node
-    ports:
-      - name: default-server
-        port: 8080
-        nodePort: 30080
-  ```
-
 - **Ingress with sticky sessions**: configure the Ingress controller to enable session affinity so all requests from a given client stick to the same backend pod. For example, with nginx:
 
   ```yaml
@@ -1486,7 +1472,7 @@ When sticky sessions are not available, `controlLinkAddress` must resolve to a s
 
   On OpenShift, the built-in HAProxy router provides cookie-based sticky sessions by default — no extra annotations are needed. If you use a Route instead of an Ingress, session affinity is enabled out of the box.
 
-- **Host networking**: setting `hostNetwork: true` on the pod binds it directly to the node's network interface, allowing clients to reach the pod on the node's IP without a Service. This can be combined with a Service or Ingress for the initial session creation.
+- **Host networking**: setting `hostNetwork: true` on the pod binds it directly to the node's network interface, allowing clients to reach the pod on the node's IP without a Service. This can be combined with an Ingress for the initial session creation.
 
   On OpenShift, `hostNetwork: true` requires the `hostnetwork` SCC. Grant it to the Lightstreamer ServiceAccount before deploying:
 
