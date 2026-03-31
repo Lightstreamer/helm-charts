@@ -463,6 +463,13 @@ spec:
               mountPath: {{ include "lightstreamer.webServer.pages-source.dir" . }}
             {{- end }}
           {{- end }}
+          {{- with (.Values).sharedDir }}
+            {{- if (.fromVolume).name }}
+            - name: {{ .fromVolume.name }}
+              mountPath: {{ include "lightstreamer.shared.source.dir" . }}
+              readOnly: true
+            {{- end }}
+          {{- end }}
           {{- /* START VOLUME MOUNTS FOR KEYSTORES */ -}}
           {{- range $key, $value := .Values.keystores }}
             {{- if $value }}
