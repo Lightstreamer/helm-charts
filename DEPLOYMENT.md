@@ -1482,7 +1482,16 @@ When sticky sessions are not available, `controlLinkAddress` must resolve to a s
 
   With this approach, `controlLinkAddress` can be omitted.
 
+  > [!NOTE]
+  > On OpenShift, the built-in HAProxy router provides cookie-based sticky sessions by default — no extra annotations are needed. If you use a Route instead of an Ingress, session affinity is enabled out of the box.
+
 - **Host networking**: setting `hostNetwork: true` on the pod binds it directly to the node's network interface, allowing clients to reach the pod on the node's IP without a Service. This can be combined with a Service or Ingress for the initial session creation.
+
+  > [!NOTE]
+  > On OpenShift, `hostNetwork: true` requires the `hostnetwork` SCC. Grant it to the Lightstreamer ServiceAccount before deploying:
+  > ```sh
+  > oc adm policy add-scc-to-user hostnetwork -z <serviceaccount-name> -n <namespace>
+  > ```
 
 > [!NOTE]
 > Clustering support is an optional Enterprise edition feature.
