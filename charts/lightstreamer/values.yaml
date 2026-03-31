@@ -2113,7 +2113,7 @@ management:
       # connector.
       # This is also needed if you wish to use the provided "stop" script; the
       # script will always use the first user supplied.
-      credentialsSecrets: []
+      credentialSecrets: []
 
     # -- Optional. JMXMP connector configuration.
     # The connector is supported by the Server only if Sun/Oracle's JMXMP
@@ -2299,9 +2299,6 @@ management:
   # Edition and License Type.
   healthCheck:
 
-    # -- Optional. Enables the health check url.
-    enabled: true
-
     # -- Optional. Enables the health check url on all server sockets.
     # If set to `true`, the health check request can be issued through all the
     # defined server sockets.
@@ -2310,7 +2307,7 @@ management:
     enableAvailabilityOnAllServers: false
 
     # -- Optional but ineffective if `enableAvailabilityOnAllServers` is set
-    # to `false`. List of server socket configurations (defined in `servers.{}`)
+    # to `true`. List of server socket references (defined in `servers.{}`)
     # for which health check requests can be issued.
     availableOnServers: []
       # - defaultServer
@@ -4112,7 +4109,7 @@ adapters:
           # reference to the secrets containing the credentials of the users
           # allowed to connect.
           # Every secret must contains the keys `user` and `password`.
-          credentialsSecrets: []
+          credentialSecrets: []
 
         # -- (int) Optional but only effective when `remoteHost` is set.
         # Delay to be enforced before retrying a connection attempt to the
@@ -4555,7 +4552,7 @@ adapters:
             # secrets containing the credentials of the users allowed to
             # connect.
             # Every secret must contains the keys `user` and `password`.
-            credentialsSecrets: []
+            credentialSecrets: []
 
           # -- (int) Optional but only effective when `remoteHost` is set.
           # Delay to be enforced before retrying a connection attempt to the
