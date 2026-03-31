@@ -184,6 +184,18 @@ Create the port used health check.
 {{- $serverKeyName := printf "deployment.probes.%s.healthCheck.serverRef" $probeName }}
 {{- $serverKey := index . 2 }}
 {{- include "lightstreamer.configuration.servers.validateServerRef" (list $ $serverKeyName $serverKey) }}
+{{- $hc := $.Values.management.healthCheck }}
+{{- if not $hc.enableAvailabilityOnAllServers }}
+  {{- $found := false }}
+  {{- range $hc.availableOnServers }}
+    {{- if eq . $serverKey }}
+      {{- $found = true }}
+    {{- end }}
+  {{- end }}
+  {{- if not $found }}
+    {{- fail (printf "%s: the health check url is not available on server '%s'. Either set management.healthCheck.enableAvailabilityOnAllServers to true, or add the server to management.healthCheck.availableOnServers" $serverKeyName $serverKey) }}
+  {{- end }}
+{{- end }}
 {{- include "lightstreamer.configuration.servers.serverPortName" $serverKey -}}
 {{- end }}
 
@@ -1219,10 +1231,10 @@ Render the authentication parameters for the proxy adapters.
 {{- /* auth */}}
 <param name="auth">Y</param>
   {{- $counter := 0 }}
-  {{- if .credentialsSecrets | empty }}
-    {{- fail (printf "adapters.%s.{...}.authentication.credentialsSecrets must be set" $adapterName) }}
+  {{- if .credentialSecrets | empty }}
+    {{- fail (printf "adapters.%s.{...}.authentication.credentialSecrets must be set" $adapterName) }}
   {{- end }}
-  {{- range .credentialsSecrets }}
+  {{- range .credentialSecrets }}
     {{- $counter = add1 $counter }}
     {{- /* auth.credentials.<N>.user */}}
 <param name="auth.credentials.{{ $counter }}.user">$env.LS_PROXY_ADAPTER_CREDENTIAL_{{ . | upper | replace "-" "_" }}_USER</param>
