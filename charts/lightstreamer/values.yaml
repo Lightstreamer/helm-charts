@@ -398,22 +398,31 @@ license:
   # -- (string) Mandatory. Lightstreamer edition to use.
   # To know full details, open the Welcome Page or the Monitoring Dashboard
   # (Edition tab) of your running the Lightstreamer Broker.
-  # Possible values: `COMMUNITY`, `ENTERPRISE`.
+  # Possible values:
+  # - `COMMUNITY` 
+  # - `ENTERPRISE`
   edition: ENTERPRISE
 
   # -- Mandatory if edition is set to `COMMUNITY`. The Client API to use with
   # your Lightstreamer free license.
-  # Possible values: `javascript_client` (for web browser clients),
-  # `nodejs_client` (for Node.js clients), `android_client` (for Android
-  # clients), `ios_client` (for iOS clients), `flex_client` (for Flex and AIR
-  # clients), `silverlight_client` (for Silverlight clients), `javase_client`
-  # (for Java SE clients), `python_client` (for Python clients),
-  # `dotnet_standard_client` (for .NET Standard clients), `macos_client` (for
-  # macOS clients), `tvos_client` (for tvOS clients), `watchos_client` (for
-  # watchOS clients), `visionos_client` (for visionOS clients),
-  # `blackberry_client` (for BlackBerry clients), `javame_client` (for Java ME
-  # clients), `flash_client` (for Flash clients), `generic_client` (for custom
-  # clients based on the Lightstreamer protocol).
+  # Possible values: 
+  # - `javascript_client` (for web browser clients)
+  # - `nodejs_client` (for Node.js clients)
+  # - `android_client` (for Android clients) 
+  # - `ios_client` (for iOS clients)
+  # - `flex_client` (for Flex and AIR clients) 
+  # - `silverlight_client` (for Silverlight clients) 
+  # - `javase_client` (for Java SE clients) 
+  # - `python_client` (for Python clients)
+  # - `dotnet_standard_client` (for .NET Standard clients) 
+  # - `macos_client` (for macOS clients) 
+  # - `tvos_client` (for tvOS clients) 
+  # - `watchos_client` (for watchOS clients) 
+  # - `visionos_client` (for visionOS clients)
+  # - `blackberry_client` (for BlackBerry clients)
+  # - `javame_client` (for Java ME clients)
+  # - `flash_client` (for Flash clients)
+  # - `generic_client` (for custom clients based on the Lightstreamer protocol)
   enabledCommunityEditionClientApi: "javascript_client"
 
   # -- Mandatory if `edition` is set to `ENTERPRISE`. Configure the `ENTERPRISE`
@@ -421,9 +430,14 @@ license:
   enterprise:
 
     # -- (string) Mandatory. The type of the `ENTERPRISE` edition.
-    # Possible values: `DEMO`, `EVALUATION`, `STARTUP`,
-    # `NON-PRODUCTION-LIMITED`, `NON-PRODUCTION-FULL`, `PRODUCTION`,
-    # `HOT-STANDBY`.
+    # Possible values: 
+    # - `DEMO`
+    # - `EVALUATION`
+    # - `STARTUP`
+    # - `NON-PRODUCTION-LIMITED`
+    # - `NON-PRODUCTION-FULL`
+    # - `PRODUCTION`
+    # - `HOT-STANDBY`
     licenseType: DEMO
 
     # -- (string) Mandatory. Identifier of the contract in place. Use `DEMO` to
@@ -496,7 +510,10 @@ license:
         enableMpn: true
 
         # -- (string) Mandatory. Max message rate (downstream).
-        # Possible values: `1`, `3`, `unlimited`.
+        # Possible values: 
+        # - `1` 
+        # - `3`
+        # - `unlimited`
         maxDownstreamRate: "1"
 
         # -- Mandatory. Bandwidth control.
@@ -598,7 +615,9 @@ license:
         port:
 
         # -- (string) Optional. Scheme of the proxy server.
-        # Possible values: `http`, `https`.
+        # Possible values: 
+        # - `http` 
+        # - `https`
         scheme:
 
         # -- (string) Mandatory if proxy authentication is required. The name of
@@ -622,7 +641,10 @@ license:
         port:
 
         # -- (string) Optional. Protocol version to use.
-        # Possible values: `SOCKS4`, `SOCKS4a`, `SOCKS5`.
+        # Possible values: 
+        # - `SOCKS4` 
+        # - `SOCKS4a` 
+        # - `SOCKS5`
         version:
 
         # -- (string) Mandatory if proxy authentication is required. The name of
@@ -1365,7 +1387,9 @@ logging:
     dailyRolling:
 
       # -- (string) Mandatory. The type of appender.
-      # Possible values: `DailyRollingFile`, `Console`.
+      # Possible values: 
+      # - `DailyRollingFile` 
+      # - `Console`
       type: DailyRollingFile
 
       # -- (string) Mandatory. The conversion pattern.
@@ -4356,7 +4380,7 @@ adapters:
 
           # -- Optional. See
           # `adapters.{}.metadataProvider.inProcessMetadataAdapter.classLoader`.
-          classloader: common
+          classLoader: common
 
           # -- Optional. Requests the creation of a specific `DATA` thread pool,
           # expressly devoted to the management of table subscription and
@@ -4869,7 +4893,9 @@ connectors:
         dailyRolling:
 
           # -- (string) Mandatory. The type of appender.
-          # Possible values: `DailyRollingFile`, `Console`.
+          # Possible values: 
+          # - `DailyRollingFile` 
+          # - `Console`
           type: DailyRollingFile
 
           # -- (string) Mandatory. The conversion pattern.
@@ -4976,8 +5002,10 @@ connectors:
           # -- Optional. Enables the encryption.
           enabled: false
 
-          # -- (string) Optional. The SSL protocol to be used. Possible values:
-          # `TLSv1.2`, `TLSv1.3`.
+          # -- (string) Optional. The SSL protocol to be used. 
+          # Possible values:
+          # - `TLSv1.2`
+          # - `TLSv1.3`
           # If not specified, the default value is `TLSv1.3` when running on
           # Java 11 or newer, `TLSv1.2` otherwise.
           protocol:
