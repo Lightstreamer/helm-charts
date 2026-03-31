@@ -481,6 +481,8 @@ deployment:
       effect: NoSchedule
 ```
 
+For a production clustering pattern — dedicated nodes with hard pod anti-affinity, resource sizing, and session affinity — see [Cluster](#cluster).
+
 #### Annotations
 
 Use [`deployment.annotations`](charts/lightstreamer/values.yaml#L76) to add annotations to the Deployment resource itself, and [`deployment.podAnnotations`](charts/lightstreamer/values.yaml#L91) to add annotations to every Pod created by the Deployment. Pod annotations are commonly used to integrate with tools like Prometheus, HashiCorp Vault, or Istio:
@@ -1370,38 +1372,11 @@ For a detailed explanation of the control link mechanism and deployment architec
 
 #### Number of nodes
 
-Provision one worker node for each Lightstreamer replica you plan to deploy. Each broker instance should run on a dedicated node for the following reasons:
+Provision one worker node for each Lightstreamer replica you plan to deploy. Each node must have at least 2 CPUs and 1 GB of memory. Each broker instance should run on a dedicated node for the following reasons:
 
 - **Resource isolation**: the Lightstreamer Broker is designed to fully utilise available CPU and memory. Sharing a node with another replica — or with other workloads — introduces contention on CPU scheduling, garbage collection pauses, and network I/O, degrading throughput and latency for both instances.
 - **Fault tolerance**: if a node fails, only one replica is lost. The remaining replicas continue serving their sessions without disruption.
 - **Predictable performance**: dedicated nodes eliminate noisy-neighbour effects, making capacity planning and load testing results reproducible.
-
-```mermaid
-graph TB
-    Clients([Clients])
-    LB[Load Balancer]
-
-    Clients --> LB
-
-    subgraph Kubernetes Cluster
-        subgraph Node 1
-            R1[LS Replica 1]
-        end
-        subgraph Node 2
-            R2[LS Replica 2]
-        end
-        subgraph Node 3
-            R3[LS Replica 3]
-        end
-    end
-
-    LB --> R1
-    LB --> R2
-    LB --> R3
-
-    R1 -. anti-affinity .- R2
-    R2 -. anti-affinity .- R3
-```
 
 Use a hard pod anti-affinity rule to enforce one replica per node:
 
@@ -1415,8 +1390,6 @@ deployment:
               app.kubernetes.io/name: lightstreamer
           topologyKey: kubernetes.io/hostname
 ```
-
-See [Scheduling](#scheduling) for additional placement options such as zone-spreading and node selectors.
 
 #### Resource sizing
 
