@@ -1587,9 +1587,16 @@ Render the Lightstreamer configuration file.
          under the "classes" and "lib" subdirectories, respectively.
          The path is relative to the conf directory.
          Default: ../shared -->
+    {{- include "lightstreamer.sharedDir.validateProvisioning" . }}
+    {{- if (.Values.sharedDir).fromPathInImage }}
+    <shared_dir>{{ .Values.sharedDir.fromPathInImage }}</shared_dir>
+    {{- else if ((.Values.sharedDir).fromVolume).name }}
+    <shared_dir>{{ include "lightstreamer.shared.source.dir" . }}{{ with .Values.sharedDir.fromVolume.path }}/{{ . }}{{ end }}</shared_dir>
+    {{- else }}
     <!--
     <shared_dir>../my_shared</shared_dir>
     -->
+    {{- end }}
 
 <!--
   ==========================
