@@ -4755,8 +4755,12 @@ adapters:
           # @default -- see description
           keepaliveHintMillis:
 
+  
+  # -- Predefined Adapter Set bundled with the Lightstreamer Broker and available
+  # in the official Docker image. Populates the demos on the welcome page.
+  # Disabled by default.
   welcomeAdapterSet:
-    enabled: true
+    enabled: false
     id: "WELCOME"
 
     provisioning:
