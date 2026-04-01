@@ -428,6 +428,24 @@ Create the name of the keystores folder for storing the keystore files used by t
 {{- end }}
 
 {{/*
+Validate that a volume name references an existing entry in deployment.extraVolumes.
+Takes a list: [extraVolumes, volumeName, errorContext].
+*/}}
+{{- define "lightstreamer.validateExtraVolumeRef" -}}
+{{- $extraVolumes := index . 0 -}}
+{{- $volumeName := index . 1 -}}
+{{- $errorContext := index . 2 -}}
+{{- $extraVolumeNames := list }}
+{{- range $extraVolumes }}
+  {{- $extraVolumeNames = append $extraVolumeNames .name }}
+{{- end }}
+{{- $extraVolumeNames := $extraVolumeNames | uniq }}
+{{- if not (has $volumeName $extraVolumeNames) }}
+  {{- fail (printf "%s must be set to a volume defined in deployment.extraVolumes" $errorContext) }}
+{{- end }}
+{{- end }}
+
+{{/*
 Validate all Kafka connection configurations, ensuring that at least one enabled
 configuration exists and no duplicate names are used.
 */}}
@@ -506,15 +524,7 @@ Validate the Kafka Connector provisioning setting.
   {{- /* When fromVolume is the chosen method, check that it is correctly set */ -}}
   {{- if eq $chosenMethodName "fromVolume" }}
 
-    {{- /* Check that fromVolume.name references an extra volume defined in deployment.extraVolumes */ -}}
-    {{- $extraVolumeNames := list }}
-    {{- range $.Values.deployment.extraVolumes }}
-      {{- $extraVolumeNames = append $extraVolumeNames .name }}
-    {{- end }}
-    {{- $extraVolumeNames := $extraVolumeNames | uniq }}
-    {{- if not (has .fromVolume.name $extraVolumeNames) }}
-      {{- fail "connectors.kafkaConnector.provisioning.fromVolume.name must be set to a volume defined in deployment.extraVolumes" }}
-    {{- end }}
+    {{- include "lightstreamer.validateExtraVolumeRef" (list $.Values.deployment.extraVolumes .fromVolume.name "connectors.kafkaConnector.provisioning.fromVolume.name") }}
 
     {{- /* Check that fromVolume.filePath is set */ -}}
     {{- if not .fromVolume.filePath }}
@@ -924,15 +934,7 @@ Validate the Adapter provisioning setting.
       {{- printf "adapters.%s.provisioning.fromVolume.name must be set" $adapterSetName | fail }}
     {{- end }}
 
-    {{- /* Check that fromVolume.name references an extra volume defined in deployment.extraVolumes */ -}}
-    {{- $extraVolumeNames := list }}
-    {{- range $.Values.deployment.extraVolumes }}
-      {{- $extraVolumeNames = append $extraVolumeNames .name }}
-    {{- end }}
-    {{- $extraVolumeNames := $extraVolumeNames | uniq }}
-    {{- if not (has .name $extraVolumeNames) }}
-      {{- printf "adapters.%s.provisioning.fromVolume.name must be set to a volume defined in deployment.extraVolumes" $adapterSetName | fail }}
-    {{- end }}
+    {{- include "lightstreamer.validateExtraVolumeRef" (list $.Values.deployment.extraVolumes .name (printf "adapters.%s.provisioning.fromVolume.name" $adapterSetName)) }}
   {{- end }}
 
 {{- end }}
@@ -967,14 +969,7 @@ Validate the sharedDir provisioning setting.
 
   {{- /* When fromVolume is the chosen method, check that it is correctly set */ -}}
   {{- if and $methods (eq ($methods | first) "fromVolume") }}
-    {{- $extraVolumeNames := list }}
-    {{- range $.Values.deployment.extraVolumes }}
-      {{- $extraVolumeNames = append $extraVolumeNames .name }}
-    {{- end }}
-    {{- $extraVolumeNames := $extraVolumeNames | uniq }}
-    {{- if not (has .fromVolume.name $extraVolumeNames) }}
-      {{- fail "sharedDir.fromVolume.name must be set to a volume defined in deployment.extraVolumes" }}
-    {{- end }}
+    {{- include "lightstreamer.validateExtraVolumeRef" (list $.Values.deployment.extraVolumes .fromVolume.name "sharedDir.fromVolume.name") }}
   {{- end }}
 {{- end }}
 {{- end }}
