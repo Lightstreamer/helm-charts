@@ -2613,14 +2613,7 @@ Render the Lightstreamer configuration file.
              names would be ignored.
              Default: ../pages -->
         {{- if (.pagesVolume).name }}
-        {{- $extraVolumeNames := list }}
-        {{- range $.Values.deployment.extraVolumes }}
-          {{- $extraVolumeNames = append $extraVolumeNames .name }}
-        {{- end }}
-        {{- $extraVolumeNames := $extraVolumeNames | uniq }}
-        {{- if not (has .pagesVolume.name $extraVolumeNames) }}
-          {{- fail "webServer.pagesVolume.name must be set to a volume defined in deployment.extraVolumes" }}
-        {{- end }}
+        {{- include "lightstreamer.validateExtraVolumeRef" (list $.Values.deployment.extraVolumes .pagesVolume.name "webServer.pagesVolume.name") }}
         <pages_dir>{{ include "lightstreamer.webServer.pages-source.dir" . }}{{ with .pagesVolume.path }}/{{ . }}{{ end }}</pages_dir>
         {{- else }}
         <!--
