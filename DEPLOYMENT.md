@@ -1394,10 +1394,12 @@ For a detailed explanation of the control link mechanism and deployment architec
 
 #### Number of nodes
 
-Provision one worker node for each Lightstreamer replica you plan to deploy. Each node must meet the following minimum requirements:
+Provision one worker node for each Lightstreamer replica you plan to deploy. Each node should meet the following minimum requirements:
 
 - **2 CPUs**
 - **1 GB of memory**
+
+Actual sizing depends on the workload — see [Resource sizing](#resource-sizing) for guidance.
 
 Each broker instance should run on a dedicated node for the following reasons:
 
@@ -1447,7 +1449,7 @@ deployment:
 
 CPU cores directly affect the internal event dispatch pools (`EVENTS` and `PUMP`). See [Load](#load) for tuning pool sizes to match the available cores.
 
-The values above are starting points. Run representative performance benchmarks under realistic load to fine-tune CPU, memory, and JVM settings for the specific workload.
+The values above are starting points. Run representative performance benchmarks under realistic load to fine-tune CPU, memory, and JVM settings for the specific workload. The [Lightstreamer Load Test Toolkit](https://github.com/Lightstreamer/load-test-toolkit) provides an Adapter Simulator and a Client Simulator for capacity planning under different load scenarios.
 
 #### Session affinity approaches
 
