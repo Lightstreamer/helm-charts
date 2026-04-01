@@ -107,14 +107,7 @@ Render the Lightstreamer logging configuration file
       {{ $fileName := required (printf "logging.appenders.%s.fileName must be set" $name) $val.fileName }}
       {{- $logsDir := include "lightstreamer.logs.dir" . }}
       {{- if $val.volumeRef }}
-        {{- $extraVolumeNames := list }}
-        {{- range $.Values.deployment.extraVolumes }}
-          {{- $extraVolumeNames = append $extraVolumeNames .name }}
-        {{- end }}
-        {{- $extraVolumeNames := $extraVolumeNames | uniq }}
-        {{- if not (has $val.volumeRef $extraVolumeNames) }}
-          {{- fail (printf "logging.appenders.%s.volumeRef must be set to a volume defined in deployment.extraVolumes" $key) }}
-        {{- end }}
+        {{- include "lightstreamer.validateExtraVolumeRef" (list $.Values.deployment.extraVolumes $val.volumeRef (printf "logging.appenders.%s.volumeRef" $key)) }}
         {{- $logsDir = printf "%s/%s" $logsDir $val.volumeRef }}
       {{- end }}
     <File>{{ $logsDir }}/{{ $fileName }}</File>
