@@ -60,14 +60,7 @@ Render the Kafka Connector logging configuration file.
       {{- $fileName := required (printf "connectors.kafkaConnector.logging.appenders.%s.fileName must be set" $appenderName) $appender.fileName }}
       {{- $logsDir := include "lightstreamer.kafka-connector.logs.dir" . }}
       {{- if $appender.volumeRef }}
-        {{- $extraVolumeNames := list }}
-        {{- range $.Values.deployment.extraVolumes }}
-          {{- $extraVolumeNames = append $extraVolumeNames .name }}
-        {{- end }}
-        {{- $extraVolumeNames := $extraVolumeNames | uniq }}
-        {{- if not (has $appender.volumeRef $extraVolumeNames) }}
-          {{- fail (printf "connectors.kafkaConnector.logging.appenders.%s.volumeRef must be set to a volume defined in deployment.extraVolumes" $appenderName) }}
-        {{- end }}
+        {{- include "lightstreamer.validateExtraVolumeRef" (list $.Values.deployment.extraVolumes $appender.volumeRef (printf "connectors.kafkaConnector.logging.appenders.%s.volumeRef" $appenderName)) }}
         {{- $logsDir = printf "%s/%s" $logsDir $appender.volumeRef }}
       {{- end }}      
 log4j.appender.{{ $appenderName }}=org.apache.log4j.RollingFileAppender
