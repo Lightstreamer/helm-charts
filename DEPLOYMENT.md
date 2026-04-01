@@ -2023,19 +2023,38 @@ connectors:
 
 The Kafka Connector must be provisioned before it can be used. The Helm chart supports multiple provisioning methods through the [`provisioning`](charts/lightstreamer/values.yaml#L4870) section:
 
-1. **From GitHub Release** (Recommended)
+1. **From Path in Image** (Recommended)
 
-   Automatically download and deploy a specific version from GitHub:
+   The Kafka Connector is distributed as a ready-to-use container image at `ghcr.io/lightstreamer/lightstreamer-kafka-connector`. Point [`image.repository`](charts/lightstreamer/values.yaml#L35) and [`image.tag`](charts/lightstreamer/values.yaml#L42) to this image and set `fromPathInImage` to the connector's deployment folder inside it:
+
+   ```yaml
+   image:
+     repository: ghcr.io/lightstreamer/lightstreamer-kafka-connector
+     tag: "1.5.0"
+
+   connectors:
+     kafkaConnector:
+       enabled: true
+       provisioning:
+         fromPathInImage: /lightstreamer/adapters/lightstreamer-kafka-connector
+   ```
+
+   > [!NOTE]
+   > `fromPathInImage` works with any container image that includes the connector — it is not limited to the official one. You can build a custom image with additional dependencies or configuration and reference the connector path inside it.
+
+2. **From GitHub Release**
+
+   Automatically download and deploy a specific version from GitHub at startup:
 
    ```yaml
    connectors:
      kafkaConnector:
        enabled: true
        provisioning:
-         fromGitHubRelease: 1.3.2
+         fromGitHubRelease: 1.5.0
    ```
 
-2. **From URL**
+3. **From URL**
 
    Download from a custom URL:
 
@@ -2047,7 +2066,7 @@ The Kafka Connector must be provisioned before it can be used. The Helm chart su
          fromUrl: https://example.com/kafka-connector.zip
    ```
 
-3. **From Volume**
+4. **From Volume**
 
    Use a connector package stored in a mounted volume:
 
@@ -2058,19 +2077,7 @@ The Kafka Connector must be provisioned before it can be used. The Helm chart su
        provisioning:
          fromVolume:
            name: my-volume
-           filePath: kafka-connector/lightstreamer-kafka-connector-1.3.2.zip
-   ```
-
-4. **From Path in Image**
-
-   Use a connector pre-installed in a custom container image:
-
-   ```yaml
-   connectors:
-     kafkaConnector:
-       enabled: true
-       provisioning:
-         fromPathInImage: /lightstreamer/adapters/lightstreamer-kafka-connector-1.3.2
+           filePath: kafka-connector/lightstreamer-kafka-connector-1.5.0.zip
    ```
 
 ##### Connections
@@ -2084,7 +2091,7 @@ connectors:
     adapterSetId: "KafkaConnector"
     
     provisioning:
-      fromGitHubRelease: 1.3.2
+      fromGitHubRelease: 1.5.0
     
     connections:
       # Connection 1: Basic configuration
@@ -2285,7 +2292,7 @@ connectors:
     adapterSetId: "KafkaConnector"
     
     provisioning:
-      fromGitHubRelease: 1.3.2
+      fromGitHubRelease: 1.5.0
     
     logging:
       appenders:
