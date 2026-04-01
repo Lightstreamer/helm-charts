@@ -645,8 +645,8 @@ The [`license`](charts/lightstreamer/values.yaml#L403) section configures the ed
 
 Two editions are available:
 
-- **Community**: Free edition with feature restrictions
-- **Enterprise**: Full-featured commercial edition
+- **Community**: free edition with feature restrictions
+- **Enterprise**: full-featured commercial edition
 
 #### Community edition
 
@@ -1552,7 +1552,7 @@ Each Adapter Set consists of:
 
 Lightstreamer Adapters can be implemented in two ways:
 - **In-Process Adapters**: Java classes running within the Lightstreamer Broker's JVM
-- **Remote Adapters**: External processes communicating with the Lightstreamer Broker through the Remote Server API
+- **Remote Adapters**: external processes communicating with the Lightstreamer Broker through the Remote Server API
 
 See the _The Adapters_ chapter of the [_General Concepts_](https://lightstreamer.com/ls-server/latest/docs/General%20Concepts.pdf) document to learn more about Lightstreamer Adapters.
 
@@ -2034,7 +2034,7 @@ The Kafka Connector must be provisioned before it can be used. The Helm chart su
 
    connectors:
      kafkaConnector:
-       enabled: true
+       ...
        provisioning:
          fromPathInImage: /lightstreamer/adapters/lightstreamer-kafka-connector
    ```
@@ -2043,12 +2043,12 @@ The Kafka Connector must be provisioned before it can be used. The Helm chart su
 
 2. **From GitHub release**
 
-   Automatically download and deploy a specific version from GitHub at startup:
+   Automatically download and deploy a specific version from the [Lightstreamer Kafka Connector GitHub repository](https://github.com/Lightstreamer/Lightstreamer-kafka-connector) at startup:
 
    ```yaml
    connectors:
      kafkaConnector:
-       enabled: true
+       ...
        provisioning:
          fromGitHubRelease: 1.5.0
    ```
@@ -2060,7 +2060,7 @@ The Kafka Connector must be provisioned before it can be used. The Helm chart su
    ```yaml
    connectors:
      kafkaConnector:
-       enabled: true
+       ...
        provisioning:
          fromUrl: https://example.com/kafka-connector.zip
    ```
@@ -2072,7 +2072,7 @@ The Kafka Connector must be provisioned before it can be used. The Helm chart su
    ```yaml
    connectors:
      kafkaConnector:
-       enabled: true
+       ...
        provisioning:
          fromVolume:
            name: my-volume
@@ -2081,19 +2081,13 @@ The Kafka Connector must be provisioned before it can be used. The Helm chart su
 
 ##### Connections
 
-The Kafka Connector supports multiple independent connections to different Kafka brokers or clusters. Each connection is defined in the [`connections`](charts/lightstreamer/values.yaml#L4991) map:
+The Kafka Connector supports multiple independent connections to different Kafka brokers or clusters. Each connection is defined in the [`connections`](charts/lightstreamer/values.yaml#L4991) map and must set `enabled: true` to be active (disabled connections automatically deny all subscription requests):
 
 ```yaml
 connectors:
   kafkaConnector:
-    enabled: true
-    adapterSetId: "KafkaConnector"
-    
-    provisioning:
-      fromGitHubRelease: 1.5.0
-    
+    ...
     connections:
-      # Connection 1: Basic configuration
       myKafkaCluster:
         name: "Production-Kafka"
         enabled: true
@@ -2101,11 +2095,22 @@ connectors:
         groupId: "lightstreamer-consumer-group"
         
         record:
-          consumeFrom: LATEST  # or EARLIEST
+          consumeFrom: LATEST
           keyEvaluator:
             type: STRING
           valueEvaluator:
             type: JSON
+
+      analyticsCluster:
+        name: "Analytics-Kafka"
+        enabled: true
+        bootstrapServers: "analytics-kafka:9092"
+        
+        record:
+          consumeFrom: EARLIEST
+          valueEvaluator:
+            type: AVRO
+            schemaRegistryUrl: "http://schema-registry:8081"
 ```
 
 **Bootstrap servers**: Specify one or more Kafka broker addresses using [`bootstrapServers`](charts/lightstreamer/values.yaml#L5017). For Kafka deployed in Kubernetes, use the service DNS name:
@@ -2128,6 +2133,7 @@ bootstrapServers: "kafka-0.kafka-headless.kafka:9092"
 ```yaml
 connectors:
   kafkaConnector:
+    ...
     connections:
       secureKafka:
         enabled: true
@@ -2156,6 +2162,7 @@ Routing configuration maps Kafka topics to Lightstreamer items. Define routing r
 ```yaml
 connectors:
   kafkaConnector:
+    ...
     connections:
       myKafkaCluster:
         enabled: true
@@ -2201,6 +2208,7 @@ Field mapping defines how Kafka message content is transformed into Lightstreame
 ```yaml
 connectors:
   kafkaConnector:
+    ...
     connections:
       myKafkaCluster:
         enabled: true
@@ -2242,8 +2250,7 @@ Configure connector-specific logging through the [`logging`](charts/lightstreame
 ```yaml
 connectors:
   kafkaConnector:
-    enabled: true
-    
+    ...
     # Global connector logging
     logging:
       appenders:
@@ -2285,13 +2292,17 @@ Connection-specific loggers inherit from the global configuration but can be ove
 A complete Kafka Connector configuration:
 
 ```yaml
+image:
+  repository: ghcr.io/lightstreamer/lightstreamer-kafka-connector
+  tag: "1.5.0"
+
 connectors:
   kafkaConnector:
     enabled: true
     adapterSetId: "KafkaConnector"
     
     provisioning:
-      fromGitHubRelease: 1.5.0
+      fromPathInImage: /lightstreamer/adapters/lightstreamer-kafka-connector
     
     logging:
       appenders:
