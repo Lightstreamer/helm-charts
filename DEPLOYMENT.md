@@ -455,6 +455,19 @@ deployment:
       value: "-server -Xms2g -Xmx2g -XX:+UseG1GC"
 ```
 
+Environment variables injected this way are also available inside Lightstreamer configuration values through the `$env.<VAR>` substitution syntax. At startup, the Broker replaces any `$env.<VAR>` token with the value of the corresponding environment variable. This is useful for injecting pod-specific values — for example, the node IP via the Kubernetes [Downward API](https://kubernetes.io/docs/concepts/workloads/pods/downward-api/):
+
+```yaml
+deployment:
+  extraEnv:
+    - name: NODE_IP
+      valueFrom:
+        fieldRef:
+          fieldPath: status.hostIP
+```
+
+The variable can then be referenced in any chart setting that supports it — for example `cluster.controlLinkAddress: "$env.NODE_IP"` (see [Cluster](#cluster)).
+
 `deployment.preCommands` runs shell commands before the broker starts.
 
 #### Scheduling
@@ -1368,7 +1381,14 @@ See the [`webServer`](charts/lightstreamer/values.yaml#L3172) section of `values
 
 The [`cluster`](charts/lightstreamer/values.yaml#L3263) section covers multi-instance deployments where several Lightstreamer replicas run behind a load balancer. The sub-sections below address node provisioning, resource sizing, and session affinity — the mechanism that ensures all requests for a given client session reach the same instance.
 
-Setting `cluster.maxSessionDurationMinutes` bounds session lifetime — when the limit is reached, the session closes gracefully, allowing the next session to be assigned to a different replica. This is particularly useful in combination with [autoscaling](#autoscaling).
+```yaml
+cluster:
+  maxSessionDurationMinutes: 1440
+```
+
+Setting [`cluster.controlLinkAddress`](charts/lightstreamer/values.yaml#L3284) tells each replica which address to return in the control link response so the client SDK can reach it directly for all subsequent requests. When the load balancer provides sticky sessions, this setting can be omitted. See [Session affinity approaches](#session-affinity-approaches) for configuration examples.
+
+Setting [`cluster.maxSessionDurationMinutes`](charts/lightstreamer/values.yaml#L3325) bounds session lifetime — when the limit is reached, the session closes gracefully, allowing the next session to be assigned to a different replica. This is particularly useful in combination with [autoscaling](#autoscaling).
 
 For a detailed explanation of the control link mechanism and deployment architectures, see the [Clustering](https://lightstreamer.com/distros/ls-server/7.4.7/docs/Clustering.pdf) document.
 
@@ -1474,6 +1494,22 @@ When sticky sessions are not available, `controlLinkAddress` must resolve to a s
 
 - **Host networking**: setting `hostNetwork: true` on the pod binds it directly to the node's network interface, allowing clients to reach the pod on the node's IP without a Service. This can be combined with an Ingress for the initial session creation.
 
+  To make each pod advertise its own node IP as the control link address, inject it via the Kubernetes Downward API and reference it with the `$env.<VAR>` substitution syntax (see [Environment and initialization](#environment-and-initialization)):
+
+  ```yaml
+  deployment:
+    extraEnv:
+      - name: NODE_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.hostIP
+
+  cluster:
+    controlLinkAddress: "$env.NODE_IP"
+  ```
+
+  Other strategies are equally valid — for instance, `spec.nodeName` if external DNS resolves node hostnames, or any other mechanism that produces a routable address for the specific pod.
+
   On OpenShift, `hostNetwork: true` requires the `hostnetwork` SCC. Grant it to the Lightstreamer ServiceAccount before deploying:
 
   ```sh
@@ -1485,25 +1521,25 @@ When sticky sessions are not available, `controlLinkAddress` must resolve to a s
 
 ### Load
 
-The [`load`](charts/lightstreamer/values.yaml#L3328) section controls thread pool sizes and session limits. The defaults are sized for a general-purpose deployment; tune them when you have a clear picture of your traffic profile.
-
-The most commonly adjusted settings are:
-
-- `load.maxSessions`: caps the total number of concurrent client sessions. Unset by default (unlimited). Set a limit as a safety ceiling against overload.
-- `load.serverPoolMaxSize` / `load.serverPoolMaxQueue`: the `SERVER` pool handles client request processing (including blocking Adapter calls). Increase `maxSize` (default: `1000`) if you see thread starvation under load; lower `serverPoolMaxQueue` (default: `100`) to shed load earlier rather than queue up.
-- `load.eventsPoolSize`, `load.pumpPoolSize`: CPU-bound pools for dispatching update events. Defaults to the number of available cores; raise on high core-count machines with heavy update traffic.
+The [`load`](charts/lightstreamer/values.yaml#L3328) section controls thread pool sizes and session limits. The Broker uses several internal thread pools at different stages of request processing — from accepting connections and parsing requests to dispatching updates and performing TLS handshakes. The defaults are sized for a general-purpose deployment; tune them when you have a clear picture of your traffic profile.
 
 ```yaml
 load:
   maxSessions: 50000
   serverPoolMaxSize: 1000
   serverPoolMaxQueue: 100
-  eventsPoolSize: 8
-  pumpPoolSize: 8
+  handshakePoolSize: 4
 ```
 
-> [!TIP]
-> Monitor the `PUMP` and `SERVER` pool queue lengths via [JMX](#jmx) or the [Monitoring Dashboard](#monitoring-dashboard) before changing pool sizes — queue buildup is a more reliable signal than raw CPU usage.
+- [`load.maxSessions`](charts/lightstreamer/values.yaml#L3339): caps the total number of concurrent client sessions. Unset by default (unlimited). Set a limit as a safety ceiling against overload.
+- [`load.serverPoolMaxSize`](charts/lightstreamer/values.yaml#L3443) / [`load.serverPoolMaxQueue`](charts/lightstreamer/values.yaml#L3474): the `SERVER` pool handles client request processing, including potentially blocking Adapter calls. Increase `maxSize` (default: `1000`) if you see thread starvation under load; lower `serverPoolMaxQueue` (default: `100`) to shed load earlier rather than queue up.
+- [`load.acceptPoolMaxSize`](charts/lightstreamer/values.yaml#L3488): the `ACCEPT` pool handles parsing of incoming client requests. Defaults to the number of available cores.
+- [`load.eventsPoolSize`](charts/lightstreamer/values.yaml#L3396): the `EVENTS` pool dispatches update events received from Data Adapters to client sessions. Defaults to the number of available cores.
+- [`load.pumpPoolSize`](charts/lightstreamer/values.yaml#L3412): the `PUMP` pool integrates update events for each session and creates update commands for clients. Defaults to the number of available cores.
+- [`load.handshakePoolSize`](charts/lightstreamer/values.yaml#L3516): the `TLS-SSL HANDSHAKE` pool handles TLS/SSL handshakes on HTTPS listening sockets not configured to request a client certificate. Defaults to half the number of available cores. Only relevant when at least one server is configured with `enableHttps: true`. When client certificate authentication is enabled on a socket, the separate [`httpsAuthPoolMaxSize`](charts/lightstreamer/values.yaml#L3548) pool is used instead.
+- [`load.selectorPoolSize`](charts/lightstreamer/values.yaml#L3373): number of NIO selectors (each with its own thread) sharing the same I/O operation. Defaults to the number of available cores.
+
+See the [`load`](charts/lightstreamer/values.yaml#L3328) section of `values.yaml` for full details on all available settings.
 
 ### Adapters
 
