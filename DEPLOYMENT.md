@@ -55,7 +55,7 @@ This guide covers deploying, configuring, and managing the Lightstreamer Broker 
       - [Hands-on example](#hands-on-example)
     - [Health check](#health-check)
   - [Push session](#push-session)
-  - [Mobile Push Notifications](#mobile-push-notifications)
+  - [Mobile push notifications](#mobile-push-notifications)
   - [Web server](#web-server)
   - [Cluster](#cluster)
     - [Number of nodes](#number-of-nodes)
@@ -64,8 +64,8 @@ This guide covers deploying, configuring, and managing the Lightstreamer Broker 
   - [Load](#load)
   - [Adapters](#adapters)
     - [Defining an Adapter Set](#defining-an-adapter-set)
-    - [Other adapter set options](#other-adapter-set-options)
-    - [In-process adapters](#in-process-adapters)
+    - [Other Adapter Set options](#other-adapter-set-options)
+    - [In-process Adapters](#in-process-adapters)
       - [Provisioning](#provisioning)
       - [Configure Metadata Adapters and Data Adapters](#configure-metadata-adapters-and-data-adapters)
       - [ClassLoader types](#classloader-types)
@@ -375,7 +375,7 @@ imagePullSecrets:
 ```
 
 > [!TIP]
-> When deploying in-process adapters, build a custom image based on the official Lightstreamer image and set `image.repository` and `image.tag` to point to it. See [In-process adapters](#in-process-adapters) for details.
+> When deploying in-process Adapters, build a custom image based on the official Lightstreamer image and set `image.repository` and `image.tag` to point to it. See [In-process Adapters](#in-process-adapters) for details.
 
 ### Service account
 
@@ -1297,7 +1297,7 @@ pushSession:
 
 See the [`pushSession`](charts/lightstreamer/values.yaml#L2323) section of `values.yaml` for full details.
 
-### Mobile Push Notifications
+### Mobile push notifications
 
 The [`mpn`](charts/lightstreamer/values.yaml#L2728) section enables the Lightstreamer Mobile Push Notifications module, which bridges item subscriptions with Apple APNs and Google FCM so clients receive push notifications when the app is not in the foreground.
 
@@ -1560,11 +1560,11 @@ See the _The Adapters_ chapter of the [_General Concepts_](https://lightstreamer
 
 To define an Adapter Set, add a new configuration to the [`adapters`](charts/lightstreamer/values.yaml#L3627) section with the following mandatory settings:
 
-- [`id`](charts/lightstreamer/values.yaml#L3638): A unique id for the adapter set
+- [`id`](charts/lightstreamer/values.yaml#L3638): A unique id for the Adapter Set
 - [`metadataProvider`](charts/lightstreamer/values.yaml#L3708): A Metadata Adapter configuration
 - [`dataProviders`](charts/lightstreamer/values.yaml#L4369): One or more Data Adapter configurations
 
-Moreover, set the [`enabled`](charts/lightstreamer/values.yaml#L3633) flag to `true` to include the adapter set in the deployment.
+Moreover, set the [`enabled`](charts/lightstreamer/values.yaml#L3633) flag to `true` to include the Adapter Set in the deployment.
 
 ```yaml
 adapters:
@@ -1583,13 +1583,13 @@ adapters:
     ...
 ```
 
-#### Other adapter set options
+#### Other Adapter Set options
 
 Additional optional settings are available for each Adapter Set — see [`adapterSetPool`](charts/lightstreamer/values.yaml#L3684) to configure a dedicated thread pool, and [`enableMetadataInitializedFirst`](charts/lightstreamer/values.yaml#L3705) (defaults to `true`) to control the initialization order of Metadata and Data Adapters.
 
-#### In-process adapters
+#### In-process Adapters
 
-In-process adapters are Java classes that run directly within the Lightstreamer Broker's JVM. To deploy them, you need to first provision the Adapter Set's resources and then configure the Metadata Adapter and Data Adapter(s).
+In-process Adapters are Java classes that run directly within the Lightstreamer Broker's JVM. To deploy them, you need to first provision the Adapter Set's resources and then configure the Metadata Adapter and Data Adapter(s).
 
 ##### Provisioning
 
@@ -1954,7 +1954,7 @@ See the linked `values.yaml` entries for full details.
 
 #### Mixed configuration
 
-Within the same Adapter Set, it is possible to mix in-process and proxy adapters. For example, you can pair an in-process Metadata Adapter with one or more Proxy Data Adapters, or vice versa.
+Within the same Adapter Set, it is possible to mix in-process and Proxy Adapters. For example, you can pair an in-process Metadata Adapter with one or more Proxy Data Adapters, or vice versa.
 
 When both `inProcessMetadataAdapter` and `proxyMetadataAdapter` are defined under `metadataProvider`, the in-process adapter takes precedence and the proxy configuration is ignored. The same rule applies per Data Adapter: when both `inProcessDataAdapter` and `proxyDataAdapter` are defined, the in-process adapter takes precedence.
 
@@ -1980,7 +1980,7 @@ adapters:
 
 ### Connectors
 
-Lightstreamer Connectors are ready-made adapter sets that enable seamless integration between Lightstreamer Broker and external messaging systems or data sources, handling data ingestion, protocol translation, schema management, and connection reliability out of the box.
+Lightstreamer Connectors are ready-made Adapter Sets that enable seamless integration between Lightstreamer Broker and external messaging systems or data sources, handling data ingestion, protocol translation, schema management, and connection reliability out of the box.
 
 Currently, the Kafka Connector is the only connector available in this Helm chart. Each connector is configured and enabled independently within the [`connectors`](charts/lightstreamer/values.yaml#L4858) section.
 
@@ -1988,7 +1988,7 @@ Currently, the Kafka Connector is the only connector available in this Helm char
 
 The Lightstreamer Kafka Connector enables real-time streaming of data from Apache Kafka topics to Lightstreamer clients. It acts as a bridge between Kafka's publish-subscribe messaging system and Lightstreamer's real-time data delivery infrastructure, allowing web and mobile applications to receive Kafka messages with low latency.
 
-**Key Features:**
+**Key features:**
 - Native integration with Apache Kafka and Kafka-compatible platforms (Amazon MSK, Confluent Cloud, etc.)
 - Support for multiple serialization formats: String, JSON, Avro, Protobuf, and key-value pairs
 - Schema Registry integration for Avro and Protobuf
@@ -2023,7 +2023,7 @@ connectors:
 
 The Kafka Connector must be provisioned before it can be used. The Helm chart supports multiple provisioning methods through the [`provisioning`](charts/lightstreamer/values.yaml#L4870) section:
 
-1. **From Path in Image** (Recommended)
+1. **From path in image** (Recommended)
 
    The Kafka Connector is distributed as a ready-to-use container image at `ghcr.io/lightstreamer/lightstreamer-kafka-connector`. Point [`image.repository`](charts/lightstreamer/values.yaml#L35) and [`image.tag`](charts/lightstreamer/values.yaml#L42) to this image and set `fromPathInImage` to the connector's deployment folder inside it:
 
@@ -2041,7 +2041,7 @@ The Kafka Connector must be provisioned before it can be used. The Helm chart su
 
    The `fromPathInImage` setting works with any container image that includes the connector — it is not limited to the official one. You can build a custom image with additional dependencies or configuration and reference the connector path inside it.
 
-2. **From GitHub Release**
+2. **From GitHub release**
 
    Automatically download and deploy a specific version from GitHub at startup:
 
@@ -2065,7 +2065,7 @@ The Kafka Connector must be provisioned before it can be used. The Helm chart su
          fromUrl: https://example.com/kafka-connector.zip
    ```
 
-4. **From Volume**
+4. **From volume**
 
    Use a connector package stored in a mounted volume:
 
@@ -2108,13 +2108,13 @@ connectors:
             type: JSON
 ```
 
-**Bootstrap Servers**: Specify one or more Kafka broker addresses using [`bootstrapServers`](charts/lightstreamer/values.yaml#L5017). For Kafka deployed in Kubernetes, use the service DNS name:
+**Bootstrap servers**: Specify one or more Kafka broker addresses using [`bootstrapServers`](charts/lightstreamer/values.yaml#L5017). For Kafka deployed in Kubernetes, use the service DNS name:
 
 ```yaml
 bootstrapServers: "kafka-0.kafka-headless.kafka:9092"
 ```
 
-**Record Evaluation**: Configure how Kafka message keys and values are deserialized through [`record.keyEvaluator`](charts/lightstreamer/values.yaml#L5191) and [`record.valueEvaluator`](charts/lightstreamer/values.yaml#L5247):
+**Record evaluation**: Configure how Kafka message keys and values are deserialized through [`record.keyEvaluator`](charts/lightstreamer/values.yaml#L5191) and [`record.valueEvaluator`](charts/lightstreamer/values.yaml#L5247):
 
 - `STRING`: Plain text
 - `JSON`: JSON objects
@@ -2186,13 +2186,13 @@ connectors:
                 - sensorTemplate
 ```
 
-**Item Templates** use extraction expressions to dynamically generate item names from message content:
+**Item templates** use extraction expressions to dynamically generate item names from message content:
 - `#{index=KEY}`: Use the message key.
 - `#{index=VALUE.fieldName}`: Extract from a JSON field.
 - `#{index=PARTITION}`: Use the partition number.
 - `#{index=TOPIC}`: Use the topic name.
 
-**Topic Mappings** associate Kafka topics with item templates. When a message arrives from a topic, the connector applies the specified templates to generate Lightstreamer item names.
+**Topic mappings** associate Kafka topics with item templates. When a message arrives from a topic, the connector applies the specified templates to generate Lightstreamer item names.
 
 ##### Field mapping
 
