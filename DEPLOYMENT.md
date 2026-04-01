@@ -1587,7 +1587,7 @@ adapters:
 
 #### Other adapter set options
 
-Additional optional settings are available for each Adapter Set — see [`adapterSetPool`](charts/lightstreamer/values.yaml#L3684) to configure a dedicated thread pool, and [`enableMetadataInitializedFirst`](charts/lightstreamer/values.yaml#L3684) (defaults to `true`) to control the initialization order of Metadata and Data Adapters.
+Additional optional settings are available for each Adapter Set — see [`adapterSetPool`](charts/lightstreamer/values.yaml#L3684) to configure a dedicated thread pool, and [`enableMetadataInitializedFirst`](charts/lightstreamer/values.yaml#L3705) (defaults to `true`) to control the initialization order of Metadata and Data Adapters.
 
 #### In-process adapters
 
@@ -1721,18 +1721,12 @@ This ClassLoader loads classes from the `lib` and `classes` subfolders found in 
 
 1. The Adapter Set's root directory:
 
-   ```sh
-   my-adapter-set/
-   ├── classes # Common classes
-   └── lib     # Common jar files
-   ```
-   
    ```yaml
    adapters:
-     exampleAdapterSet:
+     myAdapterSet:
        metadataProvider:
          inProcessMetadataAdapter:
-           adapterClass: com.lightstreamer.adapters.example.first.FirstAdapter
+           adapterClass: com.mycompany.adapters.metadata.MyMetadataAdapter
            classLoader: common 
            ...
        dataProviders:
@@ -1743,19 +1737,15 @@ This ClassLoader loads classes from the `lib` and `classes` subfolders found in 
             ...
    ```
 
-2. The specified `installDir`:
+   The resulting directory layout:
 
    ```sh
-   my-adapter-set/
-   ├── classes     # Common classes
-   ├── lib         # Common jar files
-   ├── metadata    # Metadata Adapter-specific resources
-   │   ├── classes 
-   │   └── lib     
-   └── data        # Data Adapter-specific resources
-       ├── classes 
-       └── lib     
+   /deployed_adapters/my-adapter-set/
+   ├── classes # Common classes
+   └── lib     # Common jar files
    ```
+
+2. The specified `installDir`:
 
    ```yaml
    adapters:
@@ -1773,6 +1763,20 @@ This ClassLoader loads classes from the `lib` and `classes` subfolders found in 
              installDir: data # Data Adapter-specific resources
              classLoader: common
              ...
+   ```
+
+   The resulting directory layout:
+
+   ```sh
+   /deployed_adapters/my-adapter-set/
+   ├── classes     # Common classes
+   ├── lib         # Common jar files
+   ├── metadata    # Metadata Adapter-specific resources
+   │   ├── classes 
+   │   └── lib     
+   └── data        # Data Adapter-specific resources
+       ├── classes 
+       └── lib     
    ```
 
 3. The Lightstreamer Broker's `shared` folder:
@@ -1828,18 +1832,6 @@ flowchart BT
     D3[Dedicated ClassLoader]-->A2
 ```   
 
-```sh
-adapters/my-adapter-set/
-├── classes     # Common classes loaded by the Adapter Set ClassLoader
-├── lib         # Common jar files loaded by the Adapter Set ClassLoader
-├── metadata    
-│   ├── classes # Classes and resources loaded by the dedicated Metadata Adapter's ClassLoader
-│   └── lib     # Jar files loaded by the dedicated Metadata Adapter's ClassLoader
-└── data        
-    ├── classes # Classes and resources loaded by the dedicated Data Adapter's ClassLoader
-    └── lib     # Jar files loaded by the dedicated Data Adapter's ClassLoader
-```
-
 ```yaml
 adapters:
   myAdapterSet:
@@ -1856,6 +1848,20 @@ adapters:
           installDir: data 
           classLoader: dedicated 
           ...
+```
+
+The resulting directory layout:
+
+```sh
+/deployed_adapters/my-adapter-set/
+├── classes     # Common classes loaded by the Adapter Set ClassLoader
+├── lib         # Common jar files loaded by the Adapter Set ClassLoader
+├── metadata    
+│   ├── classes # Classes and resources loaded by the dedicated Metadata Adapter's ClassLoader
+│   └── lib     # Jar files loaded by the dedicated Metadata Adapter's ClassLoader
+└── data        
+    ├── classes # Classes and resources loaded by the dedicated Data Adapter's ClassLoader
+    └── lib     # Jar files loaded by the dedicated Data Adapter's ClassLoader
 ```
 
 ###### `log-enabled` ClassLoader
