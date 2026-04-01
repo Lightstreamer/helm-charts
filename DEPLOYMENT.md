@@ -2114,28 +2114,31 @@ bootstrapServers: "kafka-0.kafka-headless.kafka:9092"
 - `JSON`: JSON objects
 - `AVRO`: Avro serialized data (requires Schema Registry or local schema)
 - `PROTOBUF`: Protocol Buffers (requires Schema Registry or local schema)
-- `INTEGER`, `BOOLEAN`, `FLOAT`, etc.: Primitive types
+- `KVP`: Key-value pairs (configurable separators)
+- `INTEGER`, `BOOLEAN`, `FLOAT`, `DOUBLE`, `LONG`, `SHORT`, `UUID`, `BYTES`, `BYTE_ARRAY`, `BYTE_BUFFER`: Primitive and binary types
 
 **Authentication**: For secure Kafka clusters, configure authentication through [`authentication`](charts/lightstreamer/values.yaml#L5070):
 
 ```yaml
-connections:
-  secureKafka:
-    enabled: true
-    bootstrapServers: "secure-kafka:9093"
-    
-    # TLS/SSL Configuration
-    sslConfig:
-      enabled: true
-      enableHostnameVerification: true
-      keystoreRef: myKafkaKeystore
-      truststoreRef: myKafkaTruststore
-    
-    # SASL Authentication
-    authentication:
-      enabled: true
-      mechanism: SCRAM-SHA-512
-      credentialsSecretRef: kafka-credentials
+connectors:
+  kafkaConnector:
+    connections:
+      secureKafka:
+        enabled: true
+        bootstrapServers: "secure-kafka:9093"
+        
+        # TLS/SSL Configuration
+        sslConfig:
+          enabled: true
+          enableHostnameVerification: true
+          keystoreRef: myKafkaKeystore
+          truststoreRef: myKafkaTruststore
+        
+        # SASL Authentication
+        authentication:
+          enabled: true
+          mechanism: SCRAM-SHA-512
+          credentialsSecretRef: kafka-credentials
 ```
 
 The [`credentialsSecretRef`](charts/lightstreamer/values.yaml#L5091) must reference a Kubernetes Secret containing `user` and `password` keys.
@@ -2145,34 +2148,36 @@ The [`credentialsSecretRef`](charts/lightstreamer/values.yaml#L5091) must refere
 Routing configuration maps Kafka topics to Lightstreamer items. Define routing rules in the [`routing`](charts/lightstreamer/values.yaml#L5303) section:
 
 ```yaml
-connections:
-  myKafkaCluster:
-    enabled: true
-    bootstrapServers: "kafka:9092"
-    
-    record:
-      keyEvaluator:
-        type: STRING
-      valueEvaluator:
-        type: JSON
-    
-    routing:
-      # Define item templates
-      itemTemplates:
-        stockTemplate: stock-#{index=KEY}
-        sensorTemplate: sensor-#{building=VALUE.building}-#{room=VALUE.room}
-      
-      # Map topics to item templates
-      topicMappings:
-        stock-prices:
-          topic: 'stock'
-          itemTemplateRefs:
-            - stockTemplate
+connectors:
+  kafkaConnector:
+    connections:
+      myKafkaCluster:
+        enabled: true
+        bootstrapServers: "kafka:9092"
         
-        iot-sensors:
-          topic: 'sensors'
-          itemTemplateRefs:
-            - sensorTemplate
+        record:
+          keyEvaluator:
+            type: STRING
+          valueEvaluator:
+            type: JSON
+        
+        routing:
+          # Define item templates
+          itemTemplates:
+            stockTemplate: stock-#{index=KEY}
+            sensorTemplate: sensor-#{building=VALUE.building}-#{room=VALUE.room}
+          
+          # Map topics to item templates
+          topicMappings:
+            stock-prices:
+              topic: 'stock'
+              itemTemplateRefs:
+                - stockTemplate
+            
+            iot-sensors:
+              topic: 'sensors'
+              itemTemplateRefs:
+                - sensorTemplate
 ```
 
 **Item Templates** use extraction expressions to dynamically generate item names from message content:
@@ -2188,31 +2193,33 @@ connections:
 Field mapping defines how Kafka message content is transformed into Lightstreamer fields. Configure mappings in the [`fields`](charts/lightstreamer/values.yaml#L5347) section:
 
 ```yaml
-connections:
-  myKafkaCluster:
-    enabled: true
-    
-    record:
-      valueEvaluator:
-        type: JSON
-    
-    fields:
-      mappings:
-        # Map all JSON fields
-        "*": "#{VALUE.*}"
+connectors:
+  kafkaConnector:
+    connections:
+      myKafkaCluster:
+        enabled: true
         
-        # Or map specific fields
-        timestamp: "#{VALUE.timestamp}"
-        price: "#{VALUE.price}"
-        volume: "#{VALUE.volume}"
-        symbol: "#{VALUE.symbol}"
+        record:
+          valueEvaluator:
+            type: JSON
         
-        # Use message metadata
-        kafka_topic: "#{TOPIC}"
-        kafka_partition: "#{PARTITION}"
-        kafka_offset: "#{OFFSET}"
-      
-      enableSkipFailedMapping: true
+        fields:
+          mappings:
+            # Map all JSON fields
+            "*": "#{VALUE.*}"
+            
+            # Or map specific fields
+            timestamp: "#{VALUE.timestamp}"
+            price: "#{VALUE.price}"
+            volume: "#{VALUE.volume}"
+            symbol: "#{VALUE.symbol}"
+            
+            # Use message metadata
+            kafka_topic: "#{TOPIC}"
+            kafka_partition: "#{PARTITION}"
+            kafka_offset: "#{OFFSET}"
+          
+          enableSkipFailedMapping: true
 ```
 
 Extraction expressions support:
