@@ -536,7 +536,7 @@ deployment:
 
 #### Additional volumes
 
-`deployment.extraVolumes` and `deployment.extraVolumeMounts` attach arbitrary volumes to the pods. These are used throughout this guide — for example to [persist log files](#log-to-persistent-storage) or to [provision adapter resources](#provisioning).
+`deployment.extraVolumes` declares volumes that can be referenced by name from other chart settings — for example [`volumeRef`](#log-to-persistent-storage) for logging, [`pagesVolume`](#web-server) for the web server, [`provisioning.fromVolume`](#provisioning) for adapter resources, and [`sharedDir.fromVolume`](#common-classloader) for shared libraries.
 
 ```yaml
 deployment:
@@ -544,11 +544,9 @@ deployment:
     - name: adapter-resources
       persistentVolumeClaim:
         claimName: adapter-resources-pvc
-
-  extraVolumeMounts:
-    - name: adapter-resources
-      mountPath: /lightstreamer/adapters/my-adapter/resources
 ```
+
+`deployment.extraVolumeMounts` is also available for mounting a volume at an arbitrary path in the container when no dedicated chart setting exists.
 
 ### Service
 
