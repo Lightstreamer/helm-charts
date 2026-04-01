@@ -1379,18 +1379,18 @@ See the [`webServer`](charts/lightstreamer/values.yaml#L3172) section of `values
 
 ### Cluster
 
-The [`cluster`](charts/lightstreamer/values.yaml#L3263) section covers multi-instance deployments where several Lightstreamer replicas run behind a load balancer. The sub-sections below address node provisioning, resource sizing, and session affinity — the mechanism that ensures all requests for a given client session reach the same instance.
+The [`cluster`](charts/lightstreamer/values.yaml#L3263) section configures multi-instance deployments where several Lightstreamer replicas run behind a load balancer.
+
+Setting [`cluster.controlLinkAddress`](charts/lightstreamer/values.yaml#L3284) tells each replica which address to return in the control link response so the client SDK can reach it directly for all subsequent requests. When the load balancer provides sticky sessions, this setting can be omitted. See [Session affinity approaches](#session-affinity-approaches) for configuration examples.
+
+Setting [`cluster.maxSessionDurationMinutes`](charts/lightstreamer/values.yaml#L3325) bounds session lifetime — when the limit is reached, the session closes gracefully, allowing the next session to be assigned to a different replica. This is particularly useful in combination with [autoscaling](#autoscaling).
 
 ```yaml
 cluster:
   maxSessionDurationMinutes: 1440
 ```
 
-Setting [`cluster.controlLinkAddress`](charts/lightstreamer/values.yaml#L3284) tells each replica which address to return in the control link response so the client SDK can reach it directly for all subsequent requests. When the load balancer provides sticky sessions, this setting can be omitted. See [Session affinity approaches](#session-affinity-approaches) for configuration examples.
-
-Setting [`cluster.maxSessionDurationMinutes`](charts/lightstreamer/values.yaml#L3325) bounds session lifetime — when the limit is reached, the session closes gracefully, allowing the next session to be assigned to a different replica. This is particularly useful in combination with [autoscaling](#autoscaling).
-
-For a detailed explanation of the control link mechanism and deployment architectures, see the [Clustering](https://lightstreamer.com/distros/ls-server/7.4.7/docs/Clustering.pdf) document.
+For a detailed explanation of the control link mechanism and deployment architectures, see the [Clustering](https://lightstreamer.com/ls-server/latest/docs/Clustering.pdf) document.
 
 #### Number of nodes
 
