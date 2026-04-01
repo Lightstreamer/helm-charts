@@ -2039,8 +2039,7 @@ The Kafka Connector must be provisioned before it can be used. The Helm chart su
          fromPathInImage: /lightstreamer/adapters/lightstreamer-kafka-connector
    ```
 
-   > [!NOTE]
-   > `fromPathInImage` works with any container image that includes the connector — it is not limited to the official one. You can build a custom image with additional dependencies or configuration and reference the connector path inside it.
+   The `fromPathInImage` setting works with any container image that includes the connector — it is not limited to the official one. You can build a custom image with additional dependencies or configuration and reference the connector path inside it.
 
 2. **From GitHub Release**
 
