@@ -551,7 +551,7 @@ deployment:
 
 ### Service
 
-The [`service`](charts/lightstreamer/values.yaml#L275) section configures the Kubernetes Service that exposes Lightstreamer. Each entry in `service.ports` maps a Service port to a Lightstreamer [enabled](charts/lightstreamer/values.yaml#L700) server socket by name — the chart resolves `targetPort` to the actual container port defined in the [`servers`](#server-socket) section.
+The [`service`](charts/lightstreamer/values.yaml#L275) section configures the Kubernetes Service that exposes Lightstreamer. Each entry in `service.ports` maps a Service port to a Lightstreamer [enabled](charts/lightstreamer/values.yaml#L703) server socket by name — the chart resolves `targetPort` to the actual container port defined in the [`servers`](#server-socket) section.
 
 ```yaml
 service:
@@ -571,7 +571,7 @@ Use `NodePort` or `LoadBalancer` for direct external access outside of Ingress. 
 
 The [`ingress`](charts/lightstreamer/values.yaml#L331) section creates a Kubernetes Ingress resource to route external HTTP/S traffic to the Lightstreamer Service. Ingress is disabled by default.
 
-Each entry in `ingress.rules` defines a host and its routing paths. The optional `backendPortName` on each path references a Service port by name (matching an entry in [`service.ports`](#service)) and defaults to the first port name. When no rules are defined and a single Service port exists, the Ingress automatically creates a `defaultBackend` routing to that port. With multiple Service ports and no rules, [`ingress.defaultBackend`](charts/lightstreamer/values.yaml#L360) must be set explicitly. `defaultBackend` can also coexist with `rules` to catch requests that do not match any rule.
+Each entry in `ingress.rules` defines a host and its routing paths. The optional `backendPortName` on each path references a Service port by name (matching an entry in [`service.ports`](#service)) and defaults to the first port name. When no rules are defined and a single Service port exists, the Ingress automatically creates a `defaultBackend` routing to that port. With multiple Service ports and no rules, [`ingress.defaultBackend`](charts/lightstreamer/values.yaml#L361) must be set explicitly. `defaultBackend` can also coexist with `rules` to catch requests that do not match any rule.
 
 ```yaml
 ingress:
@@ -631,7 +631,7 @@ ingress:
 
 ### Autoscaling
 
-The [`autoscaling`](charts/lightstreamer/values.yaml#L378) section enables a Kubernetes Horizontal Pod Autoscaler (HPA). When enabled, the HPA overrides [`deployment.replicas`](#replicas-and-update-strategy) and manages the replica count automatically.
+The [`autoscaling`](charts/lightstreamer/values.yaml#L379) section enables a Kubernetes Horizontal Pod Autoscaler (HPA). When enabled, the HPA overrides [`deployment.replicas`](#replicas-and-update-strategy) and manages the replica count automatically.
 
 > [!IMPORTANT]
 > Lightstreamer sessions are stateful — a pod removed by scale-down will drop its active client connections. Consider setting [`cluster.maxSessionDurationMinutes`](#cluster) to bound session lifetime so connections are closed gracefully before a pod is terminated.
@@ -646,7 +646,7 @@ autoscaling:
 
 ### License
 
-The [`license`](charts/lightstreamer/values.yaml#L403) section configures the edition and license type for the Lightstreamer Broker.
+The [`license`](charts/lightstreamer/values.yaml#L404) section configures the edition and license type for the Lightstreamer Broker.
 
 Two editions are available:
 
@@ -665,8 +665,8 @@ See the [Software License Agreement](https://lightstreamer.com/distros/ls-server
 
 To configure the Community edition:
 
-1. Set [`license.edition`](charts/lightstreamer/values.yaml#L411) to `COMMUNITY`
-2. Set [`license.enabledCommunityEditionClientApi`](charts/lightstreamer/values.yaml#L433) with the Client API to use with the free license
+1. Set [`license.edition`](charts/lightstreamer/values.yaml#L412) to `COMMUNITY`
+2. Set [`license.enabledCommunityEditionClientApi`](charts/lightstreamer/values.yaml#L434) with the Client API to use with the free license
 
 ```yaml
 license:
@@ -685,9 +685,9 @@ Contact *_info@lightstreamer.com_* for evaluation without session limits or for 
 
 To configure the `ENTERPRISE` edition with a customer license:
 
-1. Set [`license.edition`](charts/lightstreamer/values.yaml#L411) to `ENTERPRISE`.
-2. Set [`license.enterprise.licenseType`](charts/lightstreamer/values.yaml#L448) to specify license type.
-3. Set [`license.enterprise.contractId`](charts/lightstreamer/values.yaml#L452) with your contract identifier.
+1. Set [`license.edition`](charts/lightstreamer/values.yaml#L412) to `ENTERPRISE`.
+2. Set [`license.enterprise.licenseType`](charts/lightstreamer/values.yaml#L449) to specify license type.
+3. Set [`license.enterprise.contractId`](charts/lightstreamer/values.yaml#L453) with your contract identifier.
 4. Configure license validation using one of these methods:
 
    **Online Validation**
@@ -701,9 +701,9 @@ To configure the `ENTERPRISE` edition with a customer license:
      --namespace <namespace>
    ```
 
-   2. Set [`license.enterprise.licenseValidation`](charts/lightstreamer/values.yaml#L465) to `ONLINE`.
+   2. Set [`license.enterprise.licenseValidation`](charts/lightstreamer/values.yaml#L466) to `ONLINE`.
    
-   3. Configure [`license.enterprise.onlinePasswordSecretRef`](charts/lightstreamer/values.yaml#L471) with the name and the key of the secret generated at step 1.
+   3. Configure [`license.enterprise.onlinePasswordSecretRef`](charts/lightstreamer/values.yaml#L473) with the name and the key of the secret generated at step 1.
 
    ```yaml
    license:
@@ -728,9 +728,9 @@ To configure the `ENTERPRISE` edition with a customer license:
      --namespace <namespace>
    ```
 
-   2. Set [`license.enterprise.licenseValidation`](charts/lightstreamer/values.yaml#L465) to `FILE`. 
+   2. Set [`license.enterprise.licenseValidation`](charts/lightstreamer/values.yaml#L466) to `FILE`. 
 
-   3. Configure [`license.enterprise.filePathSecretRef`](charts/lightstreamer/values.yaml#L477) with the name and the key of the secret generated at step 1.
+   3. Configure [`license.enterprise.filePathSecretRef`](charts/lightstreamer/values.yaml#L480) with the name and the key of the secret generated at step 1.
 
    ```yaml
    license:
@@ -744,16 +744,16 @@ To configure the `ENTERPRISE` edition with a customer license:
          key: license.lic             # Secret key from step 1
    ```
 
-See the [`license`](charts/lightstreamer/values.yaml#L403) section of `values.yaml` for full details.
+See the [`license`](charts/lightstreamer/values.yaml#L404) section of `values.yaml` for full details.
 
 ### Server socket
 
-To configure a new server socket, add a new entry to the [`servers`](charts/lightstreamer/values.yaml#L700) section with the following mandatory settings:
+To configure a new server socket, add a new entry to the [`servers`](charts/lightstreamer/values.yaml#L703) section with the following mandatory settings:
 
-- [`name`](charts/lightstreamer/values.yaml#L716): A unique name for the server socket
-- [`port`](charts/lightstreamer/values.yaml#L719): The port number the server socket will listen on
+- [`name`](charts/lightstreamer/values.yaml#L719): A unique name for the server socket
+- [`port`](charts/lightstreamer/values.yaml#L722): The port number the server socket will listen on
 
-Moreover, set the [`enabled`](charts/lightstreamer/values.yaml#L708) flag to `true` to include the server socket in the deployment.
+Moreover, set the [`enabled`](charts/lightstreamer/values.yaml#L711) flag to `true` to include the server socket in the deployment.
 
 ```yaml
 servers:
@@ -763,7 +763,7 @@ servers:
     port: 8080
 ```
 
-The optional [`portType`](charts/lightstreamer/values.yaml#L767) setting declares how a socket will be used. The default `GENERAL_PURPOSE` accepts all traffic. In clustered deployments, `CREATE_ONLY` and `CONTROL_ONLY` separate session-creation ports from control-link ports (see [Cluster](#cluster)). `PRIORITY` provides a fast-track port that bypasses backpressure queues — ideal for the [Monitoring Dashboard](#monitoring-dashboard) during overload scenarios.
+The optional [`portType`](charts/lightstreamer/values.yaml#L770) setting declares how a socket will be used. The default `GENERAL_PURPOSE` accepts all traffic. In clustered deployments, `CREATE_ONLY` and `CONTROL_ONLY` separate session-creation ports from control-link ports (see [Cluster](#cluster)). `PRIORITY` provides a fast-track port that bypasses backpressure queues — ideal for the [Monitoring Dashboard](#monitoring-dashboard) during overload scenarios.
 
 > [!IMPORTANT]
 > If you do not want to include the default server socket configuration (`defaultServer`) in the deployment, explicitly disable it as follows:
@@ -815,7 +815,7 @@ To enable TLS/SSL on a server socket:
 
 1. Create the required Kubernetes secrets and define a keystore entry as described in the [Keystores](#keystores) section.
 
-2. Set [`enableHttps`](charts/lightstreamer/values.yaml#L727) to `true` on the target server and reference the keystore in [`sslConfig`](charts/lightstreamer/values.yaml#L895):
+2. Set [`enableHttps`](charts/lightstreamer/values.yaml#L730) to `true` on the target server and reference the keystore in [`sslConfig`](charts/lightstreamer/values.yaml#L898):
 
    ```yaml
    servers:
@@ -825,11 +825,11 @@ To enable TLS/SSL on a server socket:
          keystoreRef: serverKeyStore
    ```
 
-If client certificate verification is required, create a truststore the same way and reference it via `truststoreRef` in the `sslConfig`. See the [`servers.defaultServer.sslConfig`](charts/lightstreamer/values.yaml#L895) section of `values.yaml` for full details on available TLS options.
+If client certificate verification is required, create a truststore the same way and reference it via `truststoreRef` in the `sslConfig`. See the [`servers.defaultServer.sslConfig`](charts/lightstreamer/values.yaml#L898) section of `values.yaml` for full details on available TLS options.
 
 ### Keystores
 
-The [`keystores`](charts/lightstreamer/values.yaml#L1104) section defines named credential bundles referenced by any TLS/SSL-related setting across the chart — server socket TLS, Proxy Adapter TLS, and JMX connector TLS. Define each keystore once and reference it by name wherever a `keystoreRef` or `truststoreRef` is required.
+The [`keystores`](charts/lightstreamer/values.yaml#L1108) section defines named credential bundles referenced by any TLS/SSL-related setting across the chart — server socket TLS, Proxy Adapter TLS, JMX connector TLS, and Kafka Connector TLS. Define each keystore once and reference it by name wherever a `keystoreRef` or `truststoreRef` is required.
 
 #### Creating a keystore
 
@@ -859,7 +859,7 @@ Before defining a keystore entry, create the required Kubernetes secrets:
      --namespace <namespace>
    ```
 
-Then add a named entry to the [`keystores`](charts/lightstreamer/values.yaml#L1104) section:
+Then add a named entry to the [`keystores`](charts/lightstreamer/values.yaml#L1108) section:
 
 ```yaml
 keystores:
@@ -876,15 +876,15 @@ keystores:
     #   key: <key>
 ```
 
-Supported [`type`](charts/lightstreamer/values.yaml#L1126) values:
+Supported [`type`](charts/lightstreamer/values.yaml#L1130) values:
 - `JKS`: Sun/Oracle proprietary format, available in every Java installation
 - `PKCS12`: Industry-standard format supported by all modern Java installations; recommended for new deployments
 
-Once defined, reference the entry by its name wherever a `keystoreRef` or `truststoreRef` is required — for example in a server socket [`sslConfig`](charts/lightstreamer/values.yaml#L895), the JMX [`rmiConnector`](charts/lightstreamer/values.yaml#L1971), or a Proxy Adapter [`sslConfig`](charts/lightstreamer/values.yaml#L4085), or t.
+Once defined, reference the entry by its name wherever a `keystoreRef` or `truststoreRef` is required — for example in a server socket [`sslConfig`](charts/lightstreamer/values.yaml#L898), the JMX [`rmiConnector`](charts/lightstreamer/values.yaml#L1975), or a Proxy Adapter [`sslConfig`](charts/lightstreamer/values.yaml#L4095), or t.
 
 ### Global socket
 
-The [`globalSocket`](charts/lightstreamer/values.yaml#L1147) section defines timeout and size limits that apply to every server socket. The defaults are tuned for general-purpose deployments; for internet-facing scenarios, tighten read and handshake timeouts to reclaim threads from slow or abusive clients faster, and lower the request size limit to reject oversized payloads early. WebSocket frame sizing can also be adjusted here to balance memory usage against fragmentation overhead.
+The [`globalSocket`](charts/lightstreamer/values.yaml#L1151) section defines timeout and size limits that apply to every server socket. The defaults are tuned for general-purpose deployments; for internet-facing scenarios, tighten read and handshake timeouts to reclaim threads from slow or abusive clients faster, and lower the request size limit to reject oversized payloads early. WebSocket frame sizing can also be adjusted here to balance memory usage against fragmentation overhead.
 
 ```yaml
 globalSocket:
@@ -893,11 +893,11 @@ globalSocket:
   requestLimit: 50000
 ```
 
-See the [`globalSocket`](charts/lightstreamer/values.yaml#L1147) section of `values.yaml` for full details.
+See the [`globalSocket`](charts/lightstreamer/values.yaml#L1151) section of `values.yaml` for full details.
 
 ### Security
 
-The [`security`](charts/lightstreamer/values.yaml#L1210) section controls CORS policy and server identification behaviour.
+The [`security`](charts/lightstreamer/values.yaml#L1214) section controls CORS policy and server identification behaviour.
 
 By default, the cross-domain policy allows requests from any origin. Restrict this to your known client origins in production:
 
@@ -920,19 +920,19 @@ security:
 
 Setting `serverIdentificationPolicy: MINIMAL` removes version and build details from the `Server` HTTP response header, reducing information available to potential attackers.
 
-See the [`security`](charts/lightstreamer/values.yaml#L1210) section of `values.yaml` for full details.
+See the [`security`](charts/lightstreamer/values.yaml#L1214) section of `values.yaml` for full details.
 
 ### Logging
 
 The provided logging settings are designed to meet the needs of most production environments. However, you can customize the configuration to suit specific requirements.
 
-See the [`logging`](charts/lightstreamer/values.yaml#L1384) section of `values.yaml` for full details.
+See the [`logging`](charts/lightstreamer/values.yaml#L1388) section of `values.yaml` for full details.
 
 #### Primary loggers
 
-The [`logging.loggers`](charts/lightstreamer/values.yaml#L1425) section defines the primary loggers used by the Lightstreamer Broker. The main logger is [`lightstreamerLogger`](charts/lightstreamer/values.yaml#L1487), which captures all major Broker activity. Two monitor loggers — [`lightstreamerMonitorText`](charts/lightstreamer/values.yaml#L1447) and [`lightstreamerMonitorTAB`](charts/lightstreamer/values.yaml#L1447) — emit periodic statistics in text and tabular formats. Dedicated loggers cover health checks ([`lightstreamerHealthCheck`](charts/lightstreamer/values.yaml#L1705)) and Proxy Adapter activity ([`lightstreamerProxyAdapters`](charts/lightstreamer/values.yaml#L1722)).
+The [`logging.loggers`](charts/lightstreamer/values.yaml#L1429) section defines the primary loggers used by the Lightstreamer Broker. The main logger is [`lightstreamerLogger`](charts/lightstreamer/values.yaml#L1491), which captures all major Broker activity. Two monitor loggers — [`lightstreamerMonitorText`](charts/lightstreamer/values.yaml#L1451) and [`lightstreamerMonitorTAB`](charts/lightstreamer/values.yaml#L1451) — emit periodic statistics in text and tabular formats. Dedicated loggers cover health checks ([`lightstreamerHealthCheck`](charts/lightstreamer/values.yaml#L1709)) and Proxy Adapter activity ([`lightstreamerProxyAdapters`](charts/lightstreamer/values.yaml#L1726)).
 
-Each logger accepts a `level` (`OFF`, `FATAL`, `ERROR`, `WARN`, `INFO`, `DEBUG`, `TRACE`) and an `appenders` list referencing entries from [`logging.appenders`](charts/lightstreamer/values.yaml#L1389).
+Each logger accepts a `level` (`OFF`, `FATAL`, `ERROR`, `WARN`, `INFO`, `DEBUG`, `TRACE`) and an `appenders` list referencing entries from [`logging.appenders`](charts/lightstreamer/values.yaml#L1393).
 
 ```yaml
 logging:
@@ -948,7 +948,7 @@ logging:
 
 #### Subloggers
 
-The [`logging.loggers.lightstreamerLogger.subLoggers`](charts/lightstreamer/values.yaml#L1487) section allows you to define logging levels for subloggers of `lightstreamerLogger`. Subloggers inherit appenders from their parent logger.
+The [`logging.loggers.lightstreamerLogger.subLoggers`](charts/lightstreamer/values.yaml#L1491) section allows you to define logging levels for subloggers of `lightstreamerLogger`. Subloggers inherit appenders from their parent logger.
 
 ```yaml
 logging:
@@ -980,7 +980,7 @@ logging:
 
 #### Extra loggers
 
-To define additional loggers, add entries to the [`extraLoggers`](charts/lightstreamer/values.yaml#L1861) section. This is useful for custom logging requirements.
+To define additional loggers, add entries to the [`extraLoggers`](charts/lightstreamer/values.yaml#L1865) section. This is useful for custom logging requirements.
 
 ```yaml
 extraLoggers:
@@ -992,10 +992,10 @@ extraLoggers:
 
 #### Appenders
 
-The [`logging.appenders`](charts/lightstreamer/values.yaml#L1389) section defines the appenders available for use by loggers. The default configuration includes:
+The [`logging.appenders`](charts/lightstreamer/values.yaml#L1393) section defines the appenders available for use by loggers. The default configuration includes:
 
-- [`dailyRolling`](charts/lightstreamer/values.yaml#L1394): A daily rolling file appender
-- [`console`](charts/lightstreamer/values.yaml#L1420): A console appender
+- [`dailyRolling`](charts/lightstreamer/values.yaml#L1398): A daily rolling file appender
+- [`console`](charts/lightstreamer/values.yaml#L1424): A console appender
 
 You can customize these appenders or define new ones.
 
@@ -1061,7 +1061,7 @@ To persist log files, configure the `DailyRollingFile` appender to write to a Ku
 
 ### Management
 
-The [`management`](charts/lightstreamer/values.yaml#L1870) section covers operational concerns: JMX access for monitoring and management, the built-in Monitoring Dashboard, health check configuration, and various thresholds for Adapter call and thread pool monitoring. The sub-sections below cover the most commonly customized areas.
+The [`management`](charts/lightstreamer/values.yaml#L1874) section covers operational concerns: JMX access for monitoring and management, the built-in Monitoring Dashboard, health check configuration, and various thresholds for Adapter call and thread pool monitoring. The sub-sections below cover the most commonly customized areas.
 
 #### JMX
 
@@ -1099,7 +1099,7 @@ Expected output:
 ]
 ```
 
-To customize the RMI Connector listening port, set [`management.jmx.rmiConnector.port`](charts/lightstreamer/values.yaml#L1977):
+To customize the RMI Connector listening port, set [`management.jmx.rmiConnector.port`](charts/lightstreamer/values.yaml#L1981):
 
 ```yaml
 management:
@@ -1109,7 +1109,7 @@ management:
         value: 9999
 ```
 
-See the [`management.jmx.rmiConnector`](charts/lightstreamer/values.yaml#L1971) section of `values.yaml` for full details.
+See the [`management.jmx.rmiConnector`](charts/lightstreamer/values.yaml#L1975) section of `values.yaml` for full details.
 
 The RMI port is declared as a container port but is not included in the main Service. To expose it within the cluster, enable the dedicated management Service:
 
@@ -1120,7 +1120,7 @@ management:
       enabled: true
 ```
 
-The chart auto-discovers which JMX connectors are enabled and includes their ports. The resulting Service is named `<fullname>-management` and defaults to `ClusterIP`, keeping management traffic internal to the cluster. See the [`management.jmx.service`](charts/lightstreamer/values.yaml#L1940) section of `values.yaml` for full details.
+The chart auto-discovers which JMX connectors are enabled and includes their ports. The resulting Service is named `<fullname>-management` and defaults to `ClusterIP`, keeping management traffic internal to the cluster. See the [`management.jmx.service`](charts/lightstreamer/values.yaml#L1944) section of `values.yaml` for full details.
 
 For ad-hoc access without enabling the management Service, use `kubectl port-forward`:
 
@@ -1132,7 +1132,7 @@ Then point the JMX client to `localhost:8888`.
 
 ###### TLS/SSL
 
-To enable TLS/SSL communication, turn on the optional [`management.jmx.rmiConnector.port.enableSsl`](charts/lightstreamer/values.yaml#L1986) flag and reference a keystore through [`management.jmx.rmiConnector.keystoreRef`](charts/lightstreamer/values.yaml#L2063) (as already explained in the [_TLS/SSL_](#tlsssl)):
+To enable TLS/SSL communication, turn on the optional [`management.jmx.rmiConnector.port.enableSsl`](charts/lightstreamer/values.yaml#L1990) flag and reference a keystore through [`management.jmx.rmiConnector.keystoreRef`](charts/lightstreamer/values.yaml#L2067) (as already explained in the [_TLS/SSL_](#tlsssl)):
 
 ```yaml
 management:
@@ -1147,7 +1147,7 @@ management:
 > [!WARNING]
 > Make sure to enable TLS/SSL communication in a production deployment.
 
-See the [`management.jmx.rmiConnector.sslConfig`](charts/lightstreamer/values.yaml#L2054) section of `values.yaml` for full details. 
+See the [`management.jmx.rmiConnector.sslConfig`](charts/lightstreamer/values.yaml#L2058) section of `values.yaml` for full details. 
 
 ###### Authentication
 
@@ -1158,7 +1158,7 @@ kubectl create secret generic rmi-user-1-secret --from-literal=user=<user-1> --f
 kubectl create secret generic rmi-user-2-secret --from-literal=user=<user-2> --from-literal=password='<user2-password>' --namespace <namespace>
 ```
 
-Then, populate the [`management.jmx.rmiConnector.credentialSecrets`](charts/lightstreamer/values.yaml#L2123) list with the references to the secrets (public access is already disabled by default through the [`management.jmx.rmiConnector.enablePublicAccess`](charts/lightstreamer/values.yaml#L2112) flag).
+Then, populate the [`management.jmx.rmiConnector.credentialSecrets`](charts/lightstreamer/values.yaml#L2127) list with the references to the secrets (public access is already disabled by default through the [`management.jmx.rmiConnector.enablePublicAccess`](charts/lightstreamer/values.yaml#L2116) flag).
 
 ```yaml
 management:
@@ -1253,11 +1253,11 @@ The [examples/dashboard](examples/dashboard/) directory provides a complete exam
 - Set up user authentication with different permission levels.
 - Customize the Dashboard URL path.
 
-See the [`management.dashboard`](charts/lightstreamer/values.yaml#L2208) section of `values.yaml` for full details.
+See the [`management.dashboard`](charts/lightstreamer/values.yaml#L2212) section of `values.yaml` for full details.
 
 #### Health check
 
-The [`management.healthCheck`](charts/lightstreamer/values.yaml#L2307) section configures the `/lightstreamer/healthcheck` endpoint, which load balancers and Kubernetes probes use to verify server responsiveness. The endpoint always returns `OK\r\n` (unless overridden via JMX).
+The [`management.healthCheck`](charts/lightstreamer/values.yaml#L2311) section configures the `/lightstreamer/healthcheck` endpoint, which load balancers and Kubernetes probes use to verify server responsiveness. The endpoint always returns `OK\r\n` (unless overridden via JMX).
 
 By default, the health check is not bound to any server socket. To make it reachable, either enable it on all sockets or restrict it to specific ones:
 
@@ -1280,11 +1280,11 @@ management:
 
 When using the Helm chart's built-in probe configuration with `serverRef` (see [Probes](#probes)), the referenced server must have the health check available — the chart will fail at render time otherwise.
 
-See the [`management.healthCheck`](charts/lightstreamer/values.yaml#L2307) section of `values.yaml` for full details.
+See the [`management.healthCheck`](charts/lightstreamer/values.yaml#L2311) section of `values.yaml` for full details.
 
 ### Push session
 
-The [`pushSession`](charts/lightstreamer/values.yaml#L2323) section tunes HTTP streaming and session behaviour.
+The [`pushSession`](charts/lightstreamer/values.yaml#L2327) section tunes HTTP streaming and session behaviour.
 
 Key settings to consider for production:
 
@@ -1302,11 +1302,11 @@ pushSession:
     value: 3000
 ```
 
-See the [`pushSession`](charts/lightstreamer/values.yaml#L2323) section of `values.yaml` for full details.
+See the [`pushSession`](charts/lightstreamer/values.yaml#L2327) section of `values.yaml` for full details.
 
 ### Mobile push notifications
 
-The [`mpn`](charts/lightstreamer/values.yaml#L2728) section enables the Lightstreamer Mobile Push Notifications module, which bridges item subscriptions with Apple APNs and Google FCM so clients receive push notifications when the app is not in the foreground.
+The [`mpn`](charts/lightstreamer/values.yaml#L2732) section enables the Lightstreamer Mobile Push Notifications module, which bridges item subscriptions with Apple APNs and Google FCM so clients receive push notifications when the app is not in the foreground.
 
 The module requires a relational database for persistence (to survive restarts and support clustered deployments). Configure the JDBC connection and supply credentials via a Kubernetes secret referenced by `mpn.hibernateConfig.connection.credentialsSecretRef` (must contain `user` and `password` keys):
 
@@ -1350,11 +1350,11 @@ In addition to the database, at least one Apple or Google application must be co
 > [!NOTE]
 > Mobile Push Notification support is an optional Enterprise edition feature.
 
-See the [`mpn`](charts/lightstreamer/values.yaml#L2728) section of `values.yaml` for full details.
+See the [`mpn`](charts/lightstreamer/values.yaml#L2732) section of `values.yaml` for full details.
 
 ### Web server
 
-The [`webServer`](charts/lightstreamer/values.yaml#L3172) section controls the Lightstreamer built-in static file server, which is enabled by default and serves files from the `../pages` directory relative to the configuration folder.
+The [`webServer`](charts/lightstreamer/values.yaml#L3179) section controls the Lightstreamer built-in static file server, which is enabled by default and serves files from the `../pages` directory relative to the configuration folder.
 
 In most Kubernetes deployments, static files are served by a dedicated web server or CDN rather than Lightstreamer. Disable the internal web server to reduce the attack surface:
 
@@ -1363,7 +1363,7 @@ webServer:
   enabled: false
 ```
 
-If you do need it — for example in a demo or all-in-one setup — use [`pagesVolume`](charts/lightstreamer/values.yaml#L3200) to mount a volume containing your static resources (HTML pages, CSS, JavaScript, images, etc.). Define the volume in `deployment.extraVolumes` and reference it by name:
+If you do need it — for example in a demo or all-in-one setup — use [`pagesVolume`](charts/lightstreamer/values.yaml#L3207) to mount a volume containing your static resources (HTML pages, CSS, JavaScript, images, etc.). Define the volume in `deployment.extraVolumes` and reference it by name:
 
 ```yaml
 deployment:
@@ -1382,15 +1382,15 @@ webServer:
 
 When `pagesVolume` is set, the chart mounts the volume and uses it as the root directory for URL path mapping. If no volume is configured, the server falls back to its built-in default pages directory.
 
-See the [`webServer`](charts/lightstreamer/values.yaml#L3172) section of `values.yaml` for full details.
+See the [`webServer`](charts/lightstreamer/values.yaml#L3179) section of `values.yaml` for full details.
 
 ### Cluster
 
-The [`cluster`](charts/lightstreamer/values.yaml#L3263) section configures multi-instance deployments where several Lightstreamer replicas run behind a load balancer.
+The [`cluster`](charts/lightstreamer/values.yaml#L3270) section configures multi-instance deployments where several Lightstreamer replicas run behind a load balancer.
 
-Setting [`cluster.controlLinkAddress`](charts/lightstreamer/values.yaml#L3284) tells each replica which address to return in the control link response so the client SDK can reach it directly for all subsequent requests. When the load balancer provides sticky sessions, this setting can be omitted. See [Session affinity approaches](#session-affinity-approaches) for configuration examples.
+Setting [`cluster.controlLinkAddress`](charts/lightstreamer/values.yaml#L3291) tells each replica which address to return in the control link response so the client SDK can reach it directly for all subsequent requests. When the load balancer provides sticky sessions, this setting can be omitted. See [Session affinity approaches](#session-affinity-approaches) for configuration examples.
 
-Setting [`cluster.maxSessionDurationMinutes`](charts/lightstreamer/values.yaml#L3325) bounds session lifetime — when the limit is reached, the session closes gracefully, allowing the next session to be assigned to a different replica. This is particularly useful in combination with [autoscaling](#autoscaling).
+Setting [`cluster.maxSessionDurationMinutes`](charts/lightstreamer/values.yaml#L3332) bounds session lifetime — when the limit is reached, the session closes gracefully, allowing the next session to be assigned to a different replica. This is particularly useful in combination with [autoscaling](#autoscaling).
 
 ```yaml
 cluster:
@@ -1530,7 +1530,7 @@ When sticky sessions are not available, `controlLinkAddress` must resolve to a s
 
 ### Load
 
-The [`load`](charts/lightstreamer/values.yaml#L3328) section controls thread pool sizes and session limits. The Broker uses several internal thread pools at different stages of request processing — from accepting connections and parsing requests to dispatching updates and performing TLS handshakes. The defaults are sized for a general-purpose deployment; tune them when you have a clear picture of your traffic profile.
+The [`load`](charts/lightstreamer/values.yaml#L3335) section controls thread pool sizes and session limits. The Broker uses several internal thread pools at different stages of request processing — from accepting connections and parsing requests to dispatching updates and performing TLS handshakes. The defaults are sized for a general-purpose deployment; tune them when you have a clear picture of your traffic profile.
 
 ```yaml
 load:
@@ -1540,15 +1540,15 @@ load:
   handshakePoolSize: 4
 ```
 
-- [`load.maxSessions`](charts/lightstreamer/values.yaml#L3339): caps the total number of concurrent client sessions. Unset by default (unlimited). Set a limit as a safety ceiling against overload.
-- [`load.serverPoolMaxSize`](charts/lightstreamer/values.yaml#L3443) / [`load.serverPoolMaxQueue`](charts/lightstreamer/values.yaml#L3474): the `SERVER` pool handles client request processing, including potentially blocking Adapter calls. Increase `maxSize` (default: `1000`) if you see thread starvation under load; lower `serverPoolMaxQueue` (default: `100`) to shed load earlier rather than queue up.
-- [`load.acceptPoolMaxSize`](charts/lightstreamer/values.yaml#L3488): the `ACCEPT` pool handles parsing of incoming client requests. Defaults to the number of available cores.
-- [`load.eventsPoolSize`](charts/lightstreamer/values.yaml#L3396): the `EVENTS` pool dispatches update events received from Data Adapters to client sessions. Defaults to the number of available cores.
-- [`load.pumpPoolSize`](charts/lightstreamer/values.yaml#L3412): the `PUMP` pool integrates update events for each session and creates update commands for clients. Defaults to the number of available cores.
-- [`load.handshakePoolSize`](charts/lightstreamer/values.yaml#L3516): the `TLS-SSL HANDSHAKE` pool handles TLS/SSL handshakes on HTTPS listening sockets not configured to request a client certificate. Defaults to half the number of available cores. Only relevant when at least one server is configured with `enableHttps: true`. When client certificate authentication is enabled on a socket, the separate [`httpsAuthPoolMaxSize`](charts/lightstreamer/values.yaml#L3548) pool is used instead.
-- [`load.selectorPoolSize`](charts/lightstreamer/values.yaml#L3373): number of NIO selectors (each with its own thread) sharing the same I/O operation. Defaults to the number of available cores.
+- [`load.maxSessions`](charts/lightstreamer/values.yaml#L3346): caps the total number of concurrent client sessions. Unset by default (unlimited). Set a limit as a safety ceiling against overload.
+- [`load.serverPoolMaxSize`](charts/lightstreamer/values.yaml#L3450) / [`load.serverPoolMaxQueue`](charts/lightstreamer/values.yaml#L3481): the `SERVER` pool handles client request processing, including potentially blocking Adapter calls. Increase `maxSize` (default: `1000`) if you see thread starvation under load; lower `serverPoolMaxQueue` (default: `100`) to shed load earlier rather than queue up.
+- [`load.acceptPoolMaxSize`](charts/lightstreamer/values.yaml#L3495): the `ACCEPT` pool handles parsing of incoming client requests. Defaults to the number of available cores.
+- [`load.eventsPoolSize`](charts/lightstreamer/values.yaml#L3403): the `EVENTS` pool dispatches update events received from Data Adapters to client sessions. Defaults to the number of available cores.
+- [`load.pumpPoolSize`](charts/lightstreamer/values.yaml#L3419): the `PUMP` pool integrates update events for each session and creates update commands for clients. Defaults to the number of available cores.
+- [`load.handshakePoolSize`](charts/lightstreamer/values.yaml#L3523): the `TLS-SSL HANDSHAKE` pool handles TLS/SSL handshakes on HTTPS listening sockets not configured to request a client certificate. Defaults to half the number of available cores. Only relevant when at least one server is configured with `enableHttps: true`. When client certificate authentication is enabled on a socket, the separate [`httpsAuthPoolMaxSize`](charts/lightstreamer/values.yaml#L3555) pool is used instead.
+- [`load.selectorPoolSize`](charts/lightstreamer/values.yaml#L3380): number of NIO selectors (each with its own thread) sharing the same I/O operation. Defaults to the number of available cores.
 
-See the [`load`](charts/lightstreamer/values.yaml#L3328) section of `values.yaml` for full details on all available settings.
+See the [`load`](charts/lightstreamer/values.yaml#L3335) section of `values.yaml` for full details on all available settings.
 
 ### Adapters
 
@@ -1567,13 +1567,13 @@ See the _The Adapters_ chapter of the [_General Concepts_](https://lightstreamer
 
 #### Defining an Adapter Set
 
-To define an Adapter Set, add a new configuration to the [`adapters`](charts/lightstreamer/values.yaml#L3627) section with the following mandatory settings:
+To define an Adapter Set, add a new configuration to the [`adapters`](charts/lightstreamer/values.yaml#L3634) section with the following mandatory settings:
 
-- [`id`](charts/lightstreamer/values.yaml#L3638): A unique id for the Adapter Set
-- [`metadataProvider`](charts/lightstreamer/values.yaml#L3708): A Metadata Adapter configuration
-- [`dataProviders`](charts/lightstreamer/values.yaml#L4369): One or more Data Adapter configurations
+- [`id`](charts/lightstreamer/values.yaml#L3645): A unique id for the Adapter Set
+- [`metadataProvider`](charts/lightstreamer/values.yaml#L3716): A Metadata Adapter configuration
+- [`dataProviders`](charts/lightstreamer/values.yaml#L4379): One or more Data Adapter configurations
 
-Moreover, set the [`enabled`](charts/lightstreamer/values.yaml#L3633) flag to `true` to include the Adapter Set in the deployment.
+Moreover, set the [`enabled`](charts/lightstreamer/values.yaml#L3640) flag to `true` to include the Adapter Set in the deployment.
 
 ```yaml
 adapters:
@@ -1594,7 +1594,7 @@ adapters:
 
 #### Other Adapter Set options
 
-Additional optional settings are available for each Adapter Set — see [`adapterSetPool`](charts/lightstreamer/values.yaml#L3684) to configure a dedicated thread pool, and [`enableMetadataInitializedFirst`](charts/lightstreamer/values.yaml#L3705) (defaults to `true`) to control the initialization order of Metadata and Data Adapters.
+Additional optional settings are available for each Adapter Set — see [`adapterSetPool`](charts/lightstreamer/values.yaml#L3692) to configure a dedicated thread pool, and [`enableMetadataInitializedFirst`](charts/lightstreamer/values.yaml#L3713) (defaults to `true`) to control the initialization order of Metadata and Data Adapters.
 
 #### In-process Adapters
 
@@ -1602,7 +1602,7 @@ In-process Adapters are Java classes that run directly within the Lightstreamer 
 
 ##### Provisioning
 
-Adapter Sets can be provisioned using different methods, configured through the [`provisioning`](charts/lightstreamer/values.yaml#L3645) section:
+Adapter Sets can be provisioned using different methods, configured through the [`provisioning`](charts/lightstreamer/values.yaml#L3652) section:
 
 1. Embed the Adapter Set's resources in the image
 
@@ -1625,7 +1625,7 @@ Adapter Sets can be provisioned using different methods, configured through the 
        repository: lightstreamer
      ```
    
-   - Configure the [`provisioning.fromPathInImage`](charts/lightstreamer/values.yaml#L3610) setting of the Adapter Set definition with the full path of the deployment folder:
+   - Configure the [`provisioning.fromPathInImage`](charts/lightstreamer/values.yaml#L3617) setting of the Adapter Set definition with the full path of the deployment folder:
      
      ```yaml
      adapters:
@@ -1652,7 +1652,7 @@ Adapter Sets can be provisioned using different methods, configured through the 
 
      and populate it with the Adapter Set's resources (excluding any `adapters.xml` file).
 
-   - Configure the [`provisioning.fromVolume`](charts/lightstreamer/values.yaml#L3614) setting of the Adapter Set definition with the reference to the volume and optionally the deployment full path in the volume:
+   - Configure the [`provisioning.fromVolume`](charts/lightstreamer/values.yaml#L3621) setting of the Adapter Set definition with the reference to the volume and optionally the deployment full path in the volume:
      
      ```yaml
      adapters:
@@ -1670,18 +1670,18 @@ Adapter Sets can be provisioned using different methods, configured through the 
 
 You can configure in-process Metadata Adapters and Data Adapters by populating the following sections in your Helm chart values:
 
-- [`metadataProvider.inProcessMetadataAdapter`](charts/lightstreamer/values.yaml#L3714)
-- [`dataProviders.<dataProviderName>.inProcessDataAdapter`](charts/lightstreamer/values.yaml#L4387)
+- [`metadataProvider.inProcessMetadataAdapter`](charts/lightstreamer/values.yaml#L3722)
+- [`dataProviders.<dataProviderName>.inProcessDataAdapter`](charts/lightstreamer/values.yaml#L4397)
 
 The following settings are available in one or both sections. Where a setting exists in both, links point to the Metadata Adapter entry first, followed by the Data Adapter equivalent:
 
-- `adapterClass` ([Metadata Adapter](charts/lightstreamer/values.yaml#L3714), [Data Adapter](charts/lightstreamer/values.yaml#L4387)): The fully qualified name of the Java class implementing the Adapter.
+- `adapterClass` ([Metadata Adapter](charts/lightstreamer/values.yaml#L3722), [Data Adapter](charts/lightstreamer/values.yaml#L4397)): The fully qualified name of the Java class implementing the Adapter.
 
-- `installDir` ([Metadata Adapter](charts/lightstreamer/values.yaml#L3714), [Data Adapter](charts/lightstreamer/values.yaml#L4387)): The directory where the Adapter's own `lib` and `classes` folders are located in the provisioning source. Optional, but mandatory when `classLoader` is set to `dedicated`. The full path is available at `/deployed_adapters/<adapter-set-folder>/<installDir>` in the container.
+- `installDir` ([Metadata Adapter](charts/lightstreamer/values.yaml#L3722), [Data Adapter](charts/lightstreamer/values.yaml#L4397)): The directory where the Adapter's own `lib` and `classes` folders are located in the provisioning source. Optional, but mandatory when `classLoader` is set to `dedicated`. The full path is available at `/deployed_adapters/<adapter-set-folder>/<installDir>` in the container.
 
-- `classLoader` ([Metadata Adapter](charts/lightstreamer/values.yaml#L3763), [Data Adapter](charts/lightstreamer/values.yaml#L4387)): The ClassLoader strategy for loading the Adapter's classes. See [ClassLoader types](#classloader-types) for details.
+- `classLoader` ([Metadata Adapter](charts/lightstreamer/values.yaml#L3771), [Data Adapter](charts/lightstreamer/values.yaml#L4397)): The ClassLoader strategy for loading the Adapter's classes. See [ClassLoader types](#classloader-types) for details.
 
-- `configMapRef` ([Metadata Adapter](charts/lightstreamer/values.yaml#L3714), [Data Adapter](charts/lightstreamer/values.yaml#L4387)): An optional reference to a Kubernetes ConfigMap whose files are copied into the adapter's deployment directory at startup. This is useful for injecting adapter-specific configuration files without rebuilding the container image.
+- `configMapRef` ([Metadata Adapter](charts/lightstreamer/values.yaml#L3722), [Data Adapter](charts/lightstreamer/values.yaml#L4397)): An optional reference to a Kubernetes ConfigMap whose files are copied into the adapter's deployment directory at startup. This is useful for injecting adapter-specific configuration files without rebuilding the container image.
 
   ```yaml
   adapters:
@@ -1692,7 +1692,7 @@ The following settings are available in one or both sections. Where a setting ex
           configMapRef: my-adapter-config   # Name of the ConfigMap
   ```
 
-- `initParams` ([Metadata Adapter](charts/lightstreamer/values.yaml#L3899), [Data Adapter](charts/lightstreamer/values.yaml#L4449)): An optional map of key/value pairs forwarded as-is to the adapter's `init()` method. Use this to pass adapter-specific configuration without hardcoding it into the adapter's code.
+- `initParams` ([Metadata Adapter](charts/lightstreamer/values.yaml#L3908), [Data Adapter](charts/lightstreamer/values.yaml#L4460)): An optional map of key/value pairs forwarded as-is to the adapter's `init()` method. Use this to pass adapter-specific configuration without hardcoding it into the adapter's code.
 
   ```yaml
   adapters:
@@ -1705,16 +1705,16 @@ The following settings are available in one or both sections. Where a setting ex
             dbPort: "5432"
   ```
 
-- [`enableTableNotificationsSequentialization`](charts/lightstreamer/values.yaml#L3887) (Metadata Adapter only): When `true`, all subscription lifecycle notifications for the same session are delivered sequentially with no overlap. Useful when the Metadata Adapter implementation is not designed for concurrent table notifications.
+- [`enableTableNotificationsSequentialization`](charts/lightstreamer/values.yaml#L3896) (Metadata Adapter only): When `true`, all subscription lifecycle notifications for the same session are delivered sequentially with no overlap. Useful when the Metadata Adapter implementation is not designed for concurrent table notifications.
 
 **Advanced: thread pool tuning**
 
 - **Metadata Adapter**:
-  - [`authenticationPool`](charts/lightstreamer/values.yaml#L3792): Dedicated thread pool for `notifyUser` calls.
-  - [`messagesPool`](charts/lightstreamer/values.yaml#L3838): Dedicated thread pool for `notifyUserMessage` calls.
-  - [`mpnPool`](charts/lightstreamer/values.yaml#L3870): Dedicated thread pool for mobile push notification requests.
+  - [`authenticationPool`](charts/lightstreamer/values.yaml#L3800): Dedicated thread pool for `notifyUser` calls.
+  - [`messagesPool`](charts/lightstreamer/values.yaml#L3846): Dedicated thread pool for `notifyUserMessage` calls.
+  - [`mpnPool`](charts/lightstreamer/values.yaml#L3879): Dedicated thread pool for mobile push notification requests.
 - **Data Adapter**:
-  - [`dataAdapterPool`](charts/lightstreamer/values.yaml#L4428): Dedicated thread pool for subscription/unsubscription management.
+  - [`dataAdapterPool`](charts/lightstreamer/values.yaml#L4439): Dedicated thread pool for subscription/unsubscription management.
 
 
 See the linked `values.yaml` entries for full details on sub-settings (`maxSize`, `maxFree`, `maxPendingRequests`, `maxQueue`).
@@ -1806,7 +1806,7 @@ This ClassLoader loads classes from the `lib` and `classes` subfolders found in 
    └── lib     # Globally shared jar files
    ```
 
-   To populate the `shared` folder, configure the [`sharedDir`](charts/lightstreamer/values.yaml#L3606) section. You can embed the resources in a custom container image:
+   To populate the `shared` folder, configure the [`sharedDir`](charts/lightstreamer/values.yaml#L3613) section. You can embed the resources in a custom container image:
 
    ```yaml
    sharedDir:
@@ -1918,20 +1918,20 @@ Proxy Adapters are built-in adapter implementations that act as bridges between 
 
 You can configure a Proxy Metadata Adapter and Proxy Data Adapters by populating the following sections in your Helm chart values:
 
-- [`metadataProvider.proxyMetadataAdapter`](charts/lightstreamer/values.yaml#L3910)
-- [`dataProviders.<dataProviderName>.proxyDataAdapter`](charts/lightstreamer/values.yaml#L4460)
+- [`metadataProvider.proxyMetadataAdapter`](charts/lightstreamer/values.yaml#L3919)
+- [`dataProviders.<dataProviderName>.proxyDataAdapter`](charts/lightstreamer/values.yaml#L4471)
 
 The following settings are available in one or both sections. Where a setting exists in both, links point to the Proxy Metadata Adapter entry first, followed by the Proxy Data Adapter equivalent:
 
-- `requestReplyPort` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4054), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4460)): The mandatory TCP port the Proxy Adapter listens on for the Remote Server to connect.
+- `requestReplyPort` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4064), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4471)): The mandatory TCP port the Proxy Adapter listens on for the Remote Server to connect.
 
-- `remoteHost` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4076), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4528)): When set, inverts the connection direction — the Proxy Adapter connects out to the Remote Server instead of waiting for an inbound connection. Useful when the Broker cannot accept incoming connections from outside.
+- `remoteHost` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4086), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4540)): When set, inverts the connection direction — the Proxy Adapter connects out to the Remote Server instead of waiting for an inbound connection. Useful when the Broker cannot accept incoming connections from outside.
 
-- `interface` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4081), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4533)): Binds the Proxy Adapter to a specific local network interface. When not set, the Proxy Adapter binds to all available interfaces.
+- `interface` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4091), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4545)): Binds the Proxy Adapter to a specific local network interface. When not set, the Proxy Adapter binds to all available interfaces.
 
-- `sslConfig` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4085), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4536)): Optional TLS/SSL settings for the connection to the Remote Server. Supports the same keystore/truststore configuration as server sockets. See [`sslConfig`](charts/lightstreamer/values.yaml#L895) for details.
+- `sslConfig` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4095), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4548)): Optional TLS/SSL settings for the connection to the Remote Server. Supports the same keystore/truststore configuration as server sockets. See [`sslConfig`](charts/lightstreamer/values.yaml#L898) for details.
 
-- `authentication` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4129), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4572)): When enabled, enforces credential-based authentication of Remote Server connections. Credentials are referenced from Kubernetes secrets (each containing `user` and `password` keys).
+- `authentication` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4139), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4584)): When enabled, enforces credential-based authentication of Remote Server connections. Credentials are referenced from Kubernetes secrets (each containing `user` and `password` keys).
 
   ```yaml
   adapters:
@@ -1945,23 +1945,23 @@ The following settings are available in one or both sections. Where a setting ex
               - remote-adapter-secret
   ```
 
-- `enableRobustAdapter` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L3910), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4460)): Enables the _Robust_ variant of the Proxy Adapter, which handles the temporary absence of the Remote Server gracefully — accepting subscriptions and waiting for reconnection rather than failing immediately.
+- `enableRobustAdapter` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L3919), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4471)): Enables the _Robust_ variant of the Proxy Adapter, which handles the temporary absence of the Remote Server gracefully — accepting subscriptions and waiting for reconnection rather than failing immediately.
 
-- [`enableTableNotificationsSequentialization`](charts/lightstreamer/values.yaml#L4050) (Proxy Metadata Adapter only): When `true`, all subscription lifecycle notifications for the same session are delivered sequentially with no overlap. Useful when the Metadata Adapter implementation is not designed for concurrent table notifications.
+- [`enableTableNotificationsSequentialization`](charts/lightstreamer/values.yaml#L4060) (Proxy Metadata Adapter only): When `true`, all subscription lifecycle notifications for the same session are delivered sequentially with no overlap. Useful when the Metadata Adapter implementation is not designed for concurrent table notifications.
 
-- `connectionRecoveryTimeoutMillis` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4159), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4602)): Only effective when `enableRobustAdapter` is set. After a failed connection attempt, the Proxy Adapter waits at least this long before retrying. A negative value prevents further attempts.
+- `connectionRecoveryTimeoutMillis` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4169), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4614)): Only effective when `enableRobustAdapter` is set. After a failed connection attempt, the Proxy Adapter waits at least this long before retrying. A negative value prevents further attempts.
 
-- `firstConnectionTimeoutMillis` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4170), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4616)): Only effective when `enableRobustAdapter` is set. How long the Broker startup may be delayed waiting for the first Remote Server connection. A negative value means unlimited.
+- `firstConnectionTimeoutMillis` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4180), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4628)): Only effective when `enableRobustAdapter` is set. How long the Broker startup may be delayed waiting for the first Remote Server connection. A negative value means unlimited.
 
 **Advanced: thread pool tuning and connection settings**
 
-- **Proxy Metadata Adapter**: [`authenticationPool`](charts/lightstreamer/values.yaml#L3956), [`messagesPool`](charts/lightstreamer/values.yaml#L3956), [`mpnPool`](charts/lightstreamer/values.yaml#L4001) — same tuning options as for in-process Metadata Adapters.
-- **Proxy Data Adapter**: [`dataAdapterPool`](charts/lightstreamer/values.yaml#L4494) — dedicated thread pool for subscription/unsubscription management (`maxSize`, `maxFree`).
-- `connectionRetryMillis` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4148), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4591)), `keepaliveTimeoutMillis` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4311), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4738)), `keepaliveHintMillis` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4311), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4738)), `timeoutMillis` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4299), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4738)): Connection reliability settings.
+- **Proxy Metadata Adapter**: [`authenticationPool`](charts/lightstreamer/values.yaml#L3965), [`messagesPool`](charts/lightstreamer/values.yaml#L3965), [`mpnPool`](charts/lightstreamer/values.yaml#L4010) — same tuning options as for in-process Metadata Adapters.
+- **Proxy Data Adapter**: [`dataAdapterPool`](charts/lightstreamer/values.yaml#L4506) — dedicated thread pool for subscription/unsubscription management (`maxSize`, `maxFree`).
+- `connectionRetryMillis` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4158), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4603)), `keepaliveTimeoutMillis` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4309), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4750)), `keepaliveHintMillis` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4309), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4750)), `timeoutMillis` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4309), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4750)): Connection reliability settings.
 
-- `remoteAddressWhitelist` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4338), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4750)): Comma-separated list of hosts allowed to connect as Remote Adapters. When not set, any host is accepted.
+- `remoteAddressWhitelist` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4348), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4762)): Comma-separated list of hosts allowed to connect as Remote Adapters. When not set, any host is accepted.
 
-- `remoteParamsConfig` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4260), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4700)): Custom initialization parameters to forward to the Remote Adapter on connection. Uses a `prefix` to select which parameters to send, plus a `params` map of key/value pairs.
+- `remoteParamsConfig` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4270), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4712)): Custom initialization parameters to forward to the Remote Adapter on connection. Uses a `prefix` to select which parameters to send, plus a `params` map of key/value pairs.
 
 See the linked `values.yaml` entries for full details.
 
@@ -2002,14 +2002,14 @@ adapters:
     enabled: true
 ```
 
-See the [`adapters.welcomeAdapterSet`](charts/lightstreamer/values.yaml#L4785) section of `values.yaml` for full details.
+See the [`adapters.welcomeAdapterSet`](charts/lightstreamer/values.yaml#L4797) section of `values.yaml` for full details.
 
 
 ### Connectors
 
 Lightstreamer Connectors are ready-made Adapter Sets that enable seamless integration between Lightstreamer Broker and external messaging systems or data sources, handling data ingestion, protocol translation, schema management, and connection reliability out of the box.
 
-Currently, the Kafka Connector is the only connector available in this Helm chart. Each connector is configured and enabled independently within the [`connectors`](charts/lightstreamer/values.yaml#L4858) section.
+Currently, the Kafka Connector is the only connector available in this Helm chart. Each connector is configured and enabled independently within the [`connectors`](charts/lightstreamer/values.yaml#L4870) section.
 
 #### Kafka Connector
 
@@ -2025,7 +2025,7 @@ The Lightstreamer Kafka Connector enables real-time streaming of data from Apach
 
 For complete documentation, see the [Lightstreamer Kafka Connector project on GitHub](https://github.com/Lightstreamer/Lightstreamer-kafka-connector).
 
-To configure the Kafka Connector, define its settings in the [`connectors.kafkaConnector`](charts/lightstreamer/values.yaml#L4861) section:
+To configure the Kafka Connector, define its settings in the [`connectors.kafkaConnector`](charts/lightstreamer/values.yaml#L4873) section:
 
 ```yaml
 connectors:
@@ -2048,7 +2048,7 @@ connectors:
 
 ##### Provisioning
 
-The Kafka Connector must be provisioned before it can be used. The Helm chart supports multiple provisioning methods through the [`provisioning`](charts/lightstreamer/values.yaml#L4870) section:
+The Kafka Connector must be provisioned before it can be used. The Helm chart supports multiple provisioning methods through the [`provisioning`](charts/lightstreamer/values.yaml#L4882) section:
 
 1. **From path in image** (Recommended)
 
@@ -2106,9 +2106,53 @@ The Kafka Connector must be provisioned before it can be used. The Helm chart su
            filePath: kafka-connector/lightstreamer-kafka-connector-1.5.0.zip
    ```
 
+##### Logging
+
+Configure Kafka Connector logging through the [`logging`](charts/lightstreamer/values.yaml#L4927) section. The configuration follows a two-part model: **appenders** define _where_ and _how_ log output is written, while **loggers** control _what_ gets logged and at which level.
+
+**Appenders** are defined in the [`appenders`](charts/lightstreamer/values.yaml#L4932) map. Each appender has a `type` — either `Console` (writes to standard output) or `DailyRollingFile` (writes to a daily-rotated file). Both types require a `pattern` string using [reload4j `PatternLayout`](https://reload4j.qos.ch/apidocs/org/apache/log4j/PatternLayout.html) syntax. File appenders additionally require `fileName`, `fileNamePattern`, and optionally `volumeRef` (referencing a volume defined in `deployment.extraVolumes`) to persist logs outside the container:
+
+```yaml
+connectors:
+  kafkaConnector:
+    ...
+    logging:
+      appenders:
+        console:
+          type: Console
+          pattern: "%d|%-10c{1}|%-5p|%m%n"
+        
+        dailyRolling:
+          type: DailyRollingFile
+          fileName: kafka-connector.log
+          fileNamePattern: kafka-connector-%d{yyyy-MM-dd}.log
+          pattern: "[%d] [%-10c{1}] %-5p %m%n"
+          volumeRef: my-logs-volume
+```
+
+**Loggers** are defined in the [`loggers`](charts/lightstreamer/values.yaml#L4970) map. Each entry is keyed by a fully qualified class name or package and specifies a `level` and one or more `appenders` references:
+
+```yaml
+connectors:
+  kafkaConnector:
+    ...
+    logging:
+      ...
+      loggers:
+        com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter:
+          level: INFO
+          appenders:
+            - console
+        
+        org.apache.kafka:
+          level: WARN
+          appenders:
+            - console
+```
+
 ##### Connections
 
-The Kafka Connector supports multiple independent connections to different Kafka brokers or clusters. Each connection is defined in the [`connections`](charts/lightstreamer/values.yaml#L4991) map and must set `enabled: true` to be active (disabled connections automatically deny all subscription requests):
+The Kafka Connector supports multiple independent connections to different Kafka brokers or clusters. Each connection is defined in the [`connections`](charts/lightstreamer/values.yaml#L5004) map and must set `enabled: true` to be active (disabled connections automatically deny all subscription requests):
 
 ```yaml
 connectors:
@@ -2140,22 +2184,13 @@ connectors:
             schemaRegistryUrl: "http://schema-registry:8081"
 ```
 
-**Bootstrap servers**: Specify one or more Kafka broker addresses using [`bootstrapServers`](charts/lightstreamer/values.yaml#L5017). For Kafka deployed in Kubernetes, use the service DNS name:
+**Bootstrap servers**: Specify one or more Kafka broker addresses using [`bootstrapServers`](charts/lightstreamer/values.yaml#L5030). For Kafka deployed in Kubernetes, use the service DNS name:
 
 ```yaml
 bootstrapServers: "kafka-0.kafka-headless.kafka:9092"
 ```
 
-**Record evaluation**: Configure how Kafka message keys and values are deserialized through [`record.keyEvaluator`](charts/lightstreamer/values.yaml#L5191) and [`record.valueEvaluator`](charts/lightstreamer/values.yaml#L5247):
-
-- `STRING`: Plain text
-- `JSON`: JSON objects
-- `AVRO`: Avro serialized data (requires Schema Registry or local schema)
-- `PROTOBUF`: Protocol Buffers (requires Schema Registry or local schema)
-- `KVP`: Key-value pairs (configurable separators)
-- `INTEGER`, `BOOLEAN`, `FLOAT`, `DOUBLE`, `LONG`, `SHORT`, `UUID`, `BYTES`, `BYTE_ARRAY`, `BYTE_BUFFER`: Primitive and binary types
-
-**Authentication**: For secure Kafka clusters, configure authentication through [`authentication`](charts/lightstreamer/values.yaml#L5070):
+**Encryption**: Enable TLS/SSL encryption for the connection through [`sslConfig`](charts/lightstreamer/values.yaml#L5044). The `truststoreRef` validates broker certificates, and `keystoreRef` supplies a client certificate when mutual TLS is required. Both reference entries defined in the [Keystores](#keystores) section:
 
 ```yaml
 connectors:
@@ -2166,25 +2201,52 @@ connectors:
         enabled: true
         bootstrapServers: "secure-kafka:9093"
         
-        # TLS/SSL Configuration
         sslConfig:
           enabled: true
           enableHostnameVerification: true
           keystoreRef: myKafkaKeystore
           truststoreRef: myKafkaTruststore
+```
+
+**Authentication**: Configure SASL authentication for the connection through [`authentication`](charts/lightstreamer/values.yaml#L5083). The supported mechanisms are:
+
+- `PLAIN`, `SCRAM-SHA-256`, `SCRAM-SHA-512`: username/password authentication. Supply credentials via a Kubernetes Secret referenced by [`credentialsSecretRef`](charts/lightstreamer/values.yaml#L5104) (must contain `user` and `password` keys).
+- `GSSAPI`: Kerberos authentication. Requires [`gssapi`](charts/lightstreamer/values.yaml#L5108) settings (service name, principal, optional keytab).
+- `AWS_MSK_IAM`: IAM-based authentication for Amazon MSK. Optionally configure a credential profile, role ARN, and STS region through the [`iam`](charts/lightstreamer/values.yaml#L5134) block.
+
+```yaml
+connectors:
+  kafkaConnector:
+    ...
+    connections:
+      secureKafka:
+        enabled: true
+        bootstrapServers: "secure-kafka:9093"
         
-        # SASL Authentication
         authentication:
           enabled: true
           mechanism: SCRAM-SHA-512
           credentialsSecretRef: kafka-credentials
 ```
 
-The [`credentialsSecretRef`](charts/lightstreamer/values.yaml#L5091) must reference a Kubernetes Secret containing `user` and `password` keys.
+**Record processing**: The [`record`](charts/lightstreamer/values.yaml#L5158) block controls how Kafka messages are consumed and deserialized.
+
+[`consumeFrom`](charts/lightstreamer/values.yaml#L5170) (default: `LATEST`) sets the initial offset — use `EARLIEST` to replay all existing messages on first connection.
+
+[`consumeWithThreadNumber`](charts/lightstreamer/values.yaml#L5202) (default: `1`) controls parallelism for processing deserialized records. When using more than one thread, [`consumeWithOrderStrategy`](charts/lightstreamer/values.yaml#L5213) determines ordering guarantees: `ORDER_BY_PARTITION` (default), `ORDER_BY_KEY`, or `UNORDERED`.
+
+[`keyEvaluator`](charts/lightstreamer/values.yaml#L5217) and [`valueEvaluator`](charts/lightstreamer/values.yaml#L5273) configure how message keys and values are deserialized. Supported types:
+
+- `STRING`: Plain text
+- `JSON`: JSON objects
+- `AVRO`: Avro serialized data (requires Schema Registry or local schema)
+- `PROTOBUF`: Protocol Buffers (requires Schema Registry or local schema)
+- `KVP`: Key-value pairs (configurable separators)
+- `INTEGER`, `BOOLEAN`, `FLOAT`, `DOUBLE`, `LONG`, `SHORT`, `UUID`, `BYTES`, `BYTE_ARRAY`, `BYTE_BUFFER`: Primitive and binary types
 
 ##### Routing
 
-Routing configuration maps Kafka topics to Lightstreamer items. Define routing rules in the [`routing`](charts/lightstreamer/values.yaml#L5303) section:
+Routing configuration maps Kafka topics to Lightstreamer items. Define routing rules in the [`routing`](charts/lightstreamer/values.yaml#L5329) section:
 
 ```yaml
 connectors:
@@ -2230,7 +2292,7 @@ connectors:
 
 ##### Field mapping
 
-Field mapping defines how Kafka message content is transformed into Lightstreamer fields. Configure mappings in the [`fields`](charts/lightstreamer/values.yaml#L5347) section:
+Field mapping defines how Kafka message content is transformed into Lightstreamer fields. Configure mappings in the [`fields`](charts/lightstreamer/values.yaml#L5372) section:
 
 ```yaml
 connectors:
@@ -2268,53 +2330,27 @@ Extraction expressions support:
 - `#{KEY}`: Use the message key.
 - `#{TOPIC}`, `#{PARTITION}`, `#{OFFSET}`, `#{TIMESTAMP}`: Kafka metadata.
 
-Set [`enableSkipFailedMapping`](charts/lightstreamer/values.yaml#L5372) to `true` to continue processing even if some field extractions fail.
+Set [`enableSkipFailedMapping`](charts/lightstreamer/values.yaml#L5398) to `true` to continue processing even if some field extractions fail.
 
-##### Logging
+##### Connection-specific logging
 
-Configure Kafka Connector logging through the [`logging`](charts/lightstreamer/values.yaml#L4914) section:
+Each connection can override the global logging configuration using the [`logger`](charts/lightstreamer/values.yaml#L5446) setting:
 
 ```yaml
 connectors:
   kafkaConnector:
     ...
-    # Global connector logging
-    logging:
-      appenders:
-        console:
-          type: Console
-          pattern: "%d|%-10c{1}|%-5p|%m%n"
-        
-        dailyRolling:
-          type: DailyRollingFile
-          fileName: kafka-connector.log
-          fileNamePattern: kafka-connector-%d{yyyy-MM-dd}.log
-          pattern: "[%d] [%-10c{1}] %-5p %m%n"
-          volumeRef: my-logs-volume
-      
-      loggers:
-        com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter:
-          level: INFO
-          appenders:
-            - console
-        
-        org.apache.kafka:
-          level: WARN
-          appenders:
-            - console
-    
     connections:
       myKafkaCluster:
         enabled: true
         
-        # Connection-specific logging
         logger:
           level: DEBUG
           appenders:
             - console
 ```
 
-Connection-specific loggers inherit from the global configuration but can be overridden using the [`logger`](charts/lightstreamer/values.yaml#L5420) setting.
+Connection-specific loggers inherit from the global configuration.
 
 A complete Kafka Connector configuration:
 
@@ -2373,4 +2409,4 @@ connectors:
             - kafkaLogs
 ```
 
-See the [examples/kafka-connector](examples/kafka-connector/) directory for additional configuration examples, and refer to the [`connectors.kafkaConnector`](charts/lightstreamer/values.yaml#L4861) section of `values.yaml` for full details.
+See the [`connectors.kafkaConnector`](charts/lightstreamer/values.yaml#L4873) section of `values.yaml` for full details.
