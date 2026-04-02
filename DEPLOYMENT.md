@@ -136,7 +136,6 @@ Follow these steps to deploy the Lightstreamer Broker to your Kubernetes cluster
     deployment "lightstreamer" successfully rolled out
     ```
 
-
 This will deploy the Lightstreamer Broker and other related components with the default configuration.
 
 For more detailed configuration options, refer to the [Lightstreamer Helm Chart Specification](https://github.com/Lightstreamer/helm-charts/tree/main/charts/lightstreamer).
@@ -1758,7 +1757,6 @@ The following settings are available in one or both sections. Where a setting ex
 - **Data Adapter**:
   - [`dataAdapterPool`](charts/lightstreamer/values.yaml#L4439): Dedicated thread pool for subscription/unsubscription management.
 
-
 See the linked `values.yaml` entries for full details on sub-settings (`maxSize`, `maxFree`, `maxPendingRequests`, `maxQueue`).
 
 ##### ClassLoader types
@@ -2045,7 +2043,6 @@ adapters:
 ```
 
 See the [`adapters.welcomeAdapterSet`](charts/lightstreamer/values.yaml#L4797) section of `values.yaml` for full details.
-
 
 ### Connectors
 
