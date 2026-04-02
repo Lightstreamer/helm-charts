@@ -469,12 +469,14 @@ license:
     # key where the password used for validation of online licenses is stored.
     # Leave blank if `licenseType` is set to `DEMO` or `licenseValidation` set
     # to `FILE`.
+    # @default -- {}
     onlinePasswordSecretRef:
       name:
       key:
 
     # -- Mandatory if `licenseValidation` is set to `FILE`. Secret name and key
     # where the license file is stored.
+    # @default -- {}
     filePathSecretRef:
       name:
       key:
@@ -1216,7 +1218,7 @@ security:
   # JavaScript pages can be supplied upon requests by old versions of the Web
   # and Node.js (Unified API) Client Libraries, whereas recent versions no
   # longer make use of this kind of pages. The protection prevents such pages
-  # from being imported in a _<script>_ block and, as a consequence, from being
+  # from being imported in a <script> block and, as a consequence, from being
   # directly executed within a hosting page regardless of its origin.
   # This protection allows the Server to fully comply with the prescriptions to
   # prevent the so-called "JavaScript Hijacking".
@@ -5031,7 +5033,7 @@ connectors:
         # belongs to.
         # Sets the value for the `group.id` key used to configure the internal
         # Kafka Consumer.
-        # See https://kafka.apache.org/documentation/#consumerconfigs_group.id
+        # See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_group.id
         # for details.
         # If not specified, the default value is
         # `kafkaConnector.adapterSetId + name + randomly generated suffix`.
@@ -5151,33 +5153,46 @@ connectors:
             # the IAM role.
             stsRegion:
 
-        # -- Optional. Record evaluation settings.
+        # -- Optional. Record processing settings.
         # If not specified, all settings at their defaults will be used.
         record:
 
           # -- (string) Optional. Specifies where to start consuming events
           # from:
-          # - `LATEST`: start consuming events from the end of the topic
+          # - `LATEST`: Start consuming events from the end of the topic
           # partition.
-          # - `EARLIEST`: start consuming events from the beginning of the topic
+          # - `EARLIEST`: Start consuming events from the beginning of the topic
           # partition.
           # Sets the value of the `auto.offset.reset` key to configure the
           # internal Kafka Consumer.
           # See https://kafka.apache.org/documentation/#consumerconfigs_auto.offset.reset
+          # for details.
           consumeFrom: LATEST
 
           # -- (int) Optional. The maximum number of records fetched in each
-          # polling cycle.
+          # polling cycle. 
+          # Sets the value of the `max.poll.records` key to configure the 
+          # internal Kafka Consumer.
+          # See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_max.poll.records
+          # for details.
           consumeWithMaxPollRecords: 500
 
           # -- (int) Optional. The timeout used to detect client failures when
           # using Kafka's group management facility.
+          # Sets the value of the `session.timeout.ms` key to configure the
+          # internal Kafka Consumer.
+          # See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_session.timeout.ms
+          # for details.
           consumeWithSessionTimeoutMillis: 45000
 
           # -- (int) Optional.  The maximum delay between invocations of poll()
           # when using consumer group management. This places an upper bound on
           # the amount of time that the consumer can be idle before fetching
           # more records.
+          # Sets the value of the `max.poll.interval.ms` key to configure the
+          # internal Kafka Consumer.
+          # See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_max.poll.interval.ms
+          # for details.
           consumeWithMaxPollIntervalMillis: 30000
 
           # -- (int) Optional. The number of threads to be used for parallel
@@ -5310,7 +5325,7 @@ connectors:
           # `connectors.kafkaConnector.schemaRegistries`).
           schemaRegistryRef:
 
-        # -- Mandatory. Record routings configuration.
+        # -- Mandatory. Record routings settings.
         routing:
 
           # -- Optional. Maps of item template expressions. Every entry in the
@@ -5318,7 +5333,6 @@ connectors:
           # - ITEM_PREFIX: the prefix of the item name
           # - BINDABLE_EXPRESSIONS: a sequence of bindable extraction
           #   expressions
-          # See https://lightstreamer.com/api/ls-kafka-connector/latest/ls-kafka-connector/record-extraction.html.
           itemTemplates:
             # stockTemplate: stock-#{index=KEY}
 
@@ -5465,7 +5479,9 @@ connectors:
       mySchemaRegistry:
 
         # -- Optional. Specifies the Schema Registry provider to use. Possible
-        # values: `CONFLUENT`, `AZURE`.
+        # values: 
+        # - `CONFLUENT`
+        # - `AZURE`
         provider: CONFLUENT
 
         # -- (string) Mandatory. The URL of the Confluent Schema Registry. An
