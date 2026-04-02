@@ -4912,7 +4912,10 @@ connectors:
         # volume, e.g.: `/connectors/lightstreamer-kafka-connector-1.5.0.zip`.
         filePath:
 
-    # -- Mandatory. Defines the Kafka Connector Adapter Set and its unique ID.
+    # -- Mandatory. Defines the Kafka Connector Adapter Set and its unique ID, 
+    # which will be used by the Clients to request this Adapter Set while 
+    # setting up the connection to a Lightstreamer Server through a 
+    # LightstreamerClient object.
     adapterSetId: "KafkaConnector"
 
     # -- (string) Mandatory. Java class name of the Kafka Connector Metadata
