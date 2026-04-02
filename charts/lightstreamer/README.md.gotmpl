@@ -41,7 +41,7 @@ For installation instructions, custom configuration, and deployment guidance, se
 {{- end }}
 
 {{- define "chart.valuesTable" }}
-{{- $sections := list "common" "license" "servers" "keystores" "globalSocket" "security" "logging" "management" "pushSession" "mpn" "webServer" "cluster" "load" "adapters" "connectors" }}
+{{- $sections := list "common" "license" "servers" "keystores" "globalSocket" "security" "logging" "management" "pushSession" "mpn" "webServer" "cluster" "load" "sharedDir" "adapters" "connectors" }}
 
 ## Settings
 
@@ -70,6 +70,7 @@ each focusing on a specific aspect of the Lightstreamer deployment:
 {{- /* Render all the remaining sections */ -}}
 {{- range $section := without $sections "common" }}
 {{- $lbl := $section | kebabcase | replace "-" " " }}
+
 ## {{ upper (substr 0 1 $lbl) }}{{ substr 1 (len $lbl) $lbl }} settings
   {{ range $.Values }}
     {{- if hasPrefix $section .Key }}
