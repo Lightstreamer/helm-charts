@@ -2966,11 +2966,11 @@ Optional. Specifies the maximum number of idle threads the pool may have. A `0` 
 **Default:** `0`
 ### [mpn.deviceHandlerPool.maxSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2915)
      
-Optional. Specifies the maximum number of threads the pool may use. default -- 100
+Optional. Specifies the maximum number of threads the pool may use.
 
 **Type:** int
 
-**Default:** `nil`
+**Default:** `100`
 ### [mpn.deviceInactivityTimeoutMinutes](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2878)
      
 Optional. Timeout after which an inactive device is considered abandoned and is permanently deleted. A device is considered inactive if it is suspended (i.e., its device token has been rejected by the MPN service) or if it has no active subscriptions. A suspended device may be resumed with a token change (typically, client libraries handle this situation automatically).
