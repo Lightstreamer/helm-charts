@@ -1149,8 +1149,6 @@ management:
         value: 9999
 ```
 
-See the [`management.jmx.rmiConnector`](charts/lightstreamer/values.yaml#L1975) section of `values.yaml` for full details.
-
 The RMI port is declared as a container port but is not included in the main Service. To expose it within the cluster, enable the dedicated management Service:
 
 ```yaml
@@ -1211,6 +1209,11 @@ management:
 
 > [!WARNING]
 > Make sure to enable authenticated access in a production deployment.
+
+> [!NOTE]
+> When the RMI Connector is enabled and accessible (`enablePublicAccess: true` or `credentialSecrets` is configured), the chart automatically registers a `preStop` lifecycle hook that calls `LS.sh stop` for graceful server shutdown. Without RMI access, the hook is omitted and Kubernetes terminates the container with `SIGKILL` after the grace period.
+
+See the [`management.jmx.rmiConnector`](charts/lightstreamer/values.yaml#L1975) section of `values.yaml` for full details.
 
 #### Monitoring Dashboard
 
@@ -2143,6 +2146,9 @@ The Kafka Connector must be provisioned before it can be used. The Helm chart su
            name: my-volume
            filePath: kafka-connector/lightstreamer-kafka-connector-1.5.0.zip
    ```
+
+> [!NOTE]
+> Methods 2, 3, and 4 use an init container based on the `alpine/curl` image to download and extract the connector package. In air-gapped or restricted environments where public registries are not reachable, you must mirror this image to an internal registry or pre-pull it onto your nodes.
 
 The [`adapterSetId`](charts/lightstreamer/values.yaml#L4919) setting defines the unique Adapter Set ID for the Kafka Connector. Clients use this value when establishing a connection to the Lightstreamer Server through a `LightstreamerClient` object.
 
