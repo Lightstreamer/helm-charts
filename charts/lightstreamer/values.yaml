@@ -2199,7 +2199,7 @@ management:
   # We recommend configuring the credentials and restricting the Monitoring
   # Monitoring Dashboard access to HTTPS server sockets through the settings
   # below. Further restrictions can be applied to the JMX Tree only.
-  # See PRODUCTION_SECURITY_NOTES.TXT for a full check-list.
+  # See DEPLOYMENT.md for production hardening guidance.
   # Note that basic monitoring statistics are also available to any
   # Lightstreamer application; in fact, an instance of a special internal
   # monitoring Data Adapter can be embedded in any custom Adapter Set, by
@@ -5484,9 +5484,9 @@ connectors:
         # - `AZURE`
         provider: CONFLUENT
 
-        # -- (string) Mandatory. The URL of the Confluent Schema Registry. An
-        # encrypted connection is enabled by specifying the `https` protocol.
-        # Example: `https://schema-registry:8084`
+        # -- (string) Mandatory. The URL of the Schema Registry endpoint (either 
+        # Confluent Schema Registry or Azure Schema Registry).
+        # Examples: `https://schema-registry:8084`, `https://my-namespace.servicebus.windows.net`.
         url:
 
         # -- Optional but only effective if `provider` is set to `CONFLUENT`.
