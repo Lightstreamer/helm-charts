@@ -2417,17 +2417,17 @@ Render the Lightstreamer configuration file.
              Default for <max_free>: 0, meaning the pool will not consume
              resources when idle. -->
   {{- with .executorPool }}
-        <executor_pool>
-    {{- if not (quote .maxSize | empty) }}
-            <max_size>{{ int .maxSize }}</max_size>
-    {{- else }}
-            <!-- <max_size>10</max_size> -->
-    {{- end }}
-    {{- if not (quote .maxFree | empty) }}
-            <max_free>{{ int .maxFree }}</max_free>
-    {{- else }}
-            <!-- <max_free>0</max_free> -->
-    {{- end }}
+     <executor_pool>
+     {{- if not (quote .maxSize | empty) }}
+          <max_size>{{ int .maxSize }}</max_size>
+     {{- else }}
+          <!-- <max_size>10</max_size> -->
+     {{- end }}
+     {{- if not (quote .maxFree | empty) }}
+          <max_free>{{ int .maxFree }}</max_free>
+     {{- else }}
+          <!-- <max_free>0</max_free> -->
+     {{- end }}
         </executor_pool>
   {{- else }}
         <!--
@@ -2454,6 +2454,7 @@ Render the Lightstreamer configuration file.
              by the thread pool associated with the involved Data Adapter,
              similarly to ordinary sessions. -->
   {{- with .deviceHandlerPool }}
+    {{- if compact (values .) }}
         <device_handler_pool>
     {{- if not (quote .maxSize | empty) }}
             <max_size>{{ int .maxSize }}</max_size>
@@ -2466,6 +2467,14 @@ Render the Lightstreamer configuration file.
             <!-- <max_free>0</max_free> -->
     {{- end }}
         </device_handler_pool>
+    {{- else }}
+        <!--
+        <device_handler_pool>
+            <max_size>100</max_size>
+            <max_free>0</max_free>
+        </device_handler_pool>
+        -->
+    {{- end }}
   {{- else }}
         <!--
         <device_handler_pool>
