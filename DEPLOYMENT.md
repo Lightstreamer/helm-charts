@@ -2223,10 +2223,34 @@ connectors:
             schemaRegistryUrl: "http://schema-registry:8081"
 ```
 
+**Connection name**: Each connection must have a unique [`name`](charts/lightstreamer/values.yaml#L5024). Clients use this value when subscribing to request real-time data from a specific Kafka connection.
+
 **Bootstrap servers**: Specify one or more Kafka broker addresses using [`bootstrapServers`](charts/lightstreamer/values.yaml#L5030). For Kafka deployed in Kubernetes, use the service DNS name:
 
 ```yaml
 bootstrapServers: "kafka-0.kafka-headless.kafka:9092"
+```
+
+**Consumer group**: The optional [`groupId`](charts/lightstreamer/values.yaml#L5041) sets the Kafka `group.id` for the internal consumer. When not specified, the connector generates a default value from `adapterSetId`, the connection name, and a random suffix.
+
+In a multi-replica deployment, every Lightstreamer Broker instance must receive the full stream of messages from the subscribed topics — otherwise clients connected to different replicas would see only partial data, depending on which broker they happen to reach. To achieve this, each replica must use a **unique** `groupId` so that Kafka treats each one as an independent consumer rather than distributing partitions among members of the same group.
+
+Any value that differs across pods works — for example the pod name, the pod IP, or the node name. Inject it via the Kubernetes Downward API and reference it with the `$env.<VAR>` substitution syntax (see [Environment and initialization](#environment-and-initialization)):
+
+```yaml
+deployment:
+  extraEnv:
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
+
+connectors:
+  kafkaConnector:
+    ...
+    connections:
+      myKafkaCluster:
+        groupId: "ls-kafka-$env.POD_NAME"
 ```
 
 **Encryption**: Enable TLS/SSL encryption for the connection through [`sslConfig`](charts/lightstreamer/values.yaml#L5044). The `truststoreRef` validates broker certificates, and `keystoreRef` supplies a client certificate when mutual TLS is required. Both reference entries defined in the [Keystores](#keystores) section:
@@ -2271,6 +2295,9 @@ connectors:
 **Record processing**: The [`record`](charts/lightstreamer/values.yaml#L5158) block controls how Kafka messages are consumed and deserialized.
 
 [`consumeFrom`](charts/lightstreamer/values.yaml#L5170) (default: `LATEST`) sets the initial offset — use `EARLIEST` to replay all existing messages on first connection.
+
+> [!WARNING]
+> `consumeFrom` maps to Kafka's `auto.offset.reset` and only takes effect when no committed offsets exist for the consumer group. If `groupId` includes a value that changes across pod replacements or restarts, each new value produces a new group ID with no committed offsets. Combined with `EARLIEST`, this triggers a full replay of all topic partitions. Keep the default `LATEST` in multi-replica deployments where the group ID is not stable.
 
 [`consumeWithThreadNumber`](charts/lightstreamer/values.yaml#L5202) (default: `1`) controls parallelism for processing deserialized records. When using more than one thread, [`consumeWithOrderStrategy`](charts/lightstreamer/values.yaml#L5213) determines ordering guarantees: `ORDER_BY_PARTITION` (default), `ORDER_BY_KEY`, or `UNORDERED`.
 
