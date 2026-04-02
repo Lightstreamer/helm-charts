@@ -330,7 +330,7 @@ For production hardening, also review:
 > | Dashboard open to anyone | `enablePublicAccess: true` | Disable public access and configure credentials — see [Monitoring Dashboard](#monitoring-dashboard) |
 > | CORS allows all origins | `allowAccessFrom: "*"` | Restrict to known client origins — see [Security](#security) |
 > | Server version disclosed | `serverIdentificationPolicy: FULL` | Set to `MINIMAL` — see [Security](#security) |
-> | Internal web server on | `webServer.enabled: true` | Disable if not serving static files — see [Web server](#web-server) |
+> | Internal web server on | `webServer.enabled: true` | Disable if not serving static files — see [Web server](#web-server). Also ensure the [WELCOME Adapter Set](#welcome-adapter-set) stays disabled |
 > | No TLS cipher/protocol filtering | `removeCipherSuites: []` | Remove weak ciphers and protocols — see [TLS/SSL](#tlsssl) |
 
 ### Name overrides
@@ -825,7 +825,49 @@ To enable TLS/SSL on a server socket:
          keystoreRef: serverKeyStore
    ```
 
-If client certificate verification is required, create a truststore the same way and reference it via `truststoreRef` in the `sslConfig`. See the [`servers.defaultServer.sslConfig`](charts/lightstreamer/values.yaml#L898) section of `values.yaml` for full details on available TLS options.
+If client certificate verification is required, create a truststore the same way and reference it via `truststoreRef` in the `sslConfig`.
+
+**Cipher and protocol hardening**: By default, no cipher suites or protocols are explicitly filtered — the JVM's Security Provider defaults apply. For production, restrict the allowed ciphers and protocols to prevent clients from negotiating weak encryption. Two approaches are available (they are mutually exclusive):
+
+- **Allowlist** — specify only the cipher suites and protocols you want to permit via [`allowCipherSuites`](charts/lightstreamer/values.yaml#L938) and [`allowProtocols`](charts/lightstreamer/values.yaml#L998):
+
+  ```yaml
+  servers:
+    defaultServer:
+      enableHttps: true
+      sslConfig:
+        keystoreRef: serverKeyStore
+
+        allowCipherSuites:
+          - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+
+        allowProtocols:
+          - TLSv1.2
+          - TLSv1.3
+  ```
+
+- **Denylist** — remove specific cipher suites and protocols by regex pattern via [`removeCipherSuites`](charts/lightstreamer/values.yaml#L956) and [`removeProtocols`](charts/lightstreamer/values.yaml#L1016):
+
+  ```yaml
+  servers:
+    defaultServer:
+      enableHttps: true
+      sslConfig:
+        keystoreRef: serverKeyStore
+
+        removeCipherSuites:
+          - TLS_RSA_
+
+        removeProtocols:
+          - SSL
+          - TLSv1$
+          - TLSv1\.1
+  ```
+
+> [!TIP]
+> To see which cipher suites and protocols are available, enable the `io.ssl` sub-logger at `DEBUG` level — the full lists are logged at startup.
+
+See the [`servers.defaultServer.sslConfig`](charts/lightstreamer/values.yaml#L898) section of `values.yaml` for full details on available TLS options.
 
 ### Keystores
 
@@ -1994,7 +2036,7 @@ adapters:
 
 #### WELCOME Adapter Set
 
-The official Lightstreamer Docker image comes with the predefined _WELCOME_ Adapter Set to feed the demos on the welcome page. It is disabled by default. To activate it, set the `enabled` flag to `true`:
+The official Lightstreamer Docker image comes with the predefined _WELCOME_ Adapter Set to feed the demos on the welcome page. It is disabled by default and should remain disabled in production to avoid exposing demo pages. To activate it for evaluation purposes, set the `enabled` flag to `true`:
 
 ```yaml
 adapters:
@@ -2018,7 +2060,7 @@ The Lightstreamer Kafka Connector enables real-time streaming of data from Apach
 **Key features:**
 - Native integration with Apache Kafka and Kafka-compatible platforms (Amazon MSK, Confluent Cloud, etc.)
 - Support for multiple serialization formats: String, JSON, Avro, Protobuf, and key-value pairs
-- Schema Registry integration for Avro and Protobuf
+- Schema Registry integration for JSON, Avro, and Protobuf
 - Flexible topic-to-item routing with template-based mapping
 - TLS/SSL encryption and multiple authentication mechanisms (SASL/PLAIN, SCRAM, GSSAPI, AWS IAM)
 - Independent connection configurations for different Kafka clusters
@@ -2238,7 +2280,7 @@ connectors:
 [`keyEvaluator`](charts/lightstreamer/values.yaml#L5217) and [`valueEvaluator`](charts/lightstreamer/values.yaml#L5273) configure how message keys and values are deserialized. Supported types:
 
 - `STRING`: Plain text
-- `JSON`: JSON objects
+- `JSON`: JSON objects (optionally supports schema validation)
 - `AVRO`: Avro serialized data (requires Schema Registry or local schema)
 - `PROTOBUF`: Protocol Buffers (requires Schema Registry or local schema)
 - `KVP`: Key-value pairs (configurable separators)
@@ -2351,6 +2393,119 @@ connectors:
 ```
 
 Connection-specific loggers inherit from the global configuration.
+
+##### Schema configuration
+
+Schema validation is mandatory for `AVRO` and `PROTOBUF` evaluator types, and can optionally be enabled for `JSON`. Schemas can be provided in two ways: **local schema files** stored in ConfigMaps, or a **Schema Registry** service.
+
+**Local schema files**: Define named schema references in the [`localSchemaFiles`](charts/lightstreamer/values.yaml#L5458) map. Each entry points to a ConfigMap name and key containing the schema file (`.avsc` for Avro, `.json` for JSON Schema, `.proto` or binary descriptor for Protobuf):
+
+```yaml
+connectors:
+  kafkaConnector:
+    ...
+    localSchemaFiles:
+      myKeySchema:
+        name: record-key-configmap
+        key: record_key.avsc
+      
+      myValueSchema:
+        name: record-value-configmap
+        key: record_value.avsc
+```
+
+Then reference the schema in the evaluator via `localSchemaFilePathRef`:
+
+```yaml
+connectors:
+  kafkaConnector:
+    ...
+    connections:
+      myKafkaCluster:
+        ...
+        record:
+          keyEvaluator:
+            type: AVRO
+            localSchemaFilePathRef: myKeySchema
+          valueEvaluator:
+            type: AVRO
+            localSchemaFilePathRef: myValueSchema
+```
+
+**Protobuf with local binary descriptors**: Protobuf requires a binary descriptor file rather than the raw `.proto` source. To set it up:
+
+1. Compile the `.proto` file into a binary descriptor using the [Protocol Buffer Compiler](https://grpc.io/docs/protoc-installation/) (`protoc`). The `--include_imports` flag is required to bundle all imported proto definitions:
+
+   ```sh
+   protoc --descriptor_set_out=record_value.proto.desc record_value.proto --include_imports
+   ```
+
+2. Create a ConfigMap from the generated descriptor:
+
+   ```sh
+   kubectl create configmap protobuf-schema \
+     --from-file=record_value.proto.desc=record_value.proto.desc \
+     --namespace <namespace>
+   ```
+
+3. Reference the ConfigMap in `localSchemaFiles` and configure the evaluator with both `localSchemaFilePathRef` and [`protobufMessageType`](charts/lightstreamer/values.yaml#L5257):
+
+   ```yaml
+   connectors:
+     kafkaConnector:
+       ...
+       localSchemaFiles:
+         myProtoSchema:
+           name: protobuf-schema
+           key: record_value.proto.desc
+
+       connections:
+         myKafkaCluster:
+           ...
+           record:
+             valueEvaluator:
+               type: PROTOBUF
+               localSchemaFilePathRef: myProtoSchema
+               protobufMessageType: com.example.MyMessage
+   ```
+
+**Schema Registry**: Define named registry configurations in the [`schemaRegistries`](charts/lightstreamer/values.yaml#L5474) map. Two providers are supported:
+
+- `CONFLUENT`: requires a [`url`](charts/lightstreamer/values.yaml#L5490). Optional basic HTTP authentication and TLS settings are available under the [`confluent`](charts/lightstreamer/values.yaml#L5494) block (TLS configuration becomes mandatory when the URL uses the `https` protocol).
+- `AZURE`: supports JSON and AVRO only (not Protobuf). Requires a [`url`](charts/lightstreamer/values.yaml#L5490) pointing to the Azure Event Hubs namespace (e.g., `https://my-namespace.servicebus.windows.net`) and a credentials secret (containing `client_id`, `tenant_id`, and `client_secret` keys) referenced by [`azure.credentialsSecretRef`](charts/lightstreamer/values.yaml#L5552).
+
+```yaml
+connectors:
+  kafkaConnector:
+    ...
+    schemaRegistries:
+      myRegistry:
+        provider: CONFLUENT
+        url: "https://schema-registry:8081"
+```
+
+Then enable the Schema Registry on the evaluator and reference the registry at the connection level via [`schemaRegistryRef`](charts/lightstreamer/values.yaml#L5326):
+
+```yaml
+connectors:
+  kafkaConnector:
+    ...
+    connections:
+      myKafkaCluster:
+        ...
+        record:
+          keyEvaluator:
+            type: AVRO
+            enableSchemaRegistry: true
+          valueEvaluator:
+            type: AVRO
+            enableSchemaRegistry: true
+          
+          schemaRegistryRef: myRegistry
+```
+
+> [!NOTE]
+> If both `localSchemaFilePathRef` and `enableSchemaRegistry` are set on an evaluator, the local schema file takes precedence.
 
 A complete Kafka Connector configuration:
 
