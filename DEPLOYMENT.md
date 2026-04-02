@@ -75,6 +75,7 @@ This guide covers deploying, configuring, and managing the Lightstreamer Broker 
         - [Summary of ClassLoader types](#summary-of-classloader-types)
     - [Proxy Adapters](#proxy-adapters)
     - [Mixed configuration](#mixed-configuration)
+    - [WELCOME Adapter Set](#welcome-adapter-set)
   - [Connectors](#connectors)
     - [Kafka Connector](#kafka-connector)
       - [Provisioning](#provisioning-1)
@@ -576,14 +577,17 @@ Each entry in `ingress.rules` defines a host and its routing paths. The optional
 ingress:
   enabled: true
   className: nginx
+
   annotations:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+
   rules:
     - host: lightstreamer.example.com
       paths:
         - path: /
           pathType: Prefix
+
   tls:
     - hosts:
         - lightstreamer.example.com
@@ -605,6 +609,7 @@ service:
 ingress:
   enabled: true
   className: nginx
+
   rules:
     - host: app.example.com
       paths:
@@ -899,6 +904,7 @@ By default, the cross-domain policy allows requests from any origin. Restrict th
 ```yaml
 security:
   serverIdentificationPolicy: MINIMAL   # hides version details from HTTP responses
+
   crossDomainPolicy:
     enabled: true
     allowAccessFrom:
@@ -1267,6 +1273,7 @@ Or expose it only on selected server sockets:
 management:
   healthCheck:
     enableAvailabilityOnAllServers: false
+
     availableOnServers:
       - defaultServer
 ```
@@ -1306,6 +1313,7 @@ The module requires a relational database for persistence (to survive restarts a
 ```yaml
 mpn:
   enabled: true
+
   hibernateConfig:
     connection:
       jdbcDriverClass: com.mysql.jdbc.Driver
@@ -1366,6 +1374,7 @@ deployment:
 
 webServer:
   enabled: true
+
   pagesVolume:
     name: my-pages           # must match an entry in deployment.extraVolumes
     path: html               # optional subdirectory within the volume
@@ -1727,6 +1736,7 @@ This ClassLoader loads classes from the `lib` and `classes` subfolders found in 
            adapterClass: com.mycompany.adapters.metadata.MyMetadataAdapter
            classLoader: common 
            ...
+
        dataProviders:
          myDataProvider:
            inProcessDataAdapter:
@@ -1754,6 +1764,7 @@ This ClassLoader loads classes from the `lib` and `classes` subfolders found in 
            installDir: metadata # Metadata Adapter-specific resources
            classLoader: common
            ...
+
        dataProviders:
          myDataProvider:
            inProcessDataAdapter:
@@ -1839,6 +1850,7 @@ adapters:
         installDir: metadata 
         classLoader: dedicated
         ...
+
     dataProviders:
       myDataProvider:
         inProcessDataAdapter:
@@ -1882,6 +1894,7 @@ adapters:
       inProcessMetadataAdapter:
         adapterClass: com.mycompany.adapters.metadata.MyMetadataAdapter
         classLoader: log-enabled
+
     dataProviders:
       myDataProvider:
         inProcessDataAdapter:
@@ -1965,6 +1978,7 @@ adapters:
   myAdapterSet:
     enabled: true
     id: MY_MIXED_ADAPTER_SET
+
     provisioning:
       fromPathInImage: /lightstreamer/adapters/myadapter
 
@@ -1977,6 +1991,19 @@ adapters:
         proxyDataAdapter:
           requestReplyPort: 7003
 ```
+
+#### WELCOME Adapter Set
+
+The official Lightstreamer Docker image comes with the predefined _WELCOME_ Adapter Set to feed the demos on the welcome page. It is disabled by default. To activate it, set the `enabled` flag to `true`:
+
+```yaml
+adapters:
+  welcomeAdapterSet:
+    enabled: true
+```
+
+See the [`adapters.welcomeAdapterSet`](charts/lightstreamer/values.yaml#L4785) section of `values.yaml` for full details.
+
 
 ### Connectors
 
@@ -2245,7 +2272,7 @@ Set [`enableSkipFailedMapping`](charts/lightstreamer/values.yaml#L5372) to `true
 
 ##### Logging
 
-Configure connector-specific logging through the [`logging`](charts/lightstreamer/values.yaml#L4914) section:
+Configure Kafka Connector logging through the [`logging`](charts/lightstreamer/values.yaml#L4914) section:
 
 ```yaml
 connectors:
@@ -2337,6 +2364,7 @@ connectors:
         fields:
           mappings:
             "*": "#{VALUE.*}"
+
           enableSkipFailedMapping: true
         
         logger:
