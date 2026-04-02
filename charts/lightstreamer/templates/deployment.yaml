@@ -421,9 +421,14 @@ spec:
             {{- /* END VOLUME MOUNTS FOR GOOGLE SERVICE JSON FILES */ -}}
           {{- end }}
           {{- /* END VOLUME MOUNTS FOR MPN */ -}}
-          {{- /* START VOLUME MOUNTS FOR DAILY ROLLING FILE APPENDER */ -}}
+          {{- /* START VOLUME MOUNTS FOR LOG APPENDER VOLUMES */ -}}
           {{- $volumeRefs := list }}
           {{- range $key, $appender := (.Values.logging).appenders }}
+            {{- if and ($appender.type | eq "DailyRollingFile") ($appender.volumeRef) }}
+              {{- $volumeRefs = append $volumeRefs $appender.volumeRef }}
+            {{- end }}
+          {{- end }}
+          {{- range $key, $appender := ((.Values.connectors).kafkaConnector).logging.appenders }}
             {{- if and ($appender.type | eq "DailyRollingFile") ($appender.volumeRef) }}
               {{- $volumeRefs = append $volumeRefs $appender.volumeRef }}
             {{- end }}
@@ -433,7 +438,7 @@ spec:
             - name: {{ . }}
               mountPath: {{ include "lightstreamer.logs.dir" . }}/{{ . }}
           {{- end }}
-          {{- /* END VOLUME MOUNTS FOR DAILY ROLLING FILE APPENDER */ -}}
+          {{- /* END VOLUME MOUNTS FOR LOG APPENDER VOLUMES */ -}}
           {{- /* START VOLUME MOUNTS FOR LICENSE FILE */ -}}
           {{- if and (ne ((.Values.license).enterprise).licenseType "DEMO") (eq ((.Values.license).enterprise).licenseValidation "FILE") }}
             {{- with .Values.license.enterprise.filePathSecretRef }}
@@ -489,17 +494,6 @@ spec:
               mountPath: {{ include "lightstreamer.connectors.source-config.kafka-connector.dir" . }}/{{ include "lightstreamer.kafka-connector.schemas.dir.name" . }}/{{ $key }}
                 {{- end }}
               {{- end }}
-            {{- $volumeRefs := list }}
-            {{- range $key, $appender := .logging.appenders }}
-              {{- if and ($appender.type | eq "DailyRollingFile") ($appender.volumeRef) }}
-                {{- $volumeRefs = append $volumeRefs $appender.volumeRef }}
-              {{- end }}
-            {{- end }}
-            {{- $volumeRefs = $volumeRefs | uniq }}
-            {{- range $volumeRefs }}
-            - name: {{ . }}
-              mountPath: {{ include "lightstreamer.kafka-connector.logs.dir" . }}/{{ . }}
-            {{- end }}
             {{- end }}
           {{- end }}
           {{- /* END VOLUME MOUNTS FOR KAFKA CONNECTOR */ -}}
