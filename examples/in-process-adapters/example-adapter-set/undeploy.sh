@@ -12,7 +12,7 @@ set -euo pipefail
 #   ./undeploy.sh openshift   - remove BuildConfig and ImageStream
 #
 # Environment variables:
-#   REGISTRY   (optional) Same value used during deploy. When set, removes
+#   REGISTRY   (optional) Same value used during build. When set, removes
 #              the registry-prefixed image tag.
 # ---------------------------------------------------------------------------
 
