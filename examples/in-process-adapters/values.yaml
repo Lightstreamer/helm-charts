@@ -1,0 +1,40 @@
+logging:
+  loggers:
+    lightstreamerLogger:
+
+      # Set the logging level for Lightstreamer
+      subLoggers:
+        init: DEBUG
+
+deployment:
+  terminationGracePeriodSeconds: 2
+
+adapters:
+
+  # Define the adapter set
+  exampleAdapterSet:
+    enabled: true
+    id: "EXAMPLE_ADAPTER_SET"
+
+    # Provision the adapter set from the image
+    provisioning:
+      fromPathInImage: /lightstreamer/adapters/example-adapter-set
+
+    # Define the metadata provider
+    metadataProvider:
+
+      # Define the in-process metadata adapter
+      inProcessMetadataAdapter:
+        adapterClass: com.lightstreamer.adapters.examples.meta.SimpleMetadataAdapter
+
+    dataProviders:
+
+      # Define the data provider
+      myDataProvider:
+        enabled: true
+        name: "MY_DATA_ADAPTER"
+
+        # Define the in-process data adapter
+        inProcessDataAdapter:
+          adapterClass: com.lightstreamer.adapters.examples.data.SimpleDataAdapter
+
