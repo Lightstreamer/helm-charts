@@ -1,136 +1,165 @@
-# In-Process Adapters configuration examples
+# In-Process Adapter example
 
-The following examples demonstrate how to configure and deploy the Lightstreamer Helm chart with with in-process Adapter Sets.
+This example demonstrates how to deploy the Lightstreamer Helm chart with **In-Process Adapters**, where the adapter logic runs inside the Lightstreamer JVM as part of the server process.
 
-## Sample Adapter Set project
+## Architecture
 
-The [`example-adapter-set`](example-adapter-set/) set folder contains a _gradle_ project for building a sample Adapter Set, with the purpose to illustrate the available provisioning and configuration options.
+```mermaid
+flowchart LR
+  subgraph LS["Lightstreamer Pod"]
+    direction TB
+    M["Metadata: SimpleMetadataAdapter"]
+    D["Data: SimpleDataAdapter"]
+  end
+  C["Client"] -- "HTTP/WS" --> LS
+```
 
-Here the project structure:
-...
+Lightstreamer is configured with:
+- an **In-Process** Metadata Adapter (`SimpleMetadataAdapter`)
+- an **In-Process** Data Adapter (`SimpleDataAdapter`)
 
+Both adapters are compiled into a JAR and baked into a custom Docker image that extends the official Lightstreamer image.
 
-## Example 1. Embed Adapters in the Docker image
+## The example Adapter Set project
 
-The in-process Adapters will be embedded into the Docker image, which will be then references from the Helm Chart values.
+The [`example-adapter-set/`](example-adapter-set/) folder is a self-contained Gradle project that produces a sample Adapter Set with two adapters:
 
-To make it easy using a custom container image, a _minikube_ local cluster will be used to deploy the Helm chart.
+- `SimpleMetadataAdapter` (extends `LiteralBasedProvider`) — handles client authentication and item validation
+- `SimpleDataAdapter` — generates sample real-time data
 
-To deploy the 
+The project is organized as follows:
 
-1. Build the Adapter Set and to generate the deployment files under `build/lib/example-adapter-set`
-    
-   ```sh
-   ./gradlew deploy
-   ```
+```
+example-adapter-set/
+├── src/main/java/…               # Java adapter source code
+├── build.gradle                   # Gradle build — compiles and assembles the adapter JAR
+├── Dockerfile                     # Extends the official Lightstreamer image
+├── index.html                     # Test page — subscribes to the example Adapter Set
+├── deploy.sh                      # Build + package + push (Kubernetes or OpenShift)
+└── undeploy.sh                    # Clean up images and cluster resources
+```
 
-   Expected layout of output directory:
+**Build pipeline** — `deploy.sh` automates the full chain:
 
-   ```sh
-   build/example-adapter-set/
-   └── lib
-       └── first-adapter-1.0.0.jar
-   ```
-
-2. Build the Docker image:
-
-   The Dockerfile simply derives from the official Lightstreamer Image and copy the adapter deployment files to the `/lightstreamer/adapters` folder:
-
-   ```yaml
+1. Runs `gradlew build`, which compiles the adapter classes and assembles them into `build/libs/example-adapter-set-1.0.0.jar`.
+2. Builds a Docker image using the Dockerfile, which copies the compiled adapter and the test page into the Lightstreamer image:
+   ```dockerfile
    FROM lightstreamer
-   COPY build/example-adapter-set /lightstreamer/adapters/example-adapter-set
+   COPY build/libs/example-adapter-set-1.0.0.jar /lightstreamer/adapters/example-adapter-set/lib/
+   COPY index.html /lightstreamer/pages/index.html
    ```
-   
-   ```sh
-   docker build -t example-lightstreamer-adapters .
-   ```
+3. Pushes the image to the target registry (or triggers an OpenShift server-side build).
 
-3. Push the Docker image to minikube:
+You can use this project as a starting point for your own adapters — replace the source code under `src/`, adjust `build.gradle`, and follow the deployment steps below.
 
-   ```sh
-   minikube image load example-lightstreamer-adapters:latest
-   ```
-   
-4. Configure the Adapter Set.
-
-   The values.yaml 
-   Override the image.repository settings with the custom Docker image
-
-6. Install the Helm chart using the values.yaml
-
-   ```bash
-   # Install the chart using the custom values file
-   helm install lightstreamer lightstreamer/lightstreamer \
-     -f values.yaml \
-     --namespace lightstreamer
-   ```
-
-## Example 2. Deploy Adapters to a persistent storage
-
-The in-process Adapters will deployed to a persistent storage by using Kubernetes volume.
-
-1. 
-
-## Configuration 
-
-According to the examples show nin the [_Monitoring Dashboard_](../../DEPLOYMENT.md#monitoring-dashboard) section of the deployment documentation, the `values.yaml` file provides:
-
-- An additional [secure server socket](values.yaml#L3) dedicated for the Dashboard
-- Definition of two separated service ports:
-  - [Port](values.yaml#L14) for the the default server
-  - [Port](values.yaml#L19) for Dashboard access
-- Dashboard management settings:
-  - [Authorized users](values.yaml#L28) with different levels of access to the JMX Tree
-  - [Access restriction](values.yaml#37) to the the dedicated HTTPS server only
-  - [Custom monitoring path](values.yaml#40) at `/monitoring`
-  
 ## Prerequisites
 
-Before proceeding with this example:
+- A running Kubernetes cluster with `kubectl` configured, or an OpenShift cluster with `oc` available
+- `helm` on your PATH
+- The Lightstreamer Helm repository added:
+  ```sh
+  helm repo add lightstreamer https://lightstreamer.github.io/helm-charts
+  helm repo update
+  ```
+- A container registry accessible by the cluster nodes (e.g. Docker Hub, a private registry, or a local registry) — required for the `kubernetes` target
+- `docker` on your PATH for local image builds
+- A Java JDK (17+) for building the Adapter Set with Gradle
 
-1. Complete the [general deployment prerequisites](../../DEPLOYMENT.md#prerequisites) which include:
-   - Setting up a Kubernetes cluster
-   - Installing kubectl and configuring access to your cluster
-   - Installing Helm
-   - Adding and updating the Lightstreamer Helm repository
+## Deployment
 
-2. This example uses `lightstreamer` as the target namespace. Create the namespace and the required Kubernetes secrets for dashboard users:
+### 1. Build the custom image
 
-```bash
-# Create the namespace
-kubectl create namespace lightstreamer
+From the [`example-adapter-set/`](example-adapter-set/) folder, run `deploy.sh` with the appropriate target:
 
-# Create admin user secret
-kubectl create secret generic dashboard-user1-secret \
-  --from-literal=user=admin \
-  --from-literal=password='secretpass' \
-  --namespace lightstreamer
-
-# Create monitor user secret
-kubectl create secret generic dashboard-user2-secret \
-  --from-literal=user=monitor \
-  --from-literal=password='monitorpass' \
-  --namespace lightstreamer
+```sh
+cd example-adapter-set/
 ```
 
-## Installation and access
+- **Any Kubernetes distribution** — build and push the image to a registry accessible by your cluster nodes:
+  ```sh
+  REGISTRY=myregistry.example.com/myorg ./deploy.sh kubernetes
+  ```
+  Set `REGISTRY` to the prefix of your container registry. The image will be tagged and pushed as `${REGISTRY}/lightstreamer-example-adapter-set:latest`.
 
-To install the Lightstreamer Broker with this dashboard configuration:
+  > **Minikube shortcut**: If you are using Minikube for local development you can avoid a remote registry entirely by pointing your shell at Minikube's built-in Docker daemon before running the script. The image is then built directly inside Minikube and no push is needed:
+  > ```sh
+  > eval $(minikube docker-env)
+  > ./deploy.sh kubernetes
+  > ```
+  > Run `eval $(minikube docker-env --unset)` to restore your shell's Docker environment afterwards.
 
-```bash
-# Install the chart using the custom values file
+- **OpenShift** — no local Docker build is needed. The script uploads the source directory and triggers a server-side build via a binary BuildConfig:
+  ```sh
+  ./deploy.sh openshift
+  ```
+
+At the end, the script prints the `image.repository` and `image.tag` values to set in your Helm values file.
+
+### 2. Install the Lightstreamer Helm chart
+
+Install the chart using the provided [`values.yaml`](values.yaml), overriding the image to point to the custom image built in the previous step:
+
+```sh
 helm install lightstreamer lightstreamer/lightstreamer \
   -f values.yaml \
+  --set image.repository=lightstreamer-example-adapter-set \
+  --set image.tag=latest \
   --namespace lightstreamer
 ```
 
-To access the dashboard locally through port-forwarding:
+For OpenShift, use the image reference printed by `deploy.sh`, for example:
 
-```bash
-# Forward the dashboard port to your local machine
-kubectl port-forward svc/lightstreamer-service 8081:8081 -n lightstreamer
+```sh
+helm install lightstreamer lightstreamer/lightstreamer \
+  -f values.yaml \
+  --set image.repository=image-registry.openshift-image-registry.svc:5000/lightstreamer/lightstreamer-example-adapter-set \
+  --set image.tag=latest \
+  --namespace lightstreamer
 ```
 
-The dashboard will be available at:
-- URL: `https://localhost:8081/monitoring`
-- Login with either the admin or monitor user credentials created in the prerequisites
+> [!NOTE]
+> The namespace must exist beforehand (`kubectl create namespace lightstreamer` or `oc new-project lightstreamer` on OpenShift).
+
+The provided [`values.yaml`](values.yaml) defines the Adapter Set with the two In-Process Adapters (`SimpleMetadataAdapter` and `SimpleDataAdapter`) and provisions them from the path baked into the custom image.
+
+### 3. Verify the deployment
+
+Check the Lightstreamer pod logs to confirm the Adapter Set has loaded successfully:
+
+```sh
+kubectl logs -l app.kubernetes.io/name=lightstreamer -n lightstreamer
+```
+
+The included [`index.html`](example-adapter-set/index.html) page is also baked into the custom image and served by Lightstreamer's built-in web server. To try it, forward the service port and open it in your browser:
+
+```sh
+kubectl port-forward svc/lightstreamer-service 8080:8080 -n lightstreamer
+```
+
+Then open <http://localhost:8080/index.html> — the page subscribes to the `greetings` item and displays the `message` and `timestamp` fields.
+
+> [!NOTE]
+> `kubectl port-forward` does not support streaming protocols (WebSocket or HTTP chunked), so updates will arrive slowly via recovery polling. For real-time performance, expose the service through an Ingress or a load balancer that supports streaming connections.
+
+## Cleanup
+
+Uninstall the Helm chart first to stop the pods using the custom image:
+
+```sh
+helm uninstall lightstreamer --namespace lightstreamer
+```
+
+Then remove the image from the [`example-adapter-set/`](example-adapter-set/) folder:
+
+- **Any Kubernetes distribution**:
+  ```sh
+  REGISTRY=myregistry.example.com/myorg ./undeploy.sh kubernetes
+  ```
+  Removes the local Docker image (if `REGISTRY` is set).
+
+- **OpenShift**:
+  ```sh
+  ./undeploy.sh openshift
+  ```
+  Removes the BuildConfig and ImageStream from the cluster.
+
