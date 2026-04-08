@@ -19,6 +19,19 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
+      - name: Regenerate chart README
+        uses: docker://jnorwood/helm-docs:latest
+        with:
+          args: helm-docs
+
+      - name: Commit updated README (if changed)
+        run: |
+          if ! git diff --quiet charts/lightstreamer/README.md; then
+            git add charts/lightstreamer/README.md
+            git commit -m "docs: regenerate chart README [helm-docs]"
+            git push
+          fi
+
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.6.0
         env:
