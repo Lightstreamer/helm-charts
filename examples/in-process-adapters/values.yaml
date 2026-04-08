@@ -23,7 +23,7 @@ adapters:
     # Define the metadata provider
     metadataProvider:
 
-      # Define the in-process metadata adapter
+      # Define the In-Process Metadata Adapter
       inProcessMetadataAdapter:
         adapterClass: com.lightstreamer.adapters.examples.meta.SimpleMetadataAdapter
 
@@ -32,9 +32,9 @@ adapters:
       # Define the data provider
       myDataProvider:
         enabled: true
-        name: "MY_DATA_ADAPTER"
+        name: MY_DATA_ADAPTER
 
-        # Define the in-process data adapter
+        # Define the In-Process Data Adapter
         inProcessDataAdapter:
           adapterClass: com.lightstreamer.adapters.examples.data.SimpleDataAdapter
 
