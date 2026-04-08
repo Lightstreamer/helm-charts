@@ -1,20 +1,36 @@
+logging:
+  loggers:
+    lightstreamerLogger:
+
+      # Set the logging level for Lightstreamer
+      subLoggers:
+        init: DEBUG
+
+deployment:
+  terminationGracePeriodSeconds: 2
+
 adapters:
+
   # Define the adapter set
-  helloWorldAdapterSet:
+  exampleProxyAdapterSet:
     enabled: true
-    id: NODE_HELLOWORLD
-    
+    id: EXAMPLE_PROXY_ADAPTER_SET
+
     # Define the metadata provider
     metadataProvider:
-      # Define the in-process Metadata Adapter
+
+      # Define the In-Process Metadata Adapter
       inProcessMetadataAdapter:
         adapterClass: com.lightstreamer.adapters.metadata.LiteralBasedProvider
-    
-    dataProviders:  
+
+    dataProviders:
+
       # Define the data provider
       myDataProvider:
         enabled: true
-        name: HELLOWORLD
+        name: MY_PROXY_DATA_ADAPTER
+
         # Define the Proxy Data Adapter
         proxyDataAdapter:
           requestReplyPort: 6661
+
