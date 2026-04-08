@@ -2,14 +2,14 @@
 set -euo pipefail
 
 # ---------------------------------------------------------------------------
-# deploy.sh
+# build.sh
 #
 # Builds the example Adapter Set, packages it into a Docker image, and
 # makes the image available to the target cluster.
 #
 # Usage:
-#   ./deploy.sh kubernetes   - build locally and optionally push to a registry
-#   ./deploy.sh openshift    - build server-side via OpenShift binary build
+#   ./build.sh kubernetes   - build locally and optionally push to a registry
+#   ./build.sh openshift    - build server-side via OpenShift binary build
 #
 # Environment variables:
 #   REGISTRY   (optional) Container registry prefix for the kubernetes target.
@@ -22,7 +22,7 @@ set -euo pipefail
 # ---------------------------------------------------------------------------
 
 APP_NAME="lightstreamer-example-adapter-set"
-TAG="latest"
+TAG="1.0.0"
 
 usage() {
   echo "Usage: $0 <kubernetes|openshift>"
@@ -77,6 +77,9 @@ case "${TARGET}" in
 
     echo "==> Starting binary build from current directory ..."
     oc start-build "${APP_NAME}" --from-dir=. --follow
+
+    echo "==> Tagging image as ${TAG} ..."
+    oc tag "${APP_NAME}:latest" "${APP_NAME}:${TAG}"
 
     echo "==> ImageStream status:"
     oc get imagestream "${APP_NAME}"

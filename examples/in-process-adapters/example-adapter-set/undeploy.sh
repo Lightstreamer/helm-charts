@@ -17,7 +17,7 @@ set -euo pipefail
 # ---------------------------------------------------------------------------
 
 APP_NAME="lightstreamer-example-adapter-set"
-TAG="latest"
+TAG="1.0.0"
 
 usage() {
   echo "Usage: $0 <kubernetes|openshift>"
