@@ -14,7 +14,7 @@ adapters:
   # Define the adapter set
   exampleAdapterSet:
     enabled: true
-    id: "EXAMPLE_ADAPTER_SET"
+    id: EXAMPLE_ADAPTER_SET
 
     # Provision the adapter set from the image
     provisioning:
