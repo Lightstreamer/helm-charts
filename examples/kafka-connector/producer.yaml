@@ -1,0 +1,36 @@
+# Kubernetes Deployment that runs the Quickstart simulated stock producer.
+# The producer continuously publishes stock price events to the `stocks` topic
+# and never terminates, so a Deployment is the correct resource type.
+#
+# The producer image must be built and pushed beforehand:
+#
+#   git clone https://github.com/Lightstreamer/Lightstreamer-kafka-connector.git
+#   cd Lightstreamer-kafka-connector/examples/quickstart-producer
+#   ./build.sh
+#   docker build -t <your-registry>/quickstart-producer:latest .
+#   docker push <your-registry>/quickstart-producer:latest
+#
+# Replace <your-registry>/quickstart-producer:latest with your actual image reference.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quickstart-producer
+  namespace: kafka
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: quickstart-producer
+  template:
+    metadata:
+      labels:
+        app: quickstart-producer
+    spec:
+      containers:
+        - name: producer
+          image: quickstart-producer:latest
+          args:
+            - "--bootstrap-servers"
+            - "kafka-0.kafka.kafka.svc.cluster.local:9092"
+            - "--topic"
+            - "stocks"

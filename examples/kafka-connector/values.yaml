@@ -1,0 +1,88 @@
+image:
+  # -- Remote registry from which to pull the Lightstreamer Docker image
+  repository: ghcr.io/lightstreamer/lightstreamer-kafka-connector
+  tag: "1.5.0"
+
+deployment:
+  # Download the QuickStart web client from GitHub into a shared volume,
+  # which is then served by the internal web server at /QuickStart.
+  extraInitContainers:
+    - name: web-client
+      image: alpine/git:latest
+      command: ["/bin/sh", "-c"]
+      args:
+        - |
+          git clone --depth 1 --filter=blob:none --sparse \
+            https://github.com/Lightstreamer/Lightstreamer-kafka-connector.git /tmp/repo
+          cd /tmp/repo
+          git sparse-checkout set examples/compose-templates/web
+          cp -r examples/compose-templates/web/. /web/QuickStart/
+      volumeMounts:
+        - name: web-volume
+          mountPath: /web
+
+  extraVolumes:
+    - name: web-volume
+      emptyDir: {}
+
+webServer:
+  pagesVolume:
+    name: web-volume
+
+connectors:
+  kafkaConnector:
+    enabled: true
+    adapterSetId: "KafkaConnector"
+
+    provisioning:
+      fromPathInImage: /lightstreamer/adapters/lightstreamer-kafka-connector
+
+    logging:
+      appenders:
+        QuickStart:
+          type: Console
+          pattern: "%d|%-10c{1}|%-5p|%m%n"
+
+    connections:
+      quickStart:
+        name: "QuickStart"
+        enabled: true
+        bootstrapServers: "kafka-0.kafka.kafka.svc.cluster.local:9092"
+
+        record:
+          consumeFrom: EARLIEST
+          keyEvaluator:
+            type: INTEGER
+          valueEvaluator:
+            type: JSON
+
+        routing:
+          itemTemplates:
+            stockTemplate: stock-#{index=KEY}
+          topicMappings:
+            stocks:
+              topic: 'stocks'
+              itemTemplateRefs:
+              - stockTemplate
+
+        fields:
+          mappings:
+            timestamp: "#{VALUE.timestamp}"
+            time: "#{VALUE.time}"
+            name: "#{VALUE.name}"
+            last_price: "#{VALUE.last_price}"
+            ask: "#{VALUE.ask}"
+            ask_quantity: "#{VALUE.ask_quantity}"
+            bid: "#{VALUE.bid}"
+            bid_quantity: "#{VALUE.bid_quantity}"
+            pct_change: "#{VALUE.pct_change}"
+            min: "#{VALUE.min}"
+            max: "#{VALUE.max}"
+            ref_price: "#{VALUE.ref_price}"
+            open_price: "#{VALUE.open_price}"
+            item_status: "#{VALUE.item_status}"
+
+        logger:
+          appenders:
+            - QuickStart
+          level: INFO
