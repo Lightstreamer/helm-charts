@@ -108,9 +108,15 @@ The provided [`values.yaml`](values.yaml) defines an Adapter Set with an In-Proc
 
 Once Lightstreamer is running and the Proxy Data Adapter is ready to accept connections, deploy the remote adapter by running the command printed by `build.sh` in step 1. For example:
 
-```sh
-IMAGE_REF=example-proxy-adapter:1.0.0 envsubst '${IMAGE_REF}' < deployment.yaml.tmpl | kubectl apply -f -
-```
+- **Any Kubernetes distribution**:
+  ```sh
+  IMAGE_REF=example-proxy-adapter:1.0.0 envsubst '${IMAGE_REF}' < deployment.yaml.tmpl | kubectl apply -f -
+  ```
+
+- **OpenShift** — use the image reference printed by `build.sh`, for example:
+  ```sh
+  IMAGE_REF=image-registry.openshift-image-registry.svc:5000/lightstreamer/example-proxy-adapter:1.0.0 envsubst '${IMAGE_REF}' < deployment.yaml.tmpl | kubectl apply -f -
+  ```
 
 This generates the Deployment manifest from [`deployment.yaml.tmpl`](example-proxy-adapter-set/deployment.yaml.tmpl) with the resolved image reference and applies it to the cluster. The remote adapter pod will start and connect to Lightstreamer on port `6661`.
 
@@ -129,7 +135,7 @@ kubectl port-forward svc/lightstreamer-service 8080:8080 -n lightstreamer
 ```
 
 > [!NOTE]
-> Unlike the [In-Process Adapter example](../in-process-adapters/), the test page is not baked into the Lightstreamer image — open the local file directly in your browser while port-forward is running.
+> Unlike the [In-Process Adapter example](../in-process-adapters/), the test page is not baked into the Lightstreamer image — open the local file directly in your browser while port-forward is running. This applies to both Kubernetes and OpenShift (`oc port-forward` can be used as well).
 
 > [!NOTE]
 > `kubectl port-forward` does not support streaming protocols (WebSocket or HTTP chunked), so updates will arrive slowly via recovery polling. For real-time performance, expose the service through an Ingress or a load balancer that supports streaming connections.
