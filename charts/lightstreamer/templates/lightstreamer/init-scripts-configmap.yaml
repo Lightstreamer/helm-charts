@@ -97,7 +97,7 @@ data:
   */}}
   setup-adapters.sh: |
     #!/bin/bash
-    set -xeuo pipefail
+    set -euo pipefail
 
     # Copy the adapter resources from source to destination
     function copy_resources {
