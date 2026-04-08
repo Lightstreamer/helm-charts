@@ -14,7 +14,7 @@ set -euo pipefail
 # Environment variables:
 #   REGISTRY   (optional) Container registry prefix for the kubernetes target.
 #              When set, the image is tagged as ${REGISTRY}/${APP_NAME}:${TAG}
-#              and pushed before deployment. Must be accessible by cluster nodes.
+#              and pushed. Must be accessible by cluster nodes.
 #              Example: REGISTRY=myregistry.example.com/myorg
 #              When unset, the image is built locally with no push — the cluster
 #              must have access to the image by other means (e.g. Minikube
