@@ -33,72 +33,105 @@ The simulated producer continuously publishes stock market events (price changes
   helm repo add lightstreamer https://lightstreamer.github.io/helm-charts
   helm repo update
   ```
-- `docker` on your PATH and a container registry accessible by the cluster nodes, for building and pushing the producer image
-- JDK 17+ on your machine to build the producer jar
+- `docker` on your PATH and a container registry accessible by the cluster nodes, for building and pushing the producer image (not required on OpenShift — the image can be built server-side)
 
 ## Deployment
 
 ### 1. Deploy Kafka
 
-Deploy a single-node Apache Kafka broker in KRaft mode (no Zookeeper) using the official [`apache/kafka`](https://hub.docker.com/r/apache/kafka) Docker image — the same image used in the original docker-compose quickstart:
+Deploy a single-node Apache Kafka broker in KRaft mode using the official [`apache/kafka`](https://hub.docker.com/r/apache/kafka) Docker image — the same image used in the original docker-compose quickstart:
 
-```sh
-kubectl apply -f kafka.yaml
-```
+- **Any Kubernetes distribution**:
+  ```sh
+  kubectl apply -f kafka.yaml
+  kubectl rollout status statefulset/kafka -n kafka
+  ```
 
-Wait for the broker to be ready:
+- **OpenShift**:
+  ```sh
+  oc apply -f kafka.yaml
+  oc rollout status statefulset/kafka -n kafka
+  ```
 
-```sh
-kubectl rollout status statefulset/kafka -n kafka
-```
+> [!NOTE]
+> **OpenShift only**: The `apache/kafka` image runs as a fixed non-root user ID. If your cluster enforces the `restricted` SCC, grant `anyuid` to the default service account before applying (create the project first if it does not already exist):
+> ```sh
+> oc new-project kafka  # skip if the project already exists
+> oc adm policy add-scc-to-serviceaccount anyuid -z default -n kafka
+> ```
 
 This creates a combined controller/broker pod named `kafka-0`, reachable within the cluster at `kafka-0.kafka.kafka.svc.cluster.local:9092`.
 
-### 2. Build and push the producer image
+### 2. Build and deploy the producer
 
-Clone the Lightstreamer Kafka Connector repository and build the quickstart producer Docker image:
+Build the producer image using the provided [`producer.Dockerfile`](producer.Dockerfile) (no local JDK required — the build runs inside Docker), then deploy it.
 
-```sh
-git clone https://github.com/Lightstreamer/Lightstreamer-kafka-connector.git
-cd Lightstreamer-kafka-connector/examples/quickstart-producer
-./build.sh
-docker build -t <your-registry>/quickstart-producer:latest .
-docker push <your-registry>/quickstart-producer:latest
-```
+- **Any Kubernetes distribution** — build and push the image to a registry accessible by your cluster nodes:
+  ```sh
+  docker build -f producer.Dockerfile -t <your-registry>/quickstart-producer:latest .
+  docker push <your-registry>/quickstart-producer:latest
+  ```
 
-### 3. Deploy the producer
+  > **Minikube shortcut**: Point your shell at Minikube's built-in Docker daemon to build the image directly inside Minikube and skip the push entirely:
+  > ```sh
+  > eval $(minikube docker-env)
+  > docker build -f producer.Dockerfile -t quickstart-producer:latest .
+  > eval $(minikube docker-env --unset)
+  > ```
+  > Use `quickstart-producer:latest` as the image reference in `producer.yaml` and add `imagePullPolicy: Never` to the container spec.
 
-Edit [`producer.yaml`](producer.yaml) and replace `<your-registry>/quickstart-producer:latest` with the image reference pushed in the previous step, then apply it:
+  Then edit [`producer.yaml`](producer.yaml), replace `<your-registry>/quickstart-producer:latest` with your image reference, and apply:
+  ```sh
+  kubectl apply -f producer.yaml
+  kubectl rollout status deployment/quickstart-producer -n kafka
+  kubectl logs -l app=quickstart-producer -n kafka
+  ```
 
-```sh
-kubectl apply -f producer.yaml
-```
+- **OpenShift** — use an OpenShift binary build to build the image server-side and push it to the internal registry. No local Docker daemon is required:
+  ```sh
+  oc new-build --name=quickstart-producer --binary --strategy=docker -n kafka
+  oc start-build quickstart-producer --from-file=producer.Dockerfile --follow -n kafka
+  ```
 
-Verify the producer is running and publishing to the `stocks` topic:
+  Once the build completes, the image is available at:
+  ```
+  image-registry.openshift-image-registry.svc:5000/kafka/quickstart-producer:latest
+  ```
 
-```sh
-kubectl logs -l app=quickstart-producer -n kafka
-```
+  Edit [`producer.yaml`](producer.yaml) and set the image to the above reference, then apply:
+  ```sh
+  oc apply -f producer.yaml
+  oc rollout status deployment/quickstart-producer -n kafka
+  oc logs -l app=quickstart-producer -n kafka
+  ```
 
-### 4. Install the Lightstreamer Helm chart
+### 3. Install the Lightstreamer Helm chart
 
-```sh
-kubectl create namespace lightstreamer
+- **Any Kubernetes distribution**:
+  ```sh
+  kubectl create namespace lightstreamer
+  helm install lightstreamer lightstreamer/lightstreamer \
+    -f values.yaml \
+    --namespace lightstreamer
+  kubectl rollout status deployment/lightstreamer -n lightstreamer
+  kubectl logs -l app.kubernetes.io/name=lightstreamer -n lightstreamer
+  ```
 
-helm install lightstreamer lightstreamer/lightstreamer \
-  -f values.yaml \
-  --namespace lightstreamer
-```
+- **OpenShift**:
+  ```sh
+  oc new-project lightstreamer
+  helm install lightstreamer lightstreamer/lightstreamer \
+    -f values.yaml \
+    --namespace lightstreamer
+  oc rollout status deployment/lightstreamer -n lightstreamer
+  oc logs -l app.kubernetes.io/name=lightstreamer -n lightstreamer
+  ```
 
-Check the logs to confirm the Kafka Connector has loaded and is consuming from the `stocks` topic:
-
-```sh
-kubectl logs -l app.kubernetes.io/name=lightstreamer -n lightstreamer
-```
+Check the logs to confirm the Kafka Connector has loaded and is consuming from the `stocks` topic.
 
 ## Accessing the web client
 
-The `ghcr.io/lightstreamer/lightstreamer-kafka-connector` image does **not** include the QuickStart web client. The provided [`values.yaml`](values.yaml) uses an init container (`web-client`) to download the web client files from the Lightstreamer Kafka Connector GitHub repository into a shared volume (`web-volume`), which is then referenced by `webServer.pagesVolume` so that the internal web server serves it at `/QuickStart`.
+The `ghcr.io/lightstreamer/lightstreamer-kafka-connector` image does **not** include the QuickStart web client. The provided [`values.yaml`](values.yaml) handles this automatically: an init container downloads the web client from GitHub into a shared volume, which `webServer.pagesVolume` mounts as the web server root so the page is served at `/QuickStart`.
 
 - **Any Kubernetes distribution** — forward the service port and open the page in your browser:
 
@@ -125,9 +158,18 @@ The `ghcr.io/lightstreamer/lightstreamer-kafka-connector` image does **not** inc
 
 ## Cleanup
 
-```sh
-helm uninstall lightstreamer --namespace lightstreamer
-kubectl delete -f producer.yaml
-kubectl delete -f kafka.yaml
-```
-```
+- **Any Kubernetes distribution**:
+  ```sh
+  helm uninstall lightstreamer --namespace lightstreamer
+  kubectl delete -f producer.yaml
+  kubectl delete -f kafka.yaml
+  ```
+
+- **OpenShift**:
+  ```sh
+  helm uninstall lightstreamer --namespace lightstreamer
+  oc delete -f producer.yaml
+  oc delete -f kafka.yaml
+  oc delete project lightstreamer
+  oc delete project kafka
+  ```
