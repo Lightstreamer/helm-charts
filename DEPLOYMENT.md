@@ -52,7 +52,6 @@ This guide covers deploying, configuring, and managing the Lightstreamer Broker 
       - [Authentication](#authentication-1)
       - [Availability on specific server](#availability-on-specific-server)
       - [Custom dashboard URL path](#custom-dashboard-url-path)
-      - [Hands-on example](#hands-on-example)
     - [Health check](#health-check)
   - [Push session](#push-session)
   - [Mobile push notifications](#mobile-push-notifications)
@@ -1219,6 +1218,8 @@ See the [`management.jmx.rmiConnector`](charts/lightstreamer/values.yaml#L1975) 
 
 The _Monitoring Dashboard_ provides a web interface for monitoring and managing a Lightstreamer Broker instance. It includes several tabs showing basic monitoring statistics in graphical form and a JMX Tree view that enables data viewing and management operations from the browser.
 
+The [Monitoring Dashboard example](examples/dashboard/) provides a complete, ready-to-run setup demonstrating HTTPS-only access, user authentication with different permission levels, and a custom URL path.
+
 Since the Dashboard enables remote management, including server shutdown, it is critical to secure access in a production environment by applying the following recommended actions:
 
 - Require authentication for Dashboard access.
@@ -1287,14 +1288,6 @@ management:
   dashboard:
     urlPath: /monitoring  # Custom dashboard path
 ```
-
-##### Hands-on example
-
-The [examples/dashboard](examples/dashboard/) directory provides a complete example of Dashboard configuration that shows how to:
-
-- Configure a dedicated HTTPS server socket for secure Dashboard access.
-- Set up user authentication with different permission levels.
-- Customize the Dashboard URL path.
 
 See the [`management.dashboard`](charts/lightstreamer/values.yaml#L2212) section of `values.yaml` for full details.
 
@@ -2070,7 +2063,7 @@ The Lightstreamer Kafka Connector enables real-time streaming of data from Apach
 - TLS/SSL encryption and multiple authentication mechanisms (SASL/PLAIN, SCRAM, GSSAPI, AWS IAM)
 - Independent connection configurations for different Kafka clusters
 
-For complete documentation, see the [Lightstreamer Kafka Connector project on GitHub](https://github.com/Lightstreamer/Lightstreamer-kafka-connector).
+For complete documentation, see the [Lightstreamer Kafka Connector project on GitHub](https://github.com/Lightstreamer/Lightstreamer-kafka-connector). The [Kafka Connector example](examples/kafka-connector/) provides a complete, self-contained setup that mirrors the [official Quickstart](https://github.com/Lightstreamer/Lightstreamer-kafka-connector/tree/main/examples/quickstart) in Kubernetes.
 
 To configure the Kafka Connector, define its settings in the [`connectors.kafkaConnector`](charts/lightstreamer/values.yaml#L4873) section:
 
@@ -2545,62 +2538,5 @@ connectors:
 
 > [!NOTE]
 > If both `localSchemaFilePathRef` and `enableSchemaRegistry` are set on an evaluator, the local schema file takes precedence.
-
-A complete Kafka Connector configuration:
-
-```yaml
-image:
-  repository: ghcr.io/lightstreamer/lightstreamer-kafka-connector
-  tag: "1.5.0"
-
-connectors:
-  kafkaConnector:
-    enabled: true
-    adapterSetId: "KafkaConnector"
-    
-    provisioning:
-      fromPathInImage: /lightstreamer/adapters/lightstreamer-kafka-connector
-    
-    logging:
-      appenders:
-        kafkaLogs:
-          type: Console
-          pattern: "%d|%-10c{1}|%-5p|%m%n"
-    
-    connections:
-      stockPrices:
-        name: "Stock-Prices-Connection"
-        enabled: true
-        bootstrapServers: "kafka-0.kafka-headless.kafka:9092"
-        groupId: "lightstreamer-stocks"
-        
-        record:
-          consumeFrom: EARLIEST
-          keyEvaluator:
-            type: STRING
-          valueEvaluator:
-            type: JSON
-        
-        routing:
-          itemTemplates:
-            stockItem: stock-#{index=KEY}
-          
-          topicMappings:
-            stocks:
-              topic: 'stock-prices'
-              itemTemplateRefs:
-                - stockItem
-        
-        fields:
-          mappings:
-            "*": "#{VALUE.*}"
-
-          enableSkipFailedMapping: true
-        
-        logger:
-          level: INFO
-          appenders:
-            - kafkaLogs
-```
 
 See the [`connectors.kafkaConnector`](charts/lightstreamer/values.yaml#L4873) section of `values.yaml` for full details.
