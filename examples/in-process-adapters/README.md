@@ -24,10 +24,10 @@ Both adapters are compiled into a JAR and baked into a custom Docker image that 
 
 ## The example Adapter Set project
 
-The [`example-adapter-set/`](example-adapter-set/) folder is a self-contained Gradle project that produces a sample Adapter Set with two adapters:
+The [`example-adapter-set/`](example-adapter-set/) folder is a self-contained Gradle project that produces a sample Hello World–style Adapter Set with two adapters:
 
 - `SimpleMetadataAdapter` (extends `LiteralBasedProvider`) — handles client authentication and item validation
-- `SimpleDataAdapter` — generates sample real-time data
+- `SimpleDataAdapter` — generates sample real-time data (alternating "Hello" / "World" messages)
 
 The project is organized as follows:
 
@@ -37,11 +37,11 @@ example-adapter-set/
 ├── build.gradle                   # Gradle build — compiles and assembles the adapter JAR
 ├── Dockerfile                     # Extends the official Lightstreamer image
 ├── index.html                     # Test page — subscribes to the example Adapter Set
-├── deploy.sh                      # Build + package + push (Kubernetes or OpenShift)
+├── build.sh                       # Build + package + push (Kubernetes or OpenShift)
 └── undeploy.sh                    # Clean up images and cluster resources
 ```
 
-**Build pipeline** — `deploy.sh` automates the full chain:
+**Build pipeline** — `build.sh` automates the full chain:
 
 1. Runs `gradlew build`, which compiles the adapter classes and assembles them into `build/libs/example-adapter-set-1.0.0.jar`.
 2. Builds a Docker image using the Dockerfile, which copies the compiled adapter and the test page into the Lightstreamer image:
@@ -71,7 +71,7 @@ You can use this project as a starting point for your own adapters — replace t
 
 ### 1. Build the custom image
 
-From the [`example-adapter-set/`](example-adapter-set/) folder, run `deploy.sh` with the appropriate target:
+From the [`example-adapter-set/`](example-adapter-set/) folder, run `build.sh` with the appropriate target:
 
 ```sh
 cd example-adapter-set/
@@ -79,20 +79,20 @@ cd example-adapter-set/
 
 - **Any Kubernetes distribution** — build and push the image to a registry accessible by your cluster nodes:
   ```sh
-  REGISTRY=myregistry.example.com/myorg ./deploy.sh kubernetes
+  REGISTRY=myregistry.example.com/myorg ./build.sh kubernetes
   ```
-  Set `REGISTRY` to the prefix of your container registry. The image will be tagged and pushed as `${REGISTRY}/lightstreamer-example-adapter-set:latest`.
+  Set `REGISTRY` to the prefix of your container registry. The image will be tagged and pushed as `${REGISTRY}/lightstreamer-example-adapter-set:1.0.0`.
 
   > **Minikube shortcut**: If you are using Minikube for local development you can avoid a remote registry entirely by pointing your shell at Minikube's built-in Docker daemon before running the script. The image is then built directly inside Minikube and no push is needed:
   > ```sh
   > eval $(minikube docker-env)
-  > ./deploy.sh kubernetes
+  > ./build.sh kubernetes
   > ```
   > Run `eval $(minikube docker-env --unset)` to restore your shell's Docker environment afterwards.
 
 - **OpenShift** — no local Docker build is needed. The script uploads the source directory and triggers a server-side build via a binary BuildConfig:
   ```sh
-  ./deploy.sh openshift
+  ./build.sh openshift
   ```
 
 At the end, the script prints the `image.repository` and `image.tag` values to set in your Helm values file.
@@ -105,17 +105,17 @@ Install the chart using the provided [`values.yaml`](values.yaml), overriding th
 helm install lightstreamer lightstreamer/lightstreamer \
   -f values.yaml \
   --set image.repository=lightstreamer-example-adapter-set \
-  --set image.tag=latest \
+  --set image.tag=1.0.0 \
   --namespace lightstreamer
 ```
 
-For OpenShift, use the image reference printed by `deploy.sh`, for example:
+For OpenShift, use the image reference printed by `build.sh`, for example:
 
 ```sh
 helm install lightstreamer lightstreamer/lightstreamer \
   -f values.yaml \
   --set image.repository=image-registry.openshift-image-registry.svc:5000/lightstreamer/lightstreamer-example-adapter-set \
-  --set image.tag=latest \
+  --set image.tag=1.0.0 \
   --namespace lightstreamer
 ```
 
@@ -132,16 +132,25 @@ Check the Lightstreamer pod logs to confirm the Adapter Set has loaded successfu
 kubectl logs -l app.kubernetes.io/name=lightstreamer -n lightstreamer
 ```
 
-The included [`index.html`](example-adapter-set/index.html) page is also baked into the custom image and served by Lightstreamer's built-in web server. To try it, forward the service port and open it in your browser:
+The included [`index.html`](example-adapter-set/index.html) page is also baked into the custom image and served by Lightstreamer's built-in web server. To try it:
 
-```sh
-kubectl port-forward svc/lightstreamer-service 8080:8080 -n lightstreamer
-```
+- **Any Kubernetes distribution** — forward the service port and open it in your browser:
+  ```sh
+  kubectl port-forward svc/lightstreamer-service 8080:8080 -n lightstreamer
+  ```
+  Then open <http://localhost:8080/index.html>.
 
-Then open <http://localhost:8080/index.html> — the page subscribes to the `greetings` item and displays the `message` and `timestamp` fields.
+  > [!NOTE]
+  > `kubectl port-forward` does not support streaming protocols (WebSocket or HTTP chunked), so updates will arrive slowly via recovery polling. For real-time performance, expose the service through an Ingress or a load balancer that supports streaming connections.
 
-> [!NOTE]
-> `kubectl port-forward` does not support streaming protocols (WebSocket or HTTP chunked), so updates will arrive slowly via recovery polling. For real-time performance, expose the service through an Ingress or a load balancer that supports streaming connections.
+- **OpenShift** — expose the service as a Route and open the generated URL:
+  ```sh
+  oc expose svc/lightstreamer-service -n lightstreamer
+  ```
+  Then open `http://<route-hostname>/index.html`, where `<route-hostname>` is printed by:
+  ```sh
+  oc get route lightstreamer-service -n lightstreamer -o jsonpath='{.spec.host}'
+  ```
 
 ## Cleanup
 
@@ -163,5 +172,8 @@ Then remove the image from the [`example-adapter-set/`](example-adapter-set/) fo
   ```sh
   ./undeploy.sh openshift
   ```
-  Removes the BuildConfig and ImageStream from the cluster.
+  Removes the BuildConfig and ImageStream from the cluster. If you created a Route, remove it too:
+  ```sh
+  oc delete route lightstreamer-service -n lightstreamer
+  ```
 
