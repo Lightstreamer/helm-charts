@@ -7,12 +7,11 @@ This example demonstrates how to deploy the Lightstreamer Helm chart with **In-P
 ```mermaid
 flowchart LR
   subgraph Pod["Lightstreamer Pod"]
-    direction TB
-    LS["Lightstreamer Broker"]
-    M["SimpleMetadataAdapter<br/>(In-Process)"]
-    D["SimpleDataAdapter<br/>(In-Process)"]
-    M --- LS
-    D --- LS
+    subgraph LS["Lightstreamer Broker"]
+      direction TB
+      M["SimpleMetadataAdapter"]
+      D["SimpleDataAdapter"]
+    end
   end
   C["Client"] -- "HTTP/WS" --> LS
 ```
