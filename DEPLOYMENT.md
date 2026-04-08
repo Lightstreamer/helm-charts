@@ -65,7 +65,7 @@ This guide covers deploying, configuring, and managing the Lightstreamer Broker 
   - [Adapters](#adapters)
     - [Defining an Adapter Set](#defining-an-adapter-set)
     - [Other Adapter Set options](#other-adapter-set-options)
-    - [In-process Adapters](#in-process-adapters)
+    - [In-Process Adapters](#in-process-adapters)
       - [Provisioning](#provisioning)
       - [Configure Metadata Adapters and Data Adapters](#configure-metadata-adapters-and-data-adapters)
       - [ClassLoader types](#classloader-types)
@@ -375,7 +375,7 @@ imagePullSecrets:
 ```
 
 > [!TIP]
-> When deploying in-process Adapters, build a custom image based on the official Lightstreamer image and set `image.repository` and `image.tag` to point to it. See [In-process Adapters](#in-process-adapters) for details.
+> When deploying In-Process Adapters, build a custom image based on the official Lightstreamer image and set `image.repository` and `image.tag` to point to it. See [In-Process Adapters](#in-process-adapters) for details.
 
 ### Service account
 
@@ -1406,7 +1406,11 @@ webServer:
   enabled: false
 ```
 
-If you do need it — for example in a demo or all-in-one setup — use [`pagesVolume`](charts/lightstreamer/values.yaml#L3207) to mount a volume containing your static resources (HTML pages, CSS, JavaScript, images, etc.). Define the volume in `deployment.extraVolumes` and reference it by name:
+If you do need it — for example in a demo or all-in-one setup — you can provide static resources in two ways:
+
+- **Bake them into the custom image** — copy the files into the `/lightstreamer/pages` directory in your Dockerfile. This is the simplest approach when the pages are part of the build. See the [In-Process Adapter example](examples/in-process-adapters/) for a working setup.
+
+- **Mount a volume** — use [`pagesVolume`](charts/lightstreamer/values.yaml#L3207) to mount a volume containing your static resources (HTML pages, CSS, JavaScript, images, etc.). Define the volume in `deployment.extraVolumes` and reference it by name:
 
 ```yaml
 deployment:
@@ -1641,9 +1645,9 @@ adapters:
 
 Additional optional settings are available for each Adapter Set — see [`adapterSetPool`](charts/lightstreamer/values.yaml#L3692) to configure a dedicated thread pool, and [`enableMetadataInitializedFirst`](charts/lightstreamer/values.yaml#L3713) (defaults to `true`) to control the initialization order of Metadata and Data Adapters.
 
-#### In-process Adapters
+#### In-Process Adapters
 
-In-process Adapters are Java classes that run directly within the Lightstreamer Broker's JVM. To deploy them, you need to first provision the Adapter Set's resources and then configure the Metadata Adapter and Data Adapter(s).
+In-Process Adapters are Java classes that run directly within the Lightstreamer Broker's JVM. To deploy them, you need to first provision the Adapter Set's resources and then configure the Metadata Adapter and Data Adapter(s). See the [In-Process Adapter example](examples/in-process-adapters/) for a complete, ready-to-run setup.
 
 ##### Provisioning
 
@@ -1713,7 +1717,7 @@ Adapter Sets can be provisioned using different methods, configured through the 
 
 ##### Configure Metadata Adapters and Data Adapters
 
-You can configure in-process Metadata Adapters and Data Adapters by populating the following sections in your Helm chart values:
+You can configure In-Process Metadata Adapters and Data Adapters by populating the following sections in your Helm chart values:
 
 - [`metadataProvider.inProcessMetadataAdapter`](charts/lightstreamer/values.yaml#L3722)
 - [`dataProviders.<dataProviderName>.inProcessDataAdapter`](charts/lightstreamer/values.yaml#L4397)
@@ -1958,7 +1962,7 @@ By carefully organizing your Adapter Set's directory structure and selecting the
 
 #### Proxy Adapters
 
-Proxy Adapters are built-in adapter implementations that act as bridges between the Lightstreamer Broker and external Remote Adapter processes. Instead of running Java code in-process, the adapter logic runs in a separate process (the _Remote Server_), which communicates with the Broker over a standard TCP socket connection.
+Proxy Adapters are built-in adapter implementations that act as bridges between the Lightstreamer Broker and external Remote Adapter processes. Instead of running Java code in-process, the adapter logic runs in a separate process (the _Remote Server_), which communicates with the Broker over a standard TCP socket connection. See the [Proxy Adapter example](examples/proxy-adapters/) for a complete, ready-to-run setup.
 
 You can configure a Proxy Metadata Adapter and Proxy Data Adapters by populating the following sections in your Helm chart values:
 
@@ -1999,7 +2003,7 @@ The following settings are available in one or both sections. Where a setting ex
 
 **Advanced: thread pool tuning and connection settings**
 
-- **Proxy Metadata Adapter**: [`authenticationPool`](charts/lightstreamer/values.yaml#L3965), [`messagesPool`](charts/lightstreamer/values.yaml#L3965), [`mpnPool`](charts/lightstreamer/values.yaml#L4010) — same tuning options as for in-process Metadata Adapters.
+- **Proxy Metadata Adapter**: [`authenticationPool`](charts/lightstreamer/values.yaml#L3965), [`messagesPool`](charts/lightstreamer/values.yaml#L3965), [`mpnPool`](charts/lightstreamer/values.yaml#L4010) — same tuning options as for In-Process Metadata Adapters.
 - **Proxy Data Adapter**: [`dataAdapterPool`](charts/lightstreamer/values.yaml#L4506) — dedicated thread pool for subscription/unsubscription management (`maxSize`, `maxFree`).
 - `connectionRetryMillis` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4158), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4603)), `keepaliveTimeoutMillis` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4309), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4750)), `keepaliveHintMillis` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4309), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4750)), `timeoutMillis` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4309), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4750)): Connection reliability settings.
 
@@ -2011,11 +2015,11 @@ See the linked `values.yaml` entries for full details.
 
 #### Mixed configuration
 
-Within the same Adapter Set, it is possible to mix in-process and Proxy Adapters. For example, you can pair an in-process Metadata Adapter with one or more Proxy Data Adapters, or vice versa.
+Within the same Adapter Set, it is possible to mix In-Process and Proxy Adapters. For example, you can pair an In-Process Metadata Adapter with one or more Proxy Data Adapters, or vice versa.
 
 When both `inProcessMetadataAdapter` and `proxyMetadataAdapter` are defined under `metadataProvider`, the in-process adapter takes precedence and the proxy configuration is ignored. The same rule applies per Data Adapter: when both `inProcessDataAdapter` and `proxyDataAdapter` are defined, the in-process adapter takes precedence.
 
-In-process Metadata Adapter with a Proxy Data Adapter:
+In-Process Metadata Adapter with a Proxy Data Adapter:
 
 ```yaml
 adapters:
