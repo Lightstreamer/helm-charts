@@ -7,7 +7,7 @@ This example is the Kubernetes equivalent of the [Lightstreamer Kafka Connector 
 ```mermaid
 flowchart LR
   subgraph kafka-ns["Namespace: kafka"]
-    P["quickstart-producer\n(Deployment)"]
+    P["quickstart-producer"]
     K["Apache Kafka\n(kafka-0)"]
   end
   subgraph ls-ns["Namespace: lightstreamer"]
@@ -16,7 +16,7 @@ flowchart LR
     end
   end
   B["Browser"] -- "HTTP/WS :8080" --> Pod
-  P -- "stocks topic" --> K
+  P -- "publishes to stocks" --> K
   KC -- "consumes stocks" --> K
 ```
 
