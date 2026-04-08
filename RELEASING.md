@@ -19,10 +19,12 @@ This document describes how to publish a new version of the Lightstreamer Helm c
    - **`appVersion`** — the Lightstreamer Broker version. Update only when the chart targets a new Lightstreamer release.
 
 2. **Regenerate the chart README** *(optional — the release workflow does this automatically)*:
-   ```sh
-   ./generate-docs.sh
-   ```
+
    This uses [helm-docs](https://github.com/norwoodj/helm-docs) to regenerate `charts/lightstreamer/README.md` from `README.md.gotmpl` and `values.yaml`. Running it locally lets you review the changes before pushing.
+
+   ```sh
+   docker run --rm --volume "$(pwd):/helm-docs" -u $(id -u) jnorwood/helm-docs:latest
+   ```
 
 3. **Update the CHANGELOG** — document the changes in the new version.
 
