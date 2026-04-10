@@ -1,0 +1,31 @@
+{{- $svcName := include "lightstreamer.service.name" . -}}
+{{- $ns := .Release.Namespace -}}
+Lightstreamer Broker has been deployed in namespace "{{ $ns }}".
+
+Check the rollout status:
+
+  kubectl rollout status deployment/{{ include "lightstreamer.fullname" . }} -n {{ $ns }}
+
+View the broker logs:
+
+  kubectl logs -l app.kubernetes.io/name={{ include "lightstreamer.name" . }},app.kubernetes.io/instance={{ .Release.Name }} -n {{ $ns }}
+{{- if .Values.ingress.enabled }}
+
+The broker is exposed via Ingress:
+{{- range .Values.ingress.rules }}
+  {{- range .paths }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ (index $.Values.ingress.rules 0).host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- else }}
+
+Access the broker locally via port-forward:
+{{- $firstPort := (index .Values.service.ports 0) }}
+
+  kubectl port-forward svc/{{ $svcName }} {{ $firstPort.port }}:{{ $firstPort.port }} -n {{ $ns }}
+
+Then open http://localhost:{{ $firstPort.port }}
+{{- end }}
+
+For full deployment documentation, see:
+  https://github.com/Lightstreamer/helm-charts/blob/main/DEPLOYMENT.md
