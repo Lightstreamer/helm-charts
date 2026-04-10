@@ -4,10 +4,7 @@
 #
 # The producer image must be built and pushed beforehand:
 #
-#   git clone https://github.com/Lightstreamer/Lightstreamer-kafka-connector.git
-#   cd Lightstreamer-kafka-connector/examples/quickstart-producer
-#   ./build.sh
-#   docker build -t <your-registry>/quickstart-producer:latest .
+#   docker build -f producer.Dockerfile -t <your-registry>/quickstart-producer:latest .
 #   docker push <your-registry>/quickstart-producer:latest
 #
 # Replace <your-registry>/quickstart-producer:latest with your actual image reference.
@@ -28,7 +25,7 @@ spec:
     spec:
       containers:
         - name: producer
-          image: quickstart-producer:latest
+          image: <your-registry>/quickstart-producer:latest
           args:
             - "--bootstrap-servers"
             - "kafka-0.kafka.kafka.svc.cluster.local:9092"
