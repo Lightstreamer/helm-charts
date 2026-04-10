@@ -1,5 +1,5 @@
 # Build stage: clone and compile the quickstart producer
-FROM gradle:8-jdk21 AS build
+FROM gradle:8-jdk17 AS build
 RUN git clone --depth 1 --filter=blob:none --sparse \
       https://github.com/Lightstreamer/Lightstreamer-kafka-connector.git /build && \
     cd /build && \
