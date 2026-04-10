@@ -28,6 +28,7 @@ appVersion: "7.4.6"
 
 home: "https://github.com/Lightstreamer/helm-charts"
 sources: ["https://github.com/Lightstreamer/helm-charts/tree/main/charts/lightstreamer"]
+icon: https://avatars.githubusercontent.com/u/684315
 engine: gotpl
 
 maintainers:
