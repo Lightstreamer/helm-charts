@@ -23,7 +23,7 @@ This document describes how to publish a new version of the Lightstreamer Helm c
    This uses [helm-docs](https://github.com/norwoodj/helm-docs) to regenerate `charts/lightstreamer/README.md` from `README.md.gotmpl` and `values.yaml`. Running it locally lets you review the changes before pushing.
 
    ```sh
-   docker run --rm --volume "$(pwd):/helm-docs" -u $(id -u) jnorwood/helm-docs:latest
+   ./generate-docs.sh
    ```
 
 3. **Update the CHANGELOG** — document the changes in the new version.
