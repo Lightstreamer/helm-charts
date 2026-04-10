@@ -1218,8 +1218,6 @@ See the [`management.jmx.rmiConnector`](charts/lightstreamer/values.yaml#L1975) 
 
 The _Monitoring Dashboard_ provides a web interface for monitoring and managing a Lightstreamer Broker instance. It includes several tabs showing basic monitoring statistics in graphical form and a JMX Tree view that enables data viewing and management operations from the browser.
 
-The [Monitoring Dashboard example](examples/dashboard/) provides a complete, ready-to-run setup demonstrating HTTPS-only access, user authentication with different permission levels, and a custom URL path.
-
 Since the Dashboard enables remote management, including server shutdown, it is critical to secure access in a production environment by applying the following recommended actions:
 
 - Require authentication for Dashboard access.
