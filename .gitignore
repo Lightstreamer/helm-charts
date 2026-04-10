@@ -1,0 +1,18 @@
+# Internal / development files
+internals/
+.instructions*.md
+NOTES.txt1
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets / credentials (safety net)
+*.gpg
+*.p12
+*.jks
+*.lic
