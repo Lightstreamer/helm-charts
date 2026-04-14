@@ -4891,7 +4891,7 @@ connectors:
       # the GitHub official repository at startup. Once downloaded, the package
       # will be deployed to the
       # `/deployed_adapters/kafka-connector` directory in the container.
-      # Example: "1.5.0"
+      # Example: "1.5.1"
       fromGitHubRelease:
 
       # -- (string) The URL from which to download the Kafka Connector zip
@@ -4909,7 +4909,7 @@ connectors:
         name:
 
         # -- (string) The file path to the Kafka Connector zip package in the
-        # volume, e.g.: `/connectors/lightstreamer-kafka-connector-1.5.0.zip`.
+        # volume, e.g.: `/connectors/lightstreamer-kafka-connector-1.5.1.zip`.
         filePath:
 
     # -- Mandatory. Defines the Kafka Connector Adapter Set and its unique ID, 
