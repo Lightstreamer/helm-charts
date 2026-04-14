@@ -1,6 +1,6 @@
 # Internal / development files
 internals/
-.instructions*.md
+.github/instructions/
 NOTES.txt1
 
 # IDE
