@@ -84,7 +84,7 @@ Build the producer image using the provided [`producer.Dockerfile`](producer.Doc
   ```sh
   kubectl apply -f producer.yaml
   kubectl rollout status deployment/quickstart-producer -n kafka
-  kubectl logs -l app=quickstart-producer -n kafka
+  kubectl logs -l app=quickstart-producer -n kafka  
   ```
 
 - **OpenShift** — use an OpenShift binary build to build the image server-side and push it to the internal registry. No local Docker daemon is required:
