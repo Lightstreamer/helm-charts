@@ -21,10 +21,10 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.8.0
+version: 0.9.0
 
 # The Lightstreamer Broker version
-appVersion: "7.4.6"
+appVersion: "7.4.8"
 
 home: "https://github.com/Lightstreamer/helm-charts"
 sources: ["https://github.com/Lightstreamer/helm-charts/tree/main/charts/lightstreamer"]
