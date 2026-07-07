@@ -407,25 +407,25 @@ license:
   # To know full details, open the Welcome Page or the Monitoring Dashboard
   # (Edition tab) of your running the Lightstreamer Broker.
   # Possible values:
-  # - `COMMUNITY` 
+  # - `COMMUNITY`
   # - `ENTERPRISE`
   edition: ENTERPRISE
 
   # -- Mandatory if edition is set to `COMMUNITY`. The Client API to use with
   # your Lightstreamer free license.
-  # Possible values: 
+  # Possible values:
   # - `javascript_client` (for web browser clients)
   # - `nodejs_client` (for Node.js clients)
-  # - `android_client` (for Android clients) 
+  # - `android_client` (for Android clients)
   # - `ios_client` (for iOS clients)
-  # - `flex_client` (for Flex and AIR clients) 
-  # - `silverlight_client` (for Silverlight clients) 
-  # - `javase_client` (for Java SE clients) 
+  # - `flex_client` (for Flex and AIR clients)
+  # - `silverlight_client` (for Silverlight clients)
+  # - `javase_client` (for Java SE clients)
   # - `python_client` (for Python clients)
-  # - `dotnet_standard_client` (for .NET Standard clients) 
-  # - `macos_client` (for macOS clients) 
-  # - `tvos_client` (for tvOS clients) 
-  # - `watchos_client` (for watchOS clients) 
+  # - `dotnet_standard_client` (for .NET Standard clients)
+  # - `macos_client` (for macOS clients)
+  # - `tvos_client` (for tvOS clients)
+  # - `watchos_client` (for watchOS clients)
   # - `visionos_client` (for visionOS clients)
   # - `blackberry_client` (for BlackBerry clients)
   # - `javame_client` (for Java ME clients)
@@ -438,7 +438,7 @@ license:
   enterprise:
 
     # -- (string) Mandatory. The type of the `ENTERPRISE` edition.
-    # Possible values: 
+    # Possible values:
     # - `DEMO`
     # - `EVALUATION`
     # - `STARTUP`
@@ -520,8 +520,8 @@ license:
         enableMpn: true
 
         # -- (string) Mandatory. Max message rate (downstream).
-        # Possible values: 
-        # - `1` 
+        # Possible values:
+        # - `1`
         # - `3`
         # - `unlimited`
         maxDownstreamRate: "1"
@@ -625,8 +625,8 @@ license:
         port:
 
         # -- (string) Optional. Scheme of the proxy server.
-        # Possible values: 
-        # - `http` 
+        # Possible values:
+        # - `http`
         # - `https`
         scheme:
 
@@ -651,9 +651,9 @@ license:
         port:
 
         # -- (string) Optional. Protocol version to use.
-        # Possible values: 
-        # - `SOCKS4` 
-        # - `SOCKS4a` 
+        # Possible values:
+        # - `SOCKS4`
+        # - `SOCKS4a`
         # - `SOCKS5`
         version:
 
@@ -1398,8 +1398,8 @@ logging:
     dailyRolling:
 
       # -- (string) Mandatory. The type of appender.
-      # Possible values: 
-      # - `DailyRollingFile` 
+      # Possible values:
+      # - `DailyRollingFile`
       # - `Console`
       type: DailyRollingFile
 
@@ -4790,7 +4790,7 @@ adapters:
           # @default -- see description
           keepaliveHintMillis:
 
-  
+
   # -- Predefined Adapter Set bundled with the Lightstreamer Broker and available
   # in the official Docker image. Populates the demos on the welcome page.
   # Disabled by default.
@@ -4831,7 +4831,7 @@ adapters:
           word_size_x: 478
           word_size_y: 200
           max_players: 100
-    
+
     dataProviders:
       stocks:
         enabled: true
@@ -4891,7 +4891,7 @@ connectors:
       # the GitHub official repository at startup. Once downloaded, the package
       # will be deployed to the
       # `/deployed_adapters/kafka-connector` directory in the container.
-      # Example: "1.5.1"
+      # Example: "2.0.0"
       fromGitHubRelease:
 
       # -- (string) The URL from which to download the Kafka Connector zip
@@ -4909,12 +4909,12 @@ connectors:
         name:
 
         # -- (string) The file path to the Kafka Connector zip package in the
-        # volume, e.g.: `/connectors/lightstreamer-kafka-connector-1.5.1.zip`.
+        # volume, e.g.: `/connectors/lightstreamer-kafka-connector-2.0.0.zip`.
         filePath:
 
-    # -- Mandatory. Defines the Kafka Connector Adapter Set and its unique ID, 
-    # which will be used by the Clients to request this Adapter Set while 
-    # setting up the connection to a Lightstreamer Server through a 
+    # -- Mandatory. Defines the Kafka Connector Adapter Set and its unique ID,
+    # which will be used by the Clients to request this Adapter Set while
+    # setting up the connection to a Lightstreamer Server through a
     # LightstreamerClient object.
     adapterSetId: "KafkaConnector"
 
@@ -4940,8 +4940,8 @@ connectors:
         dailyRolling:
 
           # -- (string) Mandatory. The type of appender.
-          # Possible values: 
-          # - `DailyRollingFile` 
+          # Possible values:
+          # - `DailyRollingFile`
           # - `Console`
           type: DailyRollingFile
 
@@ -5049,7 +5049,7 @@ connectors:
           # -- Optional. Enables the encryption.
           enabled: false
 
-          # -- (string) Optional. The SSL protocol to be used. 
+          # -- (string) Optional. The SSL protocol to be used.
           # Possible values:
           # - `TLSv1.2`
           # - `TLSv1.3`
@@ -5093,11 +5093,11 @@ connectors:
           # mechanism type.
           # The Kafka Connector accepts the following authentication
           # mechanisms:
-          #  - PLAIN
-          #  - SCRAM-SHA-256
-          #  - SCRAM-SHA-512
-          #  - GSSAPI
-          #  - AWS_MSK_IAM
+          # - `PLAIN`
+          # - `SCRAM-SHA-256`
+          # - `SCRAM-SHA-512`
+          # - `GSSAPI`
+          # - `AWS_MSK_IAM`
           mechanism:
 
           # -- (string) Mandatory if `mechanism` is set to `PLAIN`,
@@ -5160,8 +5160,9 @@ connectors:
         # If not specified, all settings at their defaults will be used.
         record:
 
-          # -- (string) Optional. Specifies where to start consuming events
-          # from:
+          # -- (string) Optional but ineffective if `snapshot.mode` is set to 
+          # any value other than `NONE`. Specifies where to start consuming 
+          # events from:
           # - `LATEST`: Start consuming events from the end of the topic
           # partition.
           # - `EARLIEST`: Start consuming events from the beginning of the topic
@@ -5173,8 +5174,8 @@ connectors:
           consumeFrom: LATEST
 
           # -- (int) Optional. The maximum number of records fetched in each
-          # polling cycle. 
-          # Sets the value of the `max.poll.records` key to configure the 
+          # polling cycle.
+          # Sets the value of the `max.poll.records` key to configure the
           # internal Kafka Consumer.
           # See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_max.poll.records
           # for details.
@@ -5188,7 +5189,7 @@ connectors:
           # for details.
           consumeWithSessionTimeoutMillis: 45000
 
-          # -- (int) Optional.  The maximum delay between invocations of poll()
+          # -- (int) Optional. The maximum delay between invocations of poll()
           # when using consumer group management. This places an upper bound on
           # the amount of time that the consumer can be idle before fetching
           # more records.
@@ -5313,8 +5314,10 @@ connectors:
               # key-value pairs in a record value.
               pairsSeparator: ","
 
-          # -- Optional. The error handling strategy to be used if an error
-          # occurs while extracting data from incoming deserialized records.
+          # -- Optional but forced to `IGNORE_AND_CONTINUE` when `snapshot.mode`
+          # is set to any value other than `NONE`. The error handling strategy
+          # to be used if an error occurs while extracting data from incoming
+          # deserialized records.
           # If set to `IGNORE_AND_CONTINUE`, the error is ignored and the
           # processing of the record continues.
           # If set to `FORCE_UNSUBSCRIPTION`, the processing of the record is
@@ -5404,46 +5407,45 @@ connectors:
           # to Lightstreamer fields.
           enableNonScalarValuesMapping: false
 
-          # -- Optional but ineffective if `enableAutoCommandMode` is set to
-          # `true`. Enables support for the COMMAND mode. A Kafka record must be
-          # structured to allow the Kafka Connector to map the values for the
-          # `key` and `command` fields:
-          # - `key`: Identifies the unique key for each element in the list
-          #   generated from the item.
-          # - `command`: Specifies the operation (`ADD`, `UPDATE`, `DELETE`) to
-          #   be performed on the item.
-          #
-          # For example:
-          #
-          # mappings:
-          #   key: "#{KEY}"
-          #   command: "#{VALUE.command}"
-          #
-          # When `key` is set to `snapshot`, the command can be one of the
-          # following:
-          # - `CS`: Clears the current snapshot.
-          # - `EOS`: Marks the end of the snapshot.
-          enableEvaluationAsCommand: false
+        # -- Optional. Item snapshot settings
+        snapshot:
 
-          # -- Optional. If set to `true`, enables automatic COMMAND mode
-          # support by generating appropriate command operations for
-          # Lightstreamer items without requiring your Kafka records to contain
-          # explicit command fields. When enabled, the connector:
-          # - Automatically adds a Lightstreamer command field to each update
-          # - Assigns the appropriate command value based on the record state:
-          # - `ADD`: For records with a new mapped key (not previously
-          #   processed)
-          # - `UPDATE`: For records with a mapped key that has been previously
-          #   processed
-          # - `DELETE`: For records with a null message payload (tombstone
-          #   records)
-          #
-          # You only need to map the `key` field from your record structure.
-          # For example:
-          #
-          # mappings:
-          #   key: "#{KEY}"
-          enableAutoCommandMode: false
+          # -- (string) Optional. Selects the snapshot behavior for subscribed
+          # items and, when not set to `NONE`, pins the Lightstreamer
+          # subscription Mode the connector is willing to serve. Any non-`NONE`
+          # value activates the eager pipeline: the consumer starts at adapter
+          # initialization, replays the topic from the beginning to seed the
+          # Server's item store, then transitions to realtime tailing.
+          # Possible values:
+            # - `NONE`: Snapshot disabled. The consumer starts on the first client
+          #   client subscription and every record is delivered as a realtime
+          #   update. The subscription Mode is not constrained by the adapter.
+          # - `MERGE`: Snapshot enabled; subscription Mode pinned to MERGE. A
+          #   new subscriber receives a single snapshot event per item (the
+          #   current value), followed by realtime updates.
+          # - `DISTINCT`: Snapshot enabled; subscription Mode pinned to
+          #   DISTINCT. A new subscriber receives up to
+          #   `item.snapshot.distinct.length` snapshot events per item (the most
+          #   recent ones), followed by realtime updates.
+          # - `COMMAND`: Snapshot enabled; subscription Mode pinned to COMMAND.
+          #   A new subscriber receives all rows currently in the per-item
+          #   table. The connector synthesises the `command` field from each
+          #   record; you only map `field.key`.
+          mode: NONE
+
+          # -- (int) Optional but only effective when `mode` is set to 
+          #  `DISTINCT`. The maximum idle time in seconds after which the
+          #  snapshot of an item is discarded, so that the next incoming record
+          #  starts a fresh one. Must be a non-negative integer; a value of `0`
+          #  disables the idle check.
+          distinctLength: 10
+
+          # -- (int) Optional but only effective when `mode` is set to any
+          # value other than `NONE`. The maximum idle time in seconds after
+          # which the snapshot of an item is discarded, so that the next
+          # incoming record starts a fresh one. Must be a non-negative integer;
+          # a value of `0` disables the idle check.
+          maxIdleSeconds: 0
 
         # -- Optional. Logger configuration for the connection.
         logger:
@@ -5482,12 +5484,12 @@ connectors:
       mySchemaRegistry:
 
         # -- Optional. Specifies the Schema Registry provider to use. Possible
-        # values: 
+        # values:
         # - `CONFLUENT`
         # - `AZURE`
         provider: CONFLUENT
 
-        # -- (string) Mandatory. The URL of the Schema Registry endpoint (either 
+        # -- (string) Mandatory. The URL of the Schema Registry endpoint (either
         # Confluent Schema Registry or Azure Schema Registry).
         # Examples: `https://schema-registry:8084`, `https://my-namespace.servicebus.windows.net`.
         url:
