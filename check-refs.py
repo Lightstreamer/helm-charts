@@ -20,7 +20,7 @@ DEPLOYMENT = REPO_ROOT / "DEPLOYMENT.md"
 VALUES = REPO_ROOT / "charts" / "lightstreamer" / "values.yaml"
 
 LINK_RE = re.compile(
-    r"\[(?:`?)([^]`]+?)(?:`?)\]"           # link text (strip backticks)
+    r"\[(`?)([^]`]+?)\1\]"                # optional backticks (captured)
     r"\(charts/lightstreamer/values\.yaml#L(\d+)\)"
 )
 
@@ -112,13 +112,15 @@ def main() -> int:
     checked = 0
     fixed = 0
 
-    # Collect replacements: list of (old_fragment, new_fragment)
-    replacements: list[tuple[str, str]] = []
+    # Per-line replacements: line index -> list of (match_start, match_end, new_line_number)
+    # Applied in a second pass so multiple fixes on the same line stay ordered.
+    line_fixes: dict[int, list[tuple[int, int, int]]] = {}
 
     for line_no, line in enumerate(deploy_lines, 1):
         for m in LINK_RE.finditer(line):
-            link_text = m.group(1)
-            ref_line = int(m.group(2))
+            backticked = bool(m.group(1))
+            link_text = m.group(2)
+            ref_line = int(m.group(3))
             checked += 1
 
             # Skip bare filename links (e.g. [values.yaml]) — these are generic
@@ -137,7 +139,10 @@ def main() -> int:
                 continue
 
             target = values_lines[ref_line - 1]
-            keys = build_keys_with_context(link_text, line)
+            # Backticked link text is itself a YAML key/path — trust it and
+            # skip the surrounding-line fallback that leaks unrelated keys.
+            keys = (build_keys(link_text) if backticked
+                    else build_keys_with_context(link_text, line))
             if any(line_has_yaml_key(target, k) for k in keys):
                 continue  # match — key definition found on target line
 
@@ -156,30 +161,27 @@ def main() -> int:
                     marker = " *" if nl == best_line else ""
                     print(f"  suggestion: L{nl} ({d:+d})  {content}{marker}")
                 if fix_mode:
-                    old_frag = f"values.yaml#L{ref_line})"
-                    new_frag = f"values.yaml#L{best_line})"
-                    replacements.append((m.start(), old_frag, new_frag))
+                    # Record intra-line span of the ref number so the fix is
+                    # applied to *this* link, even when multiple links on the
+                    # same line share the same ref_line.
+                    num_start = m.start(3)
+                    num_end = m.end(3)
+                    line_fixes.setdefault(line_no - 1, []).append(
+                        (num_start, num_end, best_line))
                     fixed += 1
             else:
                 print(f"  no nearby match for {keys}")
             print()
 
-    if fix_mode and replacements:
-        # Build a map from (line_offset, old_frag) -> new_frag so that all
-        # replacements are resolved against the original text before any
-        # mutation.  We iterate the original text once, replacing each
-        # matching fragment.
-        # Sort by position descending so replacements don't shift offsets.
-        deploy_chars = list(deploy_text)
-        for pos, old_frag, new_frag in sorted(replacements, key=lambda x: x[0],
-                                               reverse=True):
-            # Find the exact occurrence of old_frag starting at or after pos
-            idx = deploy_text.find(old_frag, pos)
-            if idx == -1:
-                continue
-            deploy_chars[idx:idx + len(old_frag)] = list(new_frag)
-        deploy_text = "".join(deploy_chars)
-        DEPLOYMENT.write_text(deploy_text)
+    if fix_mode and line_fixes:
+        for idx, fixes in line_fixes.items():
+            line = deploy_lines[idx]
+            for start, end, new_ref in sorted(fixes, reverse=True):
+                line = line[:start] + str(new_ref) + line[end:]
+            deploy_lines[idx] = line
+        # Preserve trailing newline if the original file had one.
+        trailing = "\n" if deploy_text.endswith("\n") else ""
+        DEPLOYMENT.write_text("\n".join(deploy_lines) + trailing)
         print(f"Fixed {fixed} ref(s) in {DEPLOYMENT.name}")
 
     if errors:
