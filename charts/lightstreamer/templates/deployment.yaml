@@ -309,15 +309,15 @@ spec:
                 {{- if has $mechanism (list "PLAIN" "SCRAM-SHA-256" "SCRAM-SHA-512") }}
                   {{- $authSecretRefs = append $authSecretRefs ($connection.authentication.credentialsSecretRef) }}
                 {{- end }}
-                {{- $record := $connection.record }}
-                {{- with $record.schemaRegistry }}
-                  {{- if eq .provider "CONFLUENT" }}
-                    {{- if ((.confluent).basicAuthentication).enabled }}
-                      {{- $confluentSchemaRegistryAuthSecretRefs = append $confluentSchemaRegistryAuthSecretRefs .confluent.basicAuthentication.credentialsSecretRef }}
-                    {{- end }}
-                  {{- else if eq .provider "AZURE" }}
-                    {{- $azureSchemaRegistryAuthSecretRefs = append $azureSchemaRegistryAuthSecretRefs .azure.credentialsSecretRef }}
+              {{- end }}
+              {{- $record := $connection.record }}
+              {{- with $record.schemaRegistry }}
+                {{- if eq .provider "CONFLUENT" }}
+                  {{- if ((.confluent).basicAuthentication).enabled }}
+                    {{- $confluentSchemaRegistryAuthSecretRefs = append $confluentSchemaRegistryAuthSecretRefs .confluent.basicAuthentication.credentialsSecretRef }}
                   {{- end }}
+                {{- else if eq .provider "AZURE" }}
+                  {{- $azureSchemaRegistryAuthSecretRefs = append $azureSchemaRegistryAuthSecretRefs .azure.credentialsSecretRef }}
                 {{- end }}
               {{- end }}
             {{- end }}

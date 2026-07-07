@@ -31,32 +31,34 @@ Render the Lightstreamer Kafka Connector configuration file.
 {{- with .Values.connectors.kafkaConnector }}
 <adapters_conf id={{ required "connectors.kafkaConnector.adapterSetId must be set" .adapterSetId | quote }}>
     <metadata_provider>
-        <!-- Mandatory. Java class name of the Kafka Connector Metadata Adapter. It is possible to provide a
-             custom implementation by extending this class. -->
+        <!-- Mandatory. Java class name of the Kafka Connector Metadata Adapter. It is possible to 
+             provide a custom implementation by extending this class. -->
         <adapter_class>{{ required "connectors.kafkaConnector.adapterClassName must be set" .adapterClassName }}</adapter_class>
 
-        <!-- Mandatory. The path of the reload4j configuration file, relative to the deployment folder
-             (LS_HOME/adapters/lightstreamer-kafka-connector). -->
+        <!-- Mandatory. The path of the reload4j configuration file, relative to the deployment 
+             folder (LS_HOME/adapters/lightstreamer-kafka-connector), or as an absolute path. -->
         <param name="logging.configuration.path">log4j.properties</param>
     </metadata_provider>
 
     {{- range $key, $connection := required "kafkaConnectors.connections must be set" .connections }}
       {{- if $connection.enabled }}
 
-    <!-- Mandatory. The Kafka Connector allows the configuration of different independent connections to different Kafka
-         broker/clusters.
+    <!-- Mandatory. The Kafka Connector allows the configuration of different independent 
+         connections to different Kafka broker/clusters.
 
-         Every single connection is configured via the definition of its own Lightstreamer Data Adapter. At least one connection
-         configuration must be provided.
+         Every single connection is configured via the definition of its own Lightstreamer Data 
+         Adapter. At least one connection configuration must be provided.
 
-         Since the Kafka Connector manages the physical connection to Kafka by wrapping an internal Kafka Consumer, several
-         configuration settings in the Data Adapter are identical to those required by the usual Kafka Consumer
-         configuration.
+         Since the Kafka Connector manages the physical connection to Kafka by wrapping an internal 
+         Kafka Consumer, several configuration settings in the Data Adapter are identical to those 
+         required by the usual Kafka Consumer configuration.
 
-         The Kafka Connector leverages the "name" attribute of the <data_provider> tag as the connection name, which will
-         be used by the Clients to request real-time data from this specific Kafka connection through a Subscription object.
+         The Kafka Connector leverages the "name" attribute of the <data_provider> tag as the 
+         connection name, which will be used by the Clients to request real-time data from this 
+         specific Kafka connection through a Subscription object.
 
-         The connection name is also used to group all logging messages belonging to the same connection.
+         The connection name is also used to group all logging messages belonging to the same 
+         connection.
 
          Its default value is "DEFAULT", but only one "DEFAULT" configuration is permitted. -->
     <data_provider name={{ $connection.name | quote }}>
@@ -65,29 +67,35 @@ Render the Lightstreamer Kafka Connector configuration file.
         <!-- Java class name of the Kafka Connector Data Adapter. DO NOT EDIT IT. -->
         <adapter_class>com.lightstreamer.kafka.adapters.KafkaConnectorDataAdapter</adapter_class>
 
-        <!-- Optional. Enable this connection configuration. Can be one of the following:
+        <!-- Optional. Enables this connection configuration. Can be one of the following:
+
              - true
              - false
 
-             If disabled, Lightstreamer Server will automatically deny every subscription made to this connection.
+             If disabled, Lightstreamer Server will automatically deny every subscription made to 
+             this connection.
 
              Default value: true. -->
         <param name="enable">true</param>
 
-        <!-- Mandatory. The Kafka Cluster bootstrap server endpoint expressed as the list of host/port pairs used to
-             establish the initial connection.
+        <!-- Mandatory. The Kafka Cluster bootstrap server endpoint expressed as the list of 
+             host/port pairs used to establish the initial connection.
 
-             The parameter sets the value of the "bootstrap.servers" key to configure the internal Kafka Consumer.
-             See https://kafka.apache.org/documentation/#consumerconfigs_bootstrap.servers for more details.
-         -->
+             The parameter sets the value of the "bootstrap.servers" key to configure the internal 
+             Kafka Consumer.
+             See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_bootstrap.servers 
+             for more details.
+        -->
         <param name="bootstrap.servers">{{ required (printf "connectors.kafkaConnector.connections.%s.bootstrapServers must be set" $key) $connection.bootstrapServers }}</param>
 
         {{- if $connection.groupId }}
 
         <!-- Optional. The name of the consumer group this connection belongs to.
 
-             The parameter sets the value for the "group.id" key used to configure the internal
-             Kafka Consumer. See https://kafka.apache.org/documentation/#consumerconfigs_group.id for more details.
+             The parameter sets the value of the "group.id" key to configure the internal Kafka 
+             Consumer.
+             See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_group.id 
+             for more details.
 
              Default value: Adapter Set id + the Data Adapter name + randomly generated suffix. -->
         <param name="group.id">{{ required (printf "connectors.kafkaConnector.connections.%s.groupId must be set" $key) $connection.groupId }}</param>
@@ -98,10 +106,11 @@ Render the Lightstreamer Kafka Connector configuration file.
         <!-- ##### ENCRYPTION SETTINGS ##### -->
           {{- with $connection.sslConfig }}
 
-        <!-- A TCP secure connection to Kafka is configured through parameters with
-             the `encryption` prefix. -->
+        <!-- A TCP secure connection to Kafka is configured through parameters with the "encryption"
+             prefix. -->
 
-        <!-- Optional. Enable encryption of this connection. Can be one of the following:
+        <!-- Optional. Enables encryption of this connection. Can be one of the following:
+
              - true
              - false
 
@@ -110,10 +119,12 @@ Render the Lightstreamer Kafka Connector configuration file.
             {{- if .protocol }}
 
         <!-- Optional. The SSL protocol to be used. Can be one of the following:
+
              - TLSv1.2
              - TLSv1.3
 
              Default value: TLSv1.3 when running on Java 11 or newer, TLSv1.2 otherwise. -->
+
               {{- if not (mustHas .protocol (list "TLSv1.2" "TLSv1.3")) }}
                 {{- fail (printf "connectors.kafkaConnector.connections.%s.sslConfig.protocol must be one of: \"TLSv1.2\", \"TLSv1.3\"" $key) }}
               {{- end }}
@@ -124,7 +135,7 @@ Render the Lightstreamer Kafka Connector configuration file.
 
         <!-- Optional. The list of enabled secure communication protocols.
 
-             Default value: TLSv1.2,TLSv1.3 when running on Java 11 or newer, `TLSv1.2` otherwise. -->
+             Default value: TLSv1.2,TLSv1.3 when running on Java 11 or newer, TLSv1.2 otherwise. -->
               {{- range $protocol := .allowProtocols}}
                 {{- if not (mustHas $protocol (list "TLSv1.2" "TLSv1.3")) }}
                   {{- fail (printf "connectors.kafkaConnector.connections.%s.sslConfig.allowProtocols must be a list of \"TLSv1.2\", \"TLSv1.3\"" $key) }}
@@ -137,7 +148,7 @@ Render the Lightstreamer Kafka Connector configuration file.
 
         <!-- Optional. The list of enabled secure cipher suites.
 
-             Default value: all the available cipher suites in the running JVM. -->
+            Default value: all the available cipher suites in the running JVM. -->
               {{- range $cipherSuite := .allowCipherSuites}}
                 {{- if $cipherSuite | empty }}
                   {{- fail (printf "connectors.kafkaConnector.connections.%s.sslConfig.allowCipherSuites must be a list of valid values" $key) }}
@@ -148,7 +159,8 @@ Render the Lightstreamer Kafka Connector configuration file.
 
             {{- if .enableHostnameVerification }}
 
-        <!-- Optional. Enable hostname verification. Can be one of the following:
+        <!-- Optional. Enables hostname verification. Can be one of the following:
+
              - true
              - false
 
@@ -159,7 +171,7 @@ Render the Lightstreamer Kafka Connector configuration file.
             {{- if .truststoreRef}}
 
         <!-- Optional. The path of the trust store file, relative to the deployment folder
-             (LS_HOME/adapters/lightstreamer-kafka-connector-<version>).
+             (LS_HOME/adapters/lightstreamer-kafka-connector-<version>), or as an absolute path.
              The trust store is used to validate the certificates provided by the Kafka brokers. -->
               {{- include "lightstreamer.kafka-connector.configuration.truststore" (list "encryption.truststore" $.Values.keystores .truststoreRef)  | nindent 8 }}
             {{- end }} {{/* of .truststoreRef */}}
@@ -178,8 +190,9 @@ Render the Lightstreamer Kafka Connector configuration file.
         <!-- Broker authentication is configured through parameters with the
              `authentication` prefix. -->
           {{- if .enabled }}
-        <!-- Optional. Enable the authentication of this connection against the Kafka Cluster.
+        <!-- Optional. Enables the authentication of this connection against the Kafka Cluster.
              Can be one of the following:
+
              - true
              - false
 
@@ -217,9 +230,11 @@ Render the Lightstreamer Kafka Connector configuration file.
         <!-- ##### GSSAPI AUTHENTICATION SETTINGS ##### -->
               {{- with required "connectors.kafkaConnector.connections.%s.authentication.gssapi must be set" .gssapi }}
 
-        <!-- When this mechanism is specified, you can configure the following authentication parameters: -->
+        <!-- When this mechanism is specified, you can configure the following authentication 
+             parameters: -->
 
         <!-- Optional. Enable the use of a keytab. Can be one of the following:
+
             - true
             - false
 
@@ -233,7 +248,8 @@ Render the Lightstreamer Kafka Connector configuration file.
                 {{- end }} {{/* of .enableKeytab */}}
 
         <!-- Mandatory if keytab is enabled. The path to the keytab file, relative to
-             the deployment folder (LS_HOME/adapters/lightstreamer-kafka-connector-<version>). -->
+             the deployment folder (LS_HOME/adapters/lightstreamer-kafka-connector-<version>), or as
+             an absolute path. -->
                 {{- if .keytabFilePathRef }}
         <param name="authentication.gssapi.key.tab.path">./keytabs/{{ required (printf "connectors.kafkaConnector.connections.%s.authentication.gssapi.keytabFilePathRef.key must be set" $key) .keytabFilePathRef.key }}</param>
                 {{- else }}
@@ -246,10 +262,11 @@ Render the Lightstreamer Kafka Connector configuration file.
                 {{- end }} {{/* of .keytabFilePathRef */}}
 
         <!--  Optional. Enable storage of the principal key. Can be one of the following:
-            - true
-            - false
 
-            Default value: false- -->
+              - true
+              - false
+
+              Default value: false. -->
                 {{- if .enableStoreKey }}
         <param name="authentication.gssapi.store.key.enable">true</param>
                 {{- else }}
@@ -274,6 +291,7 @@ Render the Lightstreamer Kafka Connector configuration file.
                 {{- end }} {{/* of .principal */}}
 
         <!-- Optional. Enable the use of a ticket cache. Can be one of the following:
+
              - true
              - false
 
@@ -290,38 +308,40 @@ Render the Lightstreamer Kafka Connector configuration file.
               {{- with .iam }}
         <!-- ##### IAM AUTHENTICATION SETTINGS ##### -->
 
-        <!-- The AWS_MSK_IAM authentication mechanism enables access to Amazon Managed Streaming for Apache Kafka (MSK)
-             clusters through IAM access control.
+        <!-- The AWS_MSK_IAM authentication mechanism enables access to Amazon Managed Streaming 
+             for Apache Kafka (MSK) clusters through IAM access control.
 
-             When specified, the following parameters will be part of the authentication configuration:
+             When specified, the following parameters will be part of the authentication 
+             configuration:
         -->
                 {{- if not (quote .credentialProfileName | empty) }}
 
-        <!-- Optional. The name of the AWS credential profile to use for authentication. These profiles are defined in
-             the AWS shared credentials file.
+        <!-- Optional. The name of the AWS credential profile to use for authentication. These 
+             profiles are defined in the AWS shared credentials file.
         -->
         <param name="authentication.iam.credential.profile.name">{{ .credentialProfileName }}</param>
                 {{- end }}
 
                 {{- if not (quote .roleArn | empty) }}
 
-        <!-- Optional. The Amazon Resource Name (ARN) of the IAM role that the Kafka Connector should assume for
-             authentication with MSK. Use this when you want the connector to assume a specific role with temporary credentials.
+        <!-- Optional. The Amazon Resource Name (ARN) of the IAM role that the Kafka Connector 
+             should assume for authentication with MSK. Use this when you want the connector to 
+             assume a specific role with temporary credentials.
         -->
         <param name="authentication.iam.role.arn">{{ .roleArn }}</param>
                 {{- end }}
 
                 {{- if not (quote .roleSessionName | empty) }}
 
-        <!-- Optional but only effective when "authentication.iam.role.arn" is set. The name of the session for the
-             assumed IAM role.
+        <!-- Optional but only effective when "authentication.iam.role.arn" is set. The name of the 
+             session for the assumed IAM role.
         -->
         <param name="authentication.iam.role.session.name">{{ .roleSessionName }}</param>
                 {{- end }}
 
                 {{- if not (quote .stsRegion | empty) }}
-        <!-- Optional but only effective when "authentication.iam.role.arn" is set. Specifies the AWS region of the STS
-             endpoint to use when assuming the IAM role.
+        <!-- Optional but only effective when "authentication.iam.role.arn" is set. Specifies the 
+             AWS region of the STS endpoint to use when assuming the IAM role.
         -->
         <param name="authentication.iam.sts.region">{{ .stsRegion }}</param>
                 {{- end }}
@@ -337,10 +357,23 @@ Render the Lightstreamer Kafka Connector configuration file.
         {{- with $connection.record }}
           {{- if .consumeFrom }}
 
-        <!-- Optional. Specifies where to start consuming events from. Can be one of the following:
+        <!-- Optional but ineffective when "item.snapshot.enabled.mode" is set to any value other 
+             than "NONE". Specifies where to start consuming events from. Can be one of the 
+             following:
 
-             - LATEST: Start consuming events from the end of the topic partition.
              - EARLIEST: Start consuming events from the beginning of the topic partition.
+             - LATEST:   Start consuming events from the end of the topic partition.
+
+             The parameter sets the value of the "auto.offset.reset"  key to configure the internal 
+             Kafka Consumer.
+             See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_auto.offset.reset 
+             for more details.
+
+             When snapshot management is active, the connector manages partition positions 
+             explicitly: newly assigned partitions are always seeked to the beginning (so that 
+             the snapshot replay covers the full topic history), and re-assigned partitions 
+             resume from their committed offset. See the "Snapshot Management" section in the 
+             README for details.
 
              Default value: LATEST. -->
             {{- if not (mustHas .consumeFrom (list "EARLIEST" "LATEST")) }}
@@ -353,8 +386,10 @@ Render the Lightstreamer Kafka Connector configuration file.
 
         <!-- Optional. The maximum number of records fetched in each polling cycle.
 
-             The parameter sets the value of the "max.poll.records" key to configure the internal Kafka Consumer.
-             See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_max.poll.records for more details.
+             The parameter sets the value of the "max.poll.records" key to configure the internal 
+             Kafka Consumer.
+             See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_max.poll.records 
+             for more details.
 
              Default value: 500. -->
         <param name="record.consume.with.max.poll.records">{{ .consumeWithMaxPollRecords }}</param>
@@ -362,10 +397,13 @@ Render the Lightstreamer Kafka Connector configuration file.
 
           {{- if not (quote .consumeWithMaxSessionTimeoutMillis | empty) }}
 
-        <!-- Optional. The timeout used to detect client failures when using Kafka's group management facility.
+        <!-- Optional. The timeout used to detect client failures when using Kafka's group 
+             management facility.
 
-             The parameter sets the value of the "session.timeout.ms" key to configure the internal Kafka Consumer.
-             See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_session.timeout.ms for more details.
+             The parameter sets the value of the "session.timeout.ms" key to configure the internal 
+             Kafka Consumer.
+             See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_session.timeout.ms 
+             for more details.
 
              Default value: 45000. -->
         <param name="record.consume.with.session.timeout.ms">{{ .consumeWithMaxSessionTimeoutMillis }}</param>
@@ -373,11 +411,14 @@ Render the Lightstreamer Kafka Connector configuration file.
 
         {{- if not (quote .consumeWithMaxPollIntervalMillis | empty) }}
 
-        <!-- Optional. The maximum delay between invocations of poll() when using consumer group management.
-             This places an upper bound on the amount of time that the consumer can be idle before fetching more records.
+        <!-- Optional. The maximum delay between invocations of poll() when using consumer group 
+             management. This places an upper bound on the amount of time that the consumer can be 
+             idle before  fetching more records.
 
-             The parameter sets the value of the "max.poll.interval.ms" key to configure the internal Kafka Consumer.
-             See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_max.poll.interval.ms for more details.
+             The parameter sets the value of the "max.poll.interval.ms" key to configure the 
+             internal Kafka Consumer.
+             See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_max.poll.interval.ms 
+             for more details.
 
              Default value: 30000. -->
         <param name="record.consume.with.max.poll.interval.ms">{{ .consumeWithMaxPollIntervalMillis }}</param>
@@ -385,8 +426,8 @@ Render the Lightstreamer Kafka Connector configuration file.
 
           {{- if not (quote .consumeWithThreadNumber | empty) }}
 
-        <!-- Optional. The number of threads to be used for concurrent processing of the
-             incoming deserialized records. If set to `-1`, the number of threads will be automatically
+        <!-- Optional. The number of threads to be used for concurrent processing of the incoming 
+             deserialized records. If set to -1, the number of threads will be  automatically 
              determined based on the number of available CPU cores.
 
              Default value: 1. -->
@@ -399,13 +440,14 @@ Render the Lightstreamer Kafka Connector configuration file.
 
           {{- if .consumeWithOrderStrategy }}
 
-        <!-- Optional but only effective if "record.consume.with.num.threads" is set to a value greater than 1 (which includes hte default value).
-             The order strategy to be used for concurrent processing of the incoming
-             deserialized records. Can be one of the following:
+        <!-- Optional but only effective when "record.consume.with.num.threads" is set to a value 
+             greater than 1 (which includes the default value). The order strategy to be used for
+             concurrent processing of the incoming deserialized records. Can be one of the 
+             following:
 
-             - ORDER_BY_PARTITION: maintain the order of records within each partition
-             - ORDER_BY_KEY: maintain the order among the records sharing the same key
-             - UNORDERED: provide no ordering guarantees
+             - ORDER_BY_PARTITION: Maintain the order of records within each partition.
+             - ORDER_BY_KEY:       Maintain the order among the records sharing the same key.
+             - UNORDERED:          Provide no ordering guarantees.
 
              Default value: ORDER_BY_PARTITION. -->
             {{- if not (mustHas .consumeWithOrderStrategy (list "ORDER_BY_PARTITION" "ORDER_BY_KEY" "UNORDERED")) }}
@@ -420,12 +462,17 @@ Render the Lightstreamer Kafka Connector configuration file.
 
           {{- if .extractionErrorStrategy }}
 
-        <!-- Optional. The error handling strategy to be used if an error occurs while extracting data from incoming
-             deserialized records.
-             Can be one of the following:
-             - IGNORE_AND_CONTINUE: Ignore the error and continue to process the next record.
+        <!-- Optional but forced to "IGNORE_AND_CONTINUE" when "item.snapshot.enabled.mode" is set 
+             to any value other than "NONE". The error handling strategy to be used if an error 
+             occurs while extracting data from incoming deserialized records. Can be one of the 
+             following:
+
+             - IGNORE_AND_CONTINUE:  Ignore the error and continue to process the next record.
              - FORCE_UNSUBSCRIPTION: Stop processing records and force unsubscription of the items
-                                     requested by all the Lightstreamer clients subscribed to this connection.
+                                     requested by all the Lightstreamer clients subscribed to this 
+                                     connection.
+
+             See the "Snapshot Management" section in the README for the rationale of the override.
 
              Default: "IGNORE_AND_CONTINUE". -->
             {{- if not (mustHas .extractionErrorStrategy (list "IGNORE_AND_CONTINUE" "FORCE_UNSUBSCRIPTION")) }}
@@ -440,9 +487,10 @@ Render the Lightstreamer Kafka Connector configuration file.
           {{- range $key, $itemTemplate := .itemTemplates }}
 
         <!-- Multiple and Optional. Define an item template expression, which is made of:
+
              - ITEM_PREFIX: the prefix of the item name
-             - BINDABLE_EXPRESSIONS: a sequence of bindable extraction expressions. See documentation at:
-             https://github.com/lightstreamer/Lightstreamer-kafka-connector?tab=readme-ov-file#filtered-record-routing-item-templatetemplate_name
+             - BINDABLE_EXPRESSIONS: a sequence of bindable extraction expressions. See 
+               documentation at: https://github.com/lightstreamer/Lightstreamer-kafka-connector?tab=readme-ov-file#filtered-record-routing-item-templatetemplate_name
         -->
             {{- if not (quote $itemTemplate | empty) }}
         <param name="item-template.{{ $key }}">{{ $itemTemplate }}</param>
@@ -453,7 +501,7 @@ Render the Lightstreamer Kafka Connector configuration file.
             {{- end }}
           {{- end }} {{/* of .itemTemplates */}}
 
-        <!-- Multiple and mandatory. Map the Kafka topic TOPIC_NAME to:
+        <!-- Multiple and mandatory. Maps the Kafka topic TOPIC_NAME to:
              - one or more simple items
              - one or more item templates
              - any combination of the above
@@ -492,8 +540,8 @@ Render the Lightstreamer Kafka Connector configuration file.
 
           {{- if .enableTopicRegEx }}
 
-        <!-- Optional. Enable the "TOPIC_NAME" part of the "map.TOPIC_NAME.to" parameter to be treated as a regular expression
-             rather than of a literal topic name.
+        <!-- Optional. Enables the "TOPIC_NAME" part of the "map.TOPIC_NAME.to" parameter to be 
+             treated as a regular expression rather than of a literal topic name.
         -->
         <param name="map.regex.enable">true</param>
           {{- end }} {{/* of .enableTopicRegEx */}}
@@ -502,12 +550,13 @@ Render the Lightstreamer Kafka Connector configuration file.
         <!-- ##### RECORD MAPPING SETTINGS ##### -->
         {{- with required (printf "connectors.kafkaConnector.connections.%s.fields must be set" $key) $connection.fields }}
 
-        <!-- Multiple and Mandatory. Map the value extracted through "extraction_expression" to
-             field FIELD_NAME. The expression is written in the Data Extraction Language. See documentation at:
-             https://github.com/lightstreamer/Lightstreamer-kafka-connector?tab=readme-ov-file#record-mapping-fieldfield_name
+        <!-- Multiple and Mandatory. Maps the value extracted through "extraction_expression" to
+             field FIELD_NAME. The expression is written in the Data Extraction Language. See 
+             documentation at: https://github.com/lightstreamer/Lightstreamer-kafka-connector?tab=readme-ov-file#record-mapping-fieldfield_name
 
-             Dynamic Field Discovery: Use wildcards in both parameter name (field.*) and extraction expression
-             to automatically discover and map field names at runtime from the record structure. For example:
+             Dynamic Field Discovery: Use wildcards in both parameter name (field.*) and extraction 
+             expression to automatically discover and map field names at runtime from the record 
+             structure. For example:
 
              <param name="field.*">#{VALUE.*}</param>
              <param name="field.*">#{KEY.*}</param>
@@ -524,8 +573,11 @@ Render the Lightstreamer Kafka Connector configuration file.
 
           {{- if .enableSkipFailedMapping }}
 
-        <!-- Optional. By enabling the parameter, if a field mapping fails, that specific field's value will simply be omitted from the update sent to
-             Lightstreamer clients, while other successfully mapped fields from the same record will still be delivered. Can be one of the following:
+        <!-- Optional. By enabling the parameter, if a field mapping fails, that specific field's 
+             value will simply be omitted from the update sent to Lightstreamer clients, while other 
+             successfully mapped fields from the same record will still be delivered. Can be one of 
+             the following:
+
              - true
              - false
 
@@ -535,12 +587,14 @@ Render the Lightstreamer Kafka Connector configuration file.
 
           {{- if .enableNonScalarValuesMapping }}
 
-        <!-- Optional. Enabling this parameter allows mapping of non-scalar values to Lightstreamer fields.
+        <!-- Optional. Enabling this parameter allows mapping of non-scalar values to Lightstreamer 
+             fields.
              For example, in the following mapping:
 
              <param name="field.structured">#{VALUE.complexAttribute}</param>
 
-             the value of "complexAttribute" will be mapped as generic text (e.g. JSON string) to the "structured" Lightstreamer field.
+             the value of "complexAttribute" will be mapped as generic text (e.g. JSON string) to 
+             the "structured" Lightstreamer field.
 
              Can be one of the following:
              - true
@@ -550,59 +604,72 @@ Render the Lightstreamer Kafka Connector configuration file.
         <param name="fields.map.non.scalar.values.enable">{{ .enableNonScalarValuesMapping }}</param>
           {{- end }} {{/* of .enableNonScalarValuesMapping */}}
 
-          {{- if .enableAutoCommandMode }}
-            {{ required (printf "connectors.kafkaConnector.connections.%s.fields.mapping.key must be set" $key) .mappings.key }}
+        {{- end }} {{/* of $connection.fields */}}
 
-        <!-- Optional. Enables automatic COMMAND mode support by generating appropriate command operations for Lightstreamer items
-             without requiring your Kafka records to contain explicit command fields.
+        {{- with $connection.snapshot }}
 
-             When enabled, the connector:
+        <!-- ##### ITEM SNAPSHOT SETTINGS ##### -->
 
-             - Automatically adds a Lightstreamer command field to each update
-             - Assigns the appropriate command value based on the record state:
-               - "ADD": For records with a new mapped key (not previously processed)
-               - "UPDATE": For records with a mapped key that has been previously processed
-               - "DELETE": For records with a null message payload (tombstone records)
+          {{- if .mode }}
+            {{- if not (mustHas .mode (list "NONE" "MERGE" "COMMAND" "DISTINCT")) }}
+              {{- fail (printf "connectors.kafkaConnector.connections.%s.snapshot.mode must be one of: \"NONE\", \"MERGE\", \"DISTINCT\", \"COMMAND\"" $key) }}
+            {{- end }}
 
-             You only need to map the "key" field from your record structure.
-             For example:
+        <!-- Optional. Selects the snapshot behavior for subscribed items and, when not set to
+             "NONE", pins the Lightstreamer subscription Mode the connector is willing to serve.
+             Any non-"NONE" value activates the eager pipeline: the consumer starts at adapter
+             initialization, replays the topic from the beginning to seed the Server's item store,
+             then transitions to realtime tailing. Can be one of the following:
 
-             <param name="fields.auto.command.mode.enable">true</param>
-             <param name="field.key">#{KEY}</param>
+             - NONE:     Snapshot disabled. The consumer starts on the first client subscription
+                         and every record is delivered as a realtime update. The subscription Mode
+                         is not constrained by the adapter.
+             - MERGE:    Snapshot enabled; subscription Mode pinned to MERGE. A new subscriber
+                         receives a single snapshot event per item (the current value), followed by
+                         realtime updates.
+             - DISTINCT: Snapshot enabled; subscription Mode pinned to DISTINCT. A new subscriber
+                         receives up to "item.snapshot.distinct.length" snapshot events per item
+                         (the most recent ones), followed by realtime updates.
+             - COMMAND:  Snapshot enabled; subscription Mode pinned to COMMAND. A new subscriber
+                         receives all rows currently in the per-item table. The connector
+                         synthesises the "command" field from each record; you only map
+                         "field.key".
 
-             The parameter can be one of the following:
-             - true
-             - false
+             Default value: NONE. -->
+        <param name="item.snapshot.enabled.mode">{{ .mode }}</param>
+          {{- end }} {{/* of .mode */}}
 
-             Default value: false. -->
-        <param name="fields.auto.command.mode.enable">true</param>
-          {{- else if .enableEvaluationAsCommand }}
-            {{ required (printf "connectors.kafkaConnector.connections.%s.fields.mapping.key must be set" $key) .mappings.key }}
-            {{ required (printf "connectors.kafkaConnector.connections.%s.fields.mapping.command must be set" $key) .mappings.command }}
+          {{- if eq .mode "DISTINCT" }}
+            {{- if not (quote .distinctLength | empty) }}
+              {{- if lt (int .distinctLength) 0 }}
+                {{- fail (printf "connectors.kafkaConnector.connections.%s.snapshot.distinctLength must be non-negative" $key) }}
+              {{- end }}
 
-        <!-- Optional but ineffective if "fields.auto.command.mode.enable" is enabled. Enables support for the COMMAND mode.
-             A Kafka record must be structured to allow the Kafka Connector to map the values for the "key" and "command" fields:
-             - "key": Identifies the unique key for each element in the list generated from the item.
-             - "command": Specifies the operation ("ADD", "UPDATE", "DELETE") to be performed on the item.
+        <!-- Optional but only effective when "item.snapshot.enabled.mode" is set to "DISTINCT".
+             The maximum allowed length for the snapshot of an item that has been requested with
+             publishing Mode DISTINCT. Must be a positive integer.
 
-             For example:
+             Default value: 10. -->
+        <param name="item.snapshot.distinct.length">{{ int .distinctLength }}</param>
+            {{- end }} 
+          {{- end }} {{/* of .distinctLength */}}
 
-             <param name="fields.evaluate.as.command.enable">true</param>
-             <param name="field.key">#{KEY}</param>
-             <param name="field.command">#{VALUE.command}</param>
+          {{- if ne .mode "NONE" }}
+            {{- if not (quote .maxIdleSeconds | empty )}}
+              {{- if lt (int .maxIdleSeconds) 0 }} 
+                {{- fail (printf "connectors.kafkaConnector.connections.%s.snapshot.maxIdleSeconds must be non-negative" $key) }}
+              {{- end }}
 
-             When "key" is set to "snapshot", the command can be one of the following:
-             - "CS": Clears the current snapshot.
-             - "EOS": Marks the end of the snapshot.
+        <!-- Optional but only effective when "item.snapshot.enabled.mode" is set to any value
+             other than "NONE". The maximum idle time in seconds after which the snapshot of an
+             item is discarded, so that the next incoming record starts a fresh one. Must be a
+             non-negative integer; a value of 0 disables the idle check.
 
-             The parameter can be one of the following:
-             - true
-             - false
-
-             Default value: false. -->
-        <param name="fields.evaluate.as.command.enable">true</param>
-          {{- end }} {{/* of .enableAutoCommandMode */}}
-        {{- end }} {{/* of .connection.fields */}}
+             Default value: 0. -->
+        <param name="item.snapshot.max.idle.seconds">{{ int .maxIdleSeconds }}</param>
+            {{- end }}
+          {{- end }} {{/* of .maxIdleSeconds */}}
+        {{- end }} {{/* of $connection.snapshot */}}
 
         {{- if ($connection.record).renderSchemaRegistry }} {{/* Flag set by the "lightstreamer.kafka-connector.configuration.record.evaluator" function */}}
 
