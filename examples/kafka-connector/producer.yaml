@@ -12,7 +12,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: quickstart-producer
-  namespace: kafka
+  namespace: lightstreamer
 spec:
   replicas: 1
   selector:
@@ -28,6 +28,6 @@ spec:
           image: <your-registry>/quickstart-producer:latest
           args:
             - "--bootstrap-servers"
-            - "kafka-0.kafka.kafka.svc.cluster.local:9092"
+            - "kafka-0.kafka.lightstreamer.svc.cluster.local:9092"
             - "--topic"
             - "stocks"
