@@ -66,6 +66,7 @@ You can use this project as a starting point for your own adapters — replace t
 - A container registry accessible by the cluster nodes (e.g. Docker Hub, a private registry, or a local registry) — required for the `kubernetes` target
 - `docker` on your PATH for local image builds
 - A Java JDK (17+) for building the Adapter Set with Gradle
+- A namespace named `lightstreamer` (called a "project" on OpenShift) — the Helm chart deploys into it. Create it with `kubectl create namespace lightstreamer` or, on OpenShift, `oc new-project lightstreamer`; ask your cluster admin if you don't have permission. Any name can be used, provided you pass it consistently to `helm install --namespace ...`.
 
 ## Deployment
 
@@ -101,36 +102,33 @@ At the end, the script prints the `image.repository` and `image.tag` values to s
 
 Install the chart using the provided [`values.yaml`](values.yaml), overriding the image to point to the custom image built in the previous step:
 
-```sh
-helm install lightstreamer lightstreamer/lightstreamer \
-  -f values.yaml \
-  --set image.repository=lightstreamer-example-adapter-set \
-  --set image.tag=1.0.0 \
-  --namespace lightstreamer
-```
+- **Any Kubernetes distribution** — use the image reference from your registry:
+  ```sh
+  helm install lightstreamer lightstreamer/lightstreamer \
+    -f values.yaml \
+    --set image.repository=lightstreamer-example-adapter-set \
+    --set image.tag=1.0.0 \
+    --namespace lightstreamer
+  kubectl rollout status deployment/lightstreamer -n lightstreamer
+  kubectl logs -l app.kubernetes.io/name=lightstreamer -n lightstreamer
+  ```
 
-For OpenShift, use the image reference printed by `build.sh`, for example:
+- **OpenShift** — use the image reference printed by `build.sh`, for example:
+  ```sh
+  helm install lightstreamer lightstreamer/lightstreamer \
+    -f values.yaml \
+    --set image.repository=image-registry.openshift-image-registry.svc:5000/lightstreamer/lightstreamer-example-adapter-set \
+    --set image.tag=1.0.0 \
+    --namespace lightstreamer
+  oc rollout status deployment/lightstreamer -n lightstreamer
+  oc logs -l app.kubernetes.io/name=lightstreamer -n lightstreamer
+  ```
 
-```sh
-helm install lightstreamer lightstreamer/lightstreamer \
-  -f values.yaml \
-  --set image.repository=image-registry.openshift-image-registry.svc:5000/lightstreamer/lightstreamer-example-adapter-set \
-  --set image.tag=1.0.0 \
-  --namespace lightstreamer
-```
-
-> [!NOTE]
-> The namespace must exist beforehand (`kubectl create namespace lightstreamer` or `oc new-project lightstreamer` on OpenShift).
+Check the logs to confirm the Adapter Set has loaded successfully.
 
 The provided [`values.yaml`](values.yaml) defines the Adapter Set with the two In-Process Adapters (`SimpleMetadataAdapter` and `SimpleDataAdapter`) and provisions them from the path baked into the custom image.
 
-### 3. Verify the deployment
-
-Check the Lightstreamer pod logs to confirm the Adapter Set has loaded successfully:
-
-```sh
-kubectl logs -l app.kubernetes.io/name=lightstreamer -n lightstreamer
-```
+## Accessing the web client
 
 The included [`index.html`](example-adapter-set/index.html) page is also baked into the custom image and served by Lightstreamer's built-in web server. To try it:
 
@@ -154,13 +152,15 @@ The included [`index.html`](example-adapter-set/index.html) page is also baked i
 
 ## Cleanup
 
-Uninstall the Helm chart first to stop the pods using the custom image:
+The steps below remove only the resources created by this example — the `lightstreamer` namespace/project is left in place, so this workflow is safe on shared or admin-provisioned projects where you don't have delete rights.
+
+Uninstall the Helm chart first to stop the pods:
 
 ```sh
 helm uninstall lightstreamer --namespace lightstreamer
 ```
 
-Then remove the image from the [`example-adapter-set/`](example-adapter-set/) folder:
+Then remove the image build resources from the [`example-adapter-set/`](example-adapter-set/) folder:
 
 - **Any Kubernetes distribution**:
   ```sh
