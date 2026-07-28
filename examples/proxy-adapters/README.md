@@ -180,6 +180,13 @@ Then remove the NodeJS adapter resources from the [`example-proxy-adapter-set/`]
   ```
   Deletes the NodeJS adapter deployment and removes the local Docker image (if `REGISTRY` is set).
 
+  > **Minikube shortcut**: If you built the image inside Minikube's Docker daemon, point your shell at it again before running the script so that the image is removed from the correct daemon:
+  > ```sh
+  > eval $(minikube docker-env)
+  > ./undeploy.sh kubernetes
+  > ```
+  > Run `eval $(minikube docker-env --unset)` to restore your shell's Docker environment afterwards.  
+
 - **OpenShift**:
   ```sh
   ./undeploy.sh openshift
