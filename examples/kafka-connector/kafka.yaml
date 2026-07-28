@@ -3,23 +3,26 @@
 # Lightstreamer Kafka Connector Quickstart docker-compose example.
 #
 # Resources:
-#   - Namespace:   kafka
-#   - StatefulSet: kafka  (1 replica, combined broker + controller)
 #   - Service:     kafka  (headless, for stable pod DNS)
+#   - StatefulSet: kafka  (1 replica, combined broker + controller)
+#
+# OpenShift compatibility: the apache/kafka image writes runtime state to
+# image-owned paths (/opt/kafka/config, /opt/kafka/logs) that non-root users
+# cannot modify. Under the restricted-v2 SCC the pod runs as a random high
+# UID, so those writes would fail. The workaround (see the pod spec below)
+# backs both directories with emptyDir volumes — the config directory is
+# seeded from the image by an init container so the entrypoint still finds
+# its template files.
 ---
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: kafka
----
-# Headless Service: gives the pod a stable DNS name kafka-0.kafka.kafka.svc.cluster.local,
-# which is used as the advertised listener address so that other pods in the
-# cluster can reach the broker by a predictable hostname.
+# Headless Service: gives the pod a stable DNS name
+# kafka-0.kafka.lightstreamer.svc.cluster.local, which is used as the
+# advertised listener address so that other pods in the cluster can reach
+# the broker by a predictable hostname.
 apiVersion: v1
 kind: Service
 metadata:
   name: kafka
-  namespace: kafka
+  namespace: lightstreamer
 spec:
   clusterIP: None
   selector:
@@ -33,7 +36,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: kafka
-  namespace: kafka
+  namespace: lightstreamer
 spec:
   serviceName: kafka
   replicas: 1
@@ -45,6 +48,16 @@ spec:
       labels:
         app: kafka
     spec:
+      initContainers:
+        - name: init-config
+          image: apache/kafka:latest
+          command:
+            - /bin/sh
+            - -c
+            - "cp -r /opt/kafka/config/. /mnt/config/"
+          volumeMounts:
+            - name: kafka-config
+              mountPath: /mnt/config
       containers:
         - name: kafka
           image: apache/kafka:latest
@@ -59,13 +72,13 @@ spec:
             - name: KAFKA_PROCESS_ROLES
               value: "broker,controller"
             - name: KAFKA_CONTROLLER_QUORUM_VOTERS
-              value: "1@kafka-0.kafka.kafka.svc.cluster.local:9093"
+              value: "1@kafka-0.kafka.lightstreamer.svc.cluster.local:9093"
             - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
               value: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT"
             - name: KAFKA_LISTENERS
               value: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093"
             - name: KAFKA_ADVERTISED_LISTENERS
-              value: "PLAINTEXT://kafka-0.kafka.kafka.svc.cluster.local:9092"
+              value: "PLAINTEXT://kafka-0.kafka.lightstreamer.svc.cluster.local:9092"
             - name: KAFKA_INTER_BROKER_LISTENER_NAME
               value: "PLAINTEXT"
             - name: KAFKA_CONTROLLER_LISTENER_NAMES
@@ -80,3 +93,13 @@ spec:
               value: "0"
             - name: KAFKA_LOG_DIRS
               value: "/tmp/kafka-logs"
+          volumeMounts:
+            - name: kafka-config
+              mountPath: /opt/kafka/config
+            - name: kafka-logs
+              mountPath: /opt/kafka/logs
+      volumes:
+        - name: kafka-config
+          emptyDir: {}
+        - name: kafka-logs
+          emptyDir: {}

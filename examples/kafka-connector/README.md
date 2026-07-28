@@ -6,11 +6,9 @@ This example is the Kubernetes equivalent of the [Lightstreamer Kafka Connector 
 
 ```mermaid
 flowchart LR
-  subgraph kafka-ns["Namespace: kafka"]
+  subgraph ls-ns["Namespace: lightstreamer"]
     P["quickstart-producer"]
     K["Apache Kafka\n(kafka-0)"]
-  end
-  subgraph ls-ns["Namespace: lightstreamer"]
     subgraph Pod["Lightstreamer Pod"]
       KC["Kafka Connector\n(QuickStart)"]
     end
@@ -34,6 +32,7 @@ The simulated producer continuously publishes stock market events (price changes
   helm repo update
   ```
 - `docker` on your PATH and a container registry accessible by the cluster nodes, for building and pushing the producer image (not required on OpenShift — the image can be built server-side)
+- A namespace named `lightstreamer` (called a "project" on OpenShift) — all resources in this example deploy into it. Create it with `kubectl create namespace lightstreamer` or, on OpenShift, `oc new-project lightstreamer`; ask your cluster admin if you don't have permission. To use a different name, update the `namespace:` fields and the DNS hostnames in [`kafka.yaml`](kafka.yaml) and [`producer.yaml`](producer.yaml) to match.
 
 ## Deployment
 
@@ -44,23 +43,16 @@ Deploy a single-node Apache Kafka broker in KRaft mode using the official [`apac
 - **Any Kubernetes distribution**:
   ```sh
   kubectl apply -f kafka.yaml
-  kubectl rollout status statefulset/kafka -n kafka
+  kubectl rollout status statefulset/kafka -n lightstreamer
   ```
 
 - **OpenShift**:
   ```sh
   oc apply -f kafka.yaml
-  oc rollout status statefulset/kafka -n kafka
+  oc rollout status statefulset/kafka -n lightstreamer
   ```
 
-> [!NOTE]
-> **OpenShift only**: The `apache/kafka` image runs as a fixed non-root user ID. If your cluster enforces the `restricted` SCC, grant `anyuid` to the default service account before applying (create the project first if it does not already exist):
-> ```sh
-> oc new-project kafka  # skip if the project already exists
-> oc adm policy add-scc-to-serviceaccount anyuid -z default -n kafka
-> ```
-
-This creates a combined controller/broker pod named `kafka-0`, reachable within the cluster at `kafka-0.kafka.kafka.svc.cluster.local:9092`.
+This creates a combined controller/broker pod named `kafka-0`, reachable within the cluster at `kafka-0.kafka.lightstreamer.svc.cluster.local:9092`.
 
 ### 2. Build and deploy the producer
 
@@ -83,33 +75,32 @@ Build the producer image using the provided [`producer.Dockerfile`](producer.Doc
   Then edit [`producer.yaml`](producer.yaml), replace `<your-registry>/quickstart-producer:latest` with your image reference, and apply:
   ```sh
   kubectl apply -f producer.yaml
-  kubectl rollout status deployment/quickstart-producer -n kafka
-  kubectl logs -l app=quickstart-producer -n kafka  
+  kubectl rollout status deployment/quickstart-producer -n lightstreamer
+  kubectl logs -l app=quickstart-producer -n lightstreamer
   ```
 
-- **OpenShift** — use an OpenShift binary build to build the image server-side and push it to the internal registry. No local Docker daemon is required:
+- **OpenShift** — build the image server-side by embedding the Dockerfile in a BuildConfig. Because [`producer.Dockerfile`](producer.Dockerfile) clones its own sources from GitHub, no binary upload or local Docker daemon is required:
   ```sh
-  oc new-build --name=quickstart-producer --binary --strategy=docker -n kafka
-  oc start-build quickstart-producer --from-file=producer.Dockerfile --follow -n kafka
+  oc new-build --name=quickstart-producer --dockerfile="$(cat producer.Dockerfile)" -n lightstreamer
+  oc logs -f bc/quickstart-producer -n lightstreamer
   ```
 
   Once the build completes, the image is available at:
   ```
-  image-registry.openshift-image-registry.svc:5000/kafka/quickstart-producer:latest
+  image-registry.openshift-image-registry.svc:5000/lightstreamer/quickstart-producer:latest
   ```
 
   Edit [`producer.yaml`](producer.yaml) and set the image to the above reference, then apply:
   ```sh
   oc apply -f producer.yaml
-  oc rollout status deployment/quickstart-producer -n kafka
-  oc logs -l app=quickstart-producer -n kafka
+  oc rollout status deployment/quickstart-producer -n lightstreamer
+  oc logs -l app=quickstart-producer -n lightstreamer
   ```
 
 ### 3. Install the Lightstreamer Helm chart
 
 - **Any Kubernetes distribution**:
   ```sh
-  kubectl create namespace lightstreamer
   helm install lightstreamer lightstreamer/lightstreamer \
     -f values.yaml \
     --namespace lightstreamer
@@ -119,7 +110,6 @@ Build the producer image using the provided [`producer.Dockerfile`](producer.Doc
 
 - **OpenShift**:
   ```sh
-  oc new-project lightstreamer
   helm install lightstreamer lightstreamer/lightstreamer \
     -f values.yaml \
     --namespace lightstreamer
@@ -128,6 +118,8 @@ Build the producer image using the provided [`producer.Dockerfile`](producer.Doc
   ```
 
 Check the logs to confirm the Kafka Connector has loaded and is consuming from the `stocks` topic.
+
+The provided [`values.yaml`](values.yaml) configures the Kafka Connector with the `stocks` Kafka topic (routed to `stock-[index=N]` Lightstreamer items) and points it at the broker at `kafka-0.kafka.lightstreamer.svc.cluster.local:9092`.
 
 ## Accessing the web client
 
@@ -158,11 +150,17 @@ The `ghcr.io/lightstreamer/lightstreamer-kafka-connector` image does **not** inc
 
 ## Cleanup
 
+The steps below remove only the resources created by this example — the `lightstreamer` namespace/project is left in place, so this workflow is safe on shared or admin-provisioned projects where you don't have delete rights.
+
 - **Any Kubernetes distribution**:
   ```sh
   helm uninstall lightstreamer --namespace lightstreamer
   kubectl delete -f producer.yaml
   kubectl delete -f kafka.yaml
+  ```
+  Also remove the local producer image (and any copy pushed to your remote registry):
+  ```sh
+  docker rmi <your-registry>/quickstart-producer:latest
   ```
 
 - **OpenShift**:
@@ -170,6 +168,7 @@ The `ghcr.io/lightstreamer/lightstreamer-kafka-connector` image does **not** inc
   helm uninstall lightstreamer --namespace lightstreamer
   oc delete -f producer.yaml
   oc delete -f kafka.yaml
-  oc delete project lightstreamer
-  oc delete project kafka
+  oc delete route/lightstreamer-service -n lightstreamer --ignore-not-found
+  oc delete bc/quickstart-producer -n lightstreamer --ignore-not-found
+  oc delete is/quickstart-producer -n lightstreamer --ignore-not-found
   ```
