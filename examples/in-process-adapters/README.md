@@ -110,7 +110,7 @@ Install the chart using the provided [`values.yaml`](values.yaml), overriding th
     --set image.tag=1.0.0 \
     --namespace lightstreamer
   kubectl rollout status deployment/lightstreamer -n lightstreamer
-  kubectl logs -l app.kubernetes.io/name=lightstreamer -n lightstreamer
+    
   ```
 
 - **OpenShift** — use the image reference printed by `build.sh`, for example:
@@ -168,6 +168,13 @@ Then remove the image build resources from the [`example-adapter-set/`](example-
   ```
   Removes the local Docker image (if `REGISTRY` is set).
 
+  > **Minikube shortcut**: If you built the image inside Minikube's Docker daemon, point your shell at it again before running the script so that the image is removed from the correct daemon:
+  > ```sh
+  > eval $(minikube docker-env)
+  > ./undeploy.sh kubernetes
+  > ```
+  > Run `eval $(minikube docker-env --unset)` to restore your shell's Docker environment afterwards.
+
 - **OpenShift**:
   ```sh
   ./undeploy.sh openshift
@@ -176,4 +183,3 @@ Then remove the image build resources from the [`example-adapter-set/`](example-
   ```sh
   oc delete route lightstreamer-service -n lightstreamer
   ```
-
