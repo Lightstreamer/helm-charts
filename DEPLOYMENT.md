@@ -2093,7 +2093,7 @@ The Kafka Connector must be provisioned before it can be used. The Helm chart su
    ```yaml
    image:
      repository: ghcr.io/lightstreamer/lightstreamer-kafka-connector
-     tag: "2.0.0"
+     tag: "2.1.0"
 
    connectors:
      kafkaConnector:
@@ -2113,7 +2113,7 @@ The Kafka Connector must be provisioned before it can be used. The Helm chart su
      kafkaConnector:
        ...
        provisioning:
-         fromGitHubRelease: 2.0.0
+         fromGitHubRelease: 2.1.0
    ```
 
 3. **From URL**
@@ -2139,7 +2139,7 @@ The Kafka Connector must be provisioned before it can be used. The Helm chart su
        provisioning:
          fromVolume:
            name: my-volume
-           filePath: kafka-connector/lightstreamer-kafka-connector-2.0.0.zip
+           filePath: kafka-connector/lightstreamer-kafka-connector-2.1.0.zip
    ```
 
 > [!NOTE]
