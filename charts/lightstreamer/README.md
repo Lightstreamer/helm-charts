@@ -5383,7 +5383,7 @@ Mandatory. Defines the provisioning method of the Lightstreamer Kafka Connector.
 ```
 ### [connectors.kafkaConnector.provisioning.fromGitHubRelease](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4895)
      
-The Lightstreamer Kafka Connector release to download from the GitHub official repository at startup. Once downloaded, the package will be deployed to the `/deployed_adapters/kafka-connector` directory in the container. Example: "2.0.0"
+The Lightstreamer Kafka Connector release to download from the GitHub official repository at startup. Once downloaded, the package will be deployed to the `/deployed_adapters/kafka-connector` directory in the container. Example: "2.1.0"
 
 **Type:** string
 
@@ -5411,7 +5411,7 @@ The reference to a volume where the Kafka Connector zip package is stored. At st
 **Default:** `{"filePath":null,"name":null}`
 ### [connectors.kafkaConnector.provisioning.fromVolume.filePath](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4913)
      
-The file path to the Kafka Connector zip package in the volume, e.g.: `/connectors/lightstreamer-kafka-connector-2.0.0.zip`.
+The file path to the Kafka Connector zip package in the volume, e.g.: `/connectors/lightstreamer-kafka-connector-2.1.0.zip`.
 
 **Type:** string
 
