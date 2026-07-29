@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.1.0] - 2026-29-07
+
+### Added
+
+- Support for Lightstreamer Kafka Connector 2.1.0. ([#4](https://github.com/Lightstreamer/helm-charts/pull/4))
+- New `connectors.kafkaConnector.connections.*.consumerMode` setting exposing the connector's consumer mode feature:
+  - `GROUP`: The internal Kafka Consumer joins a consumer group and uses the group coordination protocol.
+  - `MANUAL`: The internal Kafka Consumer operates independently, using manual partition assignment without joining any consumer group and  without persisting offsets to Kafka.
+
+  The default remains `GROUP`, so this is a fully backward-compatible addition. ([#4](https://github.com/Lightstreamer/helm-charts/pull/4))
+- New `connectors.kafkaConnector.connections.*.routing.topicMappings.*.fromPartitions` setting: lists the partitions of the topic to be manually assigned to the consumer. ([#4](https://github.com/Lightstreamer/helm-charts/pull/4))
+
+### Changed
+
+- Rewrote the Kafka Connector adapter template to emit the Kafka Connector 2.1.0 configuration schema. ([#4](https://github.com/Lightstreamer/helm-charts/pull/2))
+- Documentation updates in `DEPLOYMENT.md` for the new consumer mode and partitions assignment. ([#4](https://github.com/Lightstreamer/helm-charts/pull/2))
+- Bumped Kafka Connector version references (`examples/kafka-connector`, `chart/values.yaml`, and `DEPLOYMENT.md`) to `2.1.0`. ([#4](https://github.com/Lightstreamer/helm-charts/pull/2))
+- Cleans up and aligns the three example READMEs on a common structure, and fixes a few issues that blocked the kafka-connector example on OpenShift. ([#3](https://github.com/Lightstreamer/helm-charts/pull/3))
+
 ## [1.0.0] - 2026-07-07
 
 ### Added
