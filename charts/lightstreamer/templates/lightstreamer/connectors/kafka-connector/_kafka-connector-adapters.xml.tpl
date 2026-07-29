@@ -88,7 +88,27 @@ Render the Lightstreamer Kafka Connector configuration file.
         -->
         <param name="bootstrap.servers">{{ required (printf "connectors.kafkaConnector.connections.%s.bootstrapServers must be set" $key) $connection.bootstrapServers }}</param>
 
-        {{- if $connection.groupId }}
+        {{- $consumerMode := $connection.consumerMode | default "GROUP" }}
+        {{- if $consumerMode }}
+          {{- if not (mustHas $consumerMode (list "GROUP" "MANUAL")) }}
+              {{- fail (printf "connectors.kafkaConnector.connections.%s.consumerMode must be one of: \"GROUP\", \"MANUAL\"" $key) }}
+          {{- end }}
+
+        <!-- Optional. The consumer mode for this connection. Can be one of the following:
+
+             - GROUP:  The internal Kafka Consumer joins a consumer group and uses the group
+                       coordination protocol (partition assignment, offset commits via
+                       __consumer_offsets). The consumer group is identified by the "group.id"
+                       parameter.
+             - MANUAL: The internal Kafka Consumer operates independently, using manual partition
+                       assignment without joining any consumer group and without persisting offsets
+                       to Kafka. The "group.id" parameter is ignored.
+
+             Default value: GROUP. -->
+        <param name="consumer.mode">{{ $consumerMode }}</param>
+
+          {{- if eq $consumerMode "GROUP" }}
+            {{- if $connection.groupId }}
 
         <!-- Optional. The name of the consumer group this connection belongs to.
 
@@ -99,7 +119,9 @@ Render the Lightstreamer Kafka Connector configuration file.
 
              Default value: Adapter Set id + the Data Adapter name + randomly generated suffix. -->
         <param name="group.id">{{ required (printf "connectors.kafkaConnector.connections.%s.groupId must be set" $key) $connection.groupId }}</param>
-        {{- end }} {{/* of .groupId */}}
+            {{- end }} {{/* of .groupId */}}
+          {{- end }}
+        {{- end }} {{/* of .consumerMode */}}
 
         {{- if (($connection.sslConfig)).enabled }}
 
@@ -534,11 +556,20 @@ Render the Lightstreamer Kafka Connector configuration file.
               {{- $itemsList = required (printf "Either specify %s.itemTemplateRefs or %s.items" $mappingKey $mappingKey) $mapping.items }}
             {{- end }}
         <param name="map.{{ $topic }}.to">{{ join "," (concat ($templateRefs) $itemsList) }}</param>
+            {{- if eq $consumerMode "MANUAL" }}
+              {{- $partitions := join "," $mapping.fromPartitions }}
+              {{- if $partitions }}
+        <param name="map.{{ $topic }}.from.partitions">{{ $partitions }}</param>
+              {{- end }}
+            {{- end }}
           {{- else }}
             {{- fail (printf "connectors.kafkaConnector.connections.%s.routing.topicMappings must be set" $key) }}
           {{- end }} {{/* of .topicMappings */}}
 
           {{- if .enableTopicRegEx }}
+            {{- if eq $consumerMode "MANUAL" }}
+              {{ fail (printf "connectors.kafkaConnector.connections.%s.routing.enableTopicRegEx must be set to 'false' when consumerMode is MANUAL" $key)}}
+            {{- end }}
 
         <!-- Optional. Enables the "TOPIC_NAME" part of the "map.TOPIC_NAME.to" parameter to be 
              treated as a regular expression rather than of a literal topic name.

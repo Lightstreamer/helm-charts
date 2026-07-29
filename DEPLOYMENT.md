@@ -2093,7 +2093,7 @@ The Kafka Connector must be provisioned before it can be used. The Helm chart su
    ```yaml
    image:
      repository: ghcr.io/lightstreamer/lightstreamer-kafka-connector
-     tag: "2.0.0"
+     tag: "2.1.0"
 
    connectors:
      kafkaConnector:
@@ -2113,7 +2113,7 @@ The Kafka Connector must be provisioned before it can be used. The Helm chart su
      kafkaConnector:
        ...
        provisioning:
-         fromGitHubRelease: 2.0.0
+         fromGitHubRelease: 2.1.0
    ```
 
 3. **From URL**
@@ -2139,7 +2139,7 @@ The Kafka Connector must be provisioned before it can be used. The Helm chart su
        provisioning:
          fromVolume:
            name: my-volume
-           filePath: kafka-connector/lightstreamer-kafka-connector-2.0.0.zip
+           filePath: kafka-connector/lightstreamer-kafka-connector-2.1.0.zip
    ```
 
 > [!NOTE]
@@ -2237,7 +2237,7 @@ connectors:
 bootstrapServers: "kafka-0.kafka-headless.kafka:9092"
 ```
 
-**Consumer group**: The optional [`groupId`](charts/lightstreamer/values.yaml#L5044) sets the Kafka `group.id` for the internal consumer. When not specified, the connector generates a default value from `adapterSetId`, the connection name, and a random suffix.
+**Consumer group**: The optional [`groupId`](charts/lightstreamer/values.yaml#L5056) sets the Kafka `group.id` for the internal consumer. When not specified, the connector generates a default value from `adapterSetId`, the connection name, and a random suffix.
 
 In a multi-replica deployment, every Lightstreamer Broker instance must receive the full stream of messages from the subscribed topics — otherwise clients connected to different replicas would see only partial data, depending on which broker they happen to reach. To achieve this, each replica must use a **unique** `groupId` so that Kafka treats each one as an independent consumer rather than distributing partitions among members of the same group.
 
@@ -2259,7 +2259,7 @@ connectors:
         groupId: "ls-kafka-$env.POD_NAME"
 ```
 
-**Encryption**: Enable TLS/SSL encryption for the connection through [`sslConfig`](charts/lightstreamer/values.yaml#L5047). The `truststoreRef` validates broker certificates, and `keystoreRef` supplies a client certificate when mutual TLS is required. Both reference entries defined in the [Keystores](#keystores) section:
+**Encryption**: Enable TLS/SSL encryption for the connection through [`sslConfig`](charts/lightstreamer/values.yaml#L5059). The `truststoreRef` validates broker certificates, and `keystoreRef` supplies a client certificate when mutual TLS is required. Both reference entries defined in the [Keystores](#keystores) section:
 
 ```yaml
 connectors:
@@ -2277,11 +2277,11 @@ connectors:
           truststoreRef: myKafkaTruststore
 ```
 
-**Authentication**: Configure SASL authentication for the connection through [`authentication`](charts/lightstreamer/values.yaml#L5086). The supported mechanisms are:
+**Authentication**: Configure SASL authentication for the connection through [`authentication`](charts/lightstreamer/values.yaml#L5098). The supported mechanisms are:
 
-- `PLAIN`, `SCRAM-SHA-256`, `SCRAM-SHA-512`: username/password authentication. Supply credentials via a Kubernetes Secret referenced by [`credentialsSecretRef`](charts/lightstreamer/values.yaml#L5107) (must contain `user` and `password` keys).
-- `GSSAPI`: Kerberos authentication. Requires [`gssapi`](charts/lightstreamer/values.yaml#L5111) settings (service name, principal, optional keytab).
-- `AWS_MSK_IAM`: IAM-based authentication for Amazon MSK. Optionally configure a credential profile, role ARN, and STS region through the [`iam`](charts/lightstreamer/values.yaml#L5137) block.
+- `PLAIN`, `SCRAM-SHA-256`, `SCRAM-SHA-512`: username/password authentication. Supply credentials via a Kubernetes Secret referenced by [`credentialsSecretRef`](charts/lightstreamer/values.yaml#L5119) (must contain `user` and `password` keys).
+- `GSSAPI`: Kerberos authentication. Requires [`gssapi`](charts/lightstreamer/values.yaml#L5123) settings (service name, principal, optional keytab).
+- `AWS_MSK_IAM`: IAM-based authentication for Amazon MSK. Optionally configure a credential profile, role ARN, and STS region through the [`iam`](charts/lightstreamer/values.yaml#L5149) block.
 
 ```yaml
 connectors:
@@ -2298,16 +2298,16 @@ connectors:
           credentialsSecretRef: kafka-credentials
 ```
 
-**Record processing**: The [`record`](charts/lightstreamer/values.yaml#L5161) block controls how Kafka messages are consumed and deserialized.
+**Record processing**: The [`record`](charts/lightstreamer/values.yaml#L5173) block controls how Kafka messages are consumed and deserialized.
 
-[`consumeFrom`](charts/lightstreamer/values.yaml#L5174) (default: `LATEST`) sets the initial offset — use `EARLIEST` to replay all existing messages on first connection.
+[`consumeFrom`](charts/lightstreamer/values.yaml#L5186) (default: `LATEST`) sets the initial offset — use `EARLIEST` to replay all existing messages on first connection.
 
 > [!WARNING]
 > `consumeFrom` maps to Kafka's `auto.offset.reset` and only takes effect when no committed offsets exist for the consumer group. If `groupId` includes a value that changes across pod replacements or restarts, each new value produces a new group ID with no committed offsets. Combined with `EARLIEST`, this triggers a full replay of all topic partitions. Keep the default `LATEST` in multi-replica deployments where the group ID is not stable.
 
-[`consumeWithThreadNumber`](charts/lightstreamer/values.yaml#L5206) (default: `1`) controls parallelism for processing deserialized records. When using more than one thread, [`consumeWithOrderStrategy`](charts/lightstreamer/values.yaml#L5217) determines ordering guarantees: `ORDER_BY_PARTITION` (default), `ORDER_BY_KEY`, or `UNORDERED`.
+[`consumeWithThreadNumber`](charts/lightstreamer/values.yaml#L5218) (default: `1`) controls parallelism for processing deserialized records. When using more than one thread, [`consumeWithOrderStrategy`](charts/lightstreamer/values.yaml#L5229) determines ordering guarantees: `ORDER_BY_PARTITION` (default), `ORDER_BY_KEY`, or `UNORDERED`.
 
-[`keyEvaluator`](charts/lightstreamer/values.yaml#L5221) and [`valueEvaluator`](charts/lightstreamer/values.yaml#L5277) configure how message keys and values are deserialized. Supported types:
+[`keyEvaluator`](charts/lightstreamer/values.yaml#L5233) and [`valueEvaluator`](charts/lightstreamer/values.yaml#L5289) configure how message keys and values are deserialized. Supported types:
 
 - `STRING`: Plain text
 - `JSON`: JSON objects (optionally supports schema validation)
@@ -2318,7 +2318,7 @@ connectors:
 
 ##### Routing
 
-Routing configuration maps Kafka topics to Lightstreamer items. Define routing rules in the [`routing`](charts/lightstreamer/values.yaml#L5335) section:
+Routing configuration maps Kafka topics to Lightstreamer items. Define routing rules in the [`routing`](charts/lightstreamer/values.yaml#L5347) section:
 
 ```yaml
 connectors:
@@ -2364,7 +2364,7 @@ connectors:
 
 ##### Field mapping
 
-Field mapping defines how Kafka message content is transformed into Lightstreamer fields. Configure mappings in the [`fields`](charts/lightstreamer/values.yaml#L5378) section:
+Field mapping defines how Kafka message content is transformed into Lightstreamer fields. Configure mappings in the [`fields`](charts/lightstreamer/values.yaml#L5402) section:
 
 ```yaml
 connectors:
@@ -2402,11 +2402,11 @@ Extraction expressions support:
 - `#{KEY}`: Use the message key.
 - `#{TOPIC}`, `#{PARTITION}`, `#{OFFSET}`, `#{TIMESTAMP}`: Kafka metadata.
 
-Set [`enableSkipFailedMapping`](charts/lightstreamer/values.yaml#L5404) to `true` to continue processing even if some field extractions fail.
+Set [`enableSkipFailedMapping`](charts/lightstreamer/values.yaml#L5428) to `true` to continue processing even if some field extractions fail.
 
 ##### Connection-specific logging
 
-Each connection can override the global logging configuration using the [`logger`](charts/lightstreamer/values.yaml#L5451) setting:
+Each connection can override the global logging configuration using the [`logger`](charts/lightstreamer/values.yaml#L5475) setting:
 
 ```yaml
 connectors:
@@ -2428,7 +2428,7 @@ Connection-specific loggers inherit from the global configuration.
 
 Schema validation is mandatory for `AVRO` and `PROTOBUF` evaluator types, and can optionally be enabled for `JSON`. Schemas can be provided in two ways: **local schema files** stored in ConfigMaps, or a **Schema Registry** service.
 
-**Local schema files**: Define named schema references in the [`localSchemaFiles`](charts/lightstreamer/values.yaml#L5463) map. Each entry points to a ConfigMap name and key containing the schema file (`.avsc` for Avro, `.json` for JSON Schema, `.proto` or binary descriptor for Protobuf):
+**Local schema files**: Define named schema references in the [`localSchemaFiles`](charts/lightstreamer/values.yaml#L5487) map. Each entry points to a ConfigMap name and key containing the schema file (`.avsc` for Avro, `.json` for JSON Schema, `.proto` or binary descriptor for Protobuf):
 
 ```yaml
 connectors:
@@ -2478,7 +2478,7 @@ connectors:
      --namespace <namespace>
    ```
 
-3. Reference the ConfigMap in `localSchemaFiles` and configure the evaluator with both `localSchemaFilePathRef` and [`protobufMessageType`](charts/lightstreamer/values.yaml#L5261):
+3. Reference the ConfigMap in `localSchemaFiles` and configure the evaluator with both `localSchemaFilePathRef` and [`protobufMessageType`](charts/lightstreamer/values.yaml#L5273):
 
    ```yaml
    connectors:
@@ -2499,10 +2499,10 @@ connectors:
                protobufMessageType: com.example.MyMessage
    ```
 
-**Schema Registry**: Define named registry configurations in the [`schemaRegistries`](charts/lightstreamer/values.yaml#L5479) map. Two providers are supported:
+**Schema Registry**: Define named registry configurations in the [`schemaRegistries`](charts/lightstreamer/values.yaml#L5503) map. Two providers are supported:
 
-- `CONFLUENT`: requires a [`url`](charts/lightstreamer/values.yaml#L5495). Optional basic HTTP authentication and TLS settings are available under the [`confluent`](charts/lightstreamer/values.yaml#L5499) block (TLS configuration becomes mandatory when the URL uses the `https` protocol).
-- `AZURE`: supports JSON and AVRO only (not Protobuf). Requires a [`url`](charts/lightstreamer/values.yaml#L5495) pointing to the Azure Event Hubs namespace (e.g., `https://my-namespace.servicebus.windows.net`) and a credentials secret (containing `client_id`, `tenant_id`, and `client_secret` keys) referenced by [`azure.credentialsSecretRef`](charts/lightstreamer/values.yaml#L5557).
+- `CONFLUENT`: requires a [`url`](charts/lightstreamer/values.yaml#L5519). Optional basic HTTP authentication and TLS settings are available under the [`confluent`](charts/lightstreamer/values.yaml#L5523) block (TLS configuration becomes mandatory when the URL uses the `https` protocol).
+- `AZURE`: supports JSON and AVRO only (not Protobuf). Requires a [`url`](charts/lightstreamer/values.yaml#L5519) pointing to the Azure Event Hubs namespace (e.g., `https://my-namespace.servicebus.windows.net`) and a credentials secret (containing `client_id`, `tenant_id`, and `client_secret` keys) referenced by [`azure.credentialsSecretRef`](charts/lightstreamer/values.yaml#L5535).
 
 ```yaml
 connectors:
@@ -2514,7 +2514,7 @@ connectors:
         url: "https://schema-registry:8081"
 ```
 
-Then enable the Schema Registry on the evaluator and reference the registry at the connection level via [`schemaRegistryRef`](charts/lightstreamer/values.yaml#L5332):
+Then enable the Schema Registry on the evaluator and reference the registry at the connection level via [`schemaRegistryRef`](charts/lightstreamer/values.yaml#L5344):
 
 ```yaml
 connectors:

@@ -1,7 +1,7 @@
 image:
   # -- Remote registry from which to pull the Lightstreamer Kafka Connector Docker image
   repository: ghcr.io/lightstreamer/lightstreamer-kafka-connector
-  tag: "2.0.0"
+  tag: "2.1.0"
 
 deployment:
   # Download the QuickStart web client from GitHub into a shared volume,

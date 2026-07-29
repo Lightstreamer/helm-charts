@@ -4597,7 +4597,7 @@ Optional. Connectors configuration.
 **Default:**
 
 ```
-{"kafkaConnector":{"adapterClassName":"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter","adapterSetId":"KafkaConnector","connections":{"aConnectionConfiguration":{"authentication":{"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":false,"enableStoreKey":false,"enableTicketCache":false,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null},"iam":{"credentialProfileName":null,"roleArn":null,"roleSessionName":null,"stsRegion":null},"mechanism":null},"bootstrapServers":null,"enabled":false,"fields":{"enableNonScalarValuesMapping":false,"enableSkipFailedMapping":false,"mappings":{"aLightstreamerFieldName":"#{extraction_expression}"}},"groupId":null,"logger":{"appenders":[],"level":null},"name":null,"record":{"consumeFrom":"LATEST","consumeWithMaxPollIntervalMillis":30000,"consumeWithMaxPollRecords":500,"consumeWithOrderStrategy":"ORDER_BY_PARTITION","consumeWithSessionTimeoutMillis":45000,"consumeWithThreadNumber":1,"extractionErrorStrategy":"IGNORE_AND_CONTINUE","keyEvaluator":{"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"}},"routing":{"enableTopicRegEx":false,"itemTemplates":null,"topicMappings":{"aTopicMapping":{"itemTemplateRefs":[],"items":[],"topic":null}}},"snapshot":{"distinctLength":10,"maxIdleSeconds":0,"mode":"NONE"},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":false,"enabled":false,"keystoreRef":null,"protocol":null,"truststoreRef":null}}},"enabled":false,"localSchemaFiles":{"myKeySchema":null,"myValueSchema":null},"logging":{"appenders":{"dailyRolling":{"fileName":"kafka-connector.log","fileNamePattern":"kafka-connector-%d{yyyy-MM-dd}.log","pattern":"[%d] [%-10c{1}] %-5p %m%n","type":"DailyRollingFile","volumeRef":null},"stdout":{"pattern":"%d|%-10c{1}|%-5p|%m%n","type":"Console"}},"loggers":{"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter":{"appenders":["stdout"],"level":"INFO"},"org.apache.kafka":{"appenders":["stdout"],"level":"WARN"}}},"provisioning":{"fromGitHubRelease":null,"fromPathInImage":null,"fromUrl":null,"fromVolume":{"filePath":null,"name":null}},"schemaRegistries":{"mySchemaRegistry":{"azure":{"credentialsSecretRef":null},"confluent":{"basicAuthentication":{"credentialsSecretRef":null,"enabled":false},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":false,"keystoreRef":null,"protocol":null,"truststoreRef":null}},"provider":"CONFLUENT","url":null}}}}
+{"kafkaConnector":{"adapterClassName":"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter","adapterSetId":"KafkaConnector","connections":{"aConnectionConfiguration":{"authentication":{"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":false,"enableStoreKey":false,"enableTicketCache":false,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null},"iam":{"credentialProfileName":null,"roleArn":null,"roleSessionName":null,"stsRegion":null},"mechanism":null},"bootstrapServers":null,"consumerMode":"GROUP","enabled":false,"fields":{"enableNonScalarValuesMapping":false,"enableSkipFailedMapping":false,"mappings":{"aLightstreamerFieldName":"#{extraction_expression}"}},"groupId":null,"logger":{"appenders":[],"level":null},"name":null,"record":{"consumeFrom":"LATEST","consumeWithMaxPollIntervalMillis":30000,"consumeWithMaxPollRecords":500,"consumeWithOrderStrategy":"ORDER_BY_PARTITION","consumeWithSessionTimeoutMillis":45000,"consumeWithThreadNumber":1,"extractionErrorStrategy":"IGNORE_AND_CONTINUE","keyEvaluator":{"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"}},"routing":{"enableTopicRegEx":false,"itemTemplates":null,"topicMappings":{"aTopicMapping":{"fromPartitions":[],"itemTemplateRefs":[],"items":[],"topic":null}}},"snapshot":{"distinctLength":10,"maxIdleSeconds":0,"mode":"NONE"},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":false,"enabled":false,"keystoreRef":null,"protocol":null,"truststoreRef":null}}},"enabled":false,"localSchemaFiles":{"myKeySchema":null,"myValueSchema":null},"logging":{"appenders":{"dailyRolling":{"fileName":"kafka-connector.log","fileNamePattern":"kafka-connector-%d{yyyy-MM-dd}.log","pattern":"[%d] [%-10c{1}] %-5p %m%n","type":"DailyRollingFile","volumeRef":null},"stdout":{"pattern":"%d|%-10c{1}|%-5p|%m%n","type":"Console"}},"loggers":{"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter":{"appenders":["stdout"],"level":"INFO"},"org.apache.kafka":{"appenders":["stdout"],"level":"WARN"}}},"provisioning":{"fromGitHubRelease":null,"fromPathInImage":null,"fromUrl":null,"fromVolume":{"filePath":null,"name":null}},"schemaRegistries":{"mySchemaRegistry":{"azure":{"credentialsSecretRef":null},"confluent":{"basicAuthentication":{"credentialsSecretRef":null,"enabled":false},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":false,"keystoreRef":null,"protocol":null,"truststoreRef":null}},"provider":"CONFLUENT","url":null}}}}
 ```
 ### [connectors.kafkaConnector](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4873)
      
@@ -4608,7 +4608,7 @@ Optional. Lightstreamer Kafka Connector configuration.
 **Default:**
 
 ```
-{"adapterClassName":"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter","adapterSetId":"KafkaConnector","connections":{"aConnectionConfiguration":{"authentication":{"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":false,"enableStoreKey":false,"enableTicketCache":false,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null},"iam":{"credentialProfileName":null,"roleArn":null,"roleSessionName":null,"stsRegion":null},"mechanism":null},"bootstrapServers":null,"enabled":false,"fields":{"enableNonScalarValuesMapping":false,"enableSkipFailedMapping":false,"mappings":{"aLightstreamerFieldName":"#{extraction_expression}"}},"groupId":null,"logger":{"appenders":[],"level":null},"name":null,"record":{"consumeFrom":"LATEST","consumeWithMaxPollIntervalMillis":30000,"consumeWithMaxPollRecords":500,"consumeWithOrderStrategy":"ORDER_BY_PARTITION","consumeWithSessionTimeoutMillis":45000,"consumeWithThreadNumber":1,"extractionErrorStrategy":"IGNORE_AND_CONTINUE","keyEvaluator":{"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"}},"routing":{"enableTopicRegEx":false,"itemTemplates":null,"topicMappings":{"aTopicMapping":{"itemTemplateRefs":[],"items":[],"topic":null}}},"snapshot":{"distinctLength":10,"maxIdleSeconds":0,"mode":"NONE"},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":false,"enabled":false,"keystoreRef":null,"protocol":null,"truststoreRef":null}}},"enabled":false,"localSchemaFiles":{"myKeySchema":null,"myValueSchema":null},"logging":{"appenders":{"dailyRolling":{"fileName":"kafka-connector.log","fileNamePattern":"kafka-connector-%d{yyyy-MM-dd}.log","pattern":"[%d] [%-10c{1}] %-5p %m%n","type":"DailyRollingFile","volumeRef":null},"stdout":{"pattern":"%d|%-10c{1}|%-5p|%m%n","type":"Console"}},"loggers":{"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter":{"appenders":["stdout"],"level":"INFO"},"org.apache.kafka":{"appenders":["stdout"],"level":"WARN"}}},"provisioning":{"fromGitHubRelease":null,"fromPathInImage":null,"fromUrl":null,"fromVolume":{"filePath":null,"name":null}},"schemaRegistries":{"mySchemaRegistry":{"azure":{"credentialsSecretRef":null},"confluent":{"basicAuthentication":{"credentialsSecretRef":null,"enabled":false},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":false,"keystoreRef":null,"protocol":null,"truststoreRef":null}},"provider":"CONFLUENT","url":null}}}
+{"adapterClassName":"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter","adapterSetId":"KafkaConnector","connections":{"aConnectionConfiguration":{"authentication":{"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":false,"enableStoreKey":false,"enableTicketCache":false,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null},"iam":{"credentialProfileName":null,"roleArn":null,"roleSessionName":null,"stsRegion":null},"mechanism":null},"bootstrapServers":null,"consumerMode":"GROUP","enabled":false,"fields":{"enableNonScalarValuesMapping":false,"enableSkipFailedMapping":false,"mappings":{"aLightstreamerFieldName":"#{extraction_expression}"}},"groupId":null,"logger":{"appenders":[],"level":null},"name":null,"record":{"consumeFrom":"LATEST","consumeWithMaxPollIntervalMillis":30000,"consumeWithMaxPollRecords":500,"consumeWithOrderStrategy":"ORDER_BY_PARTITION","consumeWithSessionTimeoutMillis":45000,"consumeWithThreadNumber":1,"extractionErrorStrategy":"IGNORE_AND_CONTINUE","keyEvaluator":{"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"}},"routing":{"enableTopicRegEx":false,"itemTemplates":null,"topicMappings":{"aTopicMapping":{"fromPartitions":[],"itemTemplateRefs":[],"items":[],"topic":null}}},"snapshot":{"distinctLength":10,"maxIdleSeconds":0,"mode":"NONE"},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":false,"enabled":false,"keystoreRef":null,"protocol":null,"truststoreRef":null}}},"enabled":false,"localSchemaFiles":{"myKeySchema":null,"myValueSchema":null},"logging":{"appenders":{"dailyRolling":{"fileName":"kafka-connector.log","fileNamePattern":"kafka-connector-%d{yyyy-MM-dd}.log","pattern":"[%d] [%-10c{1}] %-5p %m%n","type":"DailyRollingFile","volumeRef":null},"stdout":{"pattern":"%d|%-10c{1}|%-5p|%m%n","type":"Console"}},"loggers":{"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter":{"appenders":["stdout"],"level":"INFO"},"org.apache.kafka":{"appenders":["stdout"],"level":"WARN"}}},"provisioning":{"fromGitHubRelease":null,"fromPathInImage":null,"fromUrl":null,"fromVolume":{"filePath":null,"name":null}},"schemaRegistries":{"mySchemaRegistry":{"azure":{"credentialsSecretRef":null},"confluent":{"basicAuthentication":{"credentialsSecretRef":null,"enabled":false},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":false,"keystoreRef":null,"protocol":null,"truststoreRef":null}},"provider":"CONFLUENT","url":null}}}
 ```
 ### [connectors.kafkaConnector.adapterClassName](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4927)
      
@@ -4633,7 +4633,7 @@ Mandatory. Maps of connection configurations. The Kafka Connector allows the con
 **Default:**
 
 ```
-{"aConnectionConfiguration":{"authentication":{"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":false,"enableStoreKey":false,"enableTicketCache":false,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null},"iam":{"credentialProfileName":null,"roleArn":null,"roleSessionName":null,"stsRegion":null},"mechanism":null},"bootstrapServers":null,"enabled":false,"fields":{"enableNonScalarValuesMapping":false,"enableSkipFailedMapping":false,"mappings":{"aLightstreamerFieldName":"#{extraction_expression}"}},"groupId":null,"logger":{"appenders":[],"level":null},"name":null,"record":{"consumeFrom":"LATEST","consumeWithMaxPollIntervalMillis":30000,"consumeWithMaxPollRecords":500,"consumeWithOrderStrategy":"ORDER_BY_PARTITION","consumeWithSessionTimeoutMillis":45000,"consumeWithThreadNumber":1,"extractionErrorStrategy":"IGNORE_AND_CONTINUE","keyEvaluator":{"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"}},"routing":{"enableTopicRegEx":false,"itemTemplates":null,"topicMappings":{"aTopicMapping":{"itemTemplateRefs":[],"items":[],"topic":null}}},"snapshot":{"distinctLength":10,"maxIdleSeconds":0,"mode":"NONE"},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":false,"enabled":false,"keystoreRef":null,"protocol":null,"truststoreRef":null}}}
+{"aConnectionConfiguration":{"authentication":{"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":false,"enableStoreKey":false,"enableTicketCache":false,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null},"iam":{"credentialProfileName":null,"roleArn":null,"roleSessionName":null,"stsRegion":null},"mechanism":null},"bootstrapServers":null,"consumerMode":"GROUP","enabled":false,"fields":{"enableNonScalarValuesMapping":false,"enableSkipFailedMapping":false,"mappings":{"aLightstreamerFieldName":"#{extraction_expression}"}},"groupId":null,"logger":{"appenders":[],"level":null},"name":null,"record":{"consumeFrom":"LATEST","consumeWithMaxPollIntervalMillis":30000,"consumeWithMaxPollRecords":500,"consumeWithOrderStrategy":"ORDER_BY_PARTITION","consumeWithSessionTimeoutMillis":45000,"consumeWithThreadNumber":1,"extractionErrorStrategy":"IGNORE_AND_CONTINUE","keyEvaluator":{"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"}},"routing":{"enableTopicRegEx":false,"itemTemplates":null,"topicMappings":{"aTopicMapping":{"fromPartitions":[],"itemTemplateRefs":[],"items":[],"topic":null}}},"snapshot":{"distinctLength":10,"maxIdleSeconds":0,"mode":"NONE"},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":false,"enabled":false,"keystoreRef":null,"protocol":null,"truststoreRef":null}}}
 ```
 ### [connectors.kafkaConnector.connections.aConnectionConfiguration](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5013)
      
@@ -4644,9 +4644,9 @@ At least one must be provided. A connection configuration. Since the Kafka Conne
 **Default:**
 
 ```
-{"authentication":{"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":false,"enableStoreKey":false,"enableTicketCache":false,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null},"iam":{"credentialProfileName":null,"roleArn":null,"roleSessionName":null,"stsRegion":null},"mechanism":null},"bootstrapServers":null,"enabled":false,"fields":{"enableNonScalarValuesMapping":false,"enableSkipFailedMapping":false,"mappings":{"aLightstreamerFieldName":"#{extraction_expression}"}},"groupId":null,"logger":{"appenders":[],"level":null},"name":null,"record":{"consumeFrom":"LATEST","consumeWithMaxPollIntervalMillis":30000,"consumeWithMaxPollRecords":500,"consumeWithOrderStrategy":"ORDER_BY_PARTITION","consumeWithSessionTimeoutMillis":45000,"consumeWithThreadNumber":1,"extractionErrorStrategy":"IGNORE_AND_CONTINUE","keyEvaluator":{"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"}},"routing":{"enableTopicRegEx":false,"itemTemplates":null,"topicMappings":{"aTopicMapping":{"itemTemplateRefs":[],"items":[],"topic":null}}},"snapshot":{"distinctLength":10,"maxIdleSeconds":0,"mode":"NONE"},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":false,"enabled":false,"keystoreRef":null,"protocol":null,"truststoreRef":null}}
+{"authentication":{"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":false,"enableStoreKey":false,"enableTicketCache":false,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null},"iam":{"credentialProfileName":null,"roleArn":null,"roleSessionName":null,"stsRegion":null},"mechanism":null},"bootstrapServers":null,"consumerMode":"GROUP","enabled":false,"fields":{"enableNonScalarValuesMapping":false,"enableSkipFailedMapping":false,"mappings":{"aLightstreamerFieldName":"#{extraction_expression}"}},"groupId":null,"logger":{"appenders":[],"level":null},"name":null,"record":{"consumeFrom":"LATEST","consumeWithMaxPollIntervalMillis":30000,"consumeWithMaxPollRecords":500,"consumeWithOrderStrategy":"ORDER_BY_PARTITION","consumeWithSessionTimeoutMillis":45000,"consumeWithThreadNumber":1,"extractionErrorStrategy":"IGNORE_AND_CONTINUE","keyEvaluator":{"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"}},"routing":{"enableTopicRegEx":false,"itemTemplates":null,"topicMappings":{"aTopicMapping":{"fromPartitions":[],"itemTemplateRefs":[],"items":[],"topic":null}}},"snapshot":{"distinctLength":10,"maxIdleSeconds":0,"mode":"NONE"},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":false,"enabled":false,"keystoreRef":null,"protocol":null,"truststoreRef":null}}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5086)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5098)
      
 Optional. Authentication settings for the connection.
 
@@ -4657,21 +4657,21 @@ Optional. Authentication settings for the connection.
 ```
 {"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":false,"enableStoreKey":false,"enableTicketCache":false,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null},"iam":{"credentialProfileName":null,"roleArn":null,"roleSessionName":null,"stsRegion":null},"mechanism":null}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.credentialsSecretRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5107)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.credentialsSecretRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5119)
      
 Mandatory if `mechanism` is set to `PLAIN`, `SCRAM-SHA-256`, `SCRAM-SHA-512`. The name of the secret containing the credentials. The secret must contain the keys `user` and `password`.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5090)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5102)
      
 Optional. Enables the authentication of the connection against the Kafka Cluster.
 
 **Type:** bool
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.gssapi](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5111)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.gssapi](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5123)
      
 Mandatory if `mechanism` is set to `GSSAPI`. The GSSAPI authentication settings.
 
@@ -4682,51 +4682,51 @@ Mandatory if `mechanism` is set to `GSSAPI`. The GSSAPI authentication settings.
 ```
 {"enableKeytab":false,"enableStoreKey":false,"enableTicketCache":false,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.gssapi.enableKeytab](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5114)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.gssapi.enableKeytab](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5126)
      
 Optional. Enables the use of a keytab.
 
 **Type:** bool
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.gssapi.enableStoreKey](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5123)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.gssapi.enableStoreKey](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5135)
      
 Optional. Enables the storage of the principal key.
 
 **Type:** bool
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.gssapi.enableTicketCache](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5133)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.gssapi.enableTicketCache](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5145)
      
 Optional. Enables the use of a ticket cache.
 
 **Type:** bool
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.gssapi.kerberosServiceName](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5126)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.gssapi.kerberosServiceName](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5138)
      
 Mandatory. The name of the Kerberos service.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.gssapi.keytabFilePathRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5118)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.gssapi.keytabFilePathRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5130)
      
 Mandatory if `enableKeytab` is set to `true`. The configmap name and key where the keytab file is stored
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.gssapi.principal](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5130)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.gssapi.principal](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5142)
      
 Mandatory if `enableTicketCache` is set to `true`. The name of the principal to be used.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.iam](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5137)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.iam](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5149)
      
-Optional but only effective if `mechanism` is set to `AWS_MSK_IAM`.
+Optional but only effective if `mechanism` is set to  `AWS_MSK_IAM`.
 
 **Type:** object
 
@@ -4735,35 +4735,35 @@ Optional but only effective if `mechanism` is set to `AWS_MSK_IAM`.
 ```
 {"credentialProfileName":null,"roleArn":null,"roleSessionName":null,"stsRegion":null}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.iam.credentialProfileName](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5142)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.iam.credentialProfileName](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5154)
      
 Optional. The name of the AWS credential profile to use for authentication. These profiles are defined in the AWS shared credentials file.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.iam.roleArn](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5148)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.iam.roleArn](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5160)
      
 Optional. The Amazon Resource Name (ARN) of the IAM role that the Kafka Connector should assume for authentication with MSK. Use this when you want the connector to assume a specific role with temporary credentials.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.iam.roleSessionName](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5152)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.iam.roleSessionName](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5164)
      
 Optional but only effective when `roleArn` is set. The name of the session for the assumed IAM role.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.iam.stsRegion](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5157)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.iam.stsRegion](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5169)
      
 Optional but only effective when `roleArn` is set. Specifies the AWS region of the STS endpoint to use when assuming the IAM role.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.mechanism](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5101)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.mechanism](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5113)
      
 Mandatory if `enabled` is set to `true`. The SASL mechanism type. The Kafka Connector accepts the following authentication mechanisms: - `PLAIN` - `SCRAM-SHA-256` - `SCRAM-SHA-512` - `GSSAPI` - `AWS_MSK_IAM`
 
@@ -4777,6 +4777,13 @@ Mandatory. The Kafka Cluster bootstrap server endpoint expressed as the list of 
 **Type:** string
 
 **Default:** `nil`
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.consumerMode](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5045)
+     
+Optional. The consumer mode for this connection. Possible values: - `GROUP`: The internal Kafka Consumer joins a consumer group and uses    the group coordination protocol (partition assignment, offset    commits via __consumer_offsets). The consumer group is identified by    the `group.id` parameter. -  `MANUAL`: The internal Kafka Consumer operates independently, using    manual partition assignment without joining any consumer group and    without persisting offsets to Kafka. The `group.id` parameter is    ignored.
+
+**Type:** string
+
+**Default:** `"GROUP"`
 ### [connectors.kafkaConnector.connections.aConnectionConfiguration.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5018)
      
 Enables this connection configuration. If set to `false`, the Lightstreamer Broker automatically denies all subscription requests for this connection.
@@ -4784,7 +4791,7 @@ Enables this connection configuration. If set to `false`, the Lightstreamer Brok
 **Type:** bool
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.fields](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5378)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.fields](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5402)
      
 Mandatory. Record mappings configuration.
 
@@ -4795,21 +4802,21 @@ Mandatory. Record mappings configuration.
 ```
 {"enableNonScalarValuesMapping":false,"enableSkipFailedMapping":false,"mappings":{"aLightstreamerFieldName":"#{extraction_expression}"}}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.fields.enableNonScalarValuesMapping](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5408)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.fields.enableNonScalarValuesMapping](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5432)
      
 Optional. If set to `true`, allows mapping of non-scalar values to Lightstreamer fields.
 
 **Type:** bool
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.fields.enableSkipFailedMapping](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5404)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.fields.enableSkipFailedMapping](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5428)
      
 Optional. If set to `true`, if a field mapping fails, that specific field's value will simply be omitted from the update sent to the Lightstreamer clients, while other successfully mapped fields from the same record will still be delivered.
 
 **Type:** bool
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.fields.mappings](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5383)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.fields.mappings](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5407)
      
 Mandatory. Record data to Lightstreamer field mappings. Every entry in the map defines a mapping from the Kafka record to the Lightstreamer fields.
 
@@ -4820,35 +4827,35 @@ Mandatory. Record data to Lightstreamer field mappings. Every entry in the map d
 ```
 {"aLightstreamerFieldName":"#{extraction_expression}"}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.fields.mappings.aLightstreamerFieldName](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5390)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.fields.mappings.aLightstreamerFieldName](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5414)
      
 At least one must be provided. Maps a Lightstreamer field (key) to data extracted from Kafka records (value) using extraction expressions. The extraction expressions follow the Data Extraction Language syntax. For a complete reference, see: https://github.com/lightstreamer/Lightstreamer-kafka-connector?tab=readme-ov-file#record-mapping-fieldfield_name.
 
 **Type:** string
 
 **Default:** `"#{extraction_expression}"`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.groupId](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5044)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.groupId](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5056)
      
-Optional. The name of the consumer group this connection belongs to. Sets the value for the `group.id` key used to configure the internal Kafka Consumer. See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_group.id for details. If not specified, the default value is `kafkaConnector.adapterSetId + name + randomly generated suffix`. Example: `a-consumer-group`
+Optional but only effective when `consumer.mode` is set  to `GROUP`. The name of the consumer group this connection belongs to. Sets the value for the `group.id` key used to configure the internal Kafka Consumer. See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_group.id for details. If not specified, the default value is `kafkaConnector.adapterSetId + name + randomly generated suffix`. Example: `a-consumer-group`
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.logger](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5451)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.logger](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5475)
      
 Optional. Logger configuration for the connection.
 
 **Type:** object
 
 **Default:** `{"appenders":[],"level":null}`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.logger.appenders](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5455)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.logger.appenders](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5479)
      
 Optional. List of references to the appenders defined in `connectors.kafkaConnector.logging.appenders`.
 
 **Type:** list
 
 **Default:** `[]`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.logger.level](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5460)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.logger.level](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5484)
      
 Mandatory. The logger level. Example: `INFO`
 
@@ -4862,7 +4869,7 @@ Mandatory and unique across all configurations. The connection name. This value 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5161)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5173)
      
 Optional. Record processing settings. If not specified, all settings at their defaults will be used.
 
@@ -4873,56 +4880,56 @@ Optional. Record processing settings. If not specified, all settings at their de
 ```
 {"consumeFrom":"LATEST","consumeWithMaxPollIntervalMillis":30000,"consumeWithMaxPollRecords":500,"consumeWithOrderStrategy":"ORDER_BY_PARTITION","consumeWithSessionTimeoutMillis":45000,"consumeWithThreadNumber":1,"extractionErrorStrategy":"IGNORE_AND_CONTINUE","keyEvaluator":{"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"}}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.consumeFrom](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5174)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.consumeFrom](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5186)
      
 Optional but ineffective if `snapshot.mode` is set to  any value other than `NONE`. Specifies where to start consuming  events from: - `LATEST`: Start consuming events from the end of the topic partition. - `EARLIEST`: Start consuming events from the beginning of the topic partition. Sets the value of the `auto.offset.reset` key to configure the internal Kafka Consumer. See https://kafka.apache.org/documentation/#consumerconfigs_auto.offset.reset for details.
 
 **Type:** string
 
 **Default:** `"LATEST"`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.consumeWithMaxPollIntervalMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5200)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.consumeWithMaxPollIntervalMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5212)
      
 Optional. The maximum delay between invocations of poll() when using consumer group management. This places an upper bound on the amount of time that the consumer can be idle before fetching more records. Sets the value of the `max.poll.interval.ms` key to configure the internal Kafka Consumer. See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_max.poll.interval.ms for details.
 
 **Type:** int
 
 **Default:** `30000`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.consumeWithMaxPollRecords](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5182)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.consumeWithMaxPollRecords](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5194)
      
 Optional. The maximum number of records fetched in each polling cycle. Sets the value of the `max.poll.records` key to configure the internal Kafka Consumer. See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_max.poll.records for details.
 
 **Type:** int
 
 **Default:** `500`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.consumeWithOrderStrategy](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5217)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.consumeWithOrderStrategy](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5229)
      
 Optional but only effective if `consumeWithThreadNumber` is set to a value greater than 1 (which includes the default value). The order strategy to be used for concurrent processing of the incoming deserialized records. If set to `ORDER_BY_PARTITION`, maintains the order of records within each partition. If set to `ORDER_BY_KEY`, maintains the order among the records sharing the same key. If set to `UNORDERED`, provides no ordering guarantees.
 
 **Type:** string
 
 **Default:** `"ORDER_BY_PARTITION"`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.consumeWithSessionTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5190)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.consumeWithSessionTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5202)
      
 Optional. The timeout used to detect client failures when using Kafka's group management facility. Sets the value of the `session.timeout.ms` key to configure the internal Kafka Consumer. See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_session.timeout.ms for details.
 
 **Type:** int
 
 **Default:** `45000`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.consumeWithThreadNumber](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5206)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.consumeWithThreadNumber](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5218)
      
 Optional. The number of threads to be used for parallel processing of the incoming deserialized records. If set to `-1`, the number of threads will be automatically determined based on the number of available CPU cores.
 
 **Type:** int
 
 **Default:** `1`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.extractionErrorStrategy](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5326)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.extractionErrorStrategy](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5338)
      
 Optional but forced to `IGNORE_AND_CONTINUE` when `snapshot.mode` is set to any value other than `NONE`. The error handling strategy to be used if an error occurs while extracting data from incoming deserialized records. If set to `IGNORE_AND_CONTINUE`, the error is ignored and the processing of the record continues. If set to `FORCE_UNSUBSCRIPTION`, the processing of the record is stopped and the unsubscription of the items requested by all the Lightstreamer clients subscribed to this connection is forced.
 
 **Type:** string
 
 **Default:** `"IGNORE_AND_CONTINUE"`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5221)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5233)
      
 Optional. Key evaluator configuration. If not specified, all settings at their defaults will be used.
 
@@ -4933,14 +4940,14 @@ Optional. Key evaluator configuration. If not specified, all settings at their d
 ```
 {"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator.enableSchemaRegistry](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5255)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator.enableSchemaRegistry](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5267)
      
 Mandatory if `type` is set to `AVRO` or `PROTOBUF` and no local schema paths are provided. Enables the Confluent Schema Registry for validation of the key. When enabled, the reference to a Schema Registry configuration is mandatory through the `record.schemaRegistryRef` parameter.
 
 **Type:** bool
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator.kvp](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5265)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator.kvp](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5277)
      
 Optional but only effective if `type` is set to `KVP`. Specifies the configuration for the KVP (Key Value Pair) format.
 
@@ -4951,49 +4958,49 @@ Optional but only effective if `type` is set to `KVP`. Specifies the configurati
 ```
 {"keyValueSeparator":"=","pairsSeparator":","}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator.kvp.keyValueSeparator](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5269)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator.kvp.keyValueSeparator](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5281)
      
 Optional. Specifies the symbol used to separate keys from values in a record key.
 
 **Type:** string
 
 **Default:** `"="`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator.kvp.pairsSeparator](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5273)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator.kvp.pairsSeparator](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5285)
      
 Optional. Specifies the symbol used to separate multiple key-value pairs in a record key.
 
 **Type:** string
 
 **Default:** `","`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator.localSchemaFilePathRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5248)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator.localSchemaFilePathRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5260)
      
 Mandatory if `type` is set to `AVRO` or `PROTOBUF` and `enableSchemaRegistry` is set to `false`. The reference to a local schema file (defined in `connectors.kafkaConnectors.localSchemaFiles`) for message validation of the key. The setting takes precedence over `enableSchemaRegistry` if the latter is set to `true`.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator.protobufMessageType](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5261)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator.protobufMessageType](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5273)
      
 Mandatory if `type` is set to `PROTOBUF` and a binary descriptor file is provided through `localSchemaFilePathRef`. Specifies the name of the Protobuf message type to be used for deserializing the key a Kafka record.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator.type](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5240)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator.type](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5252)
      
 Optional. The format to be used to deserialize the key of a Kafka record. Possible values: - `AVRO` - `JSON` - `PROTOBUF` - `KVP` - `STRING` - `INTEGER` - `BOOLEAN` - `BYTE_ARRAY` - `BYTE_BUFFER` - `BYTES` - `DOUBLE` - `FLOAT` - `LONG` - `SHORT` - `UUID`
 
 **Type:** string
 
 **Default:** `"STRING"`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.schemaRegistryRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5332)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.schemaRegistryRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5344)
      
 Mandatory when either `record.keyEvaluator` or `record.valueEvaluator` requires a Schema Registry. The reference to a Schema Registry configuration (defined in `connectors.kafkaConnector.schemaRegistries`).
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5277)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5289)
      
 Optional. Value evaluator configuration. If not specified, all settings at their defaults will be used.
 
@@ -5004,14 +5011,14 @@ Optional. Value evaluator configuration. If not specified, all settings at their
 ```
 {"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator.enableSchemaRegistry](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5297)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator.enableSchemaRegistry](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5309)
      
 Mandatory if `type` is set to `AVRO` or `PROTOBUF` and no local schema paths are provided. Enables the Confluent Schema Registry for validation of the value. When enabled, the reference to a Schema Registry configuration is mandatory through the `record.schemaRegistryRef` parameter.
 
 **Type:** bool
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator.kvp](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5307)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator.kvp](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5319)
      
 Optional but only effective if `type` is set to `KVP`. Specifies the configuration for the KVP (Key Value Pair) format.
 
@@ -5022,42 +5029,42 @@ Optional but only effective if `type` is set to `KVP`. Specifies the configurati
 ```
 {"keyValueSeparator":"=","pairsSeparator":","}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator.kvp.keyValueSeparator](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5311)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator.kvp.keyValueSeparator](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5323)
      
 Optional. Specifies the symbol used to separate keys from values in a record value.
 
 **Type:** string
 
 **Default:** `"="`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator.kvp.pairsSeparator](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5315)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator.kvp.pairsSeparator](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5327)
      
 Optional. Specifies the symbol used to separate multiple key-value pairs in a record value.
 
 **Type:** string
 
 **Default:** `","`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator.localSchemaFilePathRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5290)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator.localSchemaFilePathRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5302)
      
 Mandatory if `type` is set to `AVRO` or `PROTOBUF` and `enableSchemaRegistry` is set to `false`. The reference to a local schema file (defined in `connectors.kafkaConnectors.localSchemaFiles`) for message validation of the value. The setting takes precedence over `enableSchemaRegistry` if the latter is set to `true`.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator.protobufMessageType](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5303)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator.protobufMessageType](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5315)
      
 Mandatory if `type` is set to `PROTOBUF` and a binary descriptor file is provided through `localSchemaFilePathRef`. Specifies the name of the Protobuf message type to be used for deserializing the value a Kafka record.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator.type](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5282)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator.type](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5294)
      
 Optional. The format to be used to deserialize the value of a Kafka record. See `record.keyEvaluator.type` for the list of supported formats.
 
 **Type:** string
 
 **Default:** `"STRING"`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5335)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5347)
      
 Mandatory. Record routings settings.
 
@@ -5066,23 +5073,23 @@ Mandatory. Record routings settings.
 **Default:**
 
 ```
-{"enableTopicRegEx":false,"itemTemplates":null,"topicMappings":{"aTopicMapping":{"itemTemplateRefs":[],"items":[],"topic":null}}}
+{"enableTopicRegEx":false,"itemTemplates":null,"topicMappings":{"aTopicMapping":{"fromPartitions":[],"itemTemplateRefs":[],"items":[],"topic":null}}}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.enableTopicRegEx](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5375)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.enableTopicRegEx](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5399)
      
-Optional. Enables treating `connectors.kafkaConnector.routing.topicMappings.{}.topic` as a regular expression instead of a literal topic name.
+Optional. Enables treating `connectors.kafkaConnector.routing.topicMappings.{}.topic` as a regular expression instead of a literal topic name. Not supported  when `consumer.mode` is set to `MANUAL`.
 
 **Type:** bool
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.itemTemplates](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5342)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.itemTemplates](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5354)
      
 Optional. Maps of item template expressions. Every entry in the map defines an expression composed as follows: - ITEM_PREFIX: the prefix of the item name - BINDABLE_EXPRESSIONS: a sequence of bindable extraction   expressions
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.topicMappings](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5347)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.topicMappings](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5359)
      
 Mandatory. Maps of Kafka topic mappings. Every entry in the map defines a topic mapping.
 
@@ -5091,9 +5098,9 @@ Mandatory. Maps of Kafka topic mappings. Every entry in the map defines a topic 
 **Default:**
 
 ```
-{"aTopicMapping":{"itemTemplateRefs":[],"items":[],"topic":null}}
+{"aTopicMapping":{"fromPartitions":[],"itemTemplateRefs":[],"items":[],"topic":null}}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.topicMappings.aTopicMapping](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5353)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.topicMappings.aTopicMapping](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5365)
      
 At least one must be provided. Maps a Kafka topic as follows: - to one or more simple items - to one or more item templates - to any combination of the above
 
@@ -5102,30 +5109,37 @@ At least one must be provided. Maps a Kafka topic as follows: - to one or more s
 **Default:**
 
 ```
-{"itemTemplateRefs":[],"items":[],"topic":null}
+{"fromPartitions":[],"itemTemplateRefs":[],"items":[],"topic":null}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.topicMappings.aTopicMapping.itemTemplateRefs](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5368)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.topicMappings.aTopicMapping.fromPartitions](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5389)
+     
+Optional but only effective when `consumer.mode` is set to  `MANUAL`. Lists the partitions of the topic to be manually  assigned to this consumer. Every entry in the list must be a valid partition number or an  inclusive range (e.g. "0", "1", "2-4").
+
+**Type:** list
+
+**Default:** `[]`
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.topicMappings.aTopicMapping.itemTemplateRefs](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5380)
      
 Mandatory if `items` is empty. List of item templates to which the topic must be mapped.
 
 **Type:** list
 
 **Default:** `[]`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.topicMappings.aTopicMapping.items](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5362)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.topicMappings.aTopicMapping.items](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5374)
      
 Mandatory if `itemTemplateRefs` is empty. List of simple items to which the topic must be mapped.
 
 **Type:** list
 
 **Default:** `[]`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.topicMappings.aTopicMapping.topic](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5358)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.topicMappings.aTopicMapping.topic](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5370)
      
 Mandatory and unique across all topic mappings. The Kafka topic name. Example: `stock`
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.snapshot](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5411)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.snapshot](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5435)
      
 Optional. Item snapshot settings
 
@@ -5136,28 +5150,28 @@ Optional. Item snapshot settings
 ```
 {"distinctLength":10,"maxIdleSeconds":0,"mode":"NONE"}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.snapshot.distinctLength](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5441)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.snapshot.distinctLength](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5465)
      
 Optional but only effective when `mode` is set to   `DISTINCT`. The maximum idle time in seconds after which the  snapshot of an item is discarded, so that the next incoming record  starts a fresh one. Must be a non-negative integer; a value of `0`  disables the idle check.
 
 **Type:** int
 
 **Default:** `10`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.snapshot.maxIdleSeconds](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5448)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.snapshot.maxIdleSeconds](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5472)
      
 Optional but only effective when `mode` is set to any value other than `NONE`. The maximum idle time in seconds after which the snapshot of an item is discarded, so that the next incoming record starts a fresh one. Must be a non-negative integer; a value of `0` disables the idle check.
 
 **Type:** int
 
 **Default:** `0`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.snapshot.mode](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5434)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.snapshot.mode](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5458)
      
 Optional. Selects the snapshot behavior for subscribed items and, when not set to `NONE`, pins the Lightstreamer subscription Mode the connector is willing to serve. Any non-`NONE` value activates the eager pipeline: the consumer starts at adapter initialization, replays the topic from the beginning to seed the Server's item store, then transitions to realtime tailing. Possible values: - `NONE`: Snapshot disabled. The consumer starts on the first client   client subscription and every record is delivered as a realtime   update. The subscription Mode is not constrained by the adapter. - `MERGE`: Snapshot enabled; subscription Mode pinned to MERGE. A   new subscriber receives a single snapshot event per item (the   current value), followed by realtime updates. - `DISTINCT`: Snapshot enabled; subscription Mode pinned to   DISTINCT. A new subscriber receives up to   `item.snapshot.distinct.length` snapshot events per item (the most   recent ones), followed by realtime updates. - `COMMAND`: Snapshot enabled; subscription Mode pinned to COMMAND.   A new subscriber receives all rows currently in the per-item   table. The connector synthesises the `command` field from each   record; you only map `field.key`.
 
 **Type:** string
 
 **Default:** `"NONE"`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5047)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5059)
      
 Optional. TLS/SSL settings for the connection.
 
@@ -5168,49 +5182,49 @@ Optional. TLS/SSL settings for the connection.
 ```
 {"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":false,"enabled":false,"keystoreRef":null,"protocol":null,"truststoreRef":null}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig.allowCipherSuites](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5068)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig.allowCipherSuites](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5080)
      
 Optional. List of enabled secure cipher suites. If not specified, all the available cipher suites in the running JVM will be used.
 
 **Type:** list
 
 **Default:** `[]`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig.allowProtocols](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5063)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig.allowProtocols](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5075)
      
 Optional. List of enabled secure communication protocols. If not specified, the default value is `[TLSv1.2, TLSv1.3]` when running on Java 11 or newer, `[TLSv1.2]` otherwise.
 
 **Type:** list
 
 **Default:** `[]`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig.enableHostnameVerification](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5071)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig.enableHostnameVerification](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5083)
      
 Optional. Enables the hostname verification.
 
 **Type:** bool
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5050)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5062)
      
 Optional. Enables the encryption.
 
 **Type:** bool
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig.keystoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5083)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig.keystoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5095)
      
 Optional. The reference to a keystore (defined in 'keystores') used if mutual TLS is enabled on Kafka brokers. See the `keystores.myServerKeystore` settings for general details on keystore configuration for the Kafka Connector.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig.protocol](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5058)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig.protocol](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5070)
      
 Optional. The SSL protocol to be used. Possible values: - `TLSv1.2` - `TLSv1.3` If not specified, the default value is `TLSv1.3` when running on Java 11 or newer, `TLSv1.2` otherwise.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig.truststoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5077)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig.truststoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5089)
      
 Optional. The reference to a keystore (defined in 'keystores') used to validate the certificates provided by the Kafka brokers. See the `keystores.myServerKeystore` settings for general details on keystore configuration for the Kafka Connector.
 
@@ -5224,14 +5238,14 @@ Optional. Enables the Lightstreamer Kafka Connector.
 **Type:** bool
 
 **Default:** `false`
-### [connectors.kafkaConnector.localSchemaFiles](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5463)
+### [connectors.kafkaConnector.localSchemaFiles](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5487)
      
 Optional. Local schema files used for message validation.
 
 **Type:** object
 
 **Default:** `{"myKeySchema":null,"myValueSchema":null}`
-### [connectors.kafkaConnector.localSchemaFiles.myKeySchema](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5467)
+### [connectors.kafkaConnector.localSchemaFiles.myKeySchema](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5491)
      
 Optional. The configmap name and key where the local schema file is stored.
 
@@ -5369,7 +5383,7 @@ Mandatory. Defines the provisioning method of the Lightstreamer Kafka Connector.
 ```
 ### [connectors.kafkaConnector.provisioning.fromGitHubRelease](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4895)
      
-The Lightstreamer Kafka Connector release to download from the GitHub official repository at startup. Once downloaded, the package will be deployed to the `/deployed_adapters/kafka-connector` directory in the container. Example: "2.0.0"
+The Lightstreamer Kafka Connector release to download from the GitHub official repository at startup. Once downloaded, the package will be deployed to the `/deployed_adapters/kafka-connector` directory in the container. Example: "2.1.0"
 
 **Type:** string
 
@@ -5397,7 +5411,7 @@ The reference to a volume where the Kafka Connector zip package is stored. At st
 **Default:** `{"filePath":null,"name":null}`
 ### [connectors.kafkaConnector.provisioning.fromVolume.filePath](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4913)
      
-The file path to the Kafka Connector zip package in the volume, e.g.: `/connectors/lightstreamer-kafka-connector-2.0.0.zip`.
+The file path to the Kafka Connector zip package in the volume, e.g.: `/connectors/lightstreamer-kafka-connector-2.1.0.zip`.
 
 **Type:** string
 
@@ -5409,7 +5423,7 @@ Mandatory. The name of the volume.
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.schemaRegistries](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5479)
+### [connectors.kafkaConnector.schemaRegistries](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5503)
      
 Optional. Map of Schema Registry definitions. Every entry in the map defines a specific Schema Registry configuration, which can then be referenced from the connector configurations through the `connection.{}.schemaRegistryRef` setting.
 
@@ -5420,21 +5434,21 @@ Optional. Map of Schema Registry definitions. Every entry in the map defines a s
 ```
 {"mySchemaRegistry":{"azure":{"credentialsSecretRef":null},"confluent":{"basicAuthentication":{"credentialsSecretRef":null,"enabled":false},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":false,"keystoreRef":null,"protocol":null,"truststoreRef":null}},"provider":"CONFLUENT","url":null}}
 ```
-### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.azure](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5551)
+### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.azure](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5575)
      
 Optional but only effective if `provider` is set to `AZURE`. Azure Schema Registry settings.
 
 **Type:** object
 
 **Default:** `{"credentialsSecretRef":null}`
-### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.azure.credentialsSecretRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5557)
+### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.azure.credentialsSecretRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5581)
      
 Mandatory. The name of the secret containing the credentials for authentication with the Azure Schema Registry. The secret must contain the keys `client_id`, `tenant_id`, and `client_secret`.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5499)
+### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5523)
      
 Optional but only effective if `provider` is set to `CONFLUENT`. Confluent Schema Registry settings.
 
@@ -5445,28 +5459,28 @@ Optional but only effective if `provider` is set to `CONFLUENT`. Confluent Schem
 ```
 {"basicAuthentication":{"credentialsSecretRef":null,"enabled":false},"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":false,"keystoreRef":null,"protocol":null,"truststoreRef":null}}
 ```
-### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.basicAuthentication](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5503)
+### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.basicAuthentication](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5527)
      
 Optional. Basic HTTP authentication of a connection against the Schema Registry.
 
 **Type:** object
 
 **Default:** `{"credentialsSecretRef":null,"enabled":false}`
-### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.basicAuthentication.credentialsSecretRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5511)
+### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.basicAuthentication.credentialsSecretRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5535)
      
 Mandatory if `enabled` is set to `true`. The name of the secret containing the credentials. The secret must contain the keys `user` and `password`.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.basicAuthentication.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5506)
+### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.basicAuthentication.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5530)
      
 Optional. Enables Basic HTTP authentication.
 
 **Type:** bool
 
 **Default:** `false`
-### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.sslConfig](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5515)
+### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.sslConfig](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5539)
      
 Mandatory if the https protocol is specified in `url`. TLS/SSL settings.
 
@@ -5477,56 +5491,56 @@ Mandatory if the https protocol is specified in `url`. TLS/SSL settings.
 ```
 {"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":false,"keystoreRef":null,"protocol":null,"truststoreRef":null}
 ```
-### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.sslConfig.allowCipherSuites](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5531)
+### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.sslConfig.allowCipherSuites](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5555)
      
 Optional. List of enabled secure cipher suites. If not specified, all the available cipher suites in the running JVM will be used.
 
 **Type:** list
 
 **Default:** `[]`
-### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.sslConfig.allowProtocols](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5526)
+### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.sslConfig.allowProtocols](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5550)
      
 Optional. List of enabled secure communication protocols. If not specified, the default value is `[TLSv1.2, TLSv1.3]` when running on Java 11 or newer, `[TLSv1.2]` otherwise.
 
 **Type:** list
 
 **Default:** `[]`
-### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.sslConfig.enableHostnameVerification](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5534)
+### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.sslConfig.enableHostnameVerification](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5558)
      
 Optional. Enables the hostname verification.
 
 **Type:** bool
 
 **Default:** `false`
-### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.sslConfig.keystoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5547)
+### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.sslConfig.keystoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5571)
      
 Optional. The reference to a keystore (defined in 'keystores') used if mutual TLS is enabled on the Schema Registry. See the `keystores.myKafkaConnectorKeystore` settings for general details on keystore configuration for the Kafka Connector.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.sslConfig.protocol](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5521)
+### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.sslConfig.protocol](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5545)
      
 Optional. The SSL protocol to be used. Possible values: `TLSv1.2`, `TLSv1.3`. If not specified, the default value is `TLSv1.3` when running on Java 11 or newer, `TLSv1.2` otherwise.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.sslConfig.truststoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5541)
+### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.sslConfig.truststoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5565)
      
 Optional. The reference to a keystore (defined in 'keystores') used to validate the certificates provided by the Schema Registry.See the `keystores.myKafkaConnectorKeystore` settings for general details on keystore configuration for the Kafka Connector.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.provider](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5490)
+### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.provider](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5514)
      
 Optional. Specifies the Schema Registry provider to use. Possible values: - `CONFLUENT` - `AZURE`
 
 **Type:** string
 
 **Default:** `"CONFLUENT"`
-### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.url](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5495)
+### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.url](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5519)
      
 Mandatory. The URL of the Schema Registry endpoint (either Confluent Schema Registry or Azure Schema Registry). Examples: `https://schema-registry:8084`, `https://my-namespace.servicebus.windows.net`.
 
