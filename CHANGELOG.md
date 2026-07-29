@@ -14,9 +14,9 @@
 
 ### Changed
 
-- Rewrote the Kafka Connector adapter template to emit the Kafka Connector 2.1.0 configuration schema. ([#4](https://github.com/Lightstreamer/helm-charts/pull/2))
-- Documentation updates in `DEPLOYMENT.md` for the new consumer mode and partitions assignment. ([#4](https://github.com/Lightstreamer/helm-charts/pull/2))
-- Bumped Kafka Connector version references (`examples/kafka-connector`, `chart/values.yaml`, and `DEPLOYMENT.md`) to `2.1.0`. ([#4](https://github.com/Lightstreamer/helm-charts/pull/2))
+- Rewrote the Kafka Connector adapter template to emit the Kafka Connector 2.1.0 configuration schema. ([#4](https://github.com/Lightstreamer/helm-charts/pull/4))
+- Documentation updates in `DEPLOYMENT.md` for the new consumer mode and partitions assignment. ([#4](https://github.com/Lightstreamer/helm-charts/pull/4))
+- Bumped Kafka Connector version references (`examples/kafka-connector`, `chart/values.yaml`, and `DEPLOYMENT.md`) to `2.1.0`. ([#4](https://github.com/Lightstreamer/helm-charts/pull/4))
 - Cleans up and aligns the three example READMEs on a common structure, and fixes a few issues that blocked the kafka-connector example on OpenShift. ([#3](https://github.com/Lightstreamer/helm-charts/pull/3))
 
 ## [1.0.0] - 2026-07-07
