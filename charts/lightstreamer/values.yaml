@@ -5032,8 +5032,20 @@ connectors:
         # Example: `broker:9092`
         bootstrapServers:
 
-        # -- (string) Optional. The name of the consumer group this connection
-        # belongs to.
+        # -- (string) Optional. The consumer mode for this connection.
+        # Possible values:
+        # - `GROUP`: The internal Kafka Consumer joins a consumer group and uses 
+        #   the group coordination protocol (partition assignment, offset 
+        #   commits via __consumer_offsets). The consumer group is identified by 
+        #   the `group.id` parameter.
+        # -  `MANUAL`: The internal Kafka Consumer operates independently, using 
+        #   manual partition assignment without joining any consumer group and 
+        #   without persisting offsets to Kafka. The `group.id` parameter is 
+        #   ignored.
+        consumerMode: GROUP
+
+        # -- (string) Optional but only effective when `consumer.mode` is set 
+        # to `GROUP`. The name of the consumer group this connection belongs to.
         # Sets the value for the `group.id` key used to configure the internal
         # Kafka Consumer.
         # See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_group.id
@@ -5132,7 +5144,7 @@ connectors:
             # -- Optional. Enables the use of a ticket cache.
             enableTicketCache: false
 
-          # -- Optional but only effective if `mechanism` is set to
+          # -- Optional but only effective if `mechanism` is set to 
           # `AWS_MSK_IAM`.
           iam:
 
@@ -5369,9 +5381,21 @@ connectors:
                 # - "stockTemplate"
                 # - "anotherTemplate"
 
+              # -- Optional but only effective when `consumer.mode` is set to 
+              # `MANUAL`. Lists the partitions of the topic to be manually 
+              # assigned to this consumer.
+              # Every entry in the list must be a valid partition number or an 
+              # inclusive range (e.g. "0", "1", "2-4").
+              fromPartitions: []
+                # - 0
+                # - 1
+                # - 2-3
+                # - 6-8
+
           # -- Optional. Enables treating
           # `connectors.kafkaConnector.routing.topicMappings.{}.topic` as a
-          # regular expression instead of a literal topic name.
+          # regular expression instead of a literal topic name. Not supported 
+          # when `consumer.mode` is set to `MANUAL`.
           enableTopicRegEx: false
 
         # -- Mandatory. Record mappings configuration.
@@ -5417,7 +5441,7 @@ connectors:
           # initialization, replays the topic from the beginning to seed the
           # Server's item store, then transitions to realtime tailing.
           # Possible values:
-            # - `NONE`: Snapshot disabled. The consumer starts on the first client
+          # - `NONE`: Snapshot disabled. The consumer starts on the first client
           #   client subscription and every record is delivered as a realtime
           #   update. The subscription Mode is not constrained by the adapter.
           # - `MERGE`: Snapshot enabled; subscription Mode pinned to MERGE. A
