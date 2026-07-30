@@ -463,6 +463,9 @@ license:
     # For `PRODUCTION`, `HOT-STANDBY`, `NON-PRODUCTION-FULL`, and
     # `NON-PRODUCTION-LIMITED`: you can choose between `ONLINE` and `FILE`.
     # For `DEMO`: the value is ignored, as no validation is done.
+    # Note that, apart from the `DEMO` license type, the license is revalidated
+    # at regular intervals. In case of `FILE` validation, this allows for hot
+    # replacement of license files (by keeping the file names).
     licenseValidation: ONLINE
 
     # -- Mandatory if `licenseValidation` is set to `ONLINE`. Secret name and
@@ -514,6 +517,9 @@ license:
       # feature that is allowed by the license in use.
       # To know more, open the Welcome Page or the Monitoring Dashboard (Edition
       # tab) of the running Lightstreamer Server.
+      # Note that, apart from the DEMO license type, the license is revalidated
+      # at regular intervals and this may cause the licensed feature set to
+      # change.
       features:
 
         # -- Mandatory. Mobile Push Notifications.
