@@ -19,7 +19,7 @@ Render the Lightstreamer configuration file.
 */}}
 {{- define "lightstreamer.configuration" -}}
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Do not remove this line. File tag: server_conf-APV-7.4.0. -->
+<!-- Do not remove this line. File tag: server_conf-APV-8.0.0 b1. -->
 
 <lightstreamer_conf>
 
@@ -234,7 +234,7 @@ Render the Lightstreamer configuration file.
   
   {{- $enablePrivate := (not (eq (.clientIdentification).enablePrivate false)) }}
   {{- $enableProxyProtocol := (.clientIdentification).enableProxyProtocol | default false }}
-  {{- $proxyProtocolTimeoutMillis := int (not (quote (.clientIdentification).proxyProtocolTimeoutMillis | empty) | ternary (.clientIdentification).proxyProtocolTimeoutMillis 1000) }}
+  {{- $proxyProtocolTimeoutMillis := int (not (quote (.clientIdentification).proxyProtocolTimeoutMillis | empty) | ternary (.clientIdentification).proxyProtocolTimeoutMillis 5000) }}
   {{- $enableForwardsLogging := (.clientIdentification).enableForwardsLogging | default false }}
   {{- $skipLocalForwards := int (.clientIdentification).skipLocalForwards }}
         <client_identification private={{ $enablePrivate | ternary "Y" "N" | quote }}>
@@ -261,12 +261,12 @@ Render the Lightstreamer configuration file.
                  the proxy protocol, when enabled. Note that a reverse proxy or
                  load balancer speaking the proxy protocol is bound to send
                  information immediately after connection start; so the timeout
-                 can only apply to cases of wrong configuration, local network
-                 issues or illegal access to this port.
-                 For this reason, the read is performed directly in the ACCEPT
-                 thread pool and this setting protects that pool against such
-                 unlikely events.
-                 Default: 1000. -->
+                 is expected to only apply to cases of wrong configuration, 
+                 local network issues or illegal access to this port.
+                 The time actually considered may be approximated and may be a few
+                 seconds higher, for internal performance reasons.
+                 A 0 value suppresses the check.
+                 Default: 5000. -->
             <proxy_protocol_timeout_millis>{{ $proxyProtocolTimeoutMillis }}</proxy_protocol_timeout_millis>
 
             <!-- Optional, but nonzero values forbidden if "proxy_protocol_enabled"
@@ -526,7 +526,7 @@ Render the Lightstreamer configuration file.
              In the latter case, the session also has to be kept in a cache.
              A value of 0 poses no time limit.
              Note, however, that the underlying Security Provider may ignore
-             this setting (possibly depending of the protocol version in use).
+             this setting (possibly depending on the protocol version in use).
              Default: If left empty or not defined, the maximum time is decided by the
              underlying Security Provider. For the default SunJSSE, it is 86400
              seconds, unless configured through the
@@ -557,9 +557,11 @@ Render the Lightstreamer configuration file.
              Can be one of the following:
              - Y: Upon each client connection, the availability of a client TLS/SSL
                   certificate is checked. If available, the included
-                  identification data will be supplied upon calls to notifyUser.
-             - N: No certificate information is supplied to notifyUser and no
-                  check is done on the client certificate.
+                  identification data will be supplied to the Metadata Adapter
+                  upon calls to the authentication method.
+             - N: No certificate information is supplied to the Metadata Adapter
+                  upon calls to the authentication method
+                  and no check is done on the client certificate.
              Note that a check on the client certificate can also be requested
              through <force_client_auth>.
              Default: N. -->
@@ -678,7 +680,7 @@ Render the Lightstreamer configuration file.
                  support specific response features.
          Default: Y. -->
     <!--
-    <use_http_11>Y</use_http_11>
+    <use_http_11>AUTO</use_http_11>
     -->
 
     <!-- Optional. WebSocket support configuration. The support is enabled
@@ -788,8 +790,7 @@ Render the Lightstreamer configuration file.
     <use_protected_js>{{ .enableProtectedJs | default false | ternary "Y" "N" }}</use_protected_js>
 
     <!-- Optional. Use this setting to enable the forwarding of the cookies to
-         the Metadata Adapter through the httpHeaders argument of the "notifyUser"
-         method.
+         the Metadata Adapter upon calls to the authentication method.
          Please note that in any case cookies should not be used to authenticate
          users, otherwise, having <use_protected_js> set to N and/or a too permissive
          policy in the <cross_domain_policy> will expose the server to CSRF attacks.
@@ -1264,7 +1265,7 @@ Render the Lightstreamer configuration file.
     {{- end }} {{/* rmiConnector */}}
         </rmi_connector>
 
-        <!-- Optional. Enables Sun/Oracle's JMXMP connector.
+        <!-- Optional. Enables Sun/Oracle's JMXMP Connector.
              The connector is supported by the Server only if Sun/Oracle's JMXMP
              implementation library is added to the Server classpath;
              see README.TXT in the JMX SDK for details.
@@ -1334,7 +1335,7 @@ Render the Lightstreamer configuration file.
              - N: all list properties are enabled; in some cases, their value
                   may be an extremely long list; consider, for instance,
                   'CurrentSessionList' in the ResourceMBean.
-             Default: N. -->
+             Default: Y. -->
     {{- $enableLongListProperties := not (eq .enableLongListProperties false) }}
         <disable_long_list_properties>{{ $enableLongListProperties | ternary "N" "Y"}}</disable_long_list_properties>
   {{- end }}
@@ -1798,7 +1799,7 @@ Render the Lightstreamer configuration file.
          buffer size that can be granted by the Metadata Adapter or requested
          through the subscription parameters. Similarly, it poses an upper
          limit to the length of the snapshot that can be sent in DISTINCT mode,
-         regardless of the value returned by getDistinctSnapshotLength.
+         regardless of the value returned by "getDistinctSnapshotLength".
          See the General Concepts document for details on when these buffers
          are used. An excessive use of these buffers may give rise to a
          significant memory footprint; to prevent this, a lower size limit
@@ -1811,7 +1812,9 @@ Render the Lightstreamer configuration file.
          LightstreamerLogger.pump logger at INFO level, if a low buffer size
          limit is set, it is advisable also setting this logger at WARN level.
          Aggregate statistics on lost updates are also provided by the JMX
-         interface (if available) and by the Internal Monitor. -->
+         interface (if available) and by the Internal Monitor.
+         A zero (or negative) value poses no limits (i.e. unlimited buffer).
+         Default: unlimited buffer. -->
     {{- if (quote .maxBufferSize | empty) }}
     <!--
     <max_buffer_size>1000</max_buffer_size>
@@ -1915,15 +1918,17 @@ Render the Lightstreamer configuration file.
 
     <!-- Optional. Timeout used to ensure the proper ordering of client-sent
          messages, within the specified message sequence, before sending them
-         to the Metadata Adapter through notifyUserMessage.
+         to the Metadata Adapter's message-processing method.
          In case a client request is late or does not reach the Server,
          the next request may be delayed until this timeout expires, while
          waiting for the late request to be received; then, the next request
          is forwarded and the missing one is discarded with no further recovery
          and the client application is notified.
+         Note that missing or delayed messages can only occur if the client,
+         for any reason, cannot use websockets and resorts to HTTP.
          Message ordering does not concern the old synchronous interfaces for
-         message submission. Ordering and delaying also does not apply to the
-         special "UNORDERED_MESSAGES" sequence, although, in this case,
+         client message submission. Ordering and delaying also does not apply
+         to the special "UNORDERED_MESSAGES" sequence, although, in this case,
          discarding of late messages is still possible, in order to ensure
          that the client eventually gets a notification.
          A high timeout (as the default one) reduces the discarded messages,
@@ -1990,7 +1995,11 @@ Render the Lightstreamer configuration file.
              values are valid JSON representations;
          - diff_match_patch
              computes the difference with Google's "diff-match-patch" algorithm
-             (the result is then serialized to the custom "TLCP-diff" format).
+             (the result is then serialized to the custom "TLCP-diff" format);
+         - prefix_suffix_diff
+             computes the difference by just taking into consideration any
+             common prefix and/or suffix of the values and expresses the
+             result in the custom "TLCP-diff" format.
          Note that trying "diff" algorithms on unsuitable data may waste
          resources. For this reason, the default algorithm list is empty,
          which means that no algorithm is ever tried by default. The best
@@ -1999,8 +2008,8 @@ Render the Lightstreamer configuration file.
          Default: an empty list. -->
     {{- if .defaultDiffOrders }}
       {{- range $key, $diff := .defaultDiffOrders }}
-        {{- if not (has $diff (list "jsonpatch" "diff_match_patch") )}}
-          {{ printf "pushSession.defaultDiffOrders[%d] must be one of: \"jsonpatch\",\"diff_match_patch\"" $key | fail }}
+        {{- if not (has $diff (list "jsonpatch" "diff_match_patch" "prefix_suffix_diff") )}}
+          {{ printf "pushSession.defaultDiffOrders[%d] must be one of: \"jsonpatch\",\"diff_match_patch\",\"prefix_suffix_diff\"" $key | fail }}
         {{- end }}
       {{- end }}
     <default_diff_order>{{ join "," .defaultDiffOrders }}</default_diff_order>
@@ -2020,7 +2029,8 @@ Render the Lightstreamer configuration file.
          it will always be used, regardless of efficiency reasons. This can
          be leveraged in special application scenarios, when the clients
          require to directly retrieve the updates in the form of JSON Patch
-         differences.
+         differences. Note, however, that whenever some data is not compliant
+         with JSON Patch, the full value will still be sent.
          Default: 50. -->
     {{- if (quote .jsonPatchMinLength | empty) }}
     <!--
@@ -2337,7 +2347,8 @@ Render the Lightstreamer configuration file.
                   if the module startup fails, the Server startup will fail
                   in turn.
                   Otherwise, the Server startup will be blocked only up to the
-                  specified delay. If the delay expires, the Server may start with
+                  specified delay (expressed in milliseconds).
+                  If the delay expires, the Server may start with
                   the module temporarily inactive; moreover, if the module startup
                   eventually fails, the Server will keep running with an inactive
                   module.
@@ -2716,9 +2727,8 @@ Render the Lightstreamer configuration file.
         <!-- Optional. Enables the processing of the "/crossdomain.xml" URL,
              required by the Flash player in order to allow pages from
              a different host to request data to Lightstreamer Server host.
-             See the "WebSite Controls" section on
-             http://www.adobe.com/devnet/flashplayer/articles/flash_player_9_security.pdf
-             for details on the contents of the document to be returned.
+             This is left for legacy clients, as support for the Flash player
+             was dismissed by all browsers several years ago.
              Can be one of the following:
              - Y: The Server accepts requests for "/crossdomain.xml";
                   the file configured through the "flex_crossdomain_path"
@@ -2734,9 +2744,6 @@ Render the Lightstreamer configuration file.
                   any other URL (i.e. a file named "crossdomain.xml" is looked
                   for in the directory configured as the root for URL path
                   mapping).
-             Note that "/crossdomain.xml" is also used by the Silverlight
-             runtime when "/clientaccesspolicy.xml" is not provided.
-             Default: N. -->
         <!--
         <flex_crossdomain_enabled>Y</flex_crossdomain_enabled>
         -->
@@ -2754,8 +2761,8 @@ Render the Lightstreamer configuration file.
         <!-- Optional. Enables the processing of the "/clientaccesspolicy.xml"
              URL, required by the Silverlight runtime in order to allow pages
              from a different host to request data to Lightstreamer Server host.
-             See http://msdn.microsoft.com/en-us/library/cc838250(VS.95).aspx#crossdomain_communication
-             for details on the contents of the document to be returned.
+             This is left for legacy clients, as support for the Silverlight runtime
+             was dismissed by all browsers several years ago.
              Can be one of the following:
              - Y: The Server accepts requests for "/clientaccesspolicy.xml";
                   the file configured through the "silverlight_accesspolicy_path"
@@ -2771,8 +2778,8 @@ Render the Lightstreamer configuration file.
                   as for any other URL (i.e. a file named "clientaccesspolicy.xml"
                   is looked for in the directory configured as the root for
                   URL path mapping).
-             Note that "/crossdomain.xml" is also used by the Silverlight
-             runtime when "/clientaccesspolicy.xml" is not provided.
+             Note that when "/clientaccesspolicy.xml" is not provided, the Silverlight
+             runtime also triee "/crossdomain.xml" (see <flex_crossdomain_enabled>).
              Default: N. -->
         {{- if (quote .enableSilverlightAccessPolicy | empty) }}
         <!--
@@ -2898,6 +2905,7 @@ Render the Lightstreamer configuration file.
          is currently met may cause the new session request to be refused.
          The limit can be set as a simple, heuristic protection from Server
          overload.
+         A zero or negative value means unlimited.
          Default: unlimited. -->
     {{- if (quote .maxSessions | empty) }}
     <!--
@@ -2908,10 +2916,12 @@ Render the Lightstreamer configuration file.
     {{- end }}
 
     <!-- Optional. Maximum number of concurrent MPN devices sessions allowed.
+         Only used if the MPN Module is enabled through the &lt;mpn&gt; block.
          Once this number of devices has been reached, requests to active
          mobile push notifications will be refused.
          The limit can be set as a simple, heuristic protection from Server
          overload from MPN subscriptions.
+         A zero or negative value means unlimited.
          Default: unlimited. -->
     {{- if (quote .maxMpnDevices | empty) }}
     <!--
@@ -3072,9 +3082,9 @@ Render the Lightstreamer configuration file.
         - getHostName;
         - socket close;
         - calls to a Metadata Adapter that may need to access to some
-          external resource (i.e. mainly notifyUser, getItems, getSchema;
-          other methods should be implemented as nonblocking, by leaning
-          on data cached by notifyUser);
+          external resource (for instance, methods devoted to user
+          request authorization, whereas authentication and message-processing
+          methods already feature an asynchronous interface);
         - calls to a Data Adapter that may need to access to some
           external resource (i.e. subscribe and unsubscribe, though it
           should always be possible to implement such calls asynchronously);
@@ -3083,7 +3093,7 @@ Render the Lightstreamer configuration file.
         Note that specific thread pools can optionally be defined in order
         to handle some of the tasks that, by default, are handled by the
         SERVER thread pool. They are defined in "adapters.xml"; see the
-        templates provided in the In-Process Adapter SDK for details.
+        templates provided in the distribution package for details.
         A zero value means a potentially unlimited number of threads.
         Default: 1000. -->
     {{- if (quote .serverPoolMaxSize | empty) }}
@@ -3129,7 +3139,8 @@ Render the Lightstreamer configuration file.
         that <accept_pool_max_queue> itself is set).
         In case some dedicated pool is defined in "adapters.xml" to override
         the SERVER pool for specific tasks, its queue is still considered
-        and it is added to the SERVER pool queue length.
+        and it is added to the SERVER pool queue length for the sake of this
+        check, unless a "max_queue" check has been defined for that pool as well.
         On the other hand, if the MPN DEVICE HANDLER pool is defined in the <mpn>
         block, it also overrides the SERVER or dedicated pools, but its queue
         is not included in the check.
@@ -3153,7 +3164,6 @@ Render the Lightstreamer configuration file.
         out to be blocking; in particular:
         - getHostName, only if banned hostnames are configured;
         - socket close, only if banned hostnames are configured;
-        - read from the "proxy protocol", only if configured;
         - service of requests on a "priority port", only available for
           internal use.
         A zero value means a potentially unlimited number of threads.
@@ -3171,11 +3181,12 @@ Render the Lightstreamer configuration file.
         Optional. Maximum number of tasks allowed to be queued to enter
         the "ACCEPT" thread pool before undertaking backpressure actions.
         The setting only affects the listening sockets with <port_type>
-        configured as CREATE_ONLY. As long as the number is exceeded,
+        configured as CREATE_ONLY, or as GENERAL_PURPOSE but with the
+        "WSF_only" attribute as "Y". As long as the number is exceeded,
         the accept loops of these sockets will be kept waiting.
         By suspending the accept loop, some SYN packets from the clients may be
         discarded; the effect may vary depending on the backlog settings.
-        Note that, in the absence of sockets configured as CREATE_ONLY,
+        Note that, in the absence of sockets configured as specified above,
         no backpressure action will take place.
         A long queue on the ACCEPT pool may be the consequence of a CPU
         shortage during (or caused by) a high client connection activity.
@@ -3216,18 +3227,22 @@ Render the Lightstreamer configuration file.
         <https_server> that are not configured to request the client certificate.
         More precisely:
         - If there are https sockets with <port_type> configured as CREATE_ONLY,
+          or as GENERAL_PURPOSE but with the "WSF_only" attribute as "Y",
           then, as long as the number is exceeded, the accept loops of these
           sockets will be kept waiting.
           By suspending the accept loop, some SYN packets from the clients may be
           discarded; the effect may vary depending on the backlog settings.
-        - Otherwise, if there are https sockets configured as CONTROL_ONLY and none
-          is configured as the default GENERAL_PURPOSE, then, as long as the
-          number is exceeded, the accept loops of these sockets will be kept
-          waiting instead.
-          Additionally, the same action on the accept loops associated to the
-          <accept_pool_max_queue> check will be performed (regardless that
-          <accept_pool_max_queue> itself is set). Note that the latter action
+        - Otherwise, if there are only https sockets configured as CONTROL_ONLY,
+          then, as long as the number is exceeded, the accept loops of these
+          sockets will be kept waiting instead.
+          Additionally, the same restrictive actions associated to the
+          <prestarted_max_queue> check will be performed (regardless that
+          <prestarted_max_queue> itself is set). Note that the latter action
           may affect both http and https sockets.
+        - Otherwise, if there are https sockets configured as the default
+          GENERAL_PURPOSE and possibly others configured as CONTROL_ONLY,
+          then only the same restrictive actions associated to the
+          <prestarted_max_queue> check (as explained above) will be performed.
         Note that, in the absence of sockets configured as specified above,
         no backpressure action will take place.
         A negative value disables the check.
@@ -3291,11 +3306,18 @@ Render the Lightstreamer configuration file.
         Optional. Maximum number of sessions that can be left in "prestarted"
         state, that is, waiting for the first bind or control operation,
         before undertaking backpressure actions.
-        In particular, the same restrictive actions associated to the
-        <server_pool_max_queue> check will be performed (regardless
-        that <server_pool_max_queue> itself is set).
+        In particular, as long as the number is exceeded, the creation
+        of new sessions will be refused and made to fail, but for creations
+        of the "websocket-first" type (the ones performed by Client SDKs
+        of the UCM family, available since 2023), for which the completion
+        of prestarted sessions is very light.
+        Additionally, the same restrictive action on the accept loops
+        associated to the <accept_pool_max_queue> check will be performed
+        (regardless that <accept_pool_max_queue> itself is set), but
+        excluding ports with the "WSF_only" attribute set as "Y".
         The setting is meant to be used in configurations which define
-        a CREATE_ONLY port in http and a CONTROL_ONLY port in https.
+        a CREATE_ONLY port in http and a CONTROL_ONLY port in https,
+        to serve clients that don't perform websocket-first creations.
         In these cases, and when a massive client reconnection is occurring,
         the number of pending bind operations can grow so much that the
         needed TLS handshakes can take arbitrarily long and cause the

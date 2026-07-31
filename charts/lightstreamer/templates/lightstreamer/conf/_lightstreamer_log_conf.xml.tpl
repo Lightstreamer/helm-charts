@@ -19,7 +19,7 @@ Render the Lightstreamer logging configuration file
 */}}
 {{- define "lightstreamer.configuration.log" -}}
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Do not remove this line. File tag: log_conf-APV-7.3.0. -->
+<!-- Do not remove this line. File tag: log_conf-APV-8.0.0 b1. -->
 
 <configuration scan="true" scanPeriod="10 seconds">
 {{- with required "logging must be set" .Values.logging }}
@@ -226,7 +226,7 @@ Render the Lightstreamer logging configuration file
 
   <!-- logging of adapter initialization and plug/terminate operations -->
   <!-- at DEBUG level, initialization details and error details are reported -->
-  <logger name="LightstreamerLogger.init.adapters" level="{{ include include "lightstreamer.configuration.log.subloggers.level" (list . "init.adapters") }}>
+  <logger name="LightstreamerLogger.init.adapters"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "init.adapters") }}>
 
   <!-- logging of license check phase -->
   <!-- at DEBUG level, check details and error details can be found in case

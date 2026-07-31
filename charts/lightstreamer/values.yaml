@@ -864,12 +864,13 @@ servers:
       # -- (int) Optional. Timeout applied while reading for information
       # through the proxy protocol, when enabled. Note that a reverse proxy or
       # load balancer speaking the proxy protocol is bound to send information
-      # immediately after connection start; so the timeout can only apply to
-      # cases of wrong configuration, local network issues or illegal access to
-      # this port.
-      # For this reason, the read is performed directly in the `ACCEPT` thread
-      # pool and this setting protects that pool against such unlikely events.
-      proxyProtocolTimeoutMillis: 1000
+      # immediately after connection start; so the timeout is expected to only
+      # apply to cases of wrong configuration, local network issues or illegal
+      # access to this port.
+      # The time actually considered may be approximated and may be a few
+      # seconds higher, for internal performance reasons.
+      # A `0` value suppresses the check.
+      proxyProtocolTimeoutMillis: 5000
 
       # -- (int) Optional but nonzero values forbidden if `enableProxyProtocol`
       # is set to `true`. Number of entries in the `X-Forwarded-For` header that
@@ -919,12 +920,12 @@ servers:
       # `keystores`). The access to the included certificates is subject to the
       # following constraints:
       # - Only the first certificated found in the keystore ca be sent to the
-      # client.
+      #   client.
       # - The password for the keystore and the password of the included
-      # certificate should be the same.
+      #   certificate should be the same.
       # - The support of keystore contents may depend on the Security Provider
-      # in use; for instance, keystores with dual RSA/ECC certificates are not
-      # fully supported by the Conscrypt provider.
+      #   in use; for instance, keystores with dual RSA/ECC certificates are not
+      #   fully supported by the Conscrypt provider.
       # See the `keystores.myServerKeystore` settings for general details on
       # keystore configuration.
       keystoreRef: myServerKeystore
@@ -1077,9 +1078,11 @@ servers:
       # available.
       # If set to `true`, upon each client connection, the availability of a
       # client TLS/SSL certificate is checked. If available, the included
-      # identification data will be supplied upon calls to `notifyUser`.
-      # If set to `false`, no certificate information is supplied to
-      # `notifyUser` and no check is done on the client certificate.
+      # identification data will be supplied to the Metadata Adapter upon calls
+      # to the authentication method.
+      # If set to `false`, no certificate information is supplied to the
+      # Metadata Adapter upon calls to the authentication method and no check is
+      # done on the client certificate.
       # Note that a check on the client certificate can also be requested
       # through `enableMandatoryClientAuth`.
       enableClientAuth: false
@@ -1515,7 +1518,7 @@ logging:
         # configuration settings are reported.
         init: DEBUG
 
-        # -- Optional. Logging of adapter initialization and plug/terminate 
+        # -- Optional. Logging of adapter initialization and plug/terminate
         # operations.
         # At `DEBUG` level, initialization details and error details are reported.
         init.adapters: INFO
@@ -1614,7 +1617,7 @@ logging:
         # At `DEBUG` level, events dispatched to `ItemEventBuffers` are dumped.
         preprocessor: INFO
 
-        # -- Optional. Logging of warnings of harmless inconsistencies in 
+        # -- Optional. Logging of warnings of harmless inconsistencies in
         # received events.
         preprocessor.checks: WARN
 
@@ -1650,7 +1653,7 @@ logging:
 
         # -- Optional. Logging of MPN Module recurrent activity.
         # At `INFO` level, main operation exit points and outcomes are dumped.
-        # At `DEBUG` level, the various operation entry and exit points are 
+        # At `DEBUG` level, the various operation entry and exit points are
         # logged.
         mpn.lifecycle: INFO
 
@@ -1672,10 +1675,10 @@ logging:
 
         # -- Optional. Logging of processing of mobile push notifications request
         # received from the clients.
-        # At `INFO` level, all request processing exit points and outcomes are 
+        # At `INFO` level, all request processing exit points and outcomes are
         # dumped.
         # At `DEBUG` level, all request processing entry points are logged.
-        # All logs from this logger report the IP and port of the involved 
+        # All logs from this logger report the IP and port of the involved
         # connection.
         mpn.requests.client: WARN
 
@@ -1715,7 +1718,7 @@ logging:
         # handled by the MPN Module.
         mpn.status_adapters: WARN
 
-        # -- Optional. Logging of Adapter state and issues with Adapter 
+        # -- Optional. Logging of Adapter state and issues with Adapter
         # invocations.
         adapters: WARN
 
@@ -1732,7 +1735,7 @@ logging:
         # At `DEBUG` level, JMX connectors initialization details are logged.
         monitoring: INFO
 
-    # -- Optional. Logging health check and readiness check request processing 
+    # -- Optional. Logging health check and readiness check request processing
     # at `INFO` level.
     # At `DEBUG` level, readiness check responses are logged.
     # The logger does not inherit from `lightstreamerLogger` in order to
@@ -2159,7 +2162,7 @@ management:
       # script will always use the first user supplied.
       credentialSecrets: []
 
-    # -- Optional. JMXMP connector configuration.
+    # -- Optional. JMXMP Connector configuration.
     # The connector is supported by the Server only if Sun/Oracle's JMXMP
     # implementation library is added to the Server classpath; see `README.TXT`
     # in the JMX SDK for details.
@@ -2203,7 +2206,7 @@ management:
     # If set to `false`, properties that can, potentially, return extremely long
     # lists won't yield the correct value, but just a reminder text; for
     # instance, this applies to `CurrentSessionList` in the `ResourceMBean`.
-    enableLongListProperties: true
+    enableLongListProperties: false
 
   # -- Optional. Startup check that the conditions for the correct working of
   # the provided "stop" script are met (see `jmx`).
@@ -2247,17 +2250,108 @@ management:
     # -- Optional. Enables the Monitoring Dashboard.
     enabled: true
 
-    # -- Optional. Enables the requests for the JMX Tree page, which is part of
-    # the Monitoring Dashboard.
-    # This page, whose implementation is based on the "jminix" library, enables
+    # -- Optional. Configuration of the JMX Tree page, which is part of the
+    # Monitoring Dashboard.
+    # This page, whose implementation is based on the "hawtio" library, enables
     # JMX data view and management, including the Server shutdown operation,
     # from the browser.
-    # If set to `true`, the Server supports requests for JMX Tree pages, though
-    # further fine-grained restrictions may also apply.
-    # If set to `false`, the Server ignores requests for JMX Tree pages,
-    # regardless of the credentials supplied and the server socket in use; the
-    # dashboard tab will just show a "disabled page" notification.
-    enableJmxTree: true
+    jmxTree:
+
+      # -- Optional. Enables the JMX Tree page.
+      # If set to `true`, the Server supports requests for JMX Tree pages,
+      # though further fine-grained restrictions may also apply.
+      # If set to `false`, the Server ignores requests for JMX Tree pages,
+      # regardless of the credentials supplied and the server socket in use; the
+      # Dashboard tab will just show a "disabled page" notification.
+      enabled: true
+
+      # -- Optional. Configuration of the support in the JMX Tree page of
+      # session-related mbeans, the ones identified by type="Session", which
+      # are one per Session.
+      # Note that, by default, the creation of session-related mbeans is also
+      # disabled in the first place. See
+      # `management.jmx.sessionMbeanAvailability`
+      sessionMbeans:
+
+        # -- (int) Optional. Puts a limit on session-related mbeans. The support
+        # for session-related mbeans in the JMX Tree page can pose a significant
+        # overload, especially on the browser and the network, when many
+        # sessions are active. For this reason, the default value is low.
+        # Only non-negative numbers are allowed.
+        # Configuring unlimited support is not allowed.
+        # This is the server-side limit. However, the JMX Tree page may
+        # furtherly reduce the limit through the `initial` parameter.
+        max: 100
+
+        # -- (int) Optional. The limit that is initially granted to the JMX Tree
+        # page. After loading, it will be possible to change the limit by
+        # interacting with the page, although still bound by the `max`
+        # server-side limit.
+        initial: 100
+
+      # -- Mandatory. Configuration of the implementation of the JMX Tree, which
+      # is based on an embedded "hawtio" service.
+      hawtio:
+
+        # -- (int) Mandatory. Listening port to be opened by the hawtio service.
+        # This port is only used internally to communicate with the hawtio
+        # service. It only accepts requests from the local host, but it should
+        # not be made accessible from outside the host anyway.
+        internalPort: 9999
+
+        # -- Optional. Configuration of the refresh time applied by the hawtio
+        # front-end to update the properties of the MBean currently displayed.
+        mBeanRefreshMillis:
+
+          # -- (int) Optional. Puts a lower limit to the refresh time.
+          # Only positive numbers are allowed.
+          # Disabling the refresh is not supported.
+          min: 10000
+
+          # -- (int) Optional. The refresh time that is initially applied by the
+          # JMX Tree page. In the page, it can be changed, although it will be
+          # limited by the `min` parameter.
+          initial: 1000
+
+      # -- Optional. Requests specific domains of JMX MBeans to be added to the
+      # JMX Tree. This allows MBeans available in the JVM (provided by either
+      # in-process Adapters, or third-party libraries, or the JVM itself) to be
+      # displayed in the JMX Tree. In fact, by default, only the MBeans provided
+      # by LS Server and the ones that belong to the JVM's "JMImplementation"
+      # domain are displayed.
+      additionalDomains: []
+        # - "com.my_app"
+        # - "java.lang"
+
+      # -- Optional. Configures the enforcement of the referrer header in
+      # requests to the JMX Tree page.
+      enforceReferrer:
+
+        # -- Optional. If set to `true`, requests to the JMX Tree are accepted
+        # only if they specify a Referrer (i.e. a "referer" http header) that
+        # indicates that the request originates from actions performed within
+        # the JMX Tree pages or, more generally, the Monitoring Dashboard.
+        # This mechanism helps mitigate XSS attacks triggered by external links.
+        # However, enabling this check may block legitimate requests, including:
+        # - Requests issued by non-browser tools that do not set the Referrer
+        #   (although this is not the expected use of the JMX Tree);
+        # - Requests from clients with privacy or security settings that hide
+        #   the Referrer;
+        # - Requests passing through load balancers or proxies that modify
+        #   the request url;
+        # - Requests to specific pages of the JMX Tree issued manually,
+        #   instead of through the Monitoring Dashboard or JMX Tree page.
+        enabled: true
+
+        # -- Optional. Addresses the specific case requests passing through a
+        # proxy performing TLS termination.
+        # Such requests would come as HTTP requests with a HTTPS Referrer,
+        # hence, if `enabled` is set to `true`, they would be refused.
+        # However, if this parameter is also set to `true`, then they will be
+        # accepted, provided that the X-Forwarded-Proto header indicates https.
+        # It should only be enabled if a proxy operating TLS termination is
+        # present and it is correctly configured.
+        enableTlsTermination: false
 
     # -- Optional. Enables the access to the Monitoring Dashboard pages without
     # credentials.
@@ -2477,6 +2571,9 @@ pushSession:
   # logger at `WARN` level.
   # Aggregate statistics on lost updates are also provided by the JMX interface
   # (if available) and by the Internal Monitor.
+  # Aggregate statistics on lost updates are also provided by the JMX
+  # interface (if available) and by the Internal Monitor.
+  # A zero (or negative) value poses no limits (i.e. unlimited buffer).
   maxBufferSize: 1000
 
   # -- (int) Mandatory. Longest time a disconnected session can be kept alive
@@ -2530,30 +2627,46 @@ pushSession:
   # value of `-1` relieves any limit.
   maxRecoveryPollLength: -1
 
-  # -- (int) Optional. Longest time the subscriptions currently in place on a
-  # session can be kept active after the session has been closed, in order to
-  # prevent unsubscriptions from the Data Adapter that would be immediately
-  # followed by new subscriptions in case the client were just refreshing the
-  # page.
+  # -- Optional. Configuration of the delay to be applied to unsubscriptions
+  # issued by the clients to prevent immediate unsubscription from the Data
+  # Adapter (in case an unsubscription is the last one), to allow further
+  # subscriptions occurred within short time to resume the item.
   # As a consequence of this wait, some items might temporarily appear as being
   # subscribed to, even if no session were using them.
-  # If a session is closed after being kept active because of the
-  # `pushSession.sessionTimeoutMillis` or `pushSession.sessionRecoveryMillis`
-  # setting, the accomplished wait is considered as valid also for the
-  # subscription wait purpose.
-  # If not specified, the `pushSession.sessionTimeoutMillis` value is used.
-  subscriptionTimeoutMillis: 5000
+  subscriptionTimeoutConfig:
+
+    # -- Optional. Determines how the timeout is applied to unsubscriptions
+    # issued by the clients:
+    # - If `ALL`, the delay is applied to all unsubscriptions.
+    # - If `INTERRUPTION` (the default) the delay is applied only to implicit
+    #   unsubscriptions caused by the termination of a session according with
+    #   the assumption that the client could be just refreshing the page and new
+    #   subscriptions will follow shortly).
+    #   If a session is closed after being kept active because of the
+    #   `pushSession.sessionTimeoutMillis` or `pushSession.sessionRecoveryMillis`
+    #   setting, the accomplished wait is considered as valid also for this
+    #   subscription wait purpose.
+    scope: INTERRUPTION
+
+    # -- (int) Optional. The timeout to be applied.
+    # If not specified, the default depends on the `scope` setting:
+    # - if `ALL`, it is `0`;
+    # - if `INTERRUPTION` or missing, it is the time configured for
+    #   `pushSession.sessionTimeoutMillis`.
+    timeoutMillis: 5000
 
   # -- (int) Optional. Timeout used to ensure the proper ordering of
   # client-sent messages, within the specified message sequence, before sending
-  # them to the Metadata Adapter through `notifyUserMessage`.
+  # them to the the Metadata Adapter's message-processing method.
   # In case a client request is late or does not reach the Server, the next
   # request may be delayed until this timeout expires, while waiting for the
   # late request to be received; then, the next request is forwarded and the
   # missing one is discarded with no further recovery and the client
   # application is notified.
-  # Message ordering does not concern the old synchronous interfaces for message
-  # submission. Ordering and delaying also does not apply to the special
+  # Note that missing or delayed messages can only occur if the client, for any
+  # reason, cannot use websockets and resorts to HTTP. 
+  # Message ordering does not concern the old synchronous interfaces for client
+  # message submission. Ordering and delaying also does not apply to the special
   # "UNORDERED_MESSAGES" sequence, although, in this case, discarding of late
   # messages is still possible, in order to ensure that the client eventually
   # gets a notification.
@@ -2597,11 +2710,14 @@ pushSession:
   # order specified by this list, until one is found which is compatible with
   # both client capabilities and the involved values.
   # Available names are:
-  # - `jsonpatch`: computes the difference in JSON Patch format, provided
-  # that the values are valid JSON representations;
+  # - `jsonpatch`: computes the difference in JSON Patch format, provided that
+  #    the values are valid JSON representations;
   # - `diff_match_patch`: computes the difference with Google's
-  # "diff-match-patch" algorithm (the result is then serialized to the custom
-  # "TLCP-diff" format).
+  #   "diff-match-patch" algorithm (the result is then serialized to the custom
+  #   "TLCP-diff" format).
+  # - `prefix_suffix_diff`: computes the difference by just taking into 
+  #   consideration any common prefix and/or suffix of the values and expresses 
+  #   the result in the custom "TLCP-diff" format.
   # Note that trying "diff" algorithms on unsuitable data may waste resources.
   # For this reason, the default algorithm list is empty,which means that no
   # algorithm is ever tried by default. The best way to enforce algorithms is
@@ -2609,6 +2725,7 @@ pushSession:
   defaultDiffOrders: []
     # - jsonpatch
     # - diff_match_patch
+    # - prefix_suffix_diff
 
   # -- (any) Optional. Minimum length among two update values (old and new)
   # which enables the use of the JSON Patch format to express the new value as
@@ -2619,7 +2736,9 @@ pushSession:
   # computation of the difference in JSON Patch format is possible, it will
   # always be used, regardless of efficiency reasons. This can be leveraged in
   # special application scenarios, when the clients require to directly
-  # retrieve the updates in the form of JSON Patch differences.
+  # retrieve the updates in the form of JSON Patch differences. Note, however,
+  # that whenever some data is not compliant with JSON Patch, the full value
+  # will still be sent.
   jsonPatchMinLength: 50
 
   # -- Optional. Configuration of the update management for items subscribed to
@@ -2875,7 +2994,8 @@ mpn:
   activationOnStartUp:
 
     # -- Optional. If set to `true`, a module startup will be initiated
-    # immediately at Server startup through the mechanism set by `maxDelay`.
+    # immediately at Server startup through the mechanism set by 
+    # `maxDelayMillis`.
     # If set to `false`, the Server will start with an inactive module.
     # Note: the initialization of a new module (as well as the deactivation of
     # the current module), can be requested at any time through the JMX
@@ -2883,14 +3003,13 @@ mpn:
     # on Edition and License Type).
     enabled: true
 
-    # -- (int) Optional but only effective if `enabled` is set to `true`.
-    # If not specified, or set to `-1`, the Server startup will be blocked until
-    # module startup completion; if the module startup fails, the Server startup
-    # will fail in turn.
-    # Otherwise, the Server startup will be blocked only up to the specified
-    # delay. If the delay expires, the Server may start with the module in a
-    # temporarily inactive state; moreover, if the module startup eventually
-    # fails, the Server will keep running with an inactive module.
+    # -- (int) Optional. If not specified, or set to `-1`, the Server startup
+    # will be blocked until module startup completion; if the module startup
+    # fails, the Server startup will fail in turn.
+    # Otherwise, the Server startup will be blocked only up to the specified 
+    # delay. If the delay expires, the Server may start with the module
+    # temporarily inactive; moreover, if the module startup eventually fails, 
+    # the Server will keep running with an inactive  module.
     maxDelayMillis: -1
 
   # -- Optional. Enables the automatic initialization of a new module upon a
@@ -3272,6 +3391,8 @@ webServer:
   # -- Optional. Enables the processing of the `/clientaccesspolicy.xml` URL,
   # required by the Silverlight runtime in order to allow pages from a
   # different host to request data to Lightstreamer Broker host.
+  # This is left for legacy clients, as support for the Silverlight runtime was
+  # dismissed by all browsers several years ago.
   # See http://msdn.microsoft.com/en-us/library/cc838250(VS.95).aspx#crossdomain_communication
   # for details on the contents of the document to be returned.
   # If set to `true`, the Server accepts requests for
@@ -3289,6 +3410,8 @@ webServer:
   # configured as the root for URL path mapping).
   # Note that `/crossdomain.xml` is also used by the Silverlight
   # runtime when `/clientaccesspolicy.xml` is not provided.
+  # Note that when "/clientaccesspolicy.xml" is not provided, the Silverlight
+  # runtime also tries "/crossdomain.xml".
   enableSilverlightAccessPolicy: false
 
   # -- Mandatory if `webServer.enableSilverlightAccessPolicy` is set to `true`.
@@ -3375,15 +3498,18 @@ load:
   # currently met may cause the new session request to be refused.
   # The limit can be set as a simple, heuristic protection from Server
   # overload.
+  # A zero or negative value means unlimited.
   # @default -- unlimited number of concurrent client sessions
   maxSessions:
 
   # -- (int) Optional. Maximum number of concurrent MPN devices sessions
   # allowed.
+  # Only used if the MPN Module is enabled through `mpn.enabled`.
   # Once this limit is reached, requests to active mobile push notifications
   # will be denied.
   # The limit can be set as a simple, heuristic protection from Server overload
   # from MPN subscriptions.
+  # A zero or negative value means unlimited.
   # @default -- unlimited number of concurrent MPN devices sessions
   maxMpnDevices:
 
@@ -3467,9 +3593,9 @@ load:
   # - `getHostName`.
   # - Socket close.
   # - Calls to a Metadata Adapter that may need to access to some external
-  #   resource (i.e. mainly `notifyUser`, `getItems`, `getSchema`; other
-  #   methods should be implemented as nonblocking, by leaning on data cached
-  #   by `notifyUser`).
+  #   resource (for instance, methods devoted to user request authorization,
+  #   whereas authentication and message-processing methods already feature an
+  #   asynchronous interface);
   # - Calls to a Data Adapter that may need to access to some external resource
   #   (i.e. subscribe and unsubscribe, though it should always be possible to
   #   implement such calls asynchronously).
@@ -3478,7 +3604,7 @@ load:
   # Note that specific thread pools can optionally be defined in order to
   # handle some of the tasks that, by default, are handled by the `SERVER`
   # thread pool. They are defined in `adapters.xml`; see the templates provided
-  # in the In-Process Adapter SDK for details.
+  # in the distribution package for details.
   # A zero value means a potentially unlimited number of threads.
   serverPoolMaxSize: 1000
 
@@ -3507,6 +3633,10 @@ load:
   # restrictive action on the accept loops associated with the
   # `load.acceptPoolMaxQueue` check will be performed (regardless that
   # `load.acceptPoolMaxQueue` itself is set).
+  # In case some dedicated pool is defined in `adapters` to override the SERVER
+  # pool for specific tasks, its queue is still considered and it is added to
+  # the SERVER pool queue length for the sake of this check, unless a `maxQueue`
+  # check has been defined for that pool as well.
   # On the other hand, if the `MPN DEVICE HANDLER` pool is defined in `mpn` it
   # also overrides the `SERVER` or dedicated pools, but its queue is not
   # included in the check.
@@ -3521,7 +3651,6 @@ load:
   # blocking; in particular:
   # - `getHostName`, only if banned hostnames are configured-
   # - Socket close, only if banned hostnames are configured.
-  # - Read from the "proxy protocol", only if configured.
   # - Service of requests on a "priority port", only available for internal use.
   # Settings to `0` allows a potentially unlimited number of threads.
   # @default -- the number of available total cores, as detected by the JVM
@@ -3530,12 +3659,12 @@ load:
   # -- (int) Optional. Maximum number of tasks allowed to be queued to enter
   # the `ACCEPT` thread pool before undertaking backpressure actions.
   # The setting only affects the listening sockets with
-  # `servers.{}.portType` configured as `CREATE_ONLY`. As long as the
-  # number is exceeded, the accept loops of these sockets will be kept
-  # waiting.
+  # `servers.{}.portType` configured as `CREATE_ONLY`, or as `GENERAL_PURPOSE` 
+  # but with the "WSF_only" attribute as "Y". As long as the number is exceeded, the
+  # accept loops of these sockets will be kept waiting.
   # By suspending the accept loop, some SYN packets from the clients may be
   # discarded; the effect may vary depending on the backlog settings.
-  # Note that, in the absence of sockets configured as `CREATE_ONLY`, no
+  # Note that, in the absence of sockets configured as specified above, no
   # backpressure action will take place.
   # A long queue on the `ACCEPT` pool may be the consequence of a CPU shortage
   # during (or caused by) a high client connection activity.
@@ -3563,18 +3692,23 @@ load:
   # not configured to request the client certificate.
   # More precisely:
   # - If there are https sockets with `servers.{}.portType` configured as
-  #   `CREATE_ONLY`, then, as long as the number is exceeded, the accept loops
-  #   of these sockets will be kept waiting.
+  #   `CREATE_ONLY`, or as `GENERAL_PURPOSE` but with the "WSF_only" attribute 
+  #   as "Y", then, as long as the number is exceeded, the accept loops of these
+  #   sockets will be kept waiting.
   #   By suspending the accept loop, some SYN packets from the clients may be
   #   discarded; the effect may vary depending on the backlog settings.
-  # - Otherwise, if there are https sockets configured as `CONTROL_ONLY`and
-  #   none is configured as the default `GENERAL_PURPOSE`, then, as long as the
-  #   number is exceeded, the accept loops of these sockets will be kept
-  #   waiting instead.
-  #   Additionally, the same action on the accept loops associated with the
-  #   `load.acceptPoolMaxQueue` check will be performed (regardless that
-  #   `load.acceptPoolMaxQueue` itself is set). Note that the latter action may
+  # - Otherwise, if there are only https sockets configured as CONTROL_ONLY, 
+  #   then, as long as the number is exceeded, the accept loops of these sockets
+  #   will be kept waiting instead.
+  #   
+  #   Additionally, the same restrictive actions associated to the 
+  #   `load.prestartedMaxQueue` check will be performed (regardless that
+  #   `load.prestartedMaxQueue` itself is set). Note that the latter action may
   #    affect both http and https sockets.
+  # - Otherwise, if there are https sockets configured as the default
+  #   `GENERAL_PURPOSE` and possibly others configured as `CONTROL_ONLY`,
+  #   then only the same restrictive actions associated to the
+  #   `load.prestartedMaxQueue` check (as explained above) will be performed.
   # Note that, in the absence of sockets configured as specified above, no
   # backpressure action will take place.
   # A negative value disables the check.
@@ -3607,6 +3741,18 @@ load:
   # -- (int) Optional. Maximum number of sessions that can be left in
   # "prestarted" state, that is, waiting for the first bind or control
   # operation, before undertaking backpressure actions.
+  # In particular, as long as the number is exceeded, the creation of new
+  # sessions will be refused and made to fail, but for creations of the 
+  # "websocket-first" type (the ones performed by Client SDKs of the UCM family,
+  # available since 2023), for which the completion of prestarted sessions is 
+  # very light.
+  # Additionally, the same restrictive action on the accept loops
+  # associated to the `load.acceptPoolMaxQueue` check will be performed
+  # (regardless that `load.acceptPoolMaxQueue` itself is set), but
+  # excluding ports with the "WSF_only" attribute set as "Y".
+  # The setting is meant to be used in configurations which define
+  # a CREATE_ONLY port in http and a CONTROL_ONLY port in https,
+  # to serve clients that don't perform websocket-first creations.
   # In particular, the same restrictive actions associated with the
   # `load.serverPoolMaxQueue` check will be performed (regardless that
   # `load.serverPoolMaxQueue` itself is set).
@@ -5067,17 +5213,17 @@ connectors:
 
         # -- (string) Optional. The consumer mode for this connection.
         # Possible values:
-        # - `GROUP`: The internal Kafka Consumer joins a consumer group and uses 
-        #   the group coordination protocol (partition assignment, offset 
-        #   commits via __consumer_offsets). The consumer group is identified by 
+        # - `GROUP`: The internal Kafka Consumer joins a consumer group and uses
+        #   the group coordination protocol (partition assignment, offset
+        #   commits via __consumer_offsets). The consumer group is identified by
         #   the `group.id` parameter.
-        # -  `MANUAL`: The internal Kafka Consumer operates independently, using 
-        #   manual partition assignment without joining any consumer group and 
-        #   without persisting offsets to Kafka. The `group.id` parameter is 
+        # - `MANUAL`: The internal Kafka Consumer operates independently, using
+        #   manual partition assignment without joining any consumer group and
+        #   without persisting offsets to Kafka. The `group.id` parameter is
         #   ignored.
         consumerMode: GROUP
 
-        # -- (string) Optional but only effective when `consumer.mode` is set 
+        # -- (string) Optional but only effective when `consumer.mode` is set
         # to `GROUP`. The name of the consumer group this connection belongs to.
         # Sets the value for the `group.id` key used to configure the internal
         # Kafka Consumer.
@@ -5177,7 +5323,7 @@ connectors:
             # -- Optional. Enables the use of a ticket cache.
             enableTicketCache: false
 
-          # -- Optional but only effective if `mechanism` is set to 
+          # -- Optional but only effective if `mechanism` is set to
           # `AWS_MSK_IAM`.
           iam:
 
@@ -5205,13 +5351,13 @@ connectors:
         # If not specified, all settings at their defaults will be used.
         record:
 
-          # -- (string) Optional but ineffective if `snapshot.mode` is set to 
-          # any value other than `NONE`. Specifies where to start consuming 
+          # -- (string) Optional but ineffective if `snapshot.mode` is set to
+          # any value other than `NONE`. Specifies where to start consuming
           # events from:
           # - `LATEST`: Start consuming events from the end of the topic
-          # partition.
+          #   partition.
           # - `EARLIEST`: Start consuming events from the beginning of the topic
-          # partition.
+          #   partition.
           # Sets the value of the `auto.offset.reset` key to configure the
           # internal Kafka Consumer.
           # See https://kafka.apache.org/documentation/#consumerconfigs_auto.offset.reset
@@ -5414,10 +5560,10 @@ connectors:
                 # - "stockTemplate"
                 # - "anotherTemplate"
 
-              # -- Optional but only effective when `consumer.mode` is set to 
-              # `MANUAL`. Lists the partitions of the topic to be manually 
+              # -- Optional but only effective when `consumer.mode` is set to
+              # `MANUAL`. Lists the partitions of the topic to be manually
               # assigned to this consumer.
-              # Every entry in the list must be a valid partition number or an 
+              # Every entry in the list must be a valid partition number or an
               # inclusive range (e.g. "0", "1", "2-4").
               fromPartitions: []
                 # - 0
@@ -5427,7 +5573,7 @@ connectors:
 
           # -- Optional. Enables treating
           # `connectors.kafkaConnector.routing.topicMappings.{}.topic` as a
-          # regular expression instead of a literal topic name. Not supported 
+          # regular expression instead of a literal topic name. Not supported
           # when `consumer.mode` is set to `MANUAL`.
           enableTopicRegEx: false
 
@@ -5490,7 +5636,7 @@ connectors:
           #   record; you only map `field.key`.
           mode: NONE
 
-          # -- (int) Optional but only effective when `mode` is set to 
+          # -- (int) Optional but only effective when `mode` is set to
           #  `DISTINCT`. The maximum idle time in seconds after which the
           #  snapshot of an item is discarded, so that the next incoming record
           #  starts a fresh one. Must be a non-negative integer; a value of `0`
