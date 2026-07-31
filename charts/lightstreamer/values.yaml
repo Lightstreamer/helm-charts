@@ -775,6 +775,20 @@ servers:
     # Clustering.pdf document.
     portType: GENERAL_PURPOSE
 
+    # -- Optional. If set to `true`, declares that the port is only devoted to
+    # receive requests from clients based on the UCM (Unified Client Model) 
+    # family of Client SDKs (available since 2023). These clients create the 
+    # sessions with a "websocket-first" policy, which doesn't involve control 
+    # connections but for rare cases.
+    # For this reason, if `portType` is set to `CREATE_ONLY`, the policy 
+    # prevents some restrictive actions that are not useful in this case.
+    # On the other hand, if `portType` is set to GENERAL_PURPOSE, the policy
+    # enables some restrictive actions that are not undertaken by default, since 
+    # they may affect control connections for sessions already established.
+    # The Server will not enforce the restriction for clients that don't follow 
+    # the websocket-first policy, but it will log a warning.
+    enableWsfOnlyPolicy: false
+
     # -- Optional. Settings that allow some control over the HTTP headers of
     # the provided responses. Header lines can only be added to those used by
     # the Server, either by specifying their value or by copying them from the

@@ -101,7 +101,7 @@ Render the Lightstreamer configuration file.
         -->
   {{- end }}
 
-        <!-- Optional. Provides meta-information on how this listening socket
+       <!-- Optional. Provides meta-information on how this listening socket
              will be used, according with the deployment configuration.
              This can inform the Server of a restricted set of requests expected
              on the port, which may improve the internal backpressure mechanisms.
@@ -130,21 +130,32 @@ Render the Lightstreamer configuration file.
              - GENERAL_PURPOSE
                To be set when the port can be used for any kind of request.
                It can always be set in case of doubts.
+             The optional "WSF_only" attribute, whose default is "N", if set to "Y",
+             declares that the port is only devoted to receive requests from
+             clients based on the UCM (Unified Client Model) family of Client
+             SDKs (available since 2023). These clients create the sessions
+             with a "websocket-first" policy, which doesn't involve control
+             connections but for rare cases.
+             For this reason, if set with CREATE_ONLY, WSF_only="Y" prevents
+             some restrictive actions that are not useful in this case.
+             On the other hand, if set with GENERAL_PURPOSE, WSF_only="Y"
+             enables some restrictive actions that are not undertaken by
+             default, since they may affect control connections for sessions
+             already established.
              Note that ports can be CREATE_ONLY or CONTROL_ONLY only depending
              on client behavior. For clients based on LS SDK libraries, this is
              related to the use of the <control_link_address> setting. Usage
              examples are provided in the Clustering.pdf document.
+             Similarly, ports with WSF_only="Y" may be reached by clients that
+             don't follow the websocket-first policy. The Server will not enforce
+             the restriction.
              Default: GENERAL_PURPOSE. -->
-  {{- if .portType }}
-    {{- if not (mustHas .portType (list "CREATE_ONLY" "CONTROL_ONLY" "PRIORITY" "GENERAL_PURPOSE")) }}
-      {{- fail "portType must be set with a valid value" }}
-    {{- end }}
-        <port_type>{{ .portType }}</port_type>
-  {{- else }}
-        <!--
-        <port_type>PRIORITY</port_type>
-        -->
+  {{- $portType := .portType | default "GENERAL_PURPOSE" }}
+  {{- $wsfOnly := .enableWsfOnlyPolicy | default false }}
+  {{- if not (mustHas $portType (list "CREATE_ONLY" "CONTROL_ONLY" "PRIORITY" "GENERAL_PURPOSE")) }}
+    {{- fail "portType must be one of: \"CREATE_ONLY\", \"CONTROL_ONLY\", \"PRIORITY\", \"GENERAL_PURPOSE\"" }}
   {{- end }}
+       <port_type WSF_only={{ $wsfOnly | ternary "Y" "N" | quote }}>{{ $portType }}</port_type>
 
         <!-- Optional. Settings that allow some control over the HTTP headers
              of the provided responses. Header lines can only be added to those
