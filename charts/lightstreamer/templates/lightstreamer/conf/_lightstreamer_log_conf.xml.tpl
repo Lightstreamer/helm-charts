@@ -227,6 +227,7 @@ Render the Lightstreamer logging configuration file
   <!-- logging of adapter initialization and plug/terminate operations -->
   <!-- at DEBUG level, initialization details and error details are reported -->
   <logger name="LightstreamerLogger.init.adapters"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "init.adapters") }}>
+  </logger>
 
   <!-- logging of license check phase -->
   <!-- at DEBUG level, check details and error details can be found in case
