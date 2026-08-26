@@ -132,16 +132,17 @@ deployment:
       # -- Optional. Enables the liveness probe.
       enabled: false
 
-      # -- Mandatory if `enabled` is set to `true` and `liveness.default` is
-      # not specified. The reference to a server socket configuration (defined
+      # -- Mandatory if `enabled` is set to `true` and `default` is not
+      # specified. The reference to a server socket configuration (defined
       # in `servers`). When set, the liveness probe uses the built-in
-      # Lightstreamer health check endpoint on that server.
+      # Lightstreamer health check endpoint on that server. See 
+      # `management.healthCheck` for more details.
       # If left empty, use `default` to specify a raw Kubernetes probe instead.
       serverRef:
 
-      # -- Mandatory if `enabled` is set to `true` and `liveness.serverRef` is
-      # not specified. Default liveness probe configuration to be used if no
-      # `probes.liveness.serverRef` is specified.
+      # -- Mandatory if `enabled` is set to `true` and `serverRef` is not
+      # specified. Default liveness probe configuration to be used if no
+      # `serverRef` is specified.
       # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
       default:
         # httpGet:
@@ -162,12 +163,48 @@ deployment:
       # -- Optional. Enables the readiness probe.
       enabled: false
 
-      # -- Mandatory if `enabled` is set to `true` and `readiness.default` is
-      # not specified. The reference to a server socket configuration (defined
-      # in `servers`). When set, the readiness probe uses the built-in
-      # Lightstreamer health check endpoint on that server.
+      # -- Mandatory if `enabled` is set to `true` and `default` is not
+      # specified. The reference to a server socket configuration (defined in
+      # `servers`). When set, the readiness probe uses the built-in 
+      # Lightstreamer readiness check endpoint on that server. See
+      # `management.readinessCheck` for more details.
       # If left empty, use `default` to specify a raw Kubernetes probe instead.
       serverRef:
+
+      # -- Optional but effective only if `serverRef` is specified. The
+      # ConfigMap name and key providing a custom script to interpret the 
+      # response of the Lightstreamer readiness check endpoint. When set, the 
+      # readiness probe is rendered as an `exec` probe that runs, inside the
+      # container:
+      #
+      #     curl -fsS[k] <scheme>://localhost:<port>/lightstreamer/readiness_check \
+      #         | /lightstreamer/bin/readiness-check-script/<key>
+      #
+      # (`-k` is added only when the target server uses HTTPS, since the call
+      # is against `localhost` and hostname/CA validation adds no value.)
+      #
+      # Contract for the script:
+      # - Receives the raw JSON body returned by the readiness check endpoint
+      #   on standard input. The document shape is described under
+      #   `management.readinessCheck`; note that it may legitimately be the
+      #   empty object `{}` when no adapter sets have been loaded yet.
+      # - Must exit `0` when the pod is to be considered ready and non-zero
+      #   otherwise. Diagnostic output should go to stderr; stdout is not
+      #   inspected by the kubelet.
+      # - Is not invoked with any arguments and should not rely on the working
+      #   directory or on writable filesystem paths.
+      # - Is expected to also handle the pipeline-failure case (unreachable
+      #   endpoint, non-2xx response) where `curl` exits non-zero and the
+      #   script receives no input: in `sh` the pipeline's exit status is the
+      #   script's own, so failing on empty input (for example via `jq -e`) is
+      #   what surfaces the underlying HTTP failure to the kubelet.
+      #
+      # When this field is left unset the probe falls back to a plain
+      # `httpGet` against the same endpoint and readiness is determined by
+      # HTTP status alone.
+      checkScriptRef:
+        # name: readiness-script-map
+        # key: readiness.sh
 
       # Optional fields to be used to control the readiness probe behavior.
       # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
@@ -177,10 +214,9 @@ deployment:
       timeoutSeconds:
       successThreshold:
 
-      # -- Mandatory if `enabled` is set to `true` and
-      # `readiness.serverRef` is not specified. Default readiness probe
-      # configuration to be used if no `probes.readiness.serverRef` is
-      # specified.
+      # -- Mandatory if `enabled` is set to `true` and `serverRef` is not
+      # specified. Default readiness probe configuration to be used if no 
+      # `serverRef` is specified.
       # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
       default:
         # httpGet:
@@ -193,16 +229,17 @@ deployment:
       # -- Optional. Enables the startup probe.
       enabled: false
 
-      # -- Mandatory if `enabled` is set to `true` and `startup.default` is not
+      # -- Mandatory if `enabled` is set to `true` and `default` is not
       # specified. The reference to a server socket configuration (defined in
-      # `servers`). When set, the startup probe uses the built-in  Lightstreamer
-      # health check endpoint on that server.
+      # `servers`). When set, the startup probe uses the built-in Lightstreamer
+      # health check endpoint on that server, configured through 
+      # `management.healthCheck`. See `management.healthCheck` for more details.
       # If left empty, use `default` to specify a raw Kubernetes probe instead.
       serverRef:
 
-      # -- Mandatory if `enabled` is set to `true` and `startup.serverRef` is
-      # not specified. Default startup probe configuration to be used if no
-      # `probes.startup.serverRef` is specified.
+      # -- Mandatory if `enabled` is set to `true` and `serverRef` is not
+      # specified. Default startup probe configuration to be used if no
+      # `serverRef` is specified.
       # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
       default:
         # httpGet:
@@ -677,7 +714,7 @@ license:
         # - "http://intra.mycompany.com/company_pac_file1.pac"
         # - "http://intra.mycompany.com/company_pac_file2.pac"
 
-      # -- Optional. List of configmap names and keys where the PAC files are
+      # -- Optional. List of ConfigMap names and keys where the PAC files are
       # stored.
       filePaths: []
         # - name: pack-configmap
@@ -2434,7 +2471,7 @@ management:
     # is not included on Client activity monitoring.
     enableHostnameLookup: false
 
-  # -- Mandatory. Configuration of the `/lightstreamer/healthcheck` request url,
+  # -- Optional. Configuration of the `/lightstreamer/healthcheck` request url,
   # which allows a load balancer to test for Server responsiveness to external
   # requests. The Server should always respond to the request with the `OK\r\n`
   # content string (unless overridden through e JMX interface). The Server may
@@ -2455,6 +2492,51 @@ management:
     # for which health check requests can be issued.
     availableOnServers: []
       # - defaultServer
+    
+  
+  # -- Optional. Configuration of the "/lightstreamer/readiness_check" request
+  # url, which allows cluster manager to get a report of the availability of the
+  # Adapters currently loaded. The Server should always answer to the request
+  # with a json string of the following form:
+  #   {
+  #     "SET1" : {
+  #       "metadataAdapter" : "enabled",
+  #       "dataAdapters" : {
+  #         "DATA1" : "enabled",
+  #         "DATA2" : "enabled",
+  #         "DATA3" : "disabled"
+  #       }
+  #     },
+  #     "SET2" : {
+  #       "metadataAdapter" : "enabled",
+  #       "dataAdapters" : {
+  #         "DATA1" : "enabled",
+  #         "DATA2" : "disabled"
+  #       }
+  #     }
+  #   }
+  # Note that the "disabled" flag is available only for Adapters based on the
+  # SDK for Java In-process Adapters version 9.0.0 and above. All the other
+  # Adapters are always reported as "enabled". The latter includes all Remote
+  # Adapters, also when handled by a Robust Proxy Adapter. Hence, a Robust Proxy
+  # Adapter currently disconnected from the Remote counterpart will still be
+  #  reported as "enabled".
+  # Support for clustering is an optional feature, available depending
+  # on Edition and License Type.
+  readinessCheck:
+
+    # -- Optional. Enables the readiness check url on all server sockets.
+    # If set to `true`, the readiness check request can be issued through all the
+    # defined server sockets.
+    # If set to `false`, the readiness check request can be issued only through the
+    # server sockets specified in the `availableOnServers` setting, if any.
+    enableAvailabilityOnAllServers: false
+
+    # -- Optional but ineffective if `enableAvailabilityOnAllServers` is set
+    # to `true`. List of server socket references (defined in `servers.{}`)
+    # for which readiness check requests can be issued.
+    availableOnServers: []
+      # - defaultServer    
 
 # -- Mandatory. Push session configuration.
 pushSession:
@@ -3184,7 +3266,7 @@ mpn:
         # the app ID is stored.
         keystoreRef:
 
-        # -- Optional. The configmap name and key where the push package zip
+        # -- Optional. The ConfigMap name and key where the push package zip
         # file is stored. This file contains a descriptor of the web app (i.e.
         # targeting Safari push notification), and is mandatory only for web
         # apps (ignore in other cases).
@@ -3226,14 +3308,14 @@ mpn:
       # -- Keystore configuration for the app.
       myAppKeystore:
 
-        # -- Mandatory. The secret name and the key where the keystore file is
+        # -- Mandatory. The secret name and key where the keystore file is
         # stored.
         keystoreFileSecretRef:
           # name:
           # key:
 
-        # -- Mandatory. The secret name and the key where the keystore password
-        # is stored.
+        # -- Mandatory. The secret name and key where the keystore password is
+        # stored.
         keystorePasswordSecretRef:
           # name:
           # key:
@@ -3289,9 +3371,8 @@ mpn:
         serviceLevel: test
 
         # -- Mandatory if `serviceLevel` is set to `dry_run` or `production`.
-        # The configmap name and the key where the JSON descriptor for the
-        # service account credentials of this project on Firebase console is
-        # stored.
+        # The ConfigMap name and key where the JSON descriptor for the service
+        # account credentials of this project on Firebase console is stored.
         # See the General Concepts document for more information on how to
         # obtain this file.
         serviceJsonFileRef:
@@ -3338,8 +3419,8 @@ webServer:
   # If set to `false`, the Server ignores requests for file resources.
   enabled: true
 
-  # -- Optional. The configmap name and the key where an HTML page to be
-  # returned upon unexpected request URLs is stored. This applies to URLs in
+  # -- Optional. The ConfigMap name and key where an HTML page to be returned
+  # upon unexpected request URLs is stored. This applies to URLs in
   # reserved ranges that have no meaning.
   # If the Internal web server is not enabled (`webServer.enabled` set to
   # `false`), this also applies to all non-reserved URLs; otherwise,
@@ -3913,7 +3994,7 @@ adapters:
         # See `classLoader` for more details.
         installDir: .
 
-        # -- Optional. The reference to a configmap containing extra
+        # -- Optional. The reference to a ConfigMap containing extra
         # configuration files of the in-process Metadata Adapter. At startup,
         # the files will be copied to the
         # `/deployed_adapters/<adapter-set-folder>/<installDir>` directory in
@@ -4583,7 +4664,7 @@ adapters:
           # See `classLoader` for more details.
           installDir: .
 
-          # -- Optional. The reference to a configmap containing extra
+          # -- Optional. The reference to a ConfigMap containing extra
           # configuration files of the in-process Data Adapter. At startup, the
           # files will be copied to the
           # `/deployed_adapters/<adapter-set-folder>/<installDir>` directory in
@@ -5293,7 +5374,7 @@ connectors:
             # -- Optional. Enables the use of a keytab.
             enableKeytab: false
 
-            # -- Mandatory if `enableKeytab` is set to `true`. The configmap
+            # -- Mandatory if `enableKeytab` is set to `true`. The ConfigMap
             # name and key where the keytab file is stored
             keytabFilePathRef:
               # name:
@@ -5653,7 +5734,7 @@ connectors:
     # -- Optional. Local schema files used for message validation.
     localSchemaFiles:
 
-      # -- Optional. The configmap name and key where the local schema file is
+      # -- Optional. The ConfigMap name and key where the local schema file is
       # stored.
       myKeySchema:
         # name: record-key
