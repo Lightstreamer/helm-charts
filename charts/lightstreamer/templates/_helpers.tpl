@@ -176,30 +176,6 @@ defaultBackend:
 {{- end }}
 
 {{/*
-Create the port used health check.
-*/}}
-{{- define "lightstreamer.deployment.healthcheckPort" -}}
-{{- $ := index . 0 }}
-{{- $probeName := index . 1 }}
-{{- $serverKeyName := printf "deployment.probes.%s.healthCheck.serverRef" $probeName }}
-{{- $serverKey := index . 2 }}
-{{- include "lightstreamer.configuration.servers.validateServerRef" (list $ $serverKeyName $serverKey) }}
-{{- $hc := $.Values.management.healthCheck }}
-{{- if not $hc.enableAvailabilityOnAllServers }}
-  {{- $found := false }}
-  {{- range $hc.availableOnServers }}
-    {{- if eq . $serverKey }}
-      {{- $found = true }}
-    {{- end }}
-  {{- end }}
-  {{- if not $found }}
-    {{- fail (printf "%s: the health check url is not available on server '%s'. Either set management.healthCheck.enableAvailabilityOnAllServers to true, or add the server to management.healthCheck.availableOnServers" $serverKeyName $serverKey) }}
-  {{- end }}
-{{- end }}
-{{- include "lightstreamer.configuration.servers.serverPortName" $serverKey -}}
-{{- end }}
-
-{{/*
 Render all the probes for the deployment descriptor.
 */}}
 {{- define "lightstreamer.deployment.all-probes" -}}
@@ -207,9 +183,9 @@ Render all the probes for the deployment descriptor.
 {{- $allowedProbeNames := list "startup" "liveness" "readiness" }}
 {{- range $probeName, $probe := $probes }}
 {{- if has $probeName $allowedProbeNames }}
-{{- include "lightstreamer.deployment.probe" (list $ $probe $probeName) }}
+  {{- include "lightstreamer.deployment.probe" (list $ $probe $probeName) }}
 {{- else }}
-{{- fail (printf "deployment.probes.%s is not a valid probe name. Allowed values are: %s" $probeName $allowedProbeNames) }}
+  {{- fail (printf "deployment.probes.%s is not a valid probe name. Allowed values are: %s" $probeName $allowedProbeNames) }}
 {{- end }}
 {{- end }}
 {{- end }}
@@ -225,12 +201,18 @@ Render a probe for the deployment descriptor.
 {{- with $probe }}
 {{ printf "%sProbe:" $probeName }}
   {{- if .serverRef }}
-  httpGet:
-    path: /lightstreamer/healthcheck
-    port: {{ include "lightstreamer.deployment.healthcheckPort" (list $ $probeName .serverRef) }}
-    scheme: {{ (get $.Values.servers .serverRef).enableHttps | default false | ternary "HTTPS" "HTTP" }}
+    {{- if has $probeName (list "liveness" "startup") }}
+      {{- include "lightstreamer.deployment.probe.healthCheck.httpGet" (list $ .serverRef $probeName) }}
+    {{- else }}
+      {{- if .checkScriptRef }}
+        {{- $scriptName := required "deployment.probes.readiness.checkScriptRef.key must be set" .checkScriptRef.key }}
+        {{- include "lightstreamer.deployment.probe.readinessCheck.command" (list $ .serverRef $scriptName) }}
+      {{- else }}
+        {{- include "lightstreamer.deployment.probe.readinessCheck.httpGet" (list $ .serverRef) }}
+      {{- end }}
+    {{- end }}
   {{- else }}
-    {{- toYaml (required (printf "either specify deployment.probes.%s.serverRef or deployment.probes.%s.default" $probeName $probeName) $probe.default) | nindent 2 }}
+    {{- toYaml (required (printf "Either specify deployment.probes.%s.serverRef or deployment.probes.%s.default" $probeName $probeName) $probe.default) | nindent 2 }}
   {{- end }}
   initialDelaySeconds: {{ .initialDelaySeconds }}
   periodSeconds: {{ .periodSeconds }}
@@ -245,6 +227,105 @@ Render a probe for the deployment descriptor.
   {{- end }}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Render the HTTP GET probe for health check.
+*/}}
+{{- define "lightstreamer.deployment.probe.healthCheck.httpGet" }}
+{{- $ := index . 0}}
+{{- $serverRef := index . 1 }}
+{{- $probeName := index . 2 }}
+  httpGet:
+    path: "/lightstreamer/healthcheck"
+    port: {{ include "lightstreamer.management.healthcheckPort" (list $ $probeName $serverRef) }}
+    scheme: {{ (get $.Values.servers $serverRef).enableHttps | default false | ternary "HTTPS" "HTTP" }}
+{{- end }}
+
+{{/*
+Create the port used for the health check.
+*/}}
+{{- define "lightstreamer.management.healthcheckPort" -}}
+{{- $ := index . 0 }}
+{{- $probeName := index . 1 }}
+{{- $serverKeyName := printf "deployment.probes.%s.serverRef" $probeName }}
+{{- $serverKey := index . 2 }}
+{{- include "lightstreamer.configuration.servers.validateServerRef" (list $ $serverKeyName $serverKey) }}
+{{- $hc := $.Values.management.healthCheck }}
+{{- if not $hc.enableAvailabilityOnAllServers }}
+  {{- $found := false }}
+  {{- range $hc.availableOnServers }}
+    {{- if eq . $serverKey }}
+      {{- $found = true }}
+    {{- end }}
+  {{- end }}
+  {{- if not $found }}
+    {{- fail (printf "%s: the health check url is not available for server '%s'. Either add '%s' to management.healthCheck.availableOnServers[] or set management.healthCheck.enableAvailabilityOnAllServers to true" $serverKeyName $serverKey $serverKey) }}
+  {{- end }}
+{{- end }}
+{{- include "lightstreamer.configuration.servers.serverPortName" $serverKey -}}
+{{- end }}
+
+{{/*
+  Render the HTTP GET probe for readiness check.
+*/}}
+{{- define "lightstreamer.deployment.probe.readinessCheck.httpGet" }}
+{{- $ := index . 0}}
+{{- $serverRef := index . 1 }}
+  httpGet:
+    path: "/lightstreamer/readiness_check"
+    port: {{ include "lightstreamer.management.readinessCheckPort" (list $ "readiness" $serverRef) }}
+    scheme: {{ (get $.Values.servers $serverRef).enableHttps | default false | ternary "HTTPS" "HTTP" }}
+{{- end }}
+
+{{/*
+  Render the command probe for readiness check.
+*/}}
+{{- define "lightstreamer.deployment.probe.readinessCheck.command" }}
+{{- $ := index . 0}}
+{{- $serverRef := index . 1 }}
+{{- $scriptName := index . 2 }}
+{{- $portName := include "lightstreamer.management.readinessCheckPort" (list $ "readiness" $serverRef) }}
+{{- $_ := set $.Values.deployment.probes "renderReadinessCheckScript" true }}
+{{- $serverPort := (get $.Values.servers $serverRef).port }}
+{{- $serverScheme := (get $.Values.servers $serverRef).enableHttps | default false | ternary "https" "http" }}
+  exec:
+    command:
+      - "/bin/sh"
+      - "-c"
+      {{- /*
+        curl flags:
+        - `-f`  fail fast on HTTP >= 400 so the probe reports non-ready.
+        - `-s`  silent (no progress meter).
+        - `-S`  keep error messages on stderr when combined with `-s`.
+        - `-k`  (https only) skip TLS certificate verification: the server
+                may present a self-signed cert and this call is intra-pod
+                against localhost, so hostname/CA validation adds no value.
+      */}}
+      - "curl -fsS{{ if eq $serverScheme "https" }}k{{ end }} {{ $serverScheme }}://localhost:{{ $serverPort }}/lightstreamer/readiness_check | /lightstreamer/bin/readiness-check-script/{{ $scriptName }}"
+{{- end }}
+
+{{/*
+Create the port used for the readiness check.
+*/}}
+{{- define "lightstreamer.management.readinessCheckPort" -}}
+{{- $ := index . 0 }}
+{{- $serverKeyName := "deployment.probes.readiness.serverRef" }}
+{{- $serverKey := index . 2 }}
+{{- include "lightstreamer.configuration.servers.validateServerRef" (list $ $serverKeyName $serverKey) }}
+{{- $hc := $.Values.management.readinessCheck }}
+{{- if not $hc.enableAvailabilityOnAllServers }}
+  {{- $found := false }}
+  {{- range $hc.availableOnServers }}
+    {{- if eq . $serverKey }}
+      {{- $found = true }}
+    {{- end }}
+  {{- end }}
+  {{- if not $found }}
+    {{- fail (printf "%s: the readiness_check url is not available for server '%s'. Either add '%s' to management.readinessCheck.availableOnServers[] or set management.readinessCheck.enableAvailabilityOnAllServers to true" $serverKeyName $serverKey $serverKey) }}
+  {{- end }}
+{{- end }}
+{{- include "lightstreamer.configuration.servers.serverPortName" $serverKey -}}
+{{- end }}
 
 {{/*
 Validate all the server configurations, ensuring that at least one enabled
