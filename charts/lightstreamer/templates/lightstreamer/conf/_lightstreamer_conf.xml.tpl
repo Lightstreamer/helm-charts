@@ -155,6 +155,9 @@ Render the Lightstreamer configuration file.
   {{- if not (mustHas $portType (list "CREATE_ONLY" "CONTROL_ONLY" "PRIORITY" "GENERAL_PURPOSE")) }}
     {{- fail "portType must be one of: \"CREATE_ONLY\", \"CONTROL_ONLY\", \"PRIORITY\", \"GENERAL_PURPOSE\"" }}
   {{- end }}
+  {{- if and $wsfOnly (not (mustHas $portType (list "CREATE_ONLY" "GENERAL_PURPOSE"))) }}
+     {{- fail "portType must be one of: \"CREATE_ONLY\", \"GENERAL_PURPOSE\" when enableWsfOnlyPolicy is set true" }}
+  {{- end }}
        <port_type WSF_only={{ $wsfOnly | ternary "Y" "N" | quote }}>{{ $portType }}</port_type>
 
         <!-- Optional. Settings that allow some control over the HTTP headers
@@ -1519,7 +1522,8 @@ Render the Lightstreamer configuration file.
   {{ end }} {{/* dashboard */}}
     </dashboard>
 
-  {{- with required "management.healthCheck must be set" .healthCheck }}
+  {{- with .healthCheck }}
+
     <!-- Optional. Configuration of the "/lightstreamer/healthcheck" request
          url, which allows a load balancer to test for Server responsiveness
          to external requests. The Server should always answer to the
@@ -1560,8 +1564,74 @@ Render the Lightstreamer configuration file.
         -->
         {{- end }}
       {{- end }}
-      </healthcheck>
-    {{- end }}
+    </healthcheck>
+  {{- end }}
+
+  {{- with .readinessCheck }}
+
+    <!-- Optional. Configuration of the "/lightstreamer/readiness_check" request
+         url, which allows cluster manager to get a report of the availability
+         of the Adapters currently loaded. The Server should always answer to the
+         request with a json string of the following form:
+            {
+              "SET1" : {
+                "metadataAdapter" : "enabled",
+                "dataAdapters" : {
+                  "DATA1" : "enabled",
+                  "DATA2" : "enabled",
+                  "DATA3" : "disabled"
+                }
+              },
+              "SET2" : {
+                "metadataAdapter" : "enabled",
+                "dataAdapters" : {
+                  "DATA1" : "enabled",
+                  "DATA2" : "disabled"
+                }
+              }
+            }
+         Note that the "disabled" flag is available only for Adapters based on
+         the SDK for Java In-process Adapters version 9.0.0 and above. All the
+         other Adapters are always reported as "enabled". The latter includes
+         all Remote Adapters, also when handled by a Robust Proxy Adapter. Hence,
+         a Robust Proxy Adapter currently disconnected from the Remote counterpart
+         will still be reported as "enabled".
+         Support for clustering is an optional feature, available depending
+         on Edition and License Type. -->
+    <readiness_check>
+
+        <!-- Optional. Enabling of the readiness_check url on all server sockets.
+             Can be one of the following:
+             - Y: readiness_check requests can be issued through all the defined
+                  server sockets;
+             - N: readiness_check requests can be issued only through the server
+                  sockets specified in the "available_on_server" elements,
+                  if any.
+             Default: N. -->
+      {{- if (quote .enableAvailabilityOnAllServers | empty) }}
+        <!--
+        <available_on_all_servers>Y</available_on_all_servers>
+        -->
+      {{- else }}
+        <available_on_all_servers>{{ .enableAvailabilityOnAllServers | ternary "Y" "N" }}</available_on_all_servers>
+      {{- end }}
+
+        <!-- Optional and cumulative (but ineffective if "available_on_all_servers"
+             is set to "Y").
+             Specific server sockets for which readiness_check requests can be issued,
+             that can be identified through the mandatory "name" attribute. -->
+      {{- if not .enableAvailabilityOnAllServers }}
+        {{- range $index, $value := .availableOnServers }}
+          {{- include "lightstreamer.configuration.servers.validateServerRef" (list $ (printf "management.healthCheck.availableOnServers[%d]" (int $index)) $value) }}
+        <available_on_server name={{ (get $.Values.servers $value).name | quote }} />
+        {{- else }}
+        <!--
+        <available_on_server name="Lightstreamer HTTP Server" />
+        -->
+        {{- end }}
+      {{- end }}
+    </readiness_check>
+  {{- end }}    
 {{- end }}
 
 <!--
@@ -2755,6 +2825,7 @@ Render the Lightstreamer configuration file.
                   any other URL (i.e. a file named "crossdomain.xml" is looked
                   for in the directory configured as the root for URL path
                   mapping).
+             Default: N. -->
         <!--
         <flex_crossdomain_enabled>Y</flex_crossdomain_enabled>
         -->
