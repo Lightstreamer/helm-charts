@@ -135,7 +135,7 @@ deployment:
       # -- Mandatory if `enabled` is set to `true` and `default` is not
       # specified. The reference to a server socket configuration (defined
       # in `servers`). When set, the liveness probe uses the built-in
-      # Lightstreamer health check endpoint on that server. See 
+      # Lightstreamer health check endpoint on that server. See
       # `management.healthCheck` for more details.
       # If left empty, use `default` to specify a raw Kubernetes probe instead.
       serverRef:
@@ -165,15 +165,15 @@ deployment:
 
       # -- Mandatory if `enabled` is set to `true` and `default` is not
       # specified. The reference to a server socket configuration (defined in
-      # `servers`). When set, the readiness probe uses the built-in 
+      # `servers`). When set, the readiness probe uses the built-in
       # Lightstreamer readiness check endpoint on that server. See
       # `management.readinessCheck` for more details.
       # If left empty, use `default` to specify a raw Kubernetes probe instead.
       serverRef:
 
       # -- Optional but effective only if `serverRef` is specified. The
-      # ConfigMap name and key providing a custom script to interpret the 
-      # response of the Lightstreamer readiness check endpoint. When set, the 
+      # ConfigMap name and key providing a custom script to interpret the
+      # response of the Lightstreamer readiness check endpoint. When set, the
       # readiness probe is rendered as an `exec` probe that runs, inside the
       # container:
       #
@@ -215,7 +215,7 @@ deployment:
       successThreshold:
 
       # -- Mandatory if `enabled` is set to `true` and `serverRef` is not
-      # specified. Default readiness probe configuration to be used if no 
+      # specified. Default readiness probe configuration to be used if no
       # `serverRef` is specified.
       # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
       default:
@@ -232,7 +232,7 @@ deployment:
       # -- Mandatory if `enabled` is set to `true` and `default` is not
       # specified. The reference to a server socket configuration (defined in
       # `servers`). When set, the startup probe uses the built-in Lightstreamer
-      # health check endpoint on that server, configured through 
+      # health check endpoint on that server, configured through
       # `management.healthCheck`. See `management.healthCheck` for more details.
       # If left empty, use `default` to specify a raw Kubernetes probe instead.
       serverRef:
@@ -2078,7 +2078,7 @@ management:
         # -- (int) Optional. TCP port that will be used by the RMI Connector for
         # its own communication stuff. The port has not to be specified in the
         # client access url, but it may have to be considered for firewall
-        # settings.
+        # settings.lightstreamer_conf-8.0.0-b1-5107
         # @default -- the same as configured in `rmiConnector.port.value`
         value:
 
@@ -2266,7 +2266,7 @@ management:
   # the "stop" script.
   enableStoppingServiceCheck: false
 
-  # -- Mandatory. Configuration of the Monitoring Dashboard.
+  # -- Optional. Configuration of the Monitoring Dashboard.
   # The Dashboard is a webapp whose pages are embedded in the Lightstreamer
   # Broker and supplied by the internal web server. The main page has several
   # tabs, which provide basic monitoring statistics in graphical form; the last
@@ -2324,13 +2324,17 @@ management:
         # sessions are active. For this reason, the default value is low.
         # Only non-negative numbers are allowed.
         # Configuring unlimited support is not allowed.
-        # This is the server-side limit. However, the JMX Tree page may
-        # furtherly reduce the limit through the `initial` parameter.
+        # This is the server-side limit. However, the JMX Tree page requests its
+        # own limit, possibly lower, that can be set by interacting with the
+        # page, but anyway will be bound by this server-side upper limit.
         max: 100
 
-        # -- Optional. The limit that is initially granted to the JMX Tree page.
+        # -- Optional. The limit on session-related mbeans that is initially
+        # specified in the JMX Tree page.
         # After loading, it will be possible to change the limit by interacting
-        # with the page, although still bound by the `max` server-side limit.
+        # with the page.
+        # Anyway, the applied limit is bound by the server-side upper limit
+        # (see `max`).
         initial: 100
 
       # -- Mandatory. Configuration of the implementation of the JMX Tree, which
@@ -2339,8 +2343,8 @@ management:
 
         # -- Mandatory. Listening port to be opened by the hawtio service.
         # This port is only used internally to communicate with the hawtio
-        # service. It only accepts requests from the local host, but it should
-        # not be made accessible from outside the host anyway.
+        # service. It only accepts requests from the local host, but it
+        # should not be made accessible from outside the host anyway. -->
         internalPort: 9999
 
         # -- Optional. Configuration of the refresh time applied by the hawtio
@@ -2350,12 +2354,18 @@ management:
           # -- Optional. Puts a lower limit to the refresh time.
           # Only positive numbers are allowed.
           # Disabling the refresh is not supported.
-          min: 10000
+          # This is the server-side limit. However, the JMX Tree page requests
+          # its limit, possibly longer, that can be set by interacting with the
+          # page, by anyway will be bound by this the server-side lower limit.
+          min: 5000
 
-          # -- Optional. The refresh time that is initially applied by the JMX
-          # Tree page. In the page, it can be changed, although it will be
-          # limited by the `min` parameter.
-          initial: 1000
+          # -- Optional. The limit to the refresh time that is initially
+          # specified in the JMX Tree page.
+          # After loading, it will be possible to change the limit by
+          # interacting  with the page.
+          # Anyway, the applied limit is bound by the server-side lower limit
+          # (see `min`).
+          initial: 5000
 
       # -- Optional. Requests specific domains of JMX MBeans to be added to the
       # JMX Tree. This allows MBeans available in the JVM (provided by either
@@ -2492,12 +2502,13 @@ management:
     # for which health check requests can be issued.
     availableOnServers: []
       # - defaultServer
-    
-  
+
+
   # -- Optional. Configuration of the "/lightstreamer/readiness_check" request
   # url, which allows cluster manager to get a report of the availability of the
   # Adapters currently loaded. The Server should always answer to the request
   # with a json string of the following form:
+  #
   #   {
   #     "SET1" : {
   #       "metadataAdapter" : "enabled",
@@ -2515,28 +2526,29 @@ management:
   #       }
   #     }
   #   }
+  #
   # Note that the "disabled" flag is available only for Adapters based on the
   # SDK for Java In-process Adapters version 9.0.0 and above. All the other
   # Adapters are always reported as "enabled". The latter includes all Remote
   # Adapters, also when handled by a Robust Proxy Adapter. Hence, a Robust Proxy
   # Adapter currently disconnected from the Remote counterpart will still be
-  #  reported as "enabled".
-  # Support for clustering is an optional feature, available depending
-  # on Edition and License Type.
+  # reported as "enabled".
+  # Support for clustering is an optional feature, available depending on
+  # Edition and License Type.
   readinessCheck:
 
     # -- Optional. Enables the readiness check url on all server sockets.
-    # If set to `true`, the readiness check request can be issued through all the
-    # defined server sockets.
-    # If set to `false`, the readiness check request can be issued only through the
-    # server sockets specified in the `availableOnServers` setting, if any.
+    # If set to `true`, the readiness check request can be issued through all
+    # the defined server sockets.
+    # If set to `false`, the readiness check request can be issued only through
+    # the server sockets specified in the `availableOnServers` setting, if any.
     enableAvailabilityOnAllServers: false
 
-    # -- Optional but ineffective if `enableAvailabilityOnAllServers` is set
-    # to `true`. List of server socket references (defined in `servers.{}`)
-    # for which readiness check requests can be issued.
+    # -- Optional but ineffective if `enableAvailabilityOnAllServers` is set to
+    # `true`. List of server socket references (defined in `servers.{}`) for
+    # which readiness check requests can be issued.
     availableOnServers: []
-      # - defaultServer    
+      # - defaultServer
 
 # -- Mandatory. Push session configuration.
 pushSession:
