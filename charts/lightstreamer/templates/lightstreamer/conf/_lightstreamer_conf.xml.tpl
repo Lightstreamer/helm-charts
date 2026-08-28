@@ -245,7 +245,7 @@ Render the Lightstreamer configuration file.
              and the determined address may be a local one.
              If the whole block is omitted, this just means that all settings
              are at their defaults. -->
-  
+
   {{- $enablePrivate := (not (eq (.clientIdentification).enablePrivate false)) }}
   {{- $enableProxyProtocol := (.clientIdentification).enableProxyProtocol | default false }}
   {{- $proxyProtocolTimeoutMillis := int (not (quote (.clientIdentification).proxyProtocolTimeoutMillis | empty) | ternary (.clientIdentification).proxyProtocolTimeoutMillis 5000) }}
@@ -275,7 +275,7 @@ Render the Lightstreamer configuration file.
                  the proxy protocol, when enabled. Note that a reverse proxy or
                  load balancer speaking the proxy protocol is bound to send
                  information immediately after connection start; so the timeout
-                 is expected to only apply to cases of wrong configuration, 
+                 is expected to only apply to cases of wrong configuration,
                  local network issues or illegal access to this port.
                  The time actually considered may be approximated and may be a few
                  seconds higher, for internal performance reasons.
@@ -316,7 +316,7 @@ Render the Lightstreamer configuration file.
         </client_identification>
 
   {{- if $enableHttps }}
-    {{ if .sslConfig | empty }} 
+    {{ if .sslConfig | empty }}
       {{ printf "servers.%s.sslConfig must be set" $serverKey | fail }}
     {{ end }}
     {{- with .sslConfig }}
@@ -408,7 +408,7 @@ Render the Lightstreamer configuration file.
              logger at DEBUG level. -->
       {{- range $index, $cipherSuite := .removeCipherSuites }}
         <allow_cipher_suite>{{ required (printf "servers.%s.sslConfig.removeCipherSuites[%d] must be set" $serverKey (int $index)) $cipherSuite }}</allow_cipher_suite>
-      {{- else }}             
+      {{- else }}
         <!--
         <remove_cipher_suites>TLS_RSA_</remove_cipher_suites>
         -->
@@ -672,7 +672,7 @@ Render the Lightstreamer configuration file.
   {{- if not (quote .requestLimit | empty) }}
     <request_limit>{{ int .requestLimit }}</request_limit>
   {{- else }}
-    <!-- 
+    <!--
     <request_limit>5000</request_limit>
     -->
   {{- end }}
@@ -683,7 +683,13 @@ Render the Lightstreamer configuration file.
          The time actually considered may be approximated and may be a few
          seconds higher, for internal performance reasons.
          If missing or 0, the check is suppressed. -->
-    <write_timeout_millis>{{ int .writeTimeoutMillis | default 120000 }}</write_timeout_millis>
+    {{- if not (quote .writeTimeoutMillis | empty) }}
+    <write_timeout_millis>{{ int .writeTimeoutMillis }}</write_timeout_millis>
+    {{- else }}
+    <!--
+    <write_timeout_millis>12000</write_timeout_millis>
+    -->
+    {{- end }}
 
     <!-- Optional. Enabling the use of the full HTTP 1.1 syntax for all the
          responses, upon HTTP 1.1 requests. Can be one of the following:
@@ -815,7 +821,7 @@ Render the Lightstreamer configuration file.
     <forward_cookies>{{ .enableCookiesForwarding | default false | ternary "Y" "N" }}</forward_cookies>
   {{ with required "security.crossDomainPolicy must be set" .crossDomainPolicy -}}
     {{- $crossDomainPolicyEnabled := not (eq .enabled false ) }}
-    {{- if $crossDomainPolicyEnabled }} 
+    {{- if $crossDomainPolicyEnabled }}
     <!-- Optional. List of origins to be allowed by the browsers to consume
          responses to requests sent to this Server through cross-origin XHR or
          through WebSockets; in fact, when a requesting page asks for streaming
@@ -854,7 +860,7 @@ Render the Lightstreamer configuration file.
          attribute of this element (default is 3600). Thus a previously authorized
          client may not give up its authorization, even if the related origin is
          removed from the list and the server is restarted, until its authorization
-         expires. -->    
+         expires. -->
      {{- $acceptCredentials := not (eq .acceptCredentials false) }}
      {{- $acceptExtraHeaders := .acceptExtraHeaders | default "" }}
     <cross_domain_policy{{- if .optionsMaxAgeSeconds }} options_max_age={{ .optionsMaxAgeSeconds | quote }}{{- end }} accept_extra_headers={{ $acceptExtraHeaders | quote }} accept_credentials={{ $acceptCredentials | ternary "Y" "N" | quote }}>
@@ -878,9 +884,9 @@ Render the Lightstreamer configuration file.
              not just http and https. -->
       {{- range $key, $value := .allowAccessFrom }}
         {{- if $value }}
-          {{- $scheme := required (printf "security.crossDomainPolicy.allowsAccess.%s.scheme must be set" $key) $value.scheme }} 
-          {{- $host := required (printf "security.crossDomainPolicy.allowsAccess.%s.host must be set" $key) $value.host }} 
-          {{- $port := required (printf "security.crossDomainPolicy.allowsAccess.%s.port must be set" $key) $value.port }} 
+          {{- $scheme := required (printf "security.crossDomainPolicy.allowsAccess.%s.scheme must be set" $key) $value.scheme }}
+          {{- $host := required (printf "security.crossDomainPolicy.allowsAccess.%s.host must be set" $key) $value.host }}
+          {{- $port := required (printf "security.crossDomainPolicy.allowsAccess.%s.port must be set" $key) $value.port }}
         <allow_access_from scheme={{ $scheme | quote }} host={{ $host | quote }} port={{ $port | quote }} />
         {{- end }}
       {{- else }}
@@ -978,10 +984,8 @@ Render the Lightstreamer configuration file.
     <no_logging_ip>
 
         <!-- Cumulative. IP address of a Client to exclude from logging. -->
-  {{- if .noLoggingIpAddresses }}
-     {{- range .noLoggingIpAddresses }}
+  {{- range .noLoggingIpAddresses }}
         <ip_value>{{ . }}</ip_value>
-     {{- end }}
   {{- else }}
         <!--
         <ip_value>200.0.0.10</ip_value>
@@ -1000,13 +1004,7 @@ Render the Lightstreamer configuration file.
          but only at DEBUG level, which is never enabled in the default
          configuration.
          Default: N. -->
-  {{- if (quote .enablePasswordVisibilityOnRequestLog | empty) }}
-    <!--
-    <show_password_on_request_log>Y</show_password_on_request_log>
-    -->
-  {{- else }}
-    <show_password_on_request_log>{{ .enablePasswordVisibilityOnRequestLog | ternary "Y" "N" }}</show_password_on_request_log>
-  {{- end }}
+    <show_password_on_request_log>{{ .enablePasswordVisibilityOnRequestLog | default false | ternary "Y" "N" }}</show_password_on_request_log>
 
     <!-- Optional. Threshold time for long Adapter call alerts.
          All Data and Metadata Adapter calls should perform as fast
@@ -1030,8 +1028,8 @@ Render the Lightstreamer configuration file.
          threshold on a pool, a warning is logged. Note that warning messages
          can be issued repeatedly. A 0 value disables the check.
          Default: 10000. -->
-  {{- $asyncProcessingThresholdMillis := .asyncProcessingThresholdMillis | default 60000 }}
-    <async_processing_threshold_millis>{{ int .asyncProcessingThresholdMillis }}</async_processing_threshold_millis>
+  {{- $asyncProcessingThresholdMillis := not (quote .asyncProcessingThresholdMillis | empty) | ternary (int .asyncProcessingThresholdMillis) 60000 }}
+    <async_processing_threshold_millis>{{ $asyncProcessingThresholdMillis }}</async_processing_threshold_millis>
 
     <!-- Optional. Threshold wait time for a task enqueued for running on any
          of the internal thread pools.
@@ -1040,7 +1038,7 @@ Render the Lightstreamer configuration file.
          a warning is logged. Note that warning messages can be issued
          repeatedly. A 0 value disables the check.
          Default: 10000. -->
-  {{- if (quote  .maxTaskWaitMillis | empty) }}
+  {{- if (quote .maxTaskWaitMillis | empty) }}
     <!--
     <max_task_wait_millis>0</max_task_wait_millis>
     -->
@@ -1142,8 +1140,8 @@ Render the Lightstreamer configuration file.
                  - N: Disables the test, but this setting can be overridden by
                       setting <ensure_stopping_service> to Y.
                  Default: Y. -->
-            {{- $enablePortTest := not (eq .enablePortTest false) }}
-            <test_ports>{{ $enablePortTest | ternary "Y" "N" }}</test_ports>
+            {{- $enablePortTest := not (eq .enablePortTest false)| ternary "Y" "N"}}
+            <test_ports>{{ $enablePortTest }}</test_ports>
 
             <!-- Optional. Timeout to be posed on the connection attempts through
                  the RMI Connector. If 0, no timeout will be posed.
@@ -1159,7 +1157,11 @@ Render the Lightstreamer configuration file.
                    preventing the connector setup would be ignored.
                  On the other hand, the setting is ignored by the "stop" script.
                  Default: 0. -->
-            <test_timeout_millis>{{ int .testTimeoutMillis | default 5000 }}</test_timeout_millis>
+            {{- if not (quote .testTimeoutMillis | empty) }}
+            <test_timeout_millis>{{ int .testTimeoutMillis }}</test_timeout_millis>
+            {{- else }}
+            <test_timeout_millis>5000</test_timeout_millis>
+            {{- end }}
 
             <!-- Optional. Can be used on a multihomed host to specify the IP
                  address to bind the HTTP/HTTPS server sockets to, for all the
@@ -1247,8 +1249,8 @@ Render the Lightstreamer configuration file.
           {{- range $index, $protocol := .removeProtocols }}
             <remove_protocols>{{ required (printf "management.jmx.rmiConnector.sslConfig.removeProtocols[%d] must be set" (int $index)) $protocol }}</remove_protocols>
           {{- end }}
-        {{- end }} {{/* sslConfig */}}
-        {{- end }} {{/* or .port.enableSsl (.dataPort).enableSsl */}}
+        {{- end }} {{/* of .sslConfig */}}
+        {{- end }} {{/* of .port.enableSsl (.dataPort).enableSsl */}}
 
             <!-- Optional. Enabling of the RMI Connector access without credentials.
                  Can be one of the following:
@@ -1276,7 +1278,7 @@ Render the Lightstreamer configuration file.
             -->
         {{- end }}
       {{- end }}
-    {{- end }} {{/* rmiConnector */}}
+    {{- end }} {{/* of .rmiConnector */}}
         </rmi_connector>
 
         <!-- Optional. Enables Sun/Oracle's JMXMP Connector.
@@ -1350,8 +1352,7 @@ Render the Lightstreamer configuration file.
                   may be an extremely long list; consider, for instance,
                   'CurrentSessionList' in the ResourceMBean.
              Default: Y. -->
-    {{- $enableLongListProperties := not (eq .enableLongListProperties false) }}
-        <disable_long_list_properties>{{ $enableLongListProperties | ternary "N" "Y"}}</disable_long_list_properties>
+        <disable_long_list_properties>{{ .enableLongListProperties | default false | ternary "N" "Y"}}</disable_long_list_properties>
   {{- end }}
     </jmx>
 
@@ -1370,6 +1371,8 @@ Render the Lightstreamer configuration file.
          Default: N. -->
     <ensure_stopping_service>{{ .enableStoppingServiceCheck | default false | ternary "Y" "N" }}</ensure_stopping_service>
 
+  {{- with .dashboard }}
+    {{- if .enabled }}
     <!-- Optional. Configuration of the Monitoring Dashboard.
          The dashboard is a webapp whose pages are embedded in Lightstreamer
          Server and supplied by the internal web server. The main page has
@@ -1395,9 +1398,10 @@ Render the Lightstreamer configuration file.
          Data Adapter. On the other hand, access restrictions to a monitoring
          Data Adapter instance embedded in a custom Adapter Set is only managed
          by the custom Metadata Adapter included. -->
-    <dashboard>
-  {{- with required "management.dashboard must be set" .dashboard }}
-    {{- if .enabled }}
+    <dashboard>    
+
+      {{- with .jmxTree }}
+        {{- if .enabled }}
 
         <!-- Optional. Enabling of the requests for the JMX Tree page, which is
              part of the Monitoring Dashboard.
@@ -1412,8 +1416,121 @@ Render the Lightstreamer configuration file.
                   dashboard tab will just show a "disabled page" notification.
              Default: N. -->
 
-      {{- $enableJmxTree := not (eq .enableJmxTree false) }}
-        <jmxtree_enabled>{{ $enableJmxTree | ternary "Y" "N" }}</jmxtree_enabled>
+        <jmxtree_enabled>true</jmxtree_enabled>
+
+          {{- with .sessionMbeans }}
+
+        <!-- Optional (only effective if <jmxtree_enabled> is Y).
+             Puts a limit to the support in the JMX Tree page of session-related
+             mbeans, the ones identified by type="Session", which are one per Session.
+             The support for session-related mbeans in the JMX Tree page can pose
+             a significant overload, especially on the browser and the network,
+             when many sessions are active. For this reason, the default value is low.
+             Only non-negative numbers are allowed, otherwise the default is applied.
+             Configuring unlimited support is not allowed.
+             This is the server-side limit. However, the JMX Tree page requests its own
+             limit, possibly lower, that can be set by interacting with the page.
+             The limit specified by the page upon loading is determined by the optional
+             "initial" attribute. Anyway, the applied limit is bound by the server-side
+             upper limit. The attribute's default is 100 (unless bound by the server-side
+             upper limit as well).
+             Note that, by default, the creation of session-related mbeans is also
+             disabled in the first place. See <disable_session_mbeans> under <jmx>.
+             Default: 100. -->
+            {{- $maxSessionMbeans := int ((quote .max | empty) | ternary 5000 .max) }}
+            {{- $initialSessionMbeans := int ((quote .initial | empty) | ternary 5000 .initial) }}
+        <jmxtree_max_session_mbeans initial="{{ $initialSessionMbeans }}">{{ $maxSessionMbeans }}</jmxtree_max_session_mbeans>
+          {{- end }} {{/* of. sessionMbeans */}}
+
+          {{- with required ("management.dashboard.jmxTree.hawtio must be set") .hawtio }}
+
+        <!-- Mandatory if <jmxtree_enabled> is Y.
+             Configuration of the implementation of the JMX Tree, which is based
+             on an embedded "hawtio" service. -->
+        <hawtio>
+
+            <!-- Mandatory if <jmxtree_enabled> is Y.
+                 Listening port to be opened by the hawtio service.
+                 This port is only used internally to communicate with the hawtio
+                 service. It only accepts requests from the local host, but it
+                 should not be made accessible from outside the host anyway. -->
+            <internal_port>{{ int (required ("management.dashboard.jmxTree.hawtio.internalPort must be set") .internalPort)}}</internal_port>
+
+            {{- with .mBeanRefreshMillis }}
+
+            <!-- Optional.
+                 Puts a lower limit to the refresh time applied by the hawtio front-end
+                 to update the properties of the MBean currently displayed.
+                 Only positive numbers are allowed, otherwise the default is applied.
+                 Disabling the refresh is not supported.
+                 This is the server-side limit. However, the JMX Tree page specifies
+                 its own refresh time, possibly longer, that can be set by interacting
+                 with the page. The time specified by the page upon loading is determined
+                 by the optional "initial" attribute. Anyway, the applied refresh time
+                 is bound by the server-side lower limit. The attribute's default is 5000
+                 (unless bound by the server-side lower limit as well).
+                 Default: 5000. -->
+              {{- $minMbeanRefreshTime := int ((quote .min | empty) | ternary 5000 .min) }}
+              {{- $initialMbeanRefreshTime := int ((quote .initial | empty) | ternary 5000 .initial) }}
+            <min_mbean_refresh_millis initial="{{ $initialMbeanRefreshTime }}">{{ $minMbeanRefreshTime }}</min_mbean_refresh_millis>
+            {{- end }} {{/* of .mBeanRefreshMillis */}}
+
+        </hawtio>
+          {{- end }} {{/* of .hawtio */}}
+
+          {{- range $index, $additionalDomain := .additionalDomains }}
+
+        <add_jmxtree_doman>{{ required (printf "management.dashboard.jmxTree.additionalDomains[%d] must be set" $index) $additionalDomain }}</add_jmxtree_domain>
+            {{- else }}
+
+        <!-- Optional and cumulative (but ineffective if "jmxtree_enabled"
+             is set to "N").
+             Requests specific domains of JMX MBeans to be added to the JMX Tree.
+             This allows MBeans available in the JVM (provided by either
+             in-process Adapters, or third-party libraries, or the JVM itself)
+             to be displayed in the JMX Tree. In fact, by default,
+             only the MBeans provided by LS Server and the ones that belong
+             to the JVM's "JMImplementation" domain are displayed. -->
+        <!--
+        <add_jmxtree_domain>com.my_app</add_jmxtree_domain>
+        -->
+        <!--
+        <add_jmxtree_domain>java.lang</add_jmxtree_domain>
+        -->
+          {{- end }} {{/* of .additionalDomains */}}
+
+          {{- with .enforceReferrer }}
+
+        <!-- Optional and only effective if <jmxtree_enabled> is set to "Y".
+             When set to Y, requests to the JMX Tree are accepted only if they
+             specify a Referrer (i.e. a "referer" http header) that indicates
+             that the request originates from actions performed within the
+             JMX Tree pages or, more generally, the Monitoring Dashboard.
+             This mechanism helps mitigate XSS attacks triggered by external links.
+             However, enabling this check may block legitimate requests, including:
+             - Requests issued by non-browser tools that do not set the Referrer
+               (although this is not the expected use of the JMX Tree);
+             - Requests from clients with privacy or security settings that hide
+               the Referrer;
+             - Requests passing through load balancers or proxies that modify
+               the request url;
+             - Requests to specific pages of the JMX Tree issued manually,
+               instead of through the Monitoring Dashboard or JMX Tree page.
+             Default: Y
+             The "support_TLS_termination" attribute addresses the specific case
+             of requests passing through a proxy performing TLS termination.
+             Such requests would come as HTTP requests with a HTTPS Referrer,
+             hence, if the element is set to Y, they would be refused.
+             However, if this attribute is also set to Y, then they will be
+             accepted, provided that the X-Forwarded-Proto header indicates https.
+             The default of the "support_TLS_termination" attribute is N.
+             It should only be enabled if a proxy operating TLS termination
+             is present and it is correctly configured. -->
+            {{- $enforceEnabled:= not (eq .enabled false) | ternary "Y" "N" }}
+        <enforce_jmxtree_referrer support_TLS_termination="{{ .enableTlsTermination | default false | ternary "Y" "N"}}">{{ $enforceEnabled }}</enforce_jmxtree_referrer>
+          {{- end }} {{/* of .enforceReferrer */}}
+        {{- end }} {{/* of .enabled */}}
+      {{- end }} {{/* of .jmxtree */}}
 
         <!-- Optional. Enabling of the access to the Monitoring Dashboard
              pages without credentials.
@@ -1518,10 +1635,10 @@ Render the Lightstreamer configuration file.
                   included on Client activity monitoring.
              Default: N. -->
         <enable_hostname_lookup>{{ .enableHostnameLookup | default false | ternary "Y" "N" }}</enable_hostname_lookup>
-    {{- end }} 
-  {{ end }} {{/* dashboard */}}
-    </dashboard>
-
+    </dashboard> 
+    {{- end }} {{/* .enabled */}}
+  {{- end }} {{/* dashboard */}}
+    
   {{- with .healthCheck }}
 
     <!-- Optional. Configuration of the "/lightstreamer/healthcheck" request
@@ -1631,7 +1748,7 @@ Render the Lightstreamer configuration file.
         {{- end }}
       {{- end }}
     </readiness_check>
-  {{- end }}    
+  {{- end }}
 {{- end }}
 
 <!--
@@ -2861,7 +2978,7 @@ Render the Lightstreamer configuration file.
                   is looked for in the directory configured as the root for
                   URL path mapping).
              Note that when "/clientaccesspolicy.xml" is not provided, the Silverlight
-             runtime also triee "/crossdomain.xml" (see <flex_crossdomain_enabled>).
+             runtime also tries "/crossdomain.xml" (see <flex_crossdomain_enabled>).
              Default: N. -->
         {{- if (quote .enableSilverlightAccessPolicy | empty) }}
         <!--
