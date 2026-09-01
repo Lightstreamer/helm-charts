@@ -2594,7 +2594,7 @@ pushSession:
     default: 4000000
 
     # -- Optional. List of special cases for defining the HTTP content-length to
-    # be used for stream/poll response (through `specialCases[].value`)when the
+    # be used for stream/poll response (through `specialCases[].value`) when the
     # user-agent supplied with the request contains all the specified string
     # (through `specialCases[].userAgentContains`).
     # Special cases are evaluated in sequence, until one is enabled.
@@ -2621,15 +2621,16 @@ pushSession:
   # the HTTP 1.1 specifications, for compressing the resource content
   # on HTTP responses; compression is currently not supported for responses over
   # WebSockets.
-  # If set to `Y`, Gzip compression will be used whenever an HTTP 1.1 response
-  # is permitted (for streaming responses, the "chunked" transfer encoding
-  # should also be allowed), provided that the client has declared to accept it
-  # through the proper http request headers.
-  # If set to `N`, causes no specific content encoding to be applied for all
-  # kinds of contents.
+  # If set to `"Y"` (quoted Y — unquoted `Y` would be parsed as a YAML boolean),
+  # Gzip compression will be used whenever an HTTP 1.1 response is permitted
+  # (for streaming responses, the "chunked" transfer encoding should also be
+  # allowed), provided that the client has declared to accept it through the
+  # proper http request headers.
+  # If set to `"N"` (quoted N — unquoted `N` would be parsed as a YAML boolean),
+  # causes no specific content encoding to be applied for all kinds of contents.
   # If set to `AUTO`, Gzip compression will not be used, unless using it is
   # recommended in order to handle special cases (and provided that all the
-  # conditions for compression are met; see case `Y` above).
+  # conditions for compression are met; see case `"Y"` above).
   # Compression for streaming responses is applied incrementally.
   # The use of compression may relieve the network level at the expense of the
   # Server performance. Note that bandwidth control and output statistics remain
@@ -2741,13 +2742,15 @@ pushSession:
     #   the assumption that the client could be just refreshing the page and new
     #   subscriptions will follow shortly).
     #   If a session is closed after being kept active because of the
-    #   `pushSession.sessionTimeoutMillis` or `pushSession.sessionRecoveryMillis`
-    #   setting, the accomplished wait is considered as valid also for this
-    #   subscription wait purpose.
+    #   `pushSession.sessionTimeoutMillis` or 
+    #   `pushSession.sessionRecoveryMillis` setting, the accomplished wait is
+    #   considered as valid also for this subscription wait purpose.
+    # If set to an empty value or null, the default value will be used.
     scope: INTERRUPTION
 
     # -- Optional. The timeout to be applied.
-    # If not specified, the default depends on the `scope` setting:
+    # If set to an empty value or null, the default depends on the `scope`
+    # setting:
     # - if `ALL`, it is `0`;
     # - if `INTERRUPTION` or missing, it is the time configured for
     #   `pushSession.sessionTimeoutMillis`.
@@ -2856,14 +2859,16 @@ pushSession:
 
   # -- Optional. Policy to be adopted for the handling of session-related data
   # when a session is closed.
-  # If set to `Y`, internal buffers used for composing and sending updates are
-  # kept among session-related data throughout the life of each session; this
-  # speeds up update management.
-  # If set to `N`, internal buffers used for composing and sending updates are
-  # allocated and deallocated on demand; this minimizes the requirements in
-  # terms of permanent per-session memory and may be needed in order to handle
-  # a very high number of concurrent sessions, provided that the per-session
-  # update activity is low from memory when the session is closed.
+  # If set to `Y` (quoted Y — unquoted `Y` would be parsed as a YAML boolean),
+  # internal buffers used for composing and sending updates are kept among
+  # session-related data throughout the life of each session; this speeds up
+  # update management.
+  # If set to `N` (quoted N — unquoted `N` would be parsed as a YAML boolean),
+  # internal buffers used for composing and sending updates are allocated and
+  # deallocated on demand; this minimizes the requirements in terms of permanent
+  # per-session memory and may be needed in order to handle a very high number
+  # of concurrent sessions, provided that the per-session update activity is 
+  # low from memory when the session is closed.
   # If set to `AUTO`, the current setting of `pushSession.enableDeltaDelivery`
   # is used; in fact, setting `pushSession.enableDeltaDelivery` as `false` may
   # denote the need for reducing permanent per-session memory.
