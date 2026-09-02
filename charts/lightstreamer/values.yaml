@@ -2027,7 +2027,7 @@ management:
     # name to reach the JMX endpoint.
     service:
 
-      # -- Enables the JMX Service.
+      # -- Optional. Enables the JMX Service.
       enabled: false
 
       # -- Optional. The service type. ClusterIP is recommended to keep
@@ -2186,10 +2186,10 @@ management:
         # remove the matching ones from the enabled protocols set to be used in
         # case TLS/SSL is enabled for part or all the communication.
         # See notes for `servers.{}.sslConfig.removeProtocols`.
-        removeProtocols: []
-          # - SSL
-          # - TLSv1$
-          # - TLSv1.1
+        removeProtocols:
+          - SSL
+          - TLSv1$
+          - TLSv1.1
 
       # -- Optional. Enables the RMI Connector access without credentials.
       # If set to `true`, requests to the RMI Connector are always allowed.
@@ -2226,17 +2226,19 @@ management:
 
     # -- Optional. Enables the availability of session-related mbeans, the ones
     # identified by `type="Session"`.
-    # If set to `active`, for each active session, a corresponding mbean of
-    # type `Session` is available with full functionality.
-    # If set to `sampled_statistics_only`, for each active session, a
+    # If set to `Y` (quoted Y — unquoted `Y` would be parsed as a YAML boolean),
+    # no mbeans of type `Session` are generated, but for a fake mbean which acts
+    # as a reminder that the option can be enabled.
+    # If set to `sampled_statistics_only`, for each active session, a 
     # corresponding mbean of type `Session` is available, but all the statistics
     # based on periodic sampling are disabled.
-    # If set to `inactive`, no mbeans of type `Session` are generated, except
-    # for a fake mbean which acts as a reminder that the option can be enabled.
+    # If set to `N` (quoted N — unquoted `N` would be parsed as a YAML boolean),
+    # for each active session, a corresponding mbean of type `Session` is
+    # available with full functionality.
     # The support for session-related mbeans can pose a significant overload on
     # the Server when many sessions are active and many of them are continuously
     # created and closed. For this reason, the support is disabled by default.
-    sessionMbeanAvailability: inactive
+    sessionMbeanAvailability: "Y"
 
     # -- Optional. Enables all properties provided by the various MBeans. This
     # flag could potentially cause MBeans to return extremely long lists. In
