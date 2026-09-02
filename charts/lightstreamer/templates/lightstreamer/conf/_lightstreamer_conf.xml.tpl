@@ -72,7 +72,7 @@ Render the Lightstreamer configuration file.
 
 {{- include "lightstreamer.configuration.servers.validateAllServers" . -}}
 {{- range $serverKey, $server :=.Values.servers }}
-  {{- if $server.enabled }}
+  {{- if $server.enabled }} {{/* The enabled flag is consolidated in validateAllServers */}}
     <!-- Optional and cumulative (but at least one from <http_server> and
          <https_server> should be defined). HTTP server socket configuration.
          Multiple listening sockets can be defined, by specifying multiple
@@ -435,6 +435,9 @@ Render the Lightstreamer configuration file.
       {{- $enabled := not (eq (.enforceServerCipherSuitePreference).enabled false) }}
       {{- if not (mustHas $order (list "JVM" "config")) }}
         {{- fail printf ("server.%s.sslConfig.enforceServerCipherSuitePreference must be one of: \"JVM\", \"config\"" $serverKey) }}
+      {{- end }}
+      {{- if and $enabled (eq $order "config") }}
+        {{- fail printf ("server.%s.sslConfig.enforceServerCipherSuitePreference.order cannot be set to 'config' if server.%s.sslConfig.allowCipherSuites is not used" $serverKey $serverKey) }}
       {{- end }}
         <enforce_server_cipher_suite_preference order={{ $order | quote }}>{{ $enabled | ternary "Y" "N" }}</enforce_server_cipher_suite_preference>
 
@@ -984,8 +987,8 @@ Render the Lightstreamer configuration file.
     <no_logging_ip>
 
         <!-- Cumulative. IP address of a Client to exclude from logging. -->
-  {{- range .noLoggingIpAddresses }}
-        <ip_value>{{ . }}</ip_value>
+  {{- range $index, $noLoggingIpAddress := .noLoggingIpAddresses }}
+        <ip_value>{{ required (printf "management.noLoggingIpAddress[%d] must be set" $index) $noLoggingIpAddress }}</ip_value>
   {{- else }}
         <!--
         <ip_value>200.0.0.10</ip_value>
@@ -1004,7 +1007,13 @@ Render the Lightstreamer configuration file.
          but only at DEBUG level, which is never enabled in the default
          configuration.
          Default: N. -->
-    <show_password_on_request_log>{{ .enablePasswordVisibilityOnRequestLog | default false | ternary "Y" "N" }}</show_password_on_request_log>
+    {{- if not (quote .enablePasswordVisibilityOnRequestLog | empty) }}
+    <show_password_on_request_log>{{ .enablePasswordVisibilityOnRequestLog | ternary "Y" "N" }}</show_password_on_request_log>
+    {{- else }}
+    <!--
+    <show_password_on_request_log>Y</show_password_on_request_log>
+    -->
+    {{- end }}
 
     <!-- Optional. Threshold time for long Adapter call alerts.
          All Data and Metadata Adapter calls should perform as fast
@@ -1015,7 +1024,11 @@ Render the Lightstreamer configuration file.
          takes more than this time.
          A 0 value disables the check.
          Default: 1000. -->
+    {{- if not (quote .unexpectedWaitThresholdMillis | empty )}}
     <unexpected_wait_threshold_millis>{{ int .unexpectedWaitThresholdMillis }}</unexpected_wait_threshold_millis>
+    {{- else }}
+    <unexpected_wait_threshold_millis>0</unexpected_wait_threshold_millis>
+    {{- end }}
 
     <!-- Optional. Threshold time for long asynchronous processing alerts.
          Data and Metadata Adapter calls, even when performed through
@@ -1028,8 +1041,11 @@ Render the Lightstreamer configuration file.
          threshold on a pool, a warning is logged. Note that warning messages
          can be issued repeatedly. A 0 value disables the check.
          Default: 10000. -->
-  {{- $asyncProcessingThresholdMillis := not (quote .asyncProcessingThresholdMillis | empty) | ternary (int .asyncProcessingThresholdMillis) 60000 }}
-    <async_processing_threshold_millis>{{ $asyncProcessingThresholdMillis }}</async_processing_threshold_millis>
+    {{- if not (quote .asyncProcessingThresholdMillis | empty) }} 
+    <async_processing_threshold_millis>{{ int .asyncProcessingThresholdMillis }}</async_processing_threshold_millis>
+    {{- else }}
+    <async_processing_threshold_millis>60000</async_processing_threshold_millis>
+    {{- end }}
 
     <!-- Optional. Threshold wait time for a task enqueued for running on any
          of the internal thread pools.
@@ -1038,12 +1054,12 @@ Render the Lightstreamer configuration file.
          a warning is logged. Note that warning messages can be issued
          repeatedly. A 0 value disables the check.
          Default: 10000. -->
-  {{- if (quote .maxTaskWaitMillis | empty) }}
+  {{- if not (quote .maxTaskWaitMillis | empty) }}
+    <max_task_wait_millis>{{ int .maxTaskWaitMillis }}</max_task_wait_millis>  
+  {{- else }}
     <!--
     <max_task_wait_millis>0</max_task_wait_millis>
     -->
-  {{- else }}
-    <max_task_wait_millis>{{ int .maxTaskWaitMillis }}</max_task_wait_millis>
   {{- end }}
 
     <!-- Mandatory. Sampling time for internal load statistics (Server
@@ -1056,7 +1072,8 @@ Render the Lightstreamer configuration file.
 
     <!-- Mandatory (if you wish to use the provided "stop" script).
          JMX preferences and external access configuration.
-         Full JMX features is an optional feature, available depending
+         Full J
+         MX features is an optional feature, available depending
          on Edition and License Type; if not available, only the
          Server shutdown operation via JMX is allowed. To know what
          features are enabled by your license, please see the License
@@ -1084,7 +1101,8 @@ Render the Lightstreamer configuration file.
              (by default, available at /dashboard). -->
         <rmi_connector>
     {{- with required "management.jmx.rmiConnector must be set" .rmiConnector }}
-      {{- if .enabled}}
+      {{- $_ := set . "enabled" (not (eq .enabled false)) }}
+      {{- if .enabled }}
 
             <!-- Mandatory for this block. TCP port on which the RMI Connector will
                  be available. This is the port that has to be specified in the
@@ -1092,9 +1110,8 @@ Render the Lightstreamer configuration file.
                  The optional "ssl" attribute, when set to "Y", enables TLS/SSL
                  communication. Note that this case is not managed by some JMX
                  clients, like jconsole. -->
-        {{- $rmiPort := required "management.jmx.rmiConnector.port must be set" .port }}
-        {{- $rmiPortValue := required "management.jmx.rmiConnector.port.value must be set" $rmiPort.value }}
-        {{- $rmiPortEnableSsl := $rmiPort.enableSsl | default false }}
+        {{- $rmiPortValue := int (required "management.jmx.rmiConnector.port.value must be set" (.port).value) }}
+        {{- $rmiPortEnableSsl := .port.enableSsl | default false }}
             <port ssl={{ $rmiPortEnableSsl | ternary "Y" "N" | quote }}>{{ int $rmiPortValue }}</port>
 
             <!-- Optional. TCP port that will be used by the RMI Connector for
@@ -1107,7 +1124,7 @@ Render the Lightstreamer configuration file.
                  on the main port. If omitted, the same setting used for <port>
                  is considered.
                  Default: the same as configured in <port>. -->
-        {{- $rmiDataPortValue := (.dataPort).value | default $rmiPortValue }}
+        {{- $rmiDataPortValue := (quote (.dataPort).value | empty) | ternary $rmiPortValue (int .dataPort.value) }}
         {{- $rmiDataPortEnableSsl := ((.dataPort).enableSsl | quote | empty) | ternary $rmiPortEnableSsl (.dataPort).enableSsl }}
             <data_port ssl={{ $rmiDataPortEnableSsl | ternary "Y" "N" | quote }}>{{ int $rmiDataPortValue }}</data_port>
 
@@ -1119,7 +1136,7 @@ Render the Lightstreamer configuration file.
                  specified hostname has to be visible also from local clients.
                  Default: any setting provided to the "java.rmi.server.hostname"
                  JVM property. -->
-        {{- if .hostname }}
+        {{- if not (quote .hostname | empty) }}
             <hostname>{{ .hostname }}</hostname>
         {{- else }}
             <!--
@@ -1171,13 +1188,15 @@ Render the Lightstreamer configuration file.
                  <hostname> setting may be needed to make the connector accessible,
                  even from local clients.
                  The default is to accept connections on any/all local addresses. -->
-        {{- if .listeningInterface }}
+        {{- if not (quote .listeningInterface | empty) }}
             <listening_interface>{{ .listeningInterface }}</listening_interface>
         {{- else }}
             <!--
             <listening_interface>200.0.0.1</listening_interface>
             -->
         {{- end }}
+
+        {{- if or $rmiPortEnableSsl $rmiDataPortEnableSsl }}
 
             <!-- Optional. Reference to the keystore to be used in case TLS/SSL
                  is enabled for part or all the communication.
@@ -1189,7 +1208,6 @@ Render the Lightstreamer configuration file.
                  Default: if the block is missing, any settings provided to the
                  "javax.net.ssl.keyStore" and "javax.net.ssl.keyStorePassword"
                  JVM properties will apply. -->
-        {{- if or $rmiPortEnableSsl $rmiDataPortEnableSsl }}
         {{- with required (printf "management.jmx.rmiConnector.sslConfig must be set") .sslConfig }}
           {{- with required "management.jmx.rmiConnector.sslConfig.keystoreRef must be set" .keystoreRef }}
             {{- include "lightstreamer.configuration.keystore" (list $.Values.keystores .) | nindent 12 }}
@@ -1199,21 +1217,26 @@ Render the Lightstreamer configuration file.
             {{ printf "management.jmx.rmiConnector.sslConfig.allowCipherSuites and management.jmx.rmiConnector.sslConfig.removeCipherSuites cannot be used together" | fail }}
           {{- end }}
 
+          {{- if .allowCipherSuites }}
+
             <!-- Optional and cumulative, but forbidden if <remove_cipher_suites> is used.
                  Specifies all the cipher suites allowed for the interaction, in case
                  TLS/SSL is enabled for part or all the communication.
                  See notes for <allow_cipher_suite> under <https_server>. -->
-          {{- range $index, $cipherSuite := .allowCipherSuites }}
+            {{- range $index, $cipherSuite := .allowCipherSuites }}
             <allow_cipher_suite>{{ required (printf "management.jmx.rmiConnector.sslConfig.allowCipherSuite[%d] must be set" (int $index)) $cipherSuite }}</allow_cipher_suite>
+            {{- end }}
           {{- end }}
 
+          {{- if .removeCipherSuites }}
             <!-- Optional and cumulative, but forbidden if <allow_cipher_suite> is used.
                  Pattern to be matched against the names of the enabled cipher suites
                  in order to remove the matching ones from the enabled cipher suites set
                  to be used in case TLS/SSL is enabled for part or all the communication.
                  See notes for <remove_cipher_suites> under <https_server>. -->
-          {{- range $index, $cipherSuite := .removeCipherSuites }}
+            {{- range $index, $cipherSuite := .removeCipherSuites }}
             <remove_cipher_suites>{{ required (printf "management.jmx.rmiConnector.sslConfig.removeCipherSuites[%d] must be set" (int $index)) $cipherSuite }}</remove_cipher_suites>
+            {{- end }}
           {{- end }}
 
             <!-- Optional. Determines which side should express the preference when
@@ -1225,6 +1248,11 @@ Render the Lightstreamer configuration file.
           {{- $enabled := not (eq (.enforceServerCipherSuitePreference).enabled false) }}
           {{- if not (mustHas $order (list "JVM" "config")) }}
             {{- fail printf ("management.jmx.rmiConnector.sslConfig.enforceServerCipherSuitePreference must be one of: \"JVM\", \"config\"") }}
+          {{- end }}
+          {{- if and $enabled (eq $order "config") }}
+            {{- if not .allowCipherSuites }}
+              {{- fail "management.jmx.rmiConnector.sslConfig.enforceServerCipherSuitePreference.order cannot be set to 'config' if management.jmx.rmiConnector.sslConfig.allowCipherSuites is not specified" }}            
+            {{- end }}
           {{- end }}
             <enforce_server_cipher_suite_preference order={{ $order | quote }}>{{ $enabled | ternary "Y" "N" }}</enforce_server_cipher_suite_preference>
 
@@ -1269,7 +1297,7 @@ Render the Lightstreamer configuration file.
                  the script will always use the first user supplied. -->
         {{- if not .enablePublicAccess }}
           {{- range $index, $secretRef := .credentialSecrets}}
-            {{- $_ := required (printf "management.jmx.rmiConnector.credentialSecrets[%d] must be set" (int $index)) $secretRef }}
+            {{- required (printf "management.jmx.rmiConnector.credentialSecrets[%d] must be set" (int $index)) $secretRef }}
             <user id="$env.LS_RMI_CREDENTIAL_{{ $secretRef | upper | replace "-" "_" }}_USER" password="$env.LS_RMI_CREDENTIAL_{{ $secretRef | upper | replace "-" "_"}}_PASSWORD" />
           {{- end }}
         {{- else}}
@@ -1326,12 +1354,11 @@ Render the Lightstreamer configuration file.
              are continuously created and closed. For this reason, the support is
              disabled by default.
              Default: Y. -->
-    {{- if .sessionMbeanAvailability }}
-      {{- $sessionAvailabilityMap := dict "active" "N" "inactive" "Y" "sampled_statistics_only" "sampled_statistics_only" -}}
-      {{- if not (mustHas .sessionMbeanAvailability (keys $sessionAvailabilityMap)) }}
-        {{- fail (printf "management.jmx.sessionMbeanAvailability must be one of: %s" (keys $sessionAvailabilityMap)) }}
+    {{- if not (quote .sessionMbeanAvailability | empty) }}
+      {{- if not (mustHas .sessionMbeanAvailability (list "Y" "N" "sampled_statistics_only")) }}
+        {{- fail (printf "management.jmx.sessionMbeanAvailability must be one of: \"Y\", \"N\", \"sampled_statistics_only\"") }}
       {{- end }}
-        <disable_session_mbeans>{{ get $sessionAvailabilityMap .sessionMbeanAvailability }}</disable_session_mbeans>
+        <disable_session_mbeans>{{ .sessionMbeanAvailability }}</disable_session_mbeans>
     {{- else }}
         <!--
         <disable_session_mbeans>N</disable_session_mbeans>
@@ -1352,7 +1379,13 @@ Render the Lightstreamer configuration file.
                   may be an extremely long list; consider, for instance,
                   'CurrentSessionList' in the ResourceMBean.
              Default: Y. -->
-        <disable_long_list_properties>{{ .enableLongListProperties | default false | ternary "N" "Y"}}</disable_long_list_properties>
+    {{- if not (quote .enableLongListProperties | empty )}}
+        <disable_long_list_properties>{{ .enableLongListProperties | ternary "N" "Y"}}</disable_long_list_properties>
+    {{- else }}
+        <!--
+        <disable_long_list_properties>N</disable_long_list_properties>
+        -->
+    {{- end }}
   {{- end }}
     </jmx>
 
@@ -1369,10 +1402,17 @@ Render the Lightstreamer configuration file.
               in other ways. The provided installation scripts also close
               the Server without resorting to the "stop" script.
          Default: N. -->
-    <ensure_stopping_service>{{ .enableStoppingServiceCheck | default false | ternary "Y" "N" }}</ensure_stopping_service>
+  {{- if not (quote .enableStoppingServiceCheck | empty) }}   
+    <ensure_stopping_service>{{ .enableStoppingServiceCheck | ternary "Y" "N" }}</ensure_stopping_service>
+  {{- else }}
+    <!--
+    <ensure_stopping_service>Y</ensure_stopping_service>
+    -->
+  {{- end }}
 
   {{- with .dashboard }}
     {{- if .enabled }}
+
     <!-- Optional. Configuration of the Monitoring Dashboard.
          The dashboard is a webapp whose pages are embedded in Lightstreamer
          Server and supplied by the internal web server. The main page has
@@ -2358,7 +2398,7 @@ Render the Lightstreamer configuration file.
          keepalives for these sessions occur at the same times. -->
     {{- $defaultKeepaliveMillis := int (required "pushSession.defaultKeepaliveMillis.value must be set" (.defaultKeepaliveMillis).value) }}
     {{- $randomize := .defaultKeepaliveMillis.randomize | default false | ternary "Y" "N" }}
-    <default_keepalive_millis> randomize="{{ $randomize }}">{{ $defaultKeepaliveMillis }}</default_keepalive_millis>
+    <default_keepalive_millis randomize="{{ $randomize }}">{{ $defaultKeepaliveMillis }}</default_keepalive_millis>
 
     <!-- Mandatory. Lower bound to the keep-alive time requested by a Client.
          Must be lower than the "default_keepalive_millis" setting. -->
