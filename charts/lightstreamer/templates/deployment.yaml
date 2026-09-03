@@ -220,7 +220,7 @@ spec:
             {{- end }}
           {{- end }}
           {{- with (.Values.management).dashboard }}
-            {{- if not .enablePublicAccess }}
+            {{- if and .enabled (not .enablePublicAccess) }}
               {{- range .credentials }}
               {{- if .secretRef}}
             - name: LS_DASHBOARD_CREDENTIAL_{{ .secretRef | upper | replace "-" "_" }}_USER
