@@ -639,6 +639,7 @@ Render the Lightstreamer configuration file.
 
     <!-- GLOBAL SOCKET SETTINGS -->
 {{- with required "globalSocket must be set" .Values.globalSocket }}
+
     <!-- Mandatory. Longest inactivity time accepted while waiting for a slow
          request to be received. If this value is exceeded, the socket is
          closed. Reusable HTTP connections are also closed if they are not
@@ -686,13 +687,13 @@ Render the Lightstreamer configuration file.
          The time actually considered may be approximated and may be a few
          seconds higher, for internal performance reasons.
          If missing or 0, the check is suppressed. -->
-    {{- if not (quote .writeTimeoutMillis | empty) }}
+  {{- if not (quote .writeTimeoutMillis | empty) }}
     <write_timeout_millis>{{ int .writeTimeoutMillis }}</write_timeout_millis>
-    {{- else }}
+  {{- else }}
     <!--
     <write_timeout_millis>12000</write_timeout_millis>
     -->
-    {{- end }}
+  {{- end }}
 
     <!-- Optional. Enabling the use of the full HTTP 1.1 syntax for all the
          responses, upon HTTP 1.1 requests. Can be one of the following:
@@ -772,7 +773,7 @@ Render the Lightstreamer configuration file.
   {{- end }}
 
     </websocket>
-{{- end }}
+{{- end }} {{/* of .Values.globalSocket */}}
 
 <!--
   ======================
@@ -864,9 +865,9 @@ Render the Lightstreamer configuration file.
          client may not give up its authorization, even if the related origin is
          removed from the list and the server is restarted, until its authorization
          expires. -->
-     {{- $acceptCredentials := not (eq .acceptCredentials false) }}
-     {{- $acceptExtraHeaders := .acceptExtraHeaders | default "" }}
-    <cross_domain_policy{{- if .optionsMaxAgeSeconds }} options_max_age={{ .optionsMaxAgeSeconds | quote }}{{- end }} accept_extra_headers={{ $acceptExtraHeaders | quote }} accept_credentials={{ $acceptCredentials | ternary "Y" "N" | quote }}>
+      {{- $acceptCredentials := not (eq .acceptCredentials false) }}
+      {{- $acceptExtraHeaders := .acceptExtraHeaders | default "" }}
+    <cross_domain_policy{{- if not (quote .optionsMaxAgeSeconds | empty) }} options_max_age="{{ int .optionsMaxAgeSeconds }}"{{- end }} accept_extra_headers={{ $acceptExtraHeaders | quote }} accept_credentials={{ $acceptCredentials | ternary "Y" "N" | quote }}>
 
         <!-- Optional and cumulative. Declaration of an Origin allowed
              to consume responses to cross-origin requests.
@@ -912,7 +913,7 @@ Render the Lightstreamer configuration file.
 
     </cross_domain_policy>
     {{- end }}
-  {{- end }}
+  {{- end }} {{/* of .crossDomainPolicy */}}
 
     <!-- Optional and cumulative. Origin domain or subdomain to be allowed
          by the browsers to access data on HTML pages supplied by this Server.
@@ -959,7 +960,7 @@ Render the Lightstreamer configuration file.
              for Community edition, as:
                  Lightstreamer Server (Lightstreamer Push Server - www.lightstreamer.com) COMMUNITY edition
          Default: FULL. -->
-  {{- if .serverIdentificationPolicy }}
+  {{- if not (quote .serverIdentificationPolicy | empty) }}
     {{- $admittedIdentificationPolicies := list "FULL" "MINIMAL" }}
     {{- if not (has .serverIdentificationPolicy $admittedIdentificationPolicies) }}
       {{- printf "security.serverIdentificationPolicy must be one of: %s" $admittedIdentificationPolicies | fail }}
@@ -970,7 +971,7 @@ Render the Lightstreamer configuration file.
     <server_tokens>MINIMAL</server_tokens>
     -->
   {{- end }}
-{{- end }}
+{{- end }} {{/* of .Values.security */}}
 
 <!--
   ====================================
@@ -1787,7 +1788,7 @@ Render the Lightstreamer configuration file.
       {{- end }}
     </readiness_check>
   {{- end }}
-{{- end }}
+{{- end }} {{/* .Values.management */}}
 
 <!--
   =========================
@@ -2453,7 +2454,7 @@ Render the Lightstreamer configuration file.
     <min_interpoll_millis>1000</min_interpoll_millis>
     -->
     {{- end }}
-{{- end }}
+{{- end }} {{/* of .Values.pushSession */}}
 
 <!--
   ======================================
@@ -2815,7 +2816,7 @@ Render the Lightstreamer configuration file.
         <google_notifier_conf>./mpn/google/google_notifier_conf.xml</google_notifier_conf>
 
 {{- end }}
-{{- end }}
+{{- end }} {{/* of .Values.mpn */}}
     </mpn>
 
 <!--
@@ -3041,7 +3042,7 @@ Render the Lightstreamer configuration file.
         {{- end }}
 
     </web_server>
-{{- end }}
+{{- end }} {{/* of .Values.webserver */}}
 
 <!--
   ========================
@@ -3125,7 +3126,7 @@ Render the Lightstreamer configuration file.
     <max_session_duration_minutes>{{ int .maxSessionDurationMinutes }}</max_session_duration_minutes>
     {{- end }}
 
-{{- end }}
+{{- end }} {{/* of .Values.cluster */}}
 
 <!--
   ==================
@@ -3600,7 +3601,7 @@ Render the Lightstreamer configuration file.
     <force_early_conversions>{{ .forceEarlyConversions | ternary "Y" "N" }}</force_early_conversions>
     {{- end }}
 
-{{- end }}
+{{- end }} {{/* of .Values.load */}}
 
 </lightstreamer_conf>
 {{- end -}}
