@@ -1235,7 +1235,7 @@ globalSocket:
   # part separately.
   # For a request over a WebSocket, the limit applies to the request message
   # payload.
-  # If set to an empty or null value, the check is suppressed.
+  # If set to an empty or `null' value, the check is suppressed.
   requestLimit: 50000
 
   # -- Optional. Longest operation time accepted while writing data on a socket.
@@ -1243,7 +1243,7 @@ globalSocket:
   # affect very slow clients.
   # The time actually considered may be approximated and may be a few seconds
   # higher, for internal performance reasons.
-  # If set to an empty, null, or `0` value, the check is suppressed.
+  # If set to an empty, `null`, or `0` value, the check is suppressed.
   writeTimeoutMillis: 120000
 
   # -- Mandatory. WebSocket support configuration.
@@ -3587,7 +3587,7 @@ cluster:
   # @default -- unlimited maximum session duration
   maxSessionDurationMinutes:
 
-# -- Optional. Load configuration.
+# -- Mandatory. Load configuration.
 load:
 
   # -- (int) Optional. Maximum number of concurrent client sessions allowed.
@@ -3598,7 +3598,7 @@ load:
   # currently met may cause the new session request to be refused.
   # The limit can be set as a simple, heuristic protection from Server
   # overload.
-  # A zero or negative value means unlimited.
+  # If set to an empty, `null`, `0`, or negative value, it means unlimited.
   # @default -- unlimited number of concurrent client sessions
   maxSessions:
 
@@ -3609,7 +3609,7 @@ load:
   # will be denied.
   # The limit can be set as a simple, heuristic protection from Server overload
   # from MPN subscriptions.
-  # A zero or negative value means unlimited.
+ # If set to an empty, `null`, `0`, or negative value, it means unlimited.
   # @default -- unlimited number of concurrent MPN devices sessions
   maxMpnDevices:
 
@@ -3651,7 +3651,7 @@ load:
   # This task does not involve blocking operations, but its computation may be
   # heavy under high update activity; hence, on multiprocessor machines,
   # allocating multiple threads may be beneficial.
-  timerPoolSize: -1
+  timerPoolSize: 1
 
   # -- (int) Optional. Size of the `EVENTS` internal thread pool, which is
   # devoted to dispatching the update events received from a Data Adapter to the
