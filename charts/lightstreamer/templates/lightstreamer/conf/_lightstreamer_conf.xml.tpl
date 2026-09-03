@@ -1295,9 +1295,9 @@ Render the Lightstreamer configuration file.
                  be supplied in order to allow access through the connector.
                  This is also needed if you wish to use the provided "stop" script;
                  the script will always use the first user supplied. -->
-        {{- if not .enablePublicAccess }}
+        {{- if and (not .enablePublicAccess) .credentialSecrets }}
           {{- range $index, $secretRef := .credentialSecrets}}
-            {{- required (printf "management.jmx.rmiConnector.credentialSecrets[%d] must be set" (int $index)) $secretRef }}
+            {{- $_ := required (printf "management.jmx.rmiConnector.credentialSecrets[%d] must be set" $index) $secretRef }}
             <user id="$env.LS_RMI_CREDENTIAL_{{ $secretRef | upper | replace "-" "_" }}_USER" password="$env.LS_RMI_CREDENTIAL_{{ $secretRef | upper | replace "-" "_"}}_PASSWORD" />
           {{- end }}
         {{- else}}
@@ -1530,7 +1530,7 @@ Render the Lightstreamer configuration file.
              only the MBeans provided by LS Server and the ones that belong
              to the JVM's "JMImplementation" domain are displayed. -->
               {{- range $index, $additionalDomain := .additionalDomains }}
-        <add_jmxtree_doman>{{ required (printf "management.dashboard.jmxTree.additionalDomains[%d] must be set" $index) $additionalDomain }}</add_jmxtree_domain>
+        <add_jmxtree_domain>{{ required (printf "management.dashboard.jmxTree.additionalDomains[%d] must be set" $index) $additionalDomain }}</add_jmxtree_domain>
               {{- end }}
             {{- else }} 
        <!--
