@@ -202,8 +202,7 @@ spec:
           {{- /* END VARIABLES FOR LICENSE */ -}}
           {{- /* START ENV VARIABLES FOR LIGHTSTREAMER MANAGEMENT */ -}}
           {{- with (.Values.management.jmx).rmiConnector }}
-            {{- if .enabled }}
-            {{- if not .enablePublicAccess }}
+            {{- if and .enabled (not .enablePublicAccess) }}
               {{- range .credentialSecrets }}
             - name: LS_RMI_CREDENTIAL_{{ . | upper | replace "-" "_" }}_USER
               valueFrom:
@@ -217,12 +216,10 @@ spec:
                   key: password
               {{- end }}
             {{- end }}
-            {{- end }}
           {{- end }}
           {{- with (.Values.management).dashboard }}
             {{- if and .enabled (not .enablePublicAccess) }}
               {{- range .credentials }}
-              {{- if .secretRef}}
             - name: LS_DASHBOARD_CREDENTIAL_{{ .secretRef | upper | replace "-" "_" }}_USER
               valueFrom:
                 secretKeyRef:
@@ -233,7 +230,6 @@ spec:
                 secretKeyRef:
                   name: {{ .secretRef }}
                   key: password
-              {{- end }}
               {{- end }}
             {{- end }}
           {{- end }}
