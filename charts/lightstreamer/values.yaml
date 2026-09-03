@@ -2268,7 +2268,7 @@ management:
   # the "stop" script.
   enableStoppingServiceCheck: false
 
-  # -- Optional. Configuration of the Monitoring Dashboard.
+  # -- Mandatory. Configuration of the Monitoring Dashboard.
   # The Dashboard is a webapp whose pages are embedded in the Lightstreamer
   # Broker and supplied by the internal web server. The main page has several
   # tabs, which provide basic monitoring statistics in graphical form; the last
@@ -2297,7 +2297,7 @@ management:
     # -- Optional. Enables the Monitoring Dashboard.
     enabled: true
 
-    # -- Optional. Configuration of the JMX Tree page, which is part of the
+    # -- Mandatory. Configuration of the JMX Tree page, which is part of the
     # Monitoring Dashboard.
     # This page, whose implementation is based on the "hawtio" library, enables
     # JMX data view and management, including the Server shutdown operation,
