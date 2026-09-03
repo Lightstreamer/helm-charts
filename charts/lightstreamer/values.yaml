@@ -1235,7 +1235,7 @@ globalSocket:
   # part separately.
   # For a request over a WebSocket, the limit applies to the request message
   # payload.
-  # If not specified, the check is suppressed.
+  # If set to an empty or null value, the check is suppressed.
   requestLimit: 50000
 
   # -- Optional. Longest operation time accepted while writing data on a socket.
@@ -1243,7 +1243,7 @@ globalSocket:
   # affect very slow clients.
   # The time actually considered may be approximated and may be a few seconds
   # higher, for internal performance reasons.
-  # If not specified or `0`, the check is suppressed.
+  # If set to an empty, null, or `0` value, the check is suppressed.
   writeTimeoutMillis: 120000
 
   # -- Mandatory. WebSocket support configuration.
@@ -1256,9 +1256,9 @@ globalSocket:
     # Note that the above is possible also when `0` is specified.
     maxPongDelayMillis: 0
 
-    # -- (int) Optional. Maximum time the Server is allowed to wait for the
-    # client "close" frame, in case the Server is sending its own close" frame
-    # first, in order to try to close the connection in a clean way.
+    # -- Optional. Maximum time the Server is allowed to wait for the client
+    # "close" frame, in case the Server is sending its own close" frame first,
+    # in order to try to close the connection in a clean way.
     # If not specified, no timeout is set and the global
     # `globalSocket.readTimeoutMillis` value applies.
     maxClosingWaitMillis:
@@ -1307,7 +1307,7 @@ security:
   # If set to `false`, cookies are hidden from the Metadata Adapter.
   enableCookiesForwarding: false
 
-  # -- Optional. Configuration of the origins to be allowed by the browsers to
+  # -- Mandatory. Configuration of the origins to be allowed by the browsers to
   # consume responses to requests sent to this Server through cross-origin XHR
   # or through WebSockets; in fact, when a requesting page asks for streaming
   # data in this way, the browser should specify the page origin through the
@@ -2504,7 +2504,6 @@ management:
     # for which health check requests can be issued.
     availableOnServers: []
       # - defaultServer
-
 
   # -- Optional. Configuration of the "/lightstreamer/readiness_check" request
   # url, which allows cluster manager to get a report of the availability of the
