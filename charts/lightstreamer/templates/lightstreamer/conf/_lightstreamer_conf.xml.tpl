@@ -3134,7 +3134,7 @@ Render the Lightstreamer configuration file.
   ==================
 -->
 
-{{- with .Values.load }}
+{{- with required "load must be set" .Values.load }}
     <!-- Optional. Maximum number of concurrent client sessions allowed.
          Requests for new sessions received when this limit is currently
          exceeded will be refused; on the other hand, operation on sessions
@@ -3145,12 +3145,12 @@ Render the Lightstreamer configuration file.
          overload.
          A zero or negative value means unlimited.
          Default: unlimited. -->
-    {{- if (quote .maxSessions | empty) }}
-    <!--
+    {{- if not (quote .maxSessions | empty) }}
+    <max_sessions>{{ int .maxSessions }}</max_sessions>
+    {{- else }}
+     <!--
     <max_sessions>1000</max_sessions>
     -->
-    {{- else }}
-    <max_sessions>{{ int .maxSessions }}</max_sessions>
     {{- end }}
 
     <!-- Optional. Maximum number of concurrent MPN devices sessions allowed.
@@ -3161,12 +3161,12 @@ Render the Lightstreamer configuration file.
          overload from MPN subscriptions.
          A zero or negative value means unlimited.
          Default: unlimited. -->
-    {{- if (quote .maxMpnDevices | empty) }}
+    {{- if not (quote .maxMpnDevices | empty) }}
+    <max_mpn_devices>{{ int .maxMpnDevices }}</max_mpn_devices>
+    {{- else }}
     <!--
     <max_mpn_devices>1000</max_mpn_devices>
-    -->
-    {{- else }}
-    <max_mpn_devices>{{ int .maxMpnDevices }}</max_mpn_devices>
+    -->    
     {{- end }}
 
     <!-- Optional. Limit to the overall size, in bytes, of the buffers
@@ -3176,12 +3176,13 @@ Render the Lightstreamer configuration file.
          If -1, disables buffer reuse at all and causes all allocated
          buffers to be released immediately.
          Default: 200000000 -->
-    {{- if (quote .maxCommonNioBufferAllocation | empty) }}
+    {{- if not (quote .maxCommonNioBufferAllocation | empty) }}
+    <max_common_nio_buffer_allocation>{{ int .maxCommonNioBufferAllocation }}</max_common_nio_buffer_allocation>    
+    {{- else }}
     <!--
     <max_common_nio_buffer_allocation>0</max_common_nio_buffer_allocation>
     -->
-    {{- else }}
-    <max_common_nio_buffer_allocation>{{ int .maxCommonNioBufferAllocation }}</max_common_nio_buffer_allocation>
+
     {{- end }}
 
     <!-- Optional. Limit to the overall size, in bytes, of the buffers
@@ -3192,12 +3193,12 @@ Render the Lightstreamer configuration file.
          If -1, disables buffer reuse at all and causes all allocated
          buffers to be released immediately.
          Default: 200000000 -->
-    {{- if (quote .maxCommonPumpBufferAllocation | empty) }}
+    {{- if not (quote .maxCommonPumpBufferAllocation | empty) }}
+    <max_common_pump_buffer_allocation>{{ int .maxCommonPumpBufferAllocation }}</max_common_pump_buffer_allocation>
+    {{- else }}
     <!--
     <max_common_pump_buffer_allocation>0</max_common_pump_buffer_allocation>
-    -->
-    {{- else }}
-    <max_common_pump_buffer_allocation>{{ int .maxCommonPumpBufferAllocation }}</max_common_pump_buffer_allocation>
+    -->    
     {{- end }}
 
     <!--
@@ -3208,12 +3209,12 @@ Render the Lightstreamer configuration file.
          Further selectors may be created because of the <selector_max_load>
          setting.
          Default: The number of available total cores, as detected by the JVM. -->
-    {{- if (quote .selectorPoolSize | empty) }}
+    {{- if not (quote .selectorPoolSize | empty) }}
+    <selector_pool_size>{{ int .selectorPoolSize }}</selector_pool_size>    
+    {{- else }}
     <!--
     <selector_pool_size>1</selector_pool_size>
     -->
-    {{- else }}
-    <selector_pool_size>{{ int .selectorPoolSize }}</selector_pool_size>
     {{- end }}
 
     <!-- Optional. Maximum number of keys allowed for a single NIO selector.
@@ -3223,12 +3224,12 @@ Render the Lightstreamer configuration file.
          The base number of selectors is determined by the <selector_pool_size>
          setting.
          Default: 0. -->
-    {{- if (quote .selectorMaxLoad | empty) }}
+    {{- if not (quote .selectorMaxLoad | empty) }}
+    <selector_max_load>{{ int .selectorMaxLoad }}</selector_max_load>    
+    {{- else }}
     <!--
     <selector_max_load>1000</selector_max_load>
     -->
-    {{- else }}
-    <selector_max_load>{{ int .selectorMaxLoad }}</selector_max_load>
     {{- end }}
 
     <!--
@@ -3238,12 +3239,12 @@ Render the Lightstreamer configuration file.
          may be heavy under high update activity; hence, on multiprocessor
          machines, allocating multiple threads for this task may be beneficial.
          Default: 1. -->
-    {{- if (quote .timerPoolSize | empty) }}
+    {{- if not (quote .timerPoolSize | empty) }}
+    <timer_pool_size>{{ int .timerPoolSize }}</timer_pool_size>    
+    {{- else }}
     <!--
     <timer_pool_size>2</timer_pool_size>
     -->
-    {{- else }}
-    <timer_pool_size>{{ int .timerPoolSize }}</timer_pool_size>
     {{- end }}
 
     <!--
@@ -3254,12 +3255,12 @@ Render the Lightstreamer configuration file.
          multiprocessor machines, allocating multiple threads for this task
          may be beneficial.
          Default: The number of available total cores, as detected by the JVM. -->
-    {{- if (quote .eventsPoolSize | empty) }}
+    {{- if not (quote .eventsPoolSize | empty) }}
+    <events_pool_size>{{ int .eventsPoolSize }}</events_pool_size>    
+    {{- else }}
     <!--
     <events_pool_size>10</events_pool_size>
     -->
-    {{- else }}
-    <events_pool_size>{{ int .eventsPoolSize }}</events_pool_size>
     {{- end }}
 
     <!--
@@ -3271,12 +3272,12 @@ Render the Lightstreamer configuration file.
          may be beneficial.
          Default: The number of available total cores, as detected by the JVM,
          or 10, if the number of cores is less. -->
-    {{- if (quote .snapshotPoolSize | empty) }}
+    {{- if not (quote .snapshotPoolSize | empty) }}
+    <snapshot_pool_size>{{ int .snapshotPoolSize }}</snapshot_pool_size>    
+    {{- else }}
     <!--
     <snapshot_pool_size>10</snapshot_pool_size>
     -->
-    {{- else }}
-    <snapshot_pool_size>{{ int .snapshotPoolSize }}</snapshot_pool_size>
     {{- end }}
 
     <!--
@@ -3287,12 +3288,12 @@ Render the Lightstreamer configuration file.
          multiprocessor machines, allocating multiple threads for this task
          may be beneficial.
          Default: The number of available total cores, as detected by the JVM. -->
-    {{- if (quote .pumpPoolSize | empty) }}
+    {{- if not (quote .pumpPoolSize | empty) }}
+    <pump_pool_size>{{ int .pumpPoolSize }}</pump_pool_size>    
+    {{- else }}
     <!--
     <pump_pool_size>10</pump_pool_size>
     -->
-    {{- else }}
-    <pump_pool_size>{{ int .pumpPoolSize }}</pump_pool_size>
     {{- end }}
 
     <!--
@@ -3305,13 +3306,13 @@ Render the Lightstreamer configuration file.
         a CPU shortage due to a huge streaming activity.
         A negative value disables the check.
         Default: -1. -->
-    {{- if (quote .pumpPoolMaxQueue | empty) }}
+    {{- if not (quote .pumpPoolMaxQueue | empty) }}
+    <pump_pool_max_queue>{{ int .pumpPoolMaxQueue }}</pump_pool_max_queue>
+    {{- else }}
     <!--
     <pump_pool_max_queue>1000</pump_pool_max_queue>
     -->
-    {{- else }}
-    <pump_pool_max_queue>{{ int .pumpPoolMaxQueue }}</pump_pool_max_queue>
-    {{- end }}
+    {{- end }}    
 
     <!--
         Optional. Maximum number of threads allowed for the "SERVER" internal
@@ -3334,12 +3335,12 @@ Render the Lightstreamer configuration file.
         templates provided in the distribution package for details.
         A zero value means a potentially unlimited number of threads.
         Default: 1000. -->
-    {{- if (quote .serverPoolMaxSize | empty) }}
+    {{- if not (quote .serverPoolMaxSize | empty) }}
+    <server_pool_max_size>{{ int .serverPoolMaxSize }}</server_pool_max_size>    
+    {{- else }}
     <!--
     <server_pool_max_size>100</server_pool_max_size>
     -->
-    {{- else }}
-    <server_pool_max_size>{{ int .serverPoolMaxSize }}</server_pool_max_size>
     {{- end }}
 
     <!--
@@ -3359,12 +3360,12 @@ Render the Lightstreamer configuration file.
         Default: 10, if "server_pool_max_size" is not defined;
         otherwise, the same as "server_pool_max_size", unless the latter
         is set to 0, i.e. unlimited, in which case this setting is mandatory. -->
-    {{- if (quote .serverPoolMaxFree | empty) }}
+    {{- if not (quote .serverPoolMaxFree | empty) }}
+    <server_pool_max_free>{{ int .serverPoolMaxFree }}</server_pool_max_free>    
+    {{- else }}
     <!--
     <server_pool_max_free>0</server_pool_max_free>
     -->
-    {{- else }}
-    <server_pool_max_free>{{ int .serverPoolMaxFree }}</server_pool_max_free>
     {{- end }}
 
     <!--
@@ -3384,12 +3385,12 @@ Render the Lightstreamer configuration file.
         is not included in the check.
         A negative value disables the check.
         Default: 100. -->
-    {{- if (quote .serverPoolMaxQueue | empty) }}
+    {{- if not (quote .serverPoolMaxQueue | empty) }}
+    <server_pool_max_queue>{{ int .serverPoolMaxQueue }}</server_pool_max_queue>    
+    {{- else }}
     <!--
     <server_pool_max_queue>-1</server_pool_max_queue>
     -->
-    {{- else }}
-    <server_pool_max_queue>{{ int .serverPoolMaxQueue }}</server_pool_max_queue>
     {{- end }}
 
     <!--
@@ -3407,12 +3408,12 @@ Render the Lightstreamer configuration file.
         A zero value means a potentially unlimited number of threads.
         Default: The number of available total cores, as detected by the JVM,
         which is also the minimum number of threads left in the pool. -->
-    {{- if (quote .acceptPoolMaxSize | empty) }}
+    {{- if not (quote .acceptPoolMaxSize | empty) }}
+    <accept_pool_max_size>{{ int .acceptPoolMaxSize }}</accept_pool_max_size>    
+    {{- else }}
     <!--
     <accept_pool_max_size>100</accept_pool_max_size>
     -->
-    {{- else }}
-    <accept_pool_max_size>{{ int .acceptPoolMaxSize }}</accept_pool_max_size>
     {{- end }}
 
     <!--
@@ -3430,12 +3431,12 @@ Render the Lightstreamer configuration file.
         shortage during (or caused by) a high client connection activity.
         A negative value disables the check.
         Default: -1. -->
-    {{- if (quote .acceptPoolMaxQueue | empty) }}
+    {{- if not (quote .acceptPoolMaxQueue | empty) }}
+    <accept_pool_max_queue>{{ int .acceptPoolMaxQueue }}</accept_pool_max_queue>    
+    {{- else }}
     <!--
     <accept_pool_max_queue>100</accept_pool_max_queue>
     -->
-    {{- else }}
-    <accept_pool_max_queue>{{ int .acceptPoolMaxQueue }}</accept_pool_max_queue>
     {{- end }}
 
     <!--
@@ -3450,12 +3451,12 @@ Render the Lightstreamer configuration file.
         available cores.
         Default: Half the number of available total cores, as detected by the JVM
         (obviously, if there is only one core, the default will be 1). -->
-    {{- if (quote .handshakePoolSize | empty) }}
+    {{- if not (quote .handshakePoolSize | empty) }}
+    <handshake_pool_size>{{ int .handshakePoolSize }}</handshake_pool_size>    
+    {{- else }}
     <!--
     <handshake_pool_size>10</handshake_pool_size>
     -->
-    {{- else }}
-    <handshake_pool_size>{{ int .handshakePoolSize }}</handshake_pool_size>
     {{- end }}
 
     <!--
@@ -3485,12 +3486,12 @@ Render the Lightstreamer configuration file.
         no backpressure action will take place.
         A negative value disables the check.
         Default: 100. -->
-    {{- if (quote .handshakePoolMaxQueue | empty) }}
+    {{- if not (quote .handshakePoolMaxQueue | empty) }}
+    <handshake_pool_max_queue>{{ int .handshakePoolMaxQueue }}</handshake_pool_max_queue>    
+    {{- else }}
     <!--
     <handshake_pool_max_queue>-1</handshake_pool_max_queue>
     -->
-    {{- else }}
-    <handshake_pool_max_queue>{{ int .handshakePoolMaxQueue }}</handshake_pool_max_queue>
     {{- end }}
 
     <!--
@@ -3501,12 +3502,12 @@ Render the Lightstreamer configuration file.
         a blocking behavior in some cases.
         A zero value means a potentially unlimited number of threads.
         Default: The same as configured for the SERVER thread pool. -->
-    {{- if (quote .httpsAuthPoolMaxSize | empty) }}
+    {{- if not (quote .httpsAuthPoolMaxSize | empty) }}
+    <https_auth_pool_max_size>{{ int .httpsAuthPoolMaxSize }}</https_auth_pool_max_size>    
+    {{- else }}
     <!--
     <https_auth_pool_max_size>10</https_auth_pool_max_size>
     -->
-    {{- else }}
-    <https_auth_pool_max_size>{{ int .httpsAuthPoolMaxSize }}</https_auth_pool_max_size>
     {{- end }}
 
     <!--
@@ -3514,12 +3515,12 @@ Render the Lightstreamer configuration file.
         "TLS-SSL AUTHENTICATION" internal pool.
         It behaves in the same way as the "server_pool_max_free" setting.
         Default: The same as configured for the SERVER thread pool. -->
-    {{- if (quote .httpsAuthPoolMaxFree | empty) }}
+    {{- if not (quote .httpsAuthPoolMaxFree | empty) }}
+    <https_auth_pool_max_free>{{ int .httpsAuthPoolMaxFree }}</https_auth_pool_max_free>    
+    {{- else }}
     <!--
     <https_auth_pool_max_free>0</https_auth_pool_max_free>
     -->
-    {{- else }}
-    <https_auth_pool_max_free>{{ int .httpsAuthPoolMaxFree }}</https_auth_pool_max_free>
     {{- end }}
 
     <!--
@@ -3532,12 +3533,12 @@ Render the Lightstreamer configuration file.
         (see <use_client_auth> and <force_client_auth>).
         A negative value disables the check.
         Default: 100. -->
-    {{- if (quote .httpsAuthPoolMaxQueue | empty) }}
+    {{- if not (quote .httpsAuthPoolMaxQueue | empty) }}
+    <https_auth_pool_max_queue>{{ int .httpsAuthPoolMaxQueue }}</https_auth_pool_max_queue>    
+    {{- else }}
     <!--
     <https_auth_pool_max_queue>-1</https_auth_pool_max_queue>
     -->
-    {{- else }}
-    <https_auth_pool_max_queue>{{ int .httpsAuthPoolMaxQueue }}</https_auth_pool_max_queue>
     {{- end }}
 
     <!--
@@ -3567,12 +3568,12 @@ Render the Lightstreamer configuration file.
         from affecting the accept loop of CONTROL_ONLY ports in https.
         A negative value disables the check.
         Default: -1. -->
-    {{- if (quote .prestartedMaxQueue | empty) }}
+    {{- if not (quote .prestartedMaxQueue | empty) }}
+    <prestarted_max_queue>{{ int .prestartedMaxQueue }}</prestarted_max_queue>    
+    {{- else }}
     <!--
     <prestarted_max_queue>1000</prestarted_max_queue>
     -->
-    {{- else }}
-    <prestarted_max_queue>{{ int .prestartedMaxQueue }}</prestarted_max_queue>
     {{- end }}
 
     <!--
@@ -3593,12 +3594,12 @@ Render the Lightstreamer configuration file.
              lead to poor scaling in case many clients subscribe to the same
              item.
         Default: Y. -->
-    {{- if (quote .forceEarlyConversions | empty) }}
+    {{- if not (quote .forceEarlyConversions | empty) }}
+    <force_early_conversions>{{ .forceEarlyConversions | ternary "Y" "N" }}</force_early_conversions>    
+    {{- else }}
     <!--
     <force_early_conversions>N</force_early_conversions>
     -->
-    {{- else }}
-    <force_early_conversions>{{ .forceEarlyConversions | ternary "Y" "N" }}</force_early_conversions>
     {{- end }}
 
 {{- end }} {{/* of .Values.load */}}
