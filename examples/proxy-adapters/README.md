@@ -104,7 +104,11 @@ At the end, the script prints the command to deploy the remote adapter (used in 
 
 ### 2. Install the Lightstreamer Helm chart
 
-Install the chart using the provided [`values.yaml`](values.yaml), which configures the Proxy Data Adapter:
+Return to the example root, then install the chart using the provided [`values.yaml`](values.yaml), which configures the Proxy Data Adapter:
+
+```sh
+cd ..
+```
 
 - **Any Kubernetes distribution**:
   ```sh
@@ -130,7 +134,11 @@ The provided [`values.yaml`](values.yaml) defines an Adapter Set with an In-Proc
 
 ### 3. Deploy the remote adapter
 
-Once Lightstreamer is running and the Proxy Data Adapter is ready to accept connections, deploy the remote adapter by running the command printed by `build.sh` in step 1. For example:
+Once Lightstreamer is running and the Proxy Data Adapter is ready to accept connections, return to the [`example-proxy-adapter-set/`](example-proxy-adapter-set/) folder and deploy the remote adapter by running the command printed by `build.sh` in step 1. For example:
+
+```sh
+cd example-proxy-adapter-set/
+```
 
 - **Any Kubernetes distribution**:
   ```sh

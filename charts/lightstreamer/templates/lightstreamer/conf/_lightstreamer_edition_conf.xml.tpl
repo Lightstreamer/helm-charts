@@ -126,7 +126,10 @@ Render the Lightstreamer edition configuration file
               For EVALUATION and STARTUP: ONLINE is mandatory.
               For PRODUCTION, HOT-STANDBY, NON-PRODUCTION-FULL, and NON-PRODUCTION-LIMITED:
               you can choose between ONLINE and FILE.
-              For DEMO: the value is ignored, as no validation is done. -->
+              For DEMO: the value is ignored, as no validation is done.
+              Note that, apart from the DEMO license type, the license is revalidated
+              at regular intervals. In case of FILE validation, this allows for hot
+              replacement of license files (by keeping the file names). -->
        {{- if eq .licenseType "DEMO"}}
          <!--
          <license_validation>ONLINE</license_validation>
@@ -164,8 +167,9 @@ Render the Lightstreamer edition configuration file
               Can be one of the following:
               - Y: use the feature set detailed in the <optional_features> element below.
                 If a required feature is not allowed by the license in use, the
-                server will not start
-              - N: use the feature set specified by the license in use -->
+                server will not start;
+              - N: use the feature set specified by the license in use.
+              Default: N -->
          <restricted_feature_set>{{ .enableRestrictedFeaturesSet | default false | ternary "Y" "N" }}</restricted_feature_set>
     {{- end }} {{/* with .enterprise */}}
   {{- end }} {{/* if eq .edition "ENTERPRISE" */}}
@@ -175,8 +179,8 @@ Render the Lightstreamer edition configuration file
            See the README.TXT file in the audit directory for full details. -->
       <audit_logs>
 
-         <!-- Path of the directory in which to store the audit log files,
-              relative to the conf directory.
+         <!-- Mandatory. Path of the directory in which to store the audit log
+              files, relative to the conf directory.
               The main audit log reports statistics on the number of concurrent
               sessions and is produced for some types of licenses only.
               A separate audit log reports statistics on the number of concurrent
@@ -196,7 +200,8 @@ Render the Lightstreamer edition configuration file
                    The following host name must be reachable on port 443:
                    - https://service.lightstreamer.com/
               - N: Do not perform automatic audit log upload; if audit logs are
-                   required by license terms, they must be delivered manually. -->
+                   required by license terms, they must be delivered manually.
+              Default: Y -->
   {{- if .enterprise.licenseValidation | eq "FILE" }}
   {{- if not ((.enterprise).enableAutomaticAuditLogUpload | quote | empty) }}
          <automatic_upload>{{ .enterprise.enableAutomaticAuditLogUpload | ternary "Y" "N" }}</automatic_upload>
@@ -209,9 +214,9 @@ Render the Lightstreamer edition configuration file
       </audit_logs>
 
       <!-- CONFIGURATION OF OPTIONAL FEATURES
-           For the ENTERPRISE edition, the elements below can be used to restrict
-           the feature set with respect to the license in use. Used only if
-           <restricted_feature_set> above set to Y.
+           For the ENTERPRISE edition, the optional elements below can be used
+           to restrict the feature set with respect to the license in use.
+           Used only if <restricted_feature_set> above is set to Y.
            The DEMO, EVALUATION, and STARTUP license types by default allow all the
            optional features. For the other license types, the allowed optional
            features are determined by the specific license in use.
@@ -219,7 +224,12 @@ Render the Lightstreamer edition configuration file
            (the server would not start in such case). But you can turn off any
            feature that is allowed by the license in use.
            To know more, open the Welcome Page or the Monitoring Dashboard
-           (Edition tab) of your running Lightstreamer Server. -->
+           (Edition tab) of your running Lightstreamer Server.
+           Note that, apart from the DEMO license type, the license is revalidated
+           at regular intervals and this may cause the licensed feature set
+           to change. For this reason, this file is also reloaded and the
+           <optional_features> block and the related <restricted_feature_set>
+           element are reevaluated. -->
       <optional_features>
   {{- if (.enterprise.optionalFeatures).enableRestrictedFeaturesSet }}
     {{- with required "license.enterprise.optionalFeatures.features must be set" ((.enterprise).optionalFeatures).features }}

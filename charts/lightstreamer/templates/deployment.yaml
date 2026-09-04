@@ -202,8 +202,7 @@ spec:
           {{- /* END VARIABLES FOR LICENSE */ -}}
           {{- /* START ENV VARIABLES FOR LIGHTSTREAMER MANAGEMENT */ -}}
           {{- with (.Values.management.jmx).rmiConnector }}
-            {{- if .enabled }}
-            {{- if not .enablePublicAccess }}
+            {{- if and .enabled (not .enablePublicAccess) }}
               {{- range .credentialSecrets }}
             - name: LS_RMI_CREDENTIAL_{{ . | upper | replace "-" "_" }}_USER
               valueFrom:
@@ -217,12 +216,10 @@ spec:
                   key: password
               {{- end }}
             {{- end }}
-            {{- end }}
           {{- end }}
           {{- with (.Values.management).dashboard }}
-            {{- if not .enablePublicAccess }}
+            {{- if and .enabled (not .enablePublicAccess) }}
               {{- range .credentials }}
-              {{- if .secretRef}}
             - name: LS_DASHBOARD_CREDENTIAL_{{ .secretRef | upper | replace "-" "_" }}_USER
               valueFrom:
                 secretKeyRef:
@@ -234,12 +231,11 @@ spec:
                   name: {{ .secretRef }}
                   key: password
               {{- end }}
-              {{- end }}
             {{- end }}
           {{- end }}
           {{- /* END ENV VARIABLES FOR MANAGEMENT */ -}}
           {{- /* START ENV VARIABLES FOR MPN */ -}}
-          {{- if (.Values.mpn).enabled }}
+          {{- if .Values.mpn.enabled }}
             {{/* START ENV VARIABLES FOR HIBERNATE CONNECTION */}}
             - name: LS_HIBERNATE_CONNECTION_USERNAME
               valueFrom:
@@ -385,10 +381,14 @@ spec:
               mountPath: {{ include "lightstreamer.logs.dir" . }}
             - name: lightstreamer-init-scripts
               mountPath: /lightstreamer/bin/init-scripts
+          {{- if ((.Values.deployment).probes.renderReadinessCheckScript) }}
+            - name: lightstreamer-readiness-check-script
+              mountPath: /lightstreamer/bin/readiness-check-script
+          {{- end }}
             - name: lightstreamer-configuration
               mountPath: /lightstreamer/conf
           {{- /* START VOLUME MOUNTS FOR MPN */ -}}
-          {{- if (.Values.mpn).enabled }}
+          {{- if .Values.mpn.enabled }}
             - name: lightstreamer-mpn-conf
               mountPath: /lightstreamer/conf/mpn
             - name: lightstreamer-mpn-apple-conf
@@ -458,16 +458,18 @@ spec:
               mountPath: /lightstreamer/conf/proxy-pac-files/{{ . }}
           {{- end }}
           {{- /* END VOLUME MOUNTS FOR PAC FILES */ -}}
-          {{- with .Values.errorPageRef }}
+          {{- /* START VOLUME MOUNTS FOR WEB SERVER */ -}}
+          {{- with (.Values.webServer).errorPageRef }}
             - name: lightstreamer-error-page
               mountPath: /lightstreamer/conf/error-page
           {{- end }}
-          {{- with (.Values.webServer).pagesVolume }}
-            {{- if .name }}
-            - name: {{ .name }}
+          {{- with .Values.webServer }}
+            {{- if and .enabled .pagesVolume }}
+            - name: {{ .pagesVolume.name }}
               mountPath: {{ include "lightstreamer.webServer.pages-source.dir" . }}
             {{- end }}
           {{- end }}
+          {{- /* END VOLUME MOUNTS FOR WEB SERVER */ -}}
           {{- with (.Values).sharedDir }}
             {{- if (.fromVolume).name }}
             - name: {{ .fromVolume.name }}
@@ -581,10 +583,16 @@ spec:
           configMap:
             name: {{ include "lightstreamer.fullname" . }}-init-scripts
             defaultMode: 0777
+      {{- if ((.Values.deployment).probes.renderReadinessCheckScript) }}
+        - name: lightstreamer-readiness-check-script
+          configMap:
+            name: {{ required "deployment.probes.readiness.checkScriptRef.name must be set" .Values.deployment.probes.readiness.checkScriptRef.name }}
+            defaultMode: 0777
+      {{- end }}
         - name: lightstreamer-configuration
           configMap:
             name: {{ include "lightstreamer.fullname" . }}-conf
-      {{- with .Values.webServer.errorPageRef }}
+      {{- with (.Values.webServer).errorPageRef }}
         - name: lightstreamer-error-page
           configMap:
             name: {{ required "webServer.errorPageRef.name must be set" .name }}
@@ -646,7 +654,7 @@ spec:
       {{- end -}}
       {{- /* END VOLUMES FOR PAC FILES */ -}}
       {{- /* START VOLUMES FOR MPN */ -}}
-      {{- if (.Values.mpn).enabled }}
+      {{- if .Values.mpn.enabled }}
         - name: lightstreamer-mpn-conf
           configMap:
              name: {{ include "lightstreamer.fullname" . }}-mpn-conf

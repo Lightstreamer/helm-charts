@@ -19,6 +19,13 @@ REPO_ROOT = Path(__file__).resolve().parent
 DEPLOYMENT = REPO_ROOT / "DEPLOYMENT.md"
 VALUES = REPO_ROOT / "charts" / "lightstreamer" / "values.yaml"
 
+# Search radius (in lines) when locating the intended YAML key around a stale
+# line reference. `NARROW` is tried first to keep suggestions tight for the
+# common case of small edits; `WIDE` is the fallback and must be large enough
+# to survive a full reformat of values.yaml (drifts of 100-200+ lines).
+NEAREST_SEARCH_WINDOW_NARROW = 50
+NEAREST_SEARCH_WINDOW_WIDE = 300
+
 LINK_RE = re.compile(
     r"\[(`?)([^]`]+?)\1\]"                # optional backticks (captured)
     r"\(charts/lightstreamer/values\.yaml#L(\d+)\)"
@@ -78,19 +85,41 @@ def line_has_yaml_key(line: str, key: str) -> bool:
 
 
 def find_nearest(values_lines: list[str], keys: list[str], target_line: int,
-                 window: int = 50) -> list[tuple[int, str]]:
+                 window: int | None = None) -> list[tuple[int, str]]:
     """Search ±window lines around *target_line* for YAML key definitions.
 
-    Uses a two-tier approach: first collects strict matches (``key:``),
-    then falls back to weak substring matches if no strict ones are found.
+    Uses a two-tier approach in two dimensions:
+
+    * Match strength: strict matches (``key:``) win over weak substring
+      matches; weak matches are only returned if no strict ones are found.
+    * Search radius: when *window* is not given, first probe the narrow
+      window (``NEAREST_SEARCH_WINDOW_NARROW``); if that yields no strict
+      hits, widen to ``NEAREST_SEARCH_WINDOW_WIDE``. This keeps suggestions
+      tight for small edits while still recovering from full reformats.
     """
+    if window is not None:
+        return _search_window(values_lines, keys, target_line, window)
+    narrow = _search_window(values_lines, keys, target_line,
+                            NEAREST_SEARCH_WINDOW_NARROW)
+    if narrow and any(_is_strict(line, keys) for _, line in narrow):
+        return narrow
+    return _search_window(values_lines, keys, target_line,
+                          NEAREST_SEARCH_WINDOW_WIDE)
+
+
+def _is_strict(line: str, keys: list[str]) -> bool:
+    return any(line_has_yaml_key(line, k) for k in keys)
+
+
+def _search_window(values_lines: list[str], keys: list[str], target_line: int,
+                   window: int) -> list[tuple[int, str]]:
     strict: list[tuple[int, str]] = []
     weak:   list[tuple[int, str]] = []
     lo = max(0, target_line - window - 1)
     hi = min(len(values_lines), target_line + window)
     for i in range(lo, hi):
         line = values_lines[i]
-        if any(line_has_yaml_key(line, k) for k in keys):
+        if _is_strict(line, keys):
             strict.append((i + 1, line.rstrip()))
         elif any(k.lower() in line.lower() for k in keys):
             weak.append((i + 1, line.rstrip()))

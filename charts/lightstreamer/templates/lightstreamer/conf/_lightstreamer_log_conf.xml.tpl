@@ -19,7 +19,7 @@ Render the Lightstreamer logging configuration file
 */}}
 {{- define "lightstreamer.configuration.log" -}}
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Do not remove this line. File tag: log_conf-APV-7.3.0. -->
+<!-- Do not remove this line. File tag: log_conf-APV-8.0.0 b1. -->
 
 <configuration scan="true" scanPeriod="10 seconds">
 {{- with required "logging must be set" .Values.logging }}
@@ -224,6 +224,11 @@ Render the Lightstreamer logging configuration file
   <logger name="LightstreamerLogger.init"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "init") }}>
   </logger>
 
+  <!-- logging of adapter initialization and plug/terminate operations -->
+  <!-- at DEBUG level, initialization details and error details are reported -->
+  <logger name="LightstreamerLogger.init.adapters"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "init.adapters") }}>
+  </logger>
+
   <!-- logging of license check phase -->
   <!-- at DEBUG level, check details and error details can be found in case
        of license check failure -->
@@ -271,7 +276,7 @@ Render the Lightstreamer logging configuration file
   <!-- at DEBUG level, details of all information received are reported -->
   <logger name="LightstreamerLogger.connections.proxy"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "connections.proxy") }}/>
 
-  <!-- logging of internal web server activity; it also logs requests of
+  <!-- logging of Internal Web Server activity; it also logs requests of
      static resources related to push requests -->
   <!-- at DEBUG level, error details are reported -->
   <!-- All log from this logger and its subloggers reports the IP and port of the involved connection -->
@@ -309,12 +314,19 @@ Render the Lightstreamer logging configuration file
   <!-- at DEBUG level, events dispatched to ItemEventBuffers are dumped -->
   <logger name="LightstreamerLogger.preprocessor"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "preprocessor") }}/>
 
+  <!-- logging of warnings of harmless inconsistencies in received events -->
+  <logger name="LightstreamerLogger.preprocessor.checks"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "preprocessor.checks") }}/>  
+
   <!-- logging of internal thread management and events dispatching -->
   <logger name="LightstreamerLogger.scheduler"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "scheduler") }}/>
 
   <!-- logging of InfoPump and ItemEventBuffers internal activity -->
   <!-- at DEBUG level, updates to be sent to the clients are dumped -->
   <logger name="LightstreamerLogger.pump"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "pump") }}/>
+
+  <!-- logging of updates to be sent to the clients -->
+  <!-- at DEBUG level, all updates to be sent are dumped -->
+    <logger name="LightstreamerLogger.pump.upd"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "pump.upd") }}/>
 
   <!-- logging of management of messages received from the clients -->
   <!-- at DEBUG level, details of message processing are logged -->
@@ -347,6 +359,13 @@ Render the Lightstreamer logging configuration file
   <!-- All log related to client requests reports the IP and port of the involved connection -->
   <logger name="LightstreamerLogger.mpn.requests"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "mpn.requests") }}/>
 
+  <!-- logging of processing of mobile push notifications request
+       received from the clients -->
+  <!-- at INFO level, all request processing exit points and outcomes are dumped -->
+  <!-- at DEBUG level, all request processing entry points are logged -->
+  <!-- All logs from this logger report the IP and port of the involved connection -->
+  <logger name="LightstreamerLogger.mpn.requests.client"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "mpn.requests.client") }}/>
+
   <!-- logging of mobile push notifications activity related to notification gathering -->
   <!-- at INFO level, all push notifications ready to be sent are dumped -->
   <logger name="LightstreamerLogger.mpn.pump"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "mpn.pump") }}/>
@@ -376,6 +395,9 @@ Render the Lightstreamer logging configuration file
 
   <!-- logging of issues related to the special adapters handled by the MPN Module -->
   <logger name="LightstreamerLogger.mpn.status_adapters"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "mpn.status_adapters") }}/>
+
+  <!-- logging of Adapter state and issues with Adapter invocations. -->
+  <logger name="LightstreamerLogger.adapters"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "adapters") }}/>
 
   <!-- logging of JavaScript client messages -->
   <!-- at DEBUG level, log messages sent by the Web and Node.js (Unified API) Client Libraries

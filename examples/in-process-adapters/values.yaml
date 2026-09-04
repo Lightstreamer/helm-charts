@@ -9,6 +9,61 @@ logging:
 deployment:
   terminationGracePeriodSeconds: 2
 
+  probes:
+
+    # Startup probe: hits `/lightstreamer/healthcheck` on `defaultServer`
+    # and holds off liveness and readiness checks until the endpoint first
+    # responds. Sized to allow up to ~60s of startup (JVM warm-up +
+    # configuration parsing + Adapter Set loading) before the pod is
+    # considered stuck: failureThreshold × periodSeconds = 12 × 5s.
+    startup:
+      enabled: true
+      serverRef: defaultServer
+      periodSeconds: 5
+      failureThreshold: 12
+      timeoutSeconds: 2
+
+    # Liveness probe: hits `/lightstreamer/healthcheck` on `defaultServer`
+    # and marks the pod alive as long as the endpoint returns HTTP 200.
+    # Only runs after the startup probe succeeds, so it can be tuned to
+    # detect a hung server without racing against startup. A hang is
+    # reported after failureThreshold × periodSeconds = 3 × 10s = 30s.
+    liveness:
+      enabled: true
+      serverRef: defaultServer
+      periodSeconds: 10
+      failureThreshold: 3
+      timeoutSeconds: 1
+
+    # Readiness probe: hits `/lightstreamer/readiness_check` on `defaultServer`
+    # and pipes the JSON response body into the sample `readiness.sh` script
+    # supplied via the `readiness-script-map` ConfigMap. The pod is marked
+    # ready when the script exits 0. A disabled adapter is reflected in the
+    # pod's `Ready` condition within failureThreshold × periodSeconds =
+    # 3 × 5s = 15s.
+    readiness:
+      enabled: true
+      serverRef: defaultServer
+      checkScriptRef:
+        name: readiness-script-map
+        key: readiness.sh
+      periodSeconds: 5
+      failureThreshold: 3
+      timeoutSeconds: 2
+
+management:
+
+  # Expose the `/lightstreamer/healthcheck` endpoint on all server sockets so
+  # the liveness probe above can reach it.
+  healthCheck:
+    enableAvailabilityOnAllServers: true
+
+  # Expose the `/lightstreamer/readiness_check` endpoint on all server sockets
+  # so the readiness probe above can reach it.
+  readinessCheck:
+    enableAvailabilityOnAllServers: true
+    
+
 adapters:
 
   # Define the adapter set
