@@ -28,7 +28,7 @@ Render the Hibernate configuration file for the MPN module
 <hibernate-configuration>
 
   <session-factory>
-  {{- with .Values.mpn.hibernateConfig }}
+  {{- with required "mpn.hibernateConfig must be set" .Values.mpn.hibernateConfig }}
     {{- with required "mpn.hibernateConfig.connection must be set" .connection }}  
 
     <property name="connection.driver_class">{{ required "mpn.hibernateConfig.connection.jdbcDriverClass must be set" .jdbcDriverClass }}</property>
@@ -38,12 +38,15 @@ Render the Hibernate configuration file for the MPN module
     {{- end }}
     <property name="connection.username">${ls_hibernate_connection_username}</property>
     <property name="connection.password">${ls_hibernate_connection_password}</property>
-      {{- if .dialect }}
+      {{- if not (quote .dialect | empty) }}
     <property name="dialect">{{ .dialect }}</property>
       {{- end }}
-    {{- end }} {{/* with .connection */}}
+    {{- end }} {{/* of .connection */}}
 
     {{- range $propertyKey, $propertyValue := .optionalConfiguration }}
+      {{- if not (quote $propertyValue )}}
+        {{ fail (printf "a value for mpn.hibernate.optionalConfiguration.%s must be set" $propertyKey) }}
+      {{- end }}
     <property name={{ $propertyKey | quote }}>{{ $propertyValue }}</property>
     {{- end }}
 
