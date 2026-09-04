@@ -1623,7 +1623,7 @@ logging:
         # At `DEBUG` level, details of all information received are reported.
         connections.proxy: INFO
 
-        # -- Optional. Logging of internal web server activity; it also logs
+        # -- Optional. Logging of Internal Web Server activity; it also logs
         # requests for static resources related to push requests.
         # At `DEBUG` level, error details are reported.
         # All logs from this logger and its subloggers report the IP and port of
@@ -2270,7 +2270,7 @@ management:
 
   # -- Mandatory. Configuration of the Monitoring Dashboard.
   # The Dashboard is a webapp whose pages are embedded in the Lightstreamer
-  # Broker and supplied by the internal web server. The main page has several
+  # Broker and supplied by the Internal Web Server. The main page has several
   # tabs, which provide basic monitoring statistics in graphical form; the last
   # one shows the newly introduced JMX Tree, which enables JMX data viewing and
   # management from the browser.
@@ -2973,7 +2973,7 @@ pushSession:
   # frequency.
   minInterPollMillis: 0
 
-# -- Optional. Mobile Push Notification (MPN) module configuration.
+# -- Mandatory. Mobile Push Notification (MPN) module configuration.
 # This module is able to receive updates from an item subscription on behalf of
 # a user, and forward them to a mobile push notification service, such as
 # Apple's APNs or Google's FCM.
@@ -2998,8 +2998,8 @@ mpn:
   # `window.safari.pushNotification.requestPermission` method.
   # Only when the MPN module is enabled, the specified path is reserved and the
   # Server identifies these special requests and processes them as required.
-  # Enabling the internal web server (`webServer.enabled` set to `true`) is not
-  # needed for this; note that if the internal web server is enabled, the
+  # Enabling the Internal Web Server (`webServer.enabled` set to `true`) is not
+  # needed for this; note that if the Internal Web Server is enabled, the
   # processing of this path is different from the processing of the other URLs.
   appleWebServicePath: /apple_web_service
 
@@ -3423,16 +3423,16 @@ mpn:
         triggerExpressions: []
           # - Double\.parseDouble\(\$\[\d+\]\) [<>] [+-]?(\d*\.)?\d+
 
-# -- Optional. Internal web server configuration.
+# -- Mandatory. Internal Web Server configuration.
 # Note that some of the included settings may also apply to the Monitoring
-# Dashboard pages, which are supplied through the internal web server. In
+# Dashboard pages, which are supplied through the Internal Web Server. In
 # particular, this holds for the `webServer.compressionThreshold` settings.
 # Anyway, this does not hold for the `webServer.enabled` setting, as the
 # Monitoring Dashboard accessibility is only configured through
 # `management.dashboard`.
 webServer:
 
-  # -- Optional. Enables the internal web server.
+  # -- Optional. Enables the Internal Web Server.
   # If set to `true`, the Server accepts requests for file resources.
   # If set to `false`, the Server ignores requests for file resources.
   enabled: true
@@ -3440,7 +3440,7 @@ webServer:
   # -- Optional. The ConfigMap name and key where an HTML page to be returned
   # upon unexpected request URLs is stored. This applies to URLs in
   # reserved ranges that have no meaning.
-  # If the Internal web server is not enabled (`webServer.enabled` set to
+  # If the Internal Web Server is not enabled (`webServer.enabled` set to
   # `false`), this also applies to all non-reserved URLs; otherwise,
   # nonexisting non-reserved URLs will get the HTTP 404 error as usual.
   # The file content should be encoded with the iso-8859-1 charset.
@@ -3451,7 +3451,7 @@ webServer:
 
   # -- Optional. The reference to a volume where the static page files are
   # stored. When set, the volume is mounted into the container and used as the
-  # root directory for URL path mapping by the internal web server.
+  # root directory for URL path mapping by the Internal Web Server.
   # Note that the `/lightstreamer` URL path (as any alternative paths defined
   # through `pushSession.serviceUrlPrefix`) is reserved, as well as the base
   # URL path of the Monitoring Dashboard (see `management.dashboard.urlPath`);
@@ -3469,8 +3469,8 @@ webServer:
     path:
 
   # -- Optional. Caching time, in minutes, to be allowed to the browser (through
-  # the `expires` HTTP header) for all the resources supplied by the internal
-  # web server.
+  # the `expires` HTTP header) for all the resources supplied by the Internal
+  # Web Server.
   # A zero value disables caching by the browser.
   persistencyMinutes: 0
 
@@ -3500,13 +3500,13 @@ webServer:
   # If set to `true`, the Server accepts requests for `/clientaccesspolicy.xml`;
   # the file configured through the `webServer.silverlightAccessPolicyPath`
   # setting is returned.
-  # Enabling internal web server (through `webServer.enabled`) is not needed;
-  # note that if the internal web server is enabled, the processing of the
+  # Enabling Internal Web Server (through `webServer.enabled`) is not needed;
+  # note that if the Internal Web Server is enabled, the processing of the
   # `/clientaccesspolicy.xml` URLis different than the processing of the other
   # URLs.
   # If set to `false`, no special processing for the `/clientaccesspolicy.xml`
   # requests is performed.
-  # Note that if the internal web server is enabled, then the processing of the
+  # Note that if the Internal Web Server is enabled, then the processing of the
   # `/clientaccesspolicy.xml` URL is performed as for any other URL (i.e. a
   # file named `clientaccesspolicy.xml` is looked for in the directory
   # configured as the root for URL path mapping).
@@ -3524,7 +3524,7 @@ webServer:
   # The file path is relative to the conf directory.
   silverlightAccessPolicyPath:
 
-# -- Optional. Clustering configuration.
+# -- Mandatory. Clustering configuration.
 cluster:
 
   # -- Optional. Host address to be used for control/poll/rebind connections.
@@ -3609,7 +3609,7 @@ load:
   # will be denied.
   # The limit can be set as a simple, heuristic protection from Server overload
   # from MPN subscriptions.
- # If set to an empty, `null`, `0`, or negative value, it means unlimited.
+  # If set to an empty, `null`, `0`, or negative value, it means unlimited.
   # @default -- unlimited number of concurrent MPN devices sessions
   maxMpnDevices:
 
@@ -3699,7 +3699,7 @@ load:
   # - Calls to a Data Adapter that may need to access to some external resource
   #   (i.e. subscribe and unsubscribe, though it should always be possible to
   #   implement such calls asynchronously).
-  # - File access by the internal web server, though it should be used only in
+  # - File access by the Internal Web Server, though it should be used only in
   #   demo and test scenarios.
   # Note that specific thread pools can optionally be defined in order to handle
   # some of the tasks that, by default, are handled by the `SERVER` thread pool.
@@ -3899,7 +3899,7 @@ sharedDir:
   # stored. The volume must be defined in `deployment.extraVolumes`.
   fromVolume:
 
-    # -- Mandatory. The name of the volume, as defined in
+    # -- Mandatory. The name of the volume, as defined in 
     # `deployment.extraVolumes`.
     name:
 
