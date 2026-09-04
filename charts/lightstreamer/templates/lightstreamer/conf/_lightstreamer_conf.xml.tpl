@@ -1417,7 +1417,7 @@ Render the Lightstreamer configuration file.
 
     <!-- Optional. Configuration of the Monitoring Dashboard.
          The dashboard is a webapp whose pages are embedded in Lightstreamer
-         Server and supplied by the internal web server. The main page has
+         Server and supplied by the Internal Web Server. The main page has
          several tabs, which provide basic monitoring statistics in graphical
          form; the last one shows the newly introduced JMX Tree,
          which enables JMX data view and management from the browser.
@@ -2330,10 +2330,10 @@ Render the Lightstreamer configuration file.
       {{- if not (has .reusePumpBuffers (list "Y" "N" "AUTO")) }}
         {{- fail "pushSession.reusePumpBuffers must be one of: \"Y\", \"N\", \"AUTO\"" }}
       {{- end }}
-    <reuse_pump_buffers>{{ .reusePumpBuffers }}</use_compression>
+    <reuse_pump_buffers>{{ .reusePumpBuffers }}</reuse_pump_buffers>
     {{- else }}
     <!--
-    <reuse_pump_buffers>N</use_compression>
+    <reuse_pump_buffers>N</reuse_pump_buffers>
     -->
     {{- end }}
 
@@ -2473,8 +2473,7 @@ Render the Lightstreamer configuration file.
          by your license, please see the License tab of the Monitoring Dashboard
          (by default, available at /dashboard). -->
     <mpn>
-{{- if and .Values.mpn (.Values.mpn).enabled }}
-{{- with .Values.mpn }}
+{{- with required "mpn must be set" .Values.mpn }}
 
         <!-- Optional. MPN module master switch. If N, the MPN module will
              not start in any case, and all requests related to mobile push
@@ -2487,6 +2486,8 @@ Render the Lightstreamer configuration file.
              Default: N. -->
         <enabled>{{ .enabled | default false | ternary "Y" "N"}}</enabled>
 
+  {{- if .enabled }}
+   
         <!-- Optional. Specifies the root path of the web service URL to be
              invoked by the client application on a Safari browser to enable
              Web Push Notifications. Currently, the latter is achieved by invoking
@@ -2495,29 +2496,29 @@ Render the Lightstreamer configuration file.
              is reserved and the Server identifies these
              special requests and processes them as required. Setting the internal
              web server enabling setting as "Y" is not needed for this;
-             note that if the internal web server is enabled, the processing
+             note that if the Internal Web Server is enabled, the processing
              of this path is different from the processing of the other URLs.
              Default: /apple_web_service. -->
-  {{- if .appleWebServicePath }}
+    {{- if not (quote .appleWebServicePath | empty) }}
         <apple_web_service_path>{{ .appleWebServicePath }}</apple_web_service_path>
-  {{- else }}
+    {{- else }}
         <!--
         <apple_web_service_path>/applewebservice</apple_web_service_path>
         -->
-  {{- end }}
+    {{- end }}
 
         <!-- Optional. Specifies the name of the built-in data adapter that client
              SDKs may subscribe to to obtain the current status of MPN devices
              and subscriptions. This data adapter is automatically added
              to all configured Adapter Sets in an MPN-enabled Server.
              Default: MPN_INTERNAL_DATA_ADAPTER. -->
-  {{- if .internalDataAdapter }}
-        <internal_data_adapter>MPN_ADAPTER</internal_data_adapter>
-  {{- else}}
+    {{- if not (quote .internalDataAdapter | empty) }}
+        <internal_data_adapter>{{ .internalDataAdapter }}</internal_data_adapter>
+    {{- else}}
         <!--
         <internal_data_adapter>MPN_ADAPTER</internal_data_adapter>
         -->
-  {{- end }}
+    {{- end }}
 
         <!-- Mandatory if <enabled> is Y. Hibernate configuration file path.
              The MPN module uses an Hibernate-mapped database to make the
@@ -2532,13 +2533,13 @@ Render the Lightstreamer configuration file.
              timeout occurs during a request processing, the client receives
              a specific error.
              Default: 15000. -->
-  {{- if not (quote .requestTimeoutMillis | empty) }}
+    {{- if not (quote .requestTimeoutMillis | empty) }}
         <request_timeout_millis>{{ int .requestTimeoutMillis }}</request_timeout_millis>
-  {{- else }}
+    {{- else }}
         <!--
         <request_timeout_millis>15000</request_timeout_millis>
         -->
-  {{- end }}
+    {{- end }}
 
         <!-- Optional. Interval between health checks on the database.
              During this health check, a number of tasks are carried out:
@@ -2546,14 +2547,13 @@ Render the Lightstreamer configuration file.
              subscriptions updated by other module instances, and
              deletion of abandoned subscriptions.
              Default: 5000. -->
-
-  {{- if not (quote .moduleCheckPeriodMillis | empty) }}
+    {{- if not (quote .moduleCheckPeriodMillis | empty) }}
         <module_check_period_millis>{{ int .moduleCheckPeriodMillis }}</module_check_period_millis>
-  {{- else }}
+    {{- else }}
         <!--
         <module_check_period_millis>5000</module_check_period_millis>
         -->
-  {{- end }}
+    {{- end }}
 
         <!-- Optional. Timeout for a health check of other modules. If a module
              fails to do its health check for this period of time, other module
@@ -2564,14 +2564,13 @@ Render the Lightstreamer configuration file.
              values of <module_check_period_millis> configured for the various
              instances in the cluster.
              Default: 30000. -->
-  {{- if not (quote .moduleTimeoutMillis | empty) }}
+    {{- if not (quote .moduleTimeoutMillis | empty) }}
         <module_timeout_millis>{{ int .moduleTimeoutMillis }}</module_timeout_millis>
-  {{- else }}
+    {{- else }}
         <!--
         <module_timeout_millis>30000</module_timeout_millis>
         -->
-  {{- end }}
-
+    {{- end }}
 
         <!-- Optional. Enabling of the startup of the module upon Server startup.
              If module startup is prevented, or not yet completed, or completed
@@ -2596,17 +2595,17 @@ Render the Lightstreamer configuration file.
              JMX interface (full JMX features is an optional feature, available
              depending on Edition and License Type).
              Default: Y. -->
-  {{- with .activationOnStartUp }}
-    {{- if (not (quote .enabled | empty)) }}
+    {{- with .activationOnStartUp }}
+      {{- if (not (quote .enabled | empty)) }}
        <activate_on_startup{{ if not (quote .maxDelayMillis | empty) }} max_delay={{ .maxDelayMillis | quote }}{{ end }}>{{ .enabled | ternary "Y" "N" }}</activate_on_startup>
-    {{- else }}
+      {{- else }}
        <activate_on_startup{{ if not (quote .maxDelayMillis | empty) }} max_delay={{ .maxDelayMillis | quote }}{{ end }}>Y</activate_on_startup>
-    {{- end }}
-  {{- else }}
+      {{- end }}
+    {{- else }}
         <!--
         <activate_on_startup max_delay="-1">Y</activate_on_startup>
         -->
-  {{- end }}
+    {{- end }}
 
         <!-- Optional. Enabling of the automatic initialization of a new module
              upon health check failure.
@@ -2618,13 +2617,13 @@ Render the Lightstreamer configuration file.
                   and the Server will keep running with an inactive module.
              See <activate_on_startup> for notes on inactive modules.
              Default: Y. -->
-  {{- if not (quote .enableModuleRecovery | empty) }}
+    {{- if not (quote .enableModuleRecovery | empty) }}
         <module_recovery_enabled>{{ .enableModuleRecovery | ternary "Y" "N" }}</module_recovery_enabled>
-  {{- else }}
+    {{- else }}
         <!--
         <module_recovery_enabled>N</module_recovery_enabled>
         -->
-  {{- end }}
+    {{- end }}
 
         <!-- Optional. Timeout after which an inactive device is
              considered abandoned and is permanently deleted. A device is
@@ -2633,25 +2632,25 @@ Render the Lightstreamer configuration file.
              A suspended device may be resumed with a token change (typically,
              client libraries handle this situation automatically).
              Default: 10080 (7 days). -->
-  {{- if not (quote .deviceInactivityTimeoutMinutes | empty) }}
+    {{- if not (quote .deviceInactivityTimeoutMinutes | empty) }}
         <device_inactivity_timeout_minutes>{{ int .deviceInactivityTimeoutMinutes }}</device_inactivity_timeout_minutes>
-  {{- else }}
+    {{- else }}
         <!--
         <device_inactivity_timeout_minutes>10080</device_inactivity_timeout_minutes>
         -->
-  {{- end }}
+    {{- end }}
 
         <!-- Optional. Periodicity of the device garbage collector. Once every
              this number of minutes, devices that have been inactive for more than
              <device_inactivity_timeout_minutes> are permanently deleted.
              Default: 60 (1 hour). -->
-  {{- if not (quote .collectorPeriodMinutes | empty) }}
+    {{- if not (quote .collectorPeriodMinutes | empty) }}
         <device_collector_period_minutes>{{ int .collectorPeriodMinutes }}</device_collector_period_minutes>
-  {{- else }}
+    {{- else }}
         <!--
         <collector_period_minutes>60</collector_period_minutes>
         -->
-  {{- end }}
+    {{- end }}
 
         <!-- Optional. Sizes of request processor's ("MPN EXECUTOR") thread pool.
              The <max_size> parameter specifies the maximum number of threads
@@ -2664,27 +2663,28 @@ Render the Lightstreamer configuration file.
              Default for <max_size>: 10 threads.
              Default for <max_free>: 0, meaning the pool will not consume
              resources when idle. -->
-  {{- with .executorPool }}
-     <executor_pool>
-     {{- if not (quote .maxSize | empty) }}
+    {{- with .executorPool }}
+        <executor_pool>
+      {{- if not (quote .maxSize | empty) }}
           <max_size>{{ int .maxSize }}</max_size>
-     {{- else }}
+      {{- else }}
+      
           <!-- <max_size>10</max_size> -->
-     {{- end }}
-     {{- if not (quote .maxFree | empty) }}
+      {{- end }}
+      {{- if not (quote .maxFree | empty) }}
           <max_free>{{ int .maxFree }}</max_free>
-     {{- else }}
+      {{- else }}
           <!-- <max_free>0</max_free> -->
-     {{- end }}
+      {{- end }}
         </executor_pool>
-  {{- else }}
+    {{- else }}
         <!--
         <executor_pool>
             <max_size>10</max_size>
             <max_free>0</max_free>
         </executor_pool>
         -->
-  {{- end }}
+    {{- end }}
 
         <!-- Optional. Requests the creation of a specific thread pool,
              "MPN DEVICE HANDLER", specifically dedicated to the handling
@@ -2701,20 +2701,28 @@ Render the Lightstreamer configuration file.
              If the pool is not defined, each "subscribe" call will be managed
              by the thread pool associated with the involved Data Adapter,
              similarly to ordinary sessions. -->
-  {{- with .deviceHandlerPool }}
-    {{- if compact (values .) }}
+    {{- with .deviceHandlerPool }}
+      {{- if compact (values .) }}
         <device_handler_pool>
-    {{- if not (quote .maxSize | empty) }}
+      {{- if not (quote .maxSize | empty) }}
             <max_size>{{ int .maxSize }}</max_size>
-    {{- else }}
+      {{- else }}
             <!-- <max_size>10</max_size> -->
-    {{- end }}
-    {{- if not (quote .maxFree | empty) }}
+      {{- end }}
+      {{- if not (quote .maxFree | empty) }}
             <max_free>{{ int .maxFree }}</max_free>
-    {{- else }}
+      {{- else }}
             <!-- <max_free>0</max_free> -->
-    {{- end }}
+      {{- end }}
         </device_handler_pool>
+      {{- else }}
+        <!--
+        <device_handler_pool>
+            <max_size>100</max_size>
+            <max_free>0</max_free>
+        </device_handler_pool>
+        -->
+      {{- end }}
     {{- else }}
         <!--
         <device_handler_pool>
@@ -2723,14 +2731,6 @@ Render the Lightstreamer configuration file.
         </device_handler_pool>
         -->
     {{- end }}
-  {{- else }}
-        <!--
-        <device_handler_pool>
-            <max_size>100</max_size>
-            <max_free>0</max_free>
-        </device_handler_pool>
-        -->
-  {{- end }}
 
         <!-- Optional. Size of the notifiers' "MPN XXX NOTIFIER" internal
              thread pool, which is devoted to composing the notifications
@@ -2740,13 +2740,13 @@ Render the Lightstreamer configuration file.
              for this task may be beneficial.
              Default: The number of available total cores, as detected by the
              JVM. -->
-  {{- if not (quote .notifierPoolSize | empty) }}
+    {{- if not (quote .notifierPoolSize | empty) }}
         <notifier_pool_size>{{ int .notifierPoolSize }}</notifier_pool_size>
-  {{- else }}
+    {{- else }}
         <!--
         <notifier_pool_size>10</notifier_pool_size>
         -->
-  {{- end }}
+    {{- end }}
 
         <!-- Optional. Size of the "MPN PUMP" internal thread pool, which is
              devoted to integrating the update events pertaining to each MPN
@@ -2756,13 +2756,13 @@ Render the Lightstreamer configuration file.
              allocating multiple threads for this task may be beneficial.
              Default: The number of available total cores, as detected by the
              JVM. -->
-  {{- if not (quote .mpnPumpPoolSize | empty) }}
+    {{- if not (quote .mpnPumpPoolSize | empty) }}
         <pump_pool_size>{{ int .mpnPumpPoolSize }}</pump_pool_size>
-  {{- else }}
+    {{- else }}
         <!--
         <mpn_pump_pool_size>10</mpn_pump_pool_size>
         -->
-  {{- end }}
+    {{- end }}
 
         <!-- Optional. Number of threads used to parallelize the implementation
              of the internal MPN timers.
@@ -2771,13 +2771,13 @@ Render the Lightstreamer configuration file.
              multiprocessor machines, allocating multiple threads for this task
              may be beneficial.
              Default: 1. -->
-  {{- if not (quote .mpnTimerPoolSize | empty) }}
+    {{- if not (quote .mpnTimerPoolSize | empty) }}
         <mpn_timer_pool_size>{{ int .mpnTimerPoolSize }}</mpn_timer_pool_size>
-  {{- else }}
+    {{- else }}
         <!--
         <mpn_timer_pool_size>2</mpn_timer_pool_size>
         -->
-  {{- end }}
+    {{- end }}
 
         <!-- Mandatory if <enabled> is Y. Specifies what to do in case of
              database failure.
@@ -2801,11 +2801,11 @@ Render the Lightstreamer configuration file.
              Specify:
              - "abort_operation" to abort the ongoing operation or
              - "continue_operation" to continue the ongoing operation. -->
-  {{- if not (has .reactionOnDatabaseFailure (list "abort_operation" "continue_operation")) }}
-    {{- fail "mpn.reactionOnDatabaseFailure must be one of: \"abort_operation\", \"continue_operation\"" }}
-  {{- else }}
+    {{- if not (has .reactionOnDatabaseFailure (list "abort_operation" "continue_operation")) }}
+      {{- fail "mpn.reactionOnDatabaseFailure must be one of: \"abort_operation\", \"continue_operation\"" }}
+    {{- else }}
         <reaction_on_database_failure>{{ .reactionOnDatabaseFailure }}</reaction_on_database_failure>
-  {{- end }}
+    {{- end }}
 
         <!-- Optional. Path of the configuration file for Apple platforms notifier.
              The file path is relative to the conf directory. -->
@@ -2815,7 +2815,7 @@ Render the Lightstreamer configuration file.
              The file path is relative to the conf directory. -->
         <google_notifier_conf>./mpn/google/google_notifier_conf.xml</google_notifier_conf>
 
-{{- end }}
+  {{- end }} {{/* of $mpnEnabled */}}
 {{- end }} {{/* of .Values.mpn */}}
     </mpn>
 
@@ -2825,10 +2825,11 @@ Render the Lightstreamer configuration file.
   ========================
 -->
 
-{{- with .Values.webServer }}
+{{- with required "webServer must be set" .Values.webServer }}
+
     <!-- Optional. Path of an HTML page to be returned upon unexpected request
          URLs. This applies to URLs in reserved ranges that have no meaning.
-         If the Internal web server is not enabled, this also applies to all
+         If the Internal Web Server is not enabled, this also applies to all
          non-reserved URLs; otherwise, nonexisting non-reserved URLs will get the
          HTTP 404 error as usual.
          The file content should be encoded with the iso-8859-1 charset.
@@ -2843,7 +2844,7 @@ Render the Lightstreamer configuration file.
   {{- end }}
 
 
-    <!-- Optional. Internal web server configuration.
+    <!-- Optional. Internal Web Server configuration.
          Note that some of the included settings may also apply to the
          Monitoring Dashboard pages, which are supplied through the internal
          web server. In particular, this holds for the <use_compression> and
@@ -2852,15 +2853,17 @@ Render the Lightstreamer configuration file.
          is only configured through the <dashboard> block. -->
     <web_server>
 
-        <!-- Optional. Enabling of the internal web server.
+        <!-- Optional. Enabling of the Internal Web Server.
              Can be one of the following:
              - Y: the Server accepts requests for file resources;
              - N: the Server ignores requests for file resources.
              Default: N. -->
-        <enabled>{{ .enabled | default false | ternary "Y" "N"}}</enabled>
+  {{- $webServerEnabled := not (eq .enabled false) }}
+  {{- $_:= set . "enabled" $webServerEnabled }}
+        <enabled>{{ $webServerEnabled | ternary "Y" "N"}}</enabled>
 
         <!-- Optional. Path of the file system directory to be used
-             by the internal web server as the root for URL path mapping.
+             by the Internal Web Server as the root for URL path mapping.
              The path is relative to the conf directory.
              Note that the /lightstreamer URL path (as any alternative
              paths defined through <service_url_prefix>) is reserved,
@@ -2869,58 +2872,61 @@ Render the Lightstreamer configuration file.
              hence, subdirectories of the pages directory with conflicting
              names would be ignored.
              Default: ../pages -->
-        {{- if (.pagesVolume).name }}
-        {{- include "lightstreamer.validateExtraVolumeRef" (list $.Values.deployment.extraVolumes .pagesVolume.name "webServer.pagesVolume.name") }}
+  {{- if $webServerEnabled }} 
+    {{- if .pagesVolume }}
+      {{- $pagesVolumeName := required "webServer.pagesVolume.name must be set" .pagesVolume.name }}
+      {{- include "lightstreamer.validateExtraVolumeRef" (list $.Values.deployment.extraVolumes $pagesVolumeName "webServer.pagesVolume.name") }}
         <pages_dir>{{ include "lightstreamer.webServer.pages-source.dir" . }}{{ with .pagesVolume.path }}/{{ . }}{{ end }}</pages_dir>
-        {{- else }}
+    {{- else }}
         <!--
         <pages_dir>../my_pages</pages_dir>
         -->
-        {{- end }}
+    {{- end }}
 
         <!-- Optional. Caching time, in minutes, to be allowed to the browser
              (through the "expires" HTTP header) for all the resources supplied
-             by the internal web server.
+             by the Internal Web Server.
              A zero value disables caching by the browser.
              Default: 0. -->
-        {{- if (quote .persistencyMinutes | empty) }}
+    {{- if not (quote .persistencyMinutes | empty) }}
+        <persistency_minutes>{{ int .persistencyMinutes }}</persistency_minutes>
+
+    {{- else }}
         <!--
         <persistency_minutes>1000000</persistency_minutes>
-        -->
-        {{- else }}
-        <persistency_minutes>{{ .persistencyMinutes }}</persistency_minutes>
-        {{- end }}
+        -->    
+    {{- end }}
 
         <!-- Optional. Path of the MIME types configuration property file.
              The file path is relative to the conf directory.
              Default: ./mime_types.properties -->
-        {{- if empty .mimeTypesConfig }}
+    {{- if not (quote .mimeTypesConfig | empty) }}
+        <mime_types_config>{{ .mimeTypesConfig }}</mime_types_config>
+    {{- else }}
         <!--
         <mime_types_config>./my_mime_types.properties</mime_types_config>
         -->
-        {{- else }}
-        <mime_types_config>{{ .mimeTypesConfig }}</mime_types_config>
-        {{- end }}
+    {{- end }}
 
         <!-- Optional. Path of an HTML page to be returned as the body upon
              a "404 Not Found" answer caused by the request of a nonexistent URL.
              The file content should be encoded with the iso-8859-1 charset.
              The file path is relative to the conf directory.
              Default: the proper page is provided by the Server. -->
-        {{- if empty .notFoundPage }}
+    {{- if not (quote .notFoundPage | empty) }}
+        <notfound_page>{{ .notFoundPage }}</notfound_page>
+    {{- else }}
         <!--
         <notfound_page>./404Page.html</notfound_page>
         -->
-        {{- else }}
-        <notfound_page>{{ .notFoundPage }}</notfound_page>
-        {{- end }}
+    {{- end }}
 
         <!-- Optional. Use of the "gzip" content encoding, as defined by the
              HTTP 1.1 specifications, for sending the resource contents.
              It is specified for various cases through the included rules.
              Note that the use of compression for static pages would benefit
              from an internal cache of compressed pages. However, no cache is
-             provided, as the internal web server is not meant for production use.
+             provided, as the Internal Web Server is not meant for production use.
              Default: The "gzip" content encoding is never used. -->
         <use_compression>
 
@@ -2953,13 +2959,13 @@ Render the Lightstreamer configuration file.
              is not applied, regardless of the "use_compression" setting, as we
              guess that no overall benefit would be reached.
              Default: 8192 bytes. -->
-        {{- if (quote .compressionThreshold | empty) }}
+    {{- if not (quote .compressionThreshold | empty) }}
+        <compression_threshold>{{ int .compressionThreshold }}</compression_threshold>
+    {{- else}}
         <!--
         <compression_threshold>0</compression_threshold>
         -->
-        {{- else}}
-        <compression_threshold>{{ .compressionThreshold }}</compression_threshold>
-        {{- end }}
+    {{- end }}
 
         <!-- Optional. Enables the processing of the "/crossdomain.xml" URL,
              required by the Flash player in order to allow pages from
@@ -2970,13 +2976,13 @@ Render the Lightstreamer configuration file.
              - Y: The Server accepts requests for "/crossdomain.xml";
                   the file configured through the "flex_crossdomain_path"
                   setting is returned.
-                  Setting the internal web server enabling setting as "Y"
-                  is not needed; note that if the internal web server is
+                  Setting the Internal Web Server enabling setting as "Y"
+                  is not needed; note that if the Internal Web Server is
                   enabled, the processing of the "/crossdomain.xml" URL is
                   different than the processing of the other URLs.
              - N: No special processing for the "/crossdomain.xml" requests
                   is performed.
-                  Note that if the internal web server is enabled, then the
+                  Note that if the Internal Web Server is enabled, then the
                   processing of the "/crossdomain.xml" URL is performed as for
                   any other URL (i.e. a file named "crossdomain.xml" is looked
                   for in the directory configured as the root for URL path
@@ -3005,13 +3011,13 @@ Render the Lightstreamer configuration file.
              - Y: The Server accepts requests for "/clientaccesspolicy.xml";
                   the file configured through the "silverlight_accesspolicy_path"
                   setting is returned.
-                  Setting the internal web server enabling setting as "Y"
-                  is not needed; note that if the internal web server is
+                  Setting the Internal Web Server enabling setting as "Y"
+                  is not needed; note that if the Internal Web Server is
                   enabled, the processing of the "/clientaccesspolicy.xml" URL
                   is different than the processing of the other URLs.
              - N: No special processing for the "/clientaccesspolicy.xml"
                   requests is performed.
-                  Note that if the internal web server is enabled, then the
+                  Note that if the Internal Web Server is enabled, then the
                   processing of the "/clientaccesspolicy.xml" URL is performed
                   as for any other URL (i.e. a file named "clientaccesspolicy.xml"
                   is looked for in the directory configured as the root for
@@ -3019,13 +3025,13 @@ Render the Lightstreamer configuration file.
              Note that when "/clientaccesspolicy.xml" is not provided, the Silverlight
              runtime also tries "/crossdomain.xml" (see <flex_crossdomain_enabled>).
              Default: N. -->
-        {{- if (quote .enableSilverlightAccessPolicy | empty) }}
+    {{- if not (quote .enableSilverlightAccessPolicy | empty) }}
+        <silverlight_accesspolicy_enabled>{{ .enableSilverlightAccessPolicy | ternary "Y" "N" }}</silverlight_accesspolicy_enabled>
+    {{- else }}
         <!--
         <silverlight_accesspolicy_enabled>Y</silverlight_accesspolicy_enabled>
         -->
-        {{- else }}
-        <silverlight_accesspolicy_enabled>{{ .enableSilverlightAccessPolicy | ternary "Y" "N" }}</silverlight_accesspolicy_enabled>
-        {{- end }}
+    {{- end }}
 
         <!-- Mandatory when "silverlight_accesspolicy_enabled" is set as "Y".
              Path of the file to be returned upon requests for the
@@ -3033,14 +3039,14 @@ Render the Lightstreamer configuration file.
              "silverlight_accesspolicy_enabled" is not set as "Y".
              The file content should be encoded with the iso-8859-1 charset.
              The file path is relative to the conf directory. -->
-        {{- if .silverlightAccessPolicyPath }}
+    {{- if .silverlightAccessPolicyPath }}
         <silverlight_accesspolicy_path>{{ .silverlightAccessPolicyPath }}</silverlight_accesspolicy_path>
-        {{- else }}
+    {{- else }}
         <!--
         <silverlight_accesspolicy_path>./silverlightaccesspolicy.xml</silverlight_accesspolicy_path>
         -->
-        {{- end }}
-
+    {{- end }} 
+  {{- end }} {{/* of $webServerEnabled */}}
     </web_server>
 {{- end }} {{/* of .Values.webserver */}}
 
@@ -3050,7 +3056,7 @@ Render the Lightstreamer configuration file.
   ========================
 -->
 
-{{- with .Values.cluster }}
+{{- with required "cluster muts be set" .Values.cluster }}
     <!-- Optional. Host address to be used for control/poll/rebind connections.
          A numeric IP address can be specified as well. The use of non standard,
          unicode names may not be supported yet by some Client SDKs.
@@ -3069,7 +3075,7 @@ Render the Lightstreamer configuration file.
          comment for <control_link_machine_name> for details.
          Support for clustering is an optional feature, available depending
          on Edition and License Type. When not available, this setting is ignored. -->
-    {{- if .controlLinkAddress }}
+    {{- if not (quote .controlLinkAddress | empty) }}
     <control_link_address>{{ .controlLinkAddress }}</control_link_address>
     {{- else }}
     <!--
@@ -3103,11 +3109,11 @@ Render the Lightstreamer configuration file.
          Refer to <control_link_address> for other remarks.
          Support for clustering is an optional feature, available depending
          on Edition and License Type. When not available, this setting is ignored. -->
-    {{- if .controlLinkMachineName }}
+    {{- if not (quote .controlLinkMachineName | empty) }}
     <control_link_machine_name>{{ .controlLinkMachineName }}</control_link_machine_name>
     {{- else }}
     <!--
-    <control_link_machine_name>push1</control_link_machine_name>
+    <>push1</control_link_machine_name>
     -->
     {{- end }}
 
@@ -3118,12 +3124,12 @@ Render the Lightstreamer configuration file.
          opportunity to migrate the new session to a different instance.
          See the Clustering document for details on this mechanism and on how
          rebalancing can be pursued. -->
-    {{- if (quote .maxSessionDurationMinutes | empty) }}
+    {{- if not (quote .maxSessionDurationMinutes | empty) }}
+    <max_session_duration_minutes>{{ int .maxSessionDurationMinutes }}</max_session_duration_minutes>
+    {{- else }}
     <!--
     <max_session_duration_minutes>5</max_session_duration_minutes>
     -->
-    {{- else }}
-    <max_session_duration_minutes>{{ int .maxSessionDurationMinutes }}</max_session_duration_minutes>
     {{- end }}
 
 {{- end }} {{/* of .Values.cluster */}}
@@ -3327,7 +3333,7 @@ Render the Lightstreamer configuration file.
         - calls to a Data Adapter that may need to access to some
           external resource (i.e. subscribe and unsubscribe, though it
           should always be possible to implement such calls asynchronously);
-        - file access by the internal web server, though it should be used
+        - file access by the Internal Web Server, though it should be used
           only in demo and test scenarios.
         Note that specific thread pools can optionally be defined in order
         to handle some of the tasks that, by default, are handled by the
