@@ -329,7 +329,7 @@ For production hardening, also review:
 > | Dashboard open to anyone | `enablePublicAccess: true` | Disable public access and configure credentials — see [Monitoring Dashboard](#monitoring-dashboard) |
 > | CORS allows all origins | `allowAccessFrom: "*"` | Restrict to known client origins — see [Security](#security) |
 > | Server version disclosed | `serverIdentificationPolicy: FULL` | Set to `MINIMAL` — see [Security](#security) |
-> | Internal web server on | `webServer.enabled: true` | Disable if not serving static files — see [Web server](#web-server). Also ensure the [WELCOME Adapter Set](#welcome-adapter-set) stays disabled |
+> | Internal Web Server on | `webServer.enabled: true` | Disable if not serving static files — see [Web server](#web-server). Also ensure the [WELCOME Adapter Set](#welcome-adapter-set) stays disabled |
 > | No TLS cipher/protocol filtering | `removeCipherSuites: []` | Remove weak ciphers and protocols — see [TLS/SSL](#tlsssl) |
 
 ### Name overrides
@@ -1428,7 +1428,7 @@ See the [`mpn`](charts/lightstreamer/values.yaml#L2986) section of `values.yaml`
 
 The [`webServer`](charts/lightstreamer/values.yaml#L3433) section controls the Lightstreamer built-in static file server, which is enabled by default and serves files from the `../pages` directory relative to the configuration folder.
 
-In most Kubernetes deployments, static files are served by a dedicated web server or CDN rather than Lightstreamer. Disable the internal web server to reduce the attack surface:
+In most Kubernetes deployments, static files are served by a dedicated web server or CDN rather than Lightstreamer. Disable the Internal Web Server to reduce the attack surface:
 
 ```yaml
 webServer:
