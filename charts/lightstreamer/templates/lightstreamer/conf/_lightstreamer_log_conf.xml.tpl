@@ -276,7 +276,7 @@ Render the Lightstreamer logging configuration file
   <!-- at DEBUG level, details of all information received are reported -->
   <logger name="LightstreamerLogger.connections.proxy"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "connections.proxy") }}/>
 
-  <!-- logging of internal web server activity; it also logs requests of
+  <!-- logging of Internal Web Server activity; it also logs requests of
      static resources related to push requests -->
   <!-- at DEBUG level, error details are reported -->
   <!-- All log from this logger and its subloggers reports the IP and port of the involved connection -->
