@@ -404,7 +404,7 @@ spec:
             {{- end }}
             {{- /* END VOLUME MOUNTS FOR APPLE KEYSTORES */ -}}
             {{- /* START VOLUME MOUNTS FOR APPLE PUSH PACKAGES */ -}}
-            {{- range $appName, $app := ((.Values.mpn).appleNotifierConfig).apps }}
+            {{- range $appName, $app := (.Values.mpn.appleNotifierConfig).apps }}
               {{- if and $app.enabled (hasPrefix "web." $app.id )}}
             - name: lightstreamer-mpn-push-package-{{ $appName | lower | replace "_" "-" }}
               mountPath: /lightstreamer/conf/mpn/apple/{{ $appName }}
@@ -412,8 +412,8 @@ spec:
             {{- end }}
             {{- /* END VOLUME MOUNTS FOR APPLE PUSH PACKAGES */ -}}
             {{- /* START VOLUME MOUNTS FOR GOOGLE SERVICE JSON FILES */ -}}
-            {{- range $appName, $app := ((.Values.mpn).googleNotifierConfig).apps }}
-              {{- if $app.enabled }}
+            {{- range $appName, $app := (.Values.mpn.googleNotifierConfig).apps }}
+              {{- if and $app.enabled (has $app.serviceLevel (list "dry_run" "production")) }}
             - name: lightstreamer-mpn-service-json-{{ $appName | lower | replace "_" "-" }}
               mountPath: /lightstreamer/conf/mpn/google/{{ $appName }}
               {{- end }}
@@ -674,20 +674,20 @@ spec:
         {{- end }}
         {{- /* END VOLUMES FOR APPLE KEYSTORES */ -}}
         {{- /* START VOLUMES FOR APPLE PUSH PACKAGES */ -}}
-        {{- range $appName, $app := ((.Values.mpn).appleNotifierConfig).apps }}
-          {{- if and $app.enabled (hasPrefix "web." $app.id )}}
+        {{- range $appName, $app := (.Values.mpn.appleNotifierConfig).apps }}
+          {{- if and $app.enabled (hasPrefix "web." $app.id) }}
         - name: lightstreamer-mpn-push-package-{{ $appName | lower | replace "_" "-" }}
           configMap:
-            name: {{ ($app.pushPackageFileRef).name }}
+            name: {{ required (printf "mpn.appleNotifierConfig.apps.%s.pushPackageFileRef.name must be set" $appName) ($app.pushPackageFileRef).name }}
           {{- end }}
         {{- end }}
         {{- /* END VOLUMES FOR APPLE PUSH PACKAGES */ -}}
         {{- /* START VOLUMES FOR GOOGLE SERVICE JSON FILES */ -}}
         {{- range $appName, $app := ((.Values.mpn).googleNotifierConfig).apps }}
-          {{- if .enabled }}
+          {{- if and $app.enabled (has $app.serviceLevel (list "dry_run" "production")) }}
         - name: lightstreamer-mpn-service-json-{{ $appName | lower | replace "_" "-" }}
           configMap:
-            name: {{ $app.serviceJsonFileRef.name }}
+            name: {{ required (printf "mpn.googleNotifierConfig.apps.%s.serviceJsonFile.name must be set" $appName) $app.serviceJsonFileRef.name }}
           {{- end }}
         {{- end }}
         {{- /* END VOLUMES FOR GOOGLE SERVICE JSON FILES */ -}}
