@@ -67,6 +67,8 @@ limitations under the License.
    -->
   {{- end }}
 
+  {{- if .apps }}
+
    <!-- Optional and cumulative.
         Configuration of a specific app that should receive mobile push
         notifications. As per documentation, each app has a specific
@@ -77,7 +79,7 @@ limitations under the License.
         ID must begin with "web.", e.g.: "web.com.mydomain.myapp". -->
   {{- range $appName, $app := .apps }}
     {{- if ($app).enabled }}
-   <app id={{ (required (printf "mpn.appleNotifierConfig.apps.%s.id must be set" $appName) $app.id) | quote }}>
+   <app id="{{ (required (printf "mpn.appleNotifierConfig.apps.%s.id must be set" $appName) $app.id)}}">
 
       <!-- Mandatory. Specifies the intended service level for the
            current app ID, must be one of: test, development, production.
@@ -127,13 +129,8 @@ limitations under the License.
            the General Concepts document for more information on how to produce
            this file. -->
       {{- if hasPrefix "web." $app.id }}
-        {{- if $app.pushPackageFileRef }}
-          {{- $name := required (printf "mpn.appleNotifierConfig.apps.%s.pushPackageFileRef.name must be set" $appName) $app.pushPackageFileRef.name }}
-          {{- $key := required (printf "mpn.appleNotifierConfig.apps.%s.pushPackageFileRef.key must be set" $appName) $app.pushPackageFileRef.key }}
+        {{- $key := required (printf "mpn.appleNotifierConfig.apps.%s.pushPackageFileRef.key must be set" $appName) $app.pushPackageFileRef.key }}
       <push_package_file>{{ $appName }}/{{ $key }}</push_package_file>
-        {{- else }}
-          {{- fail (printf "mpn.appleNotifierConfig.apps.%s.pushPackageFileRef must be set for a web app" $appName) }}
-        {{- end }}
       {{- else }}
       <!--
       <push_package_file>pushPackage.zip</push_package_file>
@@ -164,7 +161,8 @@ limitations under the License.
            not the "${name}" format. -->
       {{- if $app.triggerExpressions }}
       <trigger_expressions>
-        {{- range $trigger := $app.triggerExpressions }}
+        {{- range $index, $trigger := $app.triggerExpressions }}
+          {{- $_ := required (printf "mpn.appleNotifierConfig.apps.%s.triggerExpressions[%d] must be set" $appName $index) $trigger }}
          <accept>{{ $trigger | replace "<" "&lt;" | replace ">" "&gt;" }}</accept>
         {{- end }}
       </trigger_expressions>
@@ -177,8 +175,9 @@ limitations under the License.
       {{- end }}
    </app>
 
-    {{- end }} {{/* if ($app).enabled */}}
-  {{- end }} {{/* range .apps */}}
+    {{- end }} {{/* of if ($app).enabled */}}
+  {{- end }} {{/* of range .apps */}}
+  {{- end }} {{/* of if .apps */}}
 {{- end }} {{/* with Values.mpn.appleNotifierConfig */}}
 </apple_notifier_conf>
 {{- end }}
