@@ -448,8 +448,8 @@ license:
   # - `ENTERPRISE`
   edition: ENTERPRISE
 
-  # -- Mandatory if edition is set to `COMMUNITY`. The Client API to use with
-  # your Lightstreamer free license.
+  # -- Optional but effective only if edition is set to `COMMUNITY`. The Client 
+  # API to use with your Lightstreamer free license.
   # Possible values:
   # - `javascript_client` (for web browser clients)
   # - `nodejs_client` (for Node.js clients)
@@ -489,8 +489,8 @@ license:
     # the embedded Demo license.
     contractId: DEMO
 
-    # -- Optional. Choose between online (cloud-based) and file-based license
-    # validation.
+    # -- Mandatory if `licenseType` is set to any value other than `DEMO`.
+    # Choose between online (cloud-based) and file-based license validation.
     # If set to `ONLINE`, the hostnames below must be reachable on port 443:
     # - `https://clm1.lightstreamer.com/`
     # - `https://clm2.lightstreamer.com/`
@@ -499,7 +499,6 @@ license:
     # For `EVALUATION` and `STARTUP`: `ONLINE` is mandatory.
     # For `PRODUCTION`, `HOT-STANDBY`, `NON-PRODUCTION-FULL`, and
     # `NON-PRODUCTION-LIMITED`: you can choose between `ONLINE` and `FILE`.
-    # For `DEMO`: the value is ignored, as no validation is done.
     # Note that, apart from the `DEMO` license type, the license is revalidated
     # at regular intervals. In case of `FILE` validation, this allows for hot
     # replacement of license files (by keeping the file names).
@@ -659,7 +658,7 @@ license:
     # @default -- []
     httpProxies:
 
-      - # -- Optional, but empty values are skipped. Host name or IP address of
+      - # -- Optional but empty values are skipped. Host name or IP address of
         # the proxy server.
         # Examples: `proxy.mycompany.com`, `192.168.0.5`.
         host:
@@ -1838,8 +1837,9 @@ logging:
     # java.util.logging system for some of these categories is done elsewhere,
     # then the mappings done here can be disabled at startup, by just removing
     # or commenting out the corresponding loggers below, or by setting them to
-    # level OFF.
-    # Disabling the mapping may also prevent inefficiency for heavy loggers.
+    # level `OFF` (quoted OFF — unquoted `OFF` would be parsed as a YAML 
+    # boolean). Disabling the mapping may also prevent inefficiency for heavy
+    # loggers.
 
     # These loggers are related to Hibernate, a component used by the MPN Module
     # for its persistence with the database. In case of need, please refer to
