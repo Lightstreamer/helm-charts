@@ -173,8 +173,10 @@ Render the Lightstreamer logging configuration file
   </logger>
     {{- end }}
 
-
   {{- if or .lightstreamerMonitorText .lightstreamerMonitorTAB }}
+
+
+  
   <!--
     These two loggers are used by the internal monitoring system to log
     load statistics at INFO level.
