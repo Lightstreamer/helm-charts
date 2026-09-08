@@ -91,7 +91,7 @@ Render the Lightstreamer logging configuration file
   </appender>
   -->
 
-  {{- /* DEFINITION OF APPENDERS */ -}}
+  {{/* DEFINITION OF APPENDERS */}}
   {{- range $key, $val := .appenders }}
     {{- $name := printf "%s%s" "LS" (title $key) }}
     {{- if not (has $val.type (list "DailyRollingFile" "Console")) }}
@@ -128,8 +128,9 @@ Render the Lightstreamer logging configuration file
       <pattern>{{ required (printf "logging.appenders.%s.pattern must be set" $key) $val.pattern | replace "<" "&lt;" | replace ">" "&gt;" }}</pattern>
     </encoder>
   </appender>
-  {{- end }}
-  {{- /* END DEFINITION OF APPENDERS */ -}}
+  {{- end }} {{/* END DEFINITION OF APPENDERS */}}
+
+
 
   <!--
     NOTE ON CUSTOM EXTENSIONS:
@@ -162,18 +163,18 @@ Render the Lightstreamer logging configuration file
     By the factory pattern configuration, FATAL is logged instead of ERROR
     for these messages (note the tricky "%-5.5(%p%marker)" pattern).
   -->
-  {{- with .loggers }}
+  {{- with required "logging.loggers must be set" .loggers }}
     {{- with .lightstreamerLogger }}
-  <logger name="LightstreamerLogger" level={{ include "lightstreamer.configuration.log.level" . | quote}}>
+  <logger name="LightstreamerLogger"{{ include "lightstreamer.configuration.log.level" (list . "INFO")}}>
     <!--<appender-ref ref="LSRolling" />-->
       {{- include "lightstreamer.configuration.log.appender_ref" (list $.Values.logging.appenders .) | indent 4 }}
     <appender-ref ref="LSProducer" />
-      <!-- must be set in order to send log messages to internal MONITOR provider -->
+      <!-- must be set in order to send log messages to internal MONITOR Adapter -->
   </logger>
     {{- end }}
 
 
-
+  {{- if or .lightstreamerMonitorText .lightstreamerMonitorTAB }}
   <!--
     These two loggers are used by the internal monitoring system to log
     load statistics at INFO level.
@@ -192,6 +193,10 @@ Render the Lightstreamer logging configuration file
     however, if the level is set to ERROR on startup, the logger will be
     disabled throughout the life of the Server, regardless of further changes.
 
+    In other words, for these loggers, the Server uses the level setting
+    as a trick to configure the frequency of monitoring statistics logs,
+    but the log lines are always issued at INFO level.
+
     When resampling is in place, note that, for each displayed sample, values
     that are supposed to be averaged over a timeframe still refer to the
     current sample's timeframe (based on <collector_millis>); however, values
@@ -201,19 +206,23 @@ Render the Lightstreamer logging configuration file
     collected starting from the previous logged sample.
   -->
     {{- with .lightstreamerMonitorText }}
-  <logger name="LightstreamerMonitorText" level={{ include "lightstreamer.configuration.log.level" . | quote}}>
+  <logger name="LightstreamerMonitorText"{{ include "lightstreamer.configuration.log.level" (list . "INFO") }}>
       {{- include "lightstreamer.configuration.log.appender_ref" (list $.Values.logging.appenders .) | indent 4 }}
   </logger>
     {{- end }}
     {{- with .lightstreamerMonitorTAB }}
-  <logger name="LightstreamerMonitorTAB" level={{ include "lightstreamer.configuration.log.level" . | quote}}>
+  <logger name="LightstreamerMonitorTAB"{{ include "lightstreamer.configuration.log.level" (list . "ERROR") }}>
       {{- include "lightstreamer.configuration.log.appender_ref" (list $.Values.logging.appenders .) | indent 4 }}
   </logger>
     {{- end }}
+  {{- end }}
 
 
     {{- with .lightstreamerLogger }}
       {{- with .subLoggers }}
+
+
+
   <!--
     The following subloggers are used to separate logging messages in families
   -->
@@ -221,43 +230,43 @@ Render the Lightstreamer logging configuration file
   <!-- logging of system components initialization -->
   <!-- at DEBUG level, initialization details, error details and all configuration
        settings are reported -->
-  <logger name="LightstreamerLogger.init"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "init") }}>
+  <logger name="LightstreamerLogger.init"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "init" "INFO") }}>
   </logger>
 
   <!-- logging of adapter initialization and plug/terminate operations -->
   <!-- at DEBUG level, initialization details and error details are reported -->
-  <logger name="LightstreamerLogger.init.adapters"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "init.adapters") }}>
+  <logger name="LightstreamerLogger.init.adapters"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "init.adapters" "INFO") }}>
   </logger>
 
   <!-- logging of license check phase -->
   <!-- at DEBUG level, check details and error details can be found in case
        of license check failure -->
-  <logger name="LightstreamerLogger.license"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "license") }}>
+  <logger name="LightstreamerLogger.license"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "license" "INFO") }}>
   </logger>
 
   <!-- logging of background activities and related configuration and issues -->
-  <logger name="LightstreamerLogger.kernel"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "kernel") }}/>
+  <logger name="LightstreamerLogger.kernel"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "kernel" "INFO") }}/>
 
   <!-- logging of external services activity -->
   <!-- at DEBUG level, details on external services activities and configuration,
        as well as details on connectivity issues, are reported. -->
-  <logger name="LightstreamerLogger.external"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "external") }}/>
+  <logger name="LightstreamerLogger.external"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "external" "INFO") }}/>
 
   <!-- logging of activity and issues in connection management -->
-  <logger name="LightstreamerLogger.io"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "io") }}/>
+  <logger name="LightstreamerLogger.io"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "io" "WARN") }}/>
 
   <!-- logging of activity and issues in TLS configuration -->
   <!-- at DEBUG level, details on the protocol and cipher suite configuration are reported -->
-  <logger name="LightstreamerLogger.io.ssl"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "io.ssl") }}/>
+  <logger name="LightstreamerLogger.io.ssl"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "io.ssl" "WARN") }}/>
 
   <!-- logging of client request dispatching -->
   <!-- at DEBUG level, request processing details are reported -->
-  <!-- All log from this logger and its subloggers reports the IP and port of the involved connection -->
-  <logger name="LightstreamerLogger.connections"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "connections") }}/>
+  <!-- All logs from this logger and its subloggers report the IP and port of the involved connection -->
+  <logger name="LightstreamerLogger.connections"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "connections" "WARN") }}/>
 
   <!-- logging of issues related to TLS/SSL configuration and handshake management -->
   <!-- at DEBUG level, details on the cipher suites are reported -->
-  <logger name="LightstreamerLogger.connections.ssl"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "connections.ssl") }}/>
+  <logger name="LightstreamerLogger.connections.ssl"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "connections.ssl" "WARN") }}/>
 
   <!-- logging of client request interpretation issues -->
   <!-- at WARN level, each time a request contains an unexpected HTTP header,
@@ -265,167 +274,169 @@ Render the Lightstreamer logging configuration file
      that an interpretation error is possible -->
   <!-- at INFO level, details upon request refusals are reported -->
   <!-- at DEBUG level, details for all requests and responses are reported -->
-  <logger name="LightstreamerLogger.connections.http"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "connections.http") }}/>
+  <logger name="LightstreamerLogger.connections.http"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "connections.http" "ERROR") }}/>
 
   <!-- logging of details for issues related to requests over WebSockets -->
   <!-- at DEBUG level, details for all requests and responses are reported -->
-  <logger name="LightstreamerLogger.connections.WS"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "connections.WS") }}/>
+  <logger name="LightstreamerLogger.connections.WS"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "connections.WS" "WARN") }}/>
 
   <!-- logging of issues related to information received via the proxy protocol,
      when enabled -->
   <!-- at DEBUG level, details of all information received are reported -->
-  <logger name="LightstreamerLogger.connections.proxy"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "connections.proxy") }}/>
+  <logger name="LightstreamerLogger.connections.proxy"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "connections.proxy" "INFO") }}/>
 
   <!-- logging of Internal Web Server activity; it also logs requests of
      static resources related to push requests -->
   <!-- at DEBUG level, error details are reported -->
-  <!-- All log from this logger and its subloggers reports the IP and port of the involved connection -->
-  <logger name="LightstreamerLogger.webServer"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "webServer") }}/>
+  <!-- All logs from this logger and its subloggers report the IP and port of the involved connection -->
+  <logger name="LightstreamerLogger.webServer"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "webServer" "WARN") }}/>
 
   <!-- logging of request management related to the JMX Tree feature -->
   <!-- at DEBUG level, error details are reported -->
-  <logger name="LightstreamerLogger.webServer.jmxTree"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "webServer.jmxTree") }}/>
+  <logger name="LightstreamerLogger.webServer.jmxTree"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "webServer.jmxTree" "WARN") }}/>
 
   <!-- logging of handling of special requests from apple clients related to MPN -->
   <!-- at DEBUG level, error details are reported -->
-  <logger name="LightstreamerLogger.webServer.appleWebService"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "webServer.appleWebService") }}/>
+  <logger name="LightstreamerLogger.webServer.appleWebService"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "webServer.appleWebService" "WARN") }}/>
 
   <!-- logging of parsing and elaboration of client requests -->
   <!-- at DEBUG level, client request details are reported -->
-  <!-- All log from this logger and its subloggers reports the IP and port of the involved connection -->
-  <logger name="LightstreamerLogger.requests"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "requests") }}/>
+  <!-- All logs from this logger and its subloggers report the IP and port of the involved connection -->
+  <logger name="LightstreamerLogger.requests"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "requests" "INFO") }}/>
 
   <!-- logging of elaboration of client polling requests -->
-  <logger name="LightstreamerLogger.requests.polling"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "requests.polling") }}/>
+  <logger name="LightstreamerLogger.requests.polling"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "requests.polling" "WARN") }}/>
 
   <!-- logging of elaboration of client message requests -->
   <!-- at DEBUG level, details on the message forwarding are reported -->
-  <logger name="LightstreamerLogger.requests.messages"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "requests.messages") }}/>
+  <logger name="LightstreamerLogger.requests.messages"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "requests.messages" "INFO") }}/>
 
   <!-- logging of Data Adapters interactions -->
   <!-- at DEBUG level, details on subscription operations are reported -->
-  <logger name="LightstreamerLogger.subscriptions"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "subscriptions") }}/>
+  <logger name="LightstreamerLogger.subscriptions"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "subscriptions" "INFO") }}/>
 
   <!-- logging of events coming from the Data Adapters -->
   <!-- at DEBUG level, all update events are dumped -->
-  <logger name="LightstreamerLogger.subscriptions.upd"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "subscriptions.upd") }}/>
+  <logger name="LightstreamerLogger.subscriptions.upd"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "subscriptions.upd" "INFO") }}/>
 
   <!-- logging of events preprocessing stage -->
   <!-- at DEBUG level, events dispatched to ItemEventBuffers are dumped -->
-  <logger name="LightstreamerLogger.preprocessor"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "preprocessor") }}/>
+  <logger name="LightstreamerLogger.preprocessor"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "preprocessor" "INFO") }}/>
 
   <!-- logging of warnings of harmless inconsistencies in received events -->
-  <logger name="LightstreamerLogger.preprocessor.checks"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "preprocessor.checks") }}/>  
+  <logger name="LightstreamerLogger.preprocessor.checks"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "preprocessor.checks" "WARN") }}/>
 
   <!-- logging of internal thread management and events dispatching -->
-  <logger name="LightstreamerLogger.scheduler"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "scheduler") }}/>
+  <logger name="LightstreamerLogger.scheduler"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "scheduler" "INFO") }}/>
 
   <!-- logging of InfoPump and ItemEventBuffers internal activity -->
-  <!-- at DEBUG level, updates to be sent to the clients are dumped -->
-  <logger name="LightstreamerLogger.pump"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "pump") }}/>
+  <!-- at DEBUG level, updates to be sent to the clients are notified -->
+  <logger name="LightstreamerLogger.pump"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "pump" "INFO") }}/>
 
   <!-- logging of updates to be sent to the clients -->
   <!-- at DEBUG level, all updates to be sent are dumped -->
-    <logger name="LightstreamerLogger.pump.upd"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "pump.upd") }}/>
+    <logger name="LightstreamerLogger.pump.upd"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "pump.upd" "INFO") }}/>
 
   <!-- logging of management of messages received from the clients -->
   <!-- at DEBUG level, details of message processing are logged -->
-  <!-- All log from this logger reports the IP and port of the involved connection -->
-  <logger name="LightstreamerLogger.pump.messages"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "pump.messages") }}/>
+  <!-- All logs from this logger report the IP and port of the involved connection -->
+  <logger name="LightstreamerLogger.pump.messages"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "pump.messages" "INFO") }}/>
 
   <!-- logging of socket write activity -->
   <!-- at DEBUG level, all socket writes are dumped -->
-  <!-- All log from this logger reports the IP and port of the involved connection -->
-  <logger name="LightstreamerLogger.push"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "push") }}/>
+  <!-- All logs from this logger report the IP and port of the involved connection -->
+  <logger name="LightstreamerLogger.push"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "push" "INFO") }}/>
 
   <!-- logging of mobile push notifications activity, done through the various subloggers -->
-  <logger name="LightstreamerLogger.mpn"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "mpn") }}/>
+  <logger name="LightstreamerLogger.mpn"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "mpn" "INFO") }}/>
 
   <!-- logging of MPN Module recurrent activity -->
   <!-- at INFO level, main operation exit points and outcomes are dumped -->
   <!-- at DEBUG level, the various operation entry and exit points are logged -->
-  <logger name="LightstreamerLogger.mpn.lifecycle"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "mpn.lifecycle") }}/>
+  <logger name="LightstreamerLogger.mpn.lifecycle"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "mpn.lifecycle" "INFO") }}/>
 
   <!-- logging of mobile push notifications activity -->
   <!-- at INFO level, main operation exit points and outcomes are dumped -->
   <!-- at DEBUG level, the various operation entry and exit points are logged -->
-  <logger name="LightstreamerLogger.mpn.operations"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "mpn.operations") }}/>
+  <logger name="LightstreamerLogger.mpn.operations"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "mpn.operations" "INFO") }}/>
 
   <!-- logging of mobile push notifications request processing;
-       requests include those from clients (through the "client" sublogger)
-       and those related to internal operations -->
+              requests include those from clients and those related to internal operations -->
   <!-- at INFO level, all request processing exit points and outcomes are dumped -->
   <!-- at DEBUG level, all request processing entry points are logged -->
-  <!-- All log related to client requests reports the IP and port of the involved connection -->
-  <logger name="LightstreamerLogger.mpn.requests"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "mpn.requests") }}/>
+  <!-- All logs related to client requests report the IP and port of the involved connection -->
+  <logger name="LightstreamerLogger.mpn.requests"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "mpn.requests" "WARN") }}/>
 
   <!-- logging of processing of mobile push notifications request
        received from the clients -->
   <!-- at INFO level, all request processing exit points and outcomes are dumped -->
   <!-- at DEBUG level, all request processing entry points are logged -->
   <!-- All logs from this logger report the IP and port of the involved connection -->
-  <logger name="LightstreamerLogger.mpn.requests.client"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "mpn.requests.client") }}/>
+  <logger name="LightstreamerLogger.mpn.requests.client"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "mpn.requests.client" "WARN") }}/>
 
   <!-- logging of mobile push notifications activity related to notification gathering -->
   <!-- at INFO level, all push notifications ready to be sent are dumped -->
-  <logger name="LightstreamerLogger.mpn.pump"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "mpn.pump") }}/>
+  <logger name="LightstreamerLogger.mpn.pump"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "mpn.pump" "WARN") }}/>
 
   <!-- logging of mobile push notifications activity related to database -->
   <!-- at DEBUG level, all database operation entry and exit points are logged -->
-  <logger name="LightstreamerLogger.mpn.database"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "mpn.database") }}/>
+  <logger name="LightstreamerLogger.mpn.database"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "mpn.database" "WARN") }}/>
 
   <!-- logging of mobile push notifications activity related to database transactions -->
   <!-- at INFO level, statistics on the database transactions are logged -->
   <!-- at DEBUG level, all database transaction entry and exit points are logged -->
-  <logger name="LightstreamerLogger.mpn.database.transactions"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "mpn.database.transactions") }}/>
+  <logger name="LightstreamerLogger.mpn.database.transactions"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "mpn.database.transactions" "WARN") }}/>
 
   <!-- logging of mobile push notifications activity related to Apple platforms;
        for activity related to notification submission,
        specific subloggers are present for each application, e.g.:
        LightstreamerLogger.mpn.apple.com.mydomain.myapp -->
   <!-- at INFO level, all push notification payloads are dumped -->
-  <logger name="LightstreamerLogger.mpn.apple"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "mpn.apple") }}/>
+  <logger name="LightstreamerLogger.mpn.apple"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "mpn.apple" "WARN") }}/>
 
   <!-- logging of mobile push notifications activity related to Google platforms;
        for activity related to notification submission,
        specific subloggers are present for each application, e.g.:
        LightstreamerLogger.mpn.google.com.mydomain.myapp -->
   <!-- at INFO level, all push notification payloads are dumped -->
-  <logger name="LightstreamerLogger.mpn.google"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "mpn.google") }}/>
+  <logger name="LightstreamerLogger.mpn.google"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "mpn.google" "WARN") }}/>
 
   <!-- logging of issues related to the special adapters handled by the MPN Module -->
-  <logger name="LightstreamerLogger.mpn.status_adapters"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "mpn.status_adapters") }}/>
+  <logger name="LightstreamerLogger.mpn.status_adapters"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "mpn.status_adapters" "WARN") }}/>
 
   <!-- logging of Adapter state and issues with Adapter invocations. -->
-  <logger name="LightstreamerLogger.adapters"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "adapters") }}/>
+  <logger name="LightstreamerLogger.adapters"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "adapters" "WARN") }}/>
 
   <!-- logging of JavaScript client messages -->
   <!-- at DEBUG level, log messages sent by the Web and Node.js (Unified API) Client Libraries
        are logged. Remote logging must be enabled on the client side. -->
-  <!-- All log from this logger reports the IP and port of the involved connection -->
-  <logger name="LightstreamerLogger.webclient"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "webclient") }}/>
+  <!-- All logs from this logger report the IP and port of the involved connection -->
+  <logger name="LightstreamerLogger.webclient"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "webclient" "DEBUG") }}/>
 
   <!-- logging of JMX setup issues; note that full JMX features could be restricted
        depending on Edition and License Type. -->
   <!-- at DEBUG level, JMX connectors initialization details are logged. -->
-  <logger name="LightstreamerLogger.monitoring"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "monitoring") }}/>
-      {{- end }} {{/* .subLoggers */}}
-    {{- end }} {{/* .lightstreamerLogger */}}
+  <logger name="LightstreamerLogger.monitoring"{{ include "lightstreamer.configuration.log.subloggers.level" (list . "monitoring" "INFO") }}/>
+      {{- end }} {{/* of .subLoggers */}}
+    {{- end }} {{/* of .lightstreamerLogger */}}
 
 
     {{ with .lightstreamerHealthCheck }}
   <!--
-    The following logger logs healthcheck request processing at INFO level.
+    The following logger logs healthcheck and readiness_check request processing
+    at INFO level.
+    At DEBUG level, readiness check responses are logged.
     The logger does not inherit from "LightstreamerLogger" in order
     to simplify sending the log to a dedicated appender.
-    All log from this logger reports the IP and port of the involved connection.
+    All logs from this logger report the IP and port of the involved connection.
   -->
-  <logger name="LightstreamerHealthCheck" level={{ include "lightstreamer.configuration.log.level" . | quote }}>
+  <logger name="LightstreamerHealthCheck"{{ include "lightstreamer.configuration.log.level" (list . "INFO" "INFO") }}>
       {{- include "lightstreamer.configuration.log.appender_ref" (list $.Values.logging.appenders .) | indent 4 }}
   </logger>
     {{- end }}
 
     {{- with .lightstreamerProxyAdapters }}
+
   <!--
     This logger is only used by the provided Proxy Data and Metadata Adapters,
     when used.
@@ -434,7 +445,7 @@ Render the Lightstreamer logging configuration file
     At DEBUG level, outcoming request and incoming response messages are also dumped.
     At TRACE level, incoming real-time update messages are also dumped.
   -->
-  <logger name="LightstreamerProxyAdapters" level={{ include "lightstreamer.configuration.log.level" . | quote }}>
+  <logger name="LightstreamerProxyAdapters"{{ include "lightstreamer.configuration.log.level" (list . "INFO" "INFO") }}>
     <!--<appender-ref ref="LSRolling" />-->
       {{- include "lightstreamer.configuration.log.appender_ref" (list $.Values.logging.appenders .) | indent 4 }}
   </logger>
@@ -466,25 +477,25 @@ Render the Lightstreamer logging configuration file
     their configuration.
   -->
     {{- with (get . "org.hibernate") }}
-  <logger name="org.hibernate" level={{ include "lightstreamer.configuration.log.level" . | quote }}>
+  <logger name="org.hibernate"{{ include "lightstreamer.configuration.log.level" (list . "WARN") }}>
       {{- include "lightstreamer.configuration.log.appender_ref" (list $.Values.logging.appenders .) | indent 4 }}
   </logger>
     {{- end }}
 
     {{- with (get . "java.sql") }}
-  <logger name="java.sql" level={{ include "lightstreamer.configuration.log.level" . | quote }}>
+  <logger name="java.sql"{{ include "lightstreamer.configuration.log.level" (list . "WARN") }}>
       {{- include "lightstreamer.configuration.log.appender_ref" (list $.Values.logging.appenders .) | indent 4 }}
   </logger>
     {{- end }}
 
     {{- with  (get . "org.jboss.logging") }}
-  <logger name="org.jboss.logging" level={{ include "lightstreamer.configuration.log.level" . | quote }}>
+  <logger name="org.jboss.logging"{{ include "lightstreamer.configuration.log.level" (list . "WARN") }}>
       {{- include "lightstreamer.configuration.log.appender_ref" (list $.Values.logging.appenders .) | indent 4 }}
   </logger>
     {{- end }}
 
     {{- with  (get . "com.zaxxer.hikari") }}
-  <logger name="com.zaxxer.hikari" level={{ include "lightstreamer.configuration.log.level" . | quote }}>
+  <logger name="com.zaxxer.hikari"{{ include "lightstreamer.configuration.log.level" (list . "INFO") }}>
       {{- include "lightstreamer.configuration.log.appender_ref" (list $.Values.logging.appenders .) | indent 4 }}
   </logger>
     {{- end }}
@@ -494,62 +505,64 @@ Render the Lightstreamer logging configuration file
     by the Server.
   -->
     {{- with  (get . "org.apache.http") }}
-  <logger name="org.apache.http" level={{ include "lightstreamer.configuration.log.level" . | quote }}>
+  <logger name="org.apache.http"{{ include "lightstreamer.configuration.log.level" (list . "ERROR") }}>
       {{- include "lightstreamer.configuration.log.appender_ref" (list $.Values.logging.appenders .) | indent 4 }}
   </logger>
     {{- end }}
     {{- with (get . "com.github.markusbernhardt.proxy") }}
-  <logger name="com.github.markusbernhardt.proxy" level={{ include "lightstreamer.configuration.log.level" . | quote }}>
+  <logger name="com.github.markusbernhardt.proxy"{{ include "lightstreamer.configuration.log.level" (list . "WARN") }}>
       {{- include "lightstreamer.configuration.log.appender_ref" (list $.Values.logging.appenders .) | indent 4 }}
   </logger>
     {{- end }}
-    {{- with (get . "org.restlet") }}
-  <logger name="org.restlet" level={{ include "lightstreamer.configuration.log.level" . | quote }}>
+    {{- with (get . "org.eclipse.jetty") }}
+  <logger name="org.eclipse"{{ include "lightstreamer.configuration.log.level" (list . "WARN") }}>
+    <!-- jetty is embedded only for the JMX Tree, to host hawtio and jolokia servlets -->
       {{- include "lightstreamer.configuration.log.appender_ref" (list $.Values.logging.appenders .) | indent 4 }}
   </logger>
     {{- end }}
-    {{- with (get . "org.jminix") }}
-  <logger name="org.jminix" level={{ include "lightstreamer.configuration.log.level" . | quote }}>
+    {{- with (get . "io.hawt") }}
+  <logger name="io.hawt"{{ include "lightstreamer.configuration.log.level" (list . "WARN") }}>
       {{- include "lightstreamer.configuration.log.appender_ref" (list $.Values.logging.appenders .) | indent 4 }}
   </logger>
     {{- end }}
-    {{- with (get . "common.jmx.velocity") }}
-  <logger name="common.jmx.velocity" level={{ include "lightstreamer.configuration.log.level" . | quote }}>
+    {{- with (get . "org.jolokia") }}
+  <logger name="org.jolokia"{{ include "lightstreamer.configuration.log.level" (list . "WARN") }}>
+    <!-- jolokia library log, internally consumed and reissued with this logger name -->
       {{- include "lightstreamer.configuration.log.appender_ref" (list $.Values.logging.appenders .) | indent 4 }}
   </logger>
     {{- end }}
     {{- with (get . "com.turo") }}
-  <logger name="com.turo" level={{ include "lightstreamer.configuration.log.level" . | quote }}>
+  <logger name="com.turo"{{ include "lightstreamer.configuration.log.level" (list . "ERROR") }}>
       {{- include "lightstreamer.configuration.log.appender_ref" (list $.Values.logging.appenders .) | indent 4 }}
   </logger>
     {{- end }}
     {{- with (get . "com.google") }}
-  <logger name="com.google" level={{ include "lightstreamer.configuration.log.level" . | quote }}>
+  <logger name="com.google"{{ include "lightstreamer.configuration.log.level" (list . "ERROR") }}>
       {{- include "lightstreamer.configuration.log.appender_ref" (list $.Values.logging.appenders .) | indent 4 }}
   </logger>
     {{- end }}
     {{- with (get . "io.netty") }}
-  <logger name="io.netty" level={{ include "lightstreamer.configuration.log.level" . | quote }}>
+  <logger name="io.netty"{{ include "lightstreamer.configuration.log.level" (list . "ERROR") }}>
       {{- include "lightstreamer.configuration.log.appender_ref" (list $.Values.logging.appenders .) | indent 4 }}
   </logger>
     {{- end }}
     {{- with (get . "org.codehaus.janino") }}
-  <logger name="org.codehaus.janino" level={{ include "lightstreamer.configuration.log.level" . | quote }}>
+  <logger name="org.codehaus.janino"{{ include "lightstreamer.configuration.log.level" (list . "WARN") }}>
       {{- include "lightstreamer.configuration.log.appender_ref" (list $.Values.logging.appenders .) | indent 4 }}
   </logger>
     {{- end }}
     {{- with (get . "io.grpc") }}
-  <logger name="io.grpc" level={{ include "lightstreamer.configuration.log.level" . | quote }}>
+  <logger name="io.grpc"{{ include "lightstreamer.configuration.log.level" (list . "WARN") }}>
       {{- include "lightstreamer.configuration.log.appender_ref" (list $.Values.logging.appenders .) | indent 4 }}
   </logger>
     {{- end }}
     {{- with (get . "io.opencensus") }}
-  <logger name="io.opencensus" level={{ include "lightstreamer.configuration.log.level" . | quote }}>
+  <logger name="io.opencensus"{{ include "lightstreamer.configuration.log.level" (list . "WARN") }}>
       {{- include "lightstreamer.configuration.log.appender_ref" (list $.Values.logging.appenders .) | indent 4 }}
   </logger>
     {{- end }}
     {{- with (get . "org.conscrypt") }}
-  <logger name="org.conscrypt" level={{ include "lightstreamer.configuration.log.level" . | quote }}>
+  <logger name="org.conscrypt"{{ include "lightstreamer.configuration.log.level" (list . "ERROR") }}>
       {{- include "lightstreamer.configuration.log.appender_ref" (list $.Values.logging.appenders .) | indent 4 }}
   </logger>
     {{- end }}
@@ -558,22 +571,22 @@ Render the Lightstreamer logging configuration file
     These loggers are related to JDK services.
   -->
     {{- with (get . "javax.management.remote") }}
-  <logger name="javax.management.remote" level={{ include "lightstreamer.configuration.log.level" . | quote }}>
+  <logger name="javax.management.remote"{{ include "lightstreamer.configuration.log.level" (list . "ERROR") }}>
       {{- include "lightstreamer.configuration.log.appender_ref" (list $.Values.logging.appenders .) | indent 4 }}
   </logger>
     {{- end }}
     {{- with (get . "javax.management.mbeanserver") }}
-  <logger name="javax.management.mbeanserver" level={{ include "lightstreamer.configuration.log.level" . | quote }}>
+  <logger name="javax.management.mbeanserver"{{ include "lightstreamer.configuration.log.level" (list . "ERROR") }}>
       {{- include "lightstreamer.configuration.log.appender_ref" (list $.Values.logging.appenders .) | indent 4 }}
   </logger>
     {{- end }}
     {{- with (get . "com.sun.jmx.remote") }}
-  <logger name="com.sun.jmx.remote" level={{ .level | quote }}>
+  <logger name="com.sun.jmx.remote"{{ include "lightstreamer.configuration.log.level" (list . "ERROR") }}>
       {{- include "lightstreamer.configuration.log.appender_ref" (list $.Values.logging.appenders .) | indent 4 }}
   </logger>
     {{- end }}
     {{- with (get . "javax.net.ssl") }}
-  <logger name="javax.net.ssl" level={{ include "lightstreamer.configuration.log.level" . | quote }}>
+  <logger name="javax.net.ssl"{{ include "lightstreamer.configuration.log.level" (list . "OFF") }}>
     <!-- this also requires that the JVM property javax.net.debug is set as an empty string (supported since java 9) -->
       {{- include "lightstreamer.configuration.log.appender_ref" (list $.Values.logging.appenders .) | indent 4 }}
   </logger>
@@ -583,7 +596,7 @@ Render the Lightstreamer logging configuration file
 
   <!-- Extra loggers -->
   {{- range $loggerName, $logger := .extraLoggers }}
-  <logger name={{ $loggerName | quote }} level={{ include "lightstreamer.configuration.log.level" $logger | quote }}>
+  <logger name={{ $loggerName | quote }}{{ include "lightstreamer.configuration.log.level" $logger }}>
     {{- include "lightstreamer.configuration.log.appender_ref" (list $.Values.logging.appenders .) | indent 4 }}
   </logger>
   {{- end }} {{/* .extraLoggers */}}
