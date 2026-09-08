@@ -171,14 +171,12 @@ spec:
           {{- end }}
           {{- /* END ENV VARIABLES FOR KEYSTORES */ -}}
           {{- /* START ENV VARIABLES FOR LICENSE */ -}}
-          {{- if and (ne ((.Values.license).enterprise).licenseType "DEMO") (eq ((.Values.license).enterprise).licenseValidation "ONLINE") }}
-            {{- with required "license.enterprise.onlinePasswordSecretRef must be set" .Values.license.enterprise.onlinePasswordSecretRef }}
+          {{- if and (ne (.Values.license.enterprise).licenseType "DEMO") (eq (.Values.license.enterprise).licenseValidation "ONLINE") }}
             - name: LS_ENTERPRISE_LICENSE_ONLINE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ required "license.enterprise.onlinePasswordSecretRef.name must be set" .name }}
-                  key: {{ required "license.enterprise.onlinePasswordSecretRef.key must be set" .key }}
-            {{- end }}
+                  name: {{ required "license.enterprise.onlinePasswordSecretRef.name must be set" (.Values.license.enterprise.onlinePasswordSecretRef).name }}
+                  key: {{ required "license.enterprise.onlinePasswordSecretRef.key must be set" (.Values.license.enterprise.onlinePasswordSecretRef).key }}
           {{- end }}
           {{- $allSecrets := list }}
           {{- range $key, $httpProxy := concat (.Values.license).proxy.socksProxies (.Values.license).proxy.httpProxies }}
@@ -236,7 +234,7 @@ spec:
           {{- /* END ENV VARIABLES FOR MANAGEMENT */ -}}
           {{- /* START ENV VARIABLES FOR MPN */ -}}
           {{- if .Values.mpn.enabled }}
-            {{/* START ENV VARIABLES FOR HIBERNATE CONNECTION */}}
+            {{- /* START ENV VARIABLES FOR HIBERNATE CONNECTION */ -}}
             - name: LS_HIBERNATE_CONNECTION_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -249,8 +247,8 @@ spec:
                   key: password
             - name: LS_HIBERNATE_SYSTEM_PROPERTIES
               value: "-Dls_hibernate_connection_username=$(LS_HIBERNATE_CONNECTION_USERNAME) -Dls_hibernate_connection_password=$(LS_HIBERNATE_CONNECTION_PASSWORD)"
-            {{/* END ENV VARIABLES FOR HIBERNATE CONNECTION */}}
-            {{- /* START ENV VARIABLES FOR APPLE KEYSTORES */ -}}
+          {{- /* END ENV VARIABLES FOR HIBERNATE CONNECTION */ -}}
+          {{- /* START ENV VARIABLES FOR APPLE KEYSTORES */ -}}
             {{- range $keyStoreName, $keyStore := (.Values.mpn.appleNotifierConfig).keystores }}
               {{- if $keyStore }}
             - name: LS_MPN_APPLE_KEYSTORE_{{ $keyStoreName | upper | replace "-" "_" }}_PASSWORD
@@ -260,7 +258,7 @@ spec:
                   key: {{ required (printf "mpn.appleNotifierConfig.keystores.%s.keystorePasswordSecretRef.key must be set" $keyStoreName) ($keyStore.keystorePasswordSecretRef).key }}
               {{- end }}
             {{- end }}
-            {{- /* END ENV VARIABLES FOR APPLE KEYSTORES */ -}}
+          {{- /* END ENV VARIABLES FOR APPLE KEYSTORES */ -}}
           {{- end }}
           {{- /* END ENV VARIABLES FOR MPN */ -}}
           {{- /* START ENV VARIABLES FOR THE ADAPTERS CONFIGURATION */ -}}
@@ -439,14 +437,12 @@ spec:
               mountPath: {{ include "lightstreamer.logs.dir" . }}/{{ . }}
           {{- end }}
           {{- /* END VOLUME MOUNTS FOR LOG APPENDER VOLUMES */ -}}
-          {{- /* START VOLUME MOUNTS FOR LICENSE FILE */ -}}
-          {{- if and (ne ((.Values.license).enterprise).licenseType "DEMO") (eq ((.Values.license).enterprise).licenseValidation "FILE") }}
-            {{- with .Values.license.enterprise.filePathSecretRef }}
+          {{/* START VOLUME MOUNTS FOR LICENSE FILE */}}
+          {{- if and (ne (.Values.license.enterprise).licenseType "DEMO") (eq (.Values.license.enterprise).licenseValidation "FILE") }}
             - name: lightstreamer-enterprise-license
               mountPath: /lightstreamer/conf/enterprise-license/
-            {{- end }}
           {{- end }}
-          {{- /* END VOLUME MOUNTS FOR LICENSE FILE */ -}}
+          {{/* END VOLUME MOUNTS FOR LICENSE FILE */}}
           {{- /* START VOLUME MOUNTS FOR PAC FILES */ -}}
           {{- $configMaps := list }}
           {{- range $index, $filePath := (((.Values.license).proxy).pacFiles).filePaths }}
@@ -633,12 +629,10 @@ spec:
         {{- end }}
       {{- end }}
       {{- /* START VOLUMES FOR LICENSE FILE */ -}}
-      {{- if and (ne ((.Values.license).enterprise).licenseType "DEMO") (eq ((.Values.license).enterprise).licenseValidation "FILE") }}
-        {{- with required "license.enterprise.filePathSecretRef must be set" .Values.license.enterprise.filePathSecretRef }}
+      {{- if and (ne (.Values.license.enterprise).licenseType "DEMO") (eq (.Values.license.enterprise).licenseValidation "FILE") }}
         - name: lightstreamer-enterprise-license
           secret:
-            secretName: {{ required "license.enterprise.filePathSecretRef.name must be set" .name }}
-        {{- end }}
+            secretName: {{ required "license.enterprise.filePathSecretRef.name must be set" (.Values.license.enterprise.filePathSecretRef).name }}
       {{- end }}
       {{- /* END VOLUMES FOR LICENSE FILE */ -}}
       {{- /* START VOLUMES FOR PAC FILES */ -}}
