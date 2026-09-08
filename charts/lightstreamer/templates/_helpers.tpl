@@ -470,12 +470,14 @@ Render the <appender-ref> element.
 Create the logging level attribute.
 */}}
 {{- define "lightstreamer.configuration.log.level" -}}
-{{- $loggerLevel := .level | default "DEBUG" }}
+{{- $top := index . 0 -}}
+{{- $defaultLevel := index . 1 -}}
+{{- $loggerLevel := $top.level | default $defaultLevel }}
 {{- $admittedLevels := list "INFO" "DEBUG" "WARN" "ERROR" "FATAL" "TRACE" "OFF" -}}
   {{- if not (has $loggerLevel $admittedLevels) }}
     {{- fail (printf "logging.loggers.<logger name>.level must be one of %s" $admittedLevels) }}
   {{- end }}
-{{- $loggerLevel -}}
+{{- printf " level=%s" ($loggerLevel | quote) }}
 {{- end }}
 
 {{/*
@@ -484,7 +486,8 @@ Create the logging level attribute for subloggers.
 {{- define "lightstreamer.configuration.log.subloggers.level" -}}
 {{- $subloggers := index . 0 -}}
 {{- $loggerName := index . 1 -}}
-{{- $loggerLevel := (get $subloggers $loggerName) }}
+{{- $defaultLevel := index . 2 -}}
+{{- $loggerLevel := (get $subloggers $loggerName) | default $defaultLevel }}
 {{- if $loggerLevel }}
   {{- $admittedLevels := list "INFO" "DEBUG" "WARN" "ERROR" "FATAL" "TRACE" "OFF" -}}
     {{- if not (has $loggerLevel $admittedLevels) }}
@@ -493,6 +496,7 @@ Create the logging level attribute for subloggers.
 {{- printf " level=%s" ($loggerLevel | quote) }}
 {{- end }}
 {{- end }}
+
 
 {{/*
 Create the name of the logs folder for the Lightstreamer Server and the connectors.
