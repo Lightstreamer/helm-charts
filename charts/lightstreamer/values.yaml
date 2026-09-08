@@ -1481,11 +1481,12 @@ logging:
       type: Console
       pattern: "%d{\"yyyy-MM-dd HH:mm:ss,SSS\"}|%-5.5(%p%marker)|%m%n"
 
-  # -- Optional. Loggers configuration.
+  # -- Mandatory. Loggers configuration.
   loggers:
 
     # -- Optional. Logger used by the internal monitoring system to log load
     # statistics at `INFO` level with a human-readable syntax.
+    #
     # The frequency of the samples produced by the internal monitoring system is
     # governed by the `management.collectorMillis` setting.
     # However, a resampling to lower frequencies can be performed, based on the
@@ -1497,6 +1498,11 @@ logging:
     # The resampling behavior can be changed at runtime, by changing the level;
     # however, if the level is set to `ERROR` on startup, the logger will be
     # disabled throughout the life of the Server, regardless of further changes.
+    #
+    # In other words, for these logger, the Server uses the level setting
+    # as a trick to configure the frequency of monitoring statistics logs,
+    # but the log lines are always issued at `INFO` level.
+    #
     # When resampling is in place, note that, for each displayed sample, values
     # that are supposed to be averaged over a timeframe still refer to the
     # current sample's timeframe (based on `management.collectorMillis`);
@@ -1563,7 +1569,7 @@ logging:
         # -- Optional. Logging of system components initialization.
         # At `DEBUG` level, initialization details, error details and all
         # configuration settings are reported.
-        init: DEBUG
+        init: INFO
 
         # -- Optional. Logging of adapter initialization and plug/terminate
         # operations.
@@ -1884,7 +1890,7 @@ logging:
     org.jolokia:
       appenders:
         - console
-      level: ERROR
+      level: WARN
 
     com.turo:
       appenders:
