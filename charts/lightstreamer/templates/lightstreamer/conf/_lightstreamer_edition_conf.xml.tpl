@@ -19,7 +19,7 @@ Render the Lightstreamer edition configuration file
 */}}
 {{- define "lightstreamer.configuration.edition" -}}
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Do not remove this line. File tag: edition_conf-APV-7.4.2. -->
+<!-- Do not remove this line. File tag: edition_conf-APV-7.4.7. -->
 
 <lightstreamer_edition_conf>
 
@@ -53,9 +53,8 @@ Render the Lightstreamer edition configuration file
            - ENTERPRISE -->
   {{- if not (mustHas .edition (list "COMMUNITY" "ENTERPRISE") )}}
     {{- fail "license.edition must be one of: \"COMMUNITY\", \"ENTERPRISE\"" -}}
-  {{- else }}
-      <edition>{{ .edition }}</edition>
   {{- end }}
+      <edition>{{ .edition }}</edition>
 
       <!-- ###############################
            IF YOU CHOSE COMMUNITY EDITION
@@ -72,6 +71,7 @@ Render the Lightstreamer edition configuration file
               - javase_client: for Java SE clients
               - python_client: for Python clients
               - dotnet_standard_client: for .NET Standard clients
+              - cpp_client: for C++ clients
               - macos_client: for macOS clients
               - tvos_client: for tvOS clients
               - watchos_client: for watchOS clients
@@ -82,11 +82,11 @@ Render the Lightstreamer edition configuration file
               - generic_client: for custom clients based on the Lightstreamer protocol
          -->
   {{- $allowedClientApis := list "javascript_client" "nodejs_client" "android_client" "ios_client" "flex_client" "silverlight_client" "javase_client" "python_client" "dotnet_standard_client" "macos_client" "tvos_client" "watchos_client" "blackberry_client" "javame_client" "flash_client" "generic_client" }}
-  {{- if not (mustHas .enabledCommunityEditionClientApi $allowedClientApis)}}
+  {{- if and (eq .edition "COMMUNITY") (not (mustHas .enabledCommunityEditionClientApi $allowedClientApis)) }}
     {{- fail (printf "license.enabledCommunityEditionClientApi must be one of: %s" $allowedClientApis) -}}
-  {{- else }}
-         <enabled_client_api>{{ .enabledCommunityEditionClientApi }}</enabled_client_api>
   {{- end }}
+         <enabled_client_api>{{ .enabledCommunityEditionClientApi }}</enabled_client_api>
+
       </community_edition_details>
 
       <!-- ###############################
@@ -107,9 +107,8 @@ Render the Lightstreamer edition configuration file
               - HOT-STANDBY -->
       {{- if not (mustHas .licenseType (list "DEMO" "EVALUATION" "STARTUP" "NON-PRODUCTION-LIMITED" "NON-PRODUCTION-FULL" "PRODUCTION" "HOT-STANDBY")) }}
         {{- fail "license.enterprise.licenseType must be one of: \"DEMO\", \"EVALUATION\", \"STARTUP\", \"NON-PRODUCTION-LIMITED\", \"NON-PRODUCTION-FULL\", \"PRODUCTION\", \"HOT-STANDBY\"" -}}
-      {{- else }}
-         <license_type>{{ .licenseType }}</license_type>
       {{- end }}
+         <license_type>{{ .licenseType }}</license_type>
 
          <!-- Identifier of the contract in place.
               Use "DEMO" to run with the embedded Demo license. -->
@@ -130,39 +129,36 @@ Render the Lightstreamer edition configuration file
               Note that, apart from the DEMO license type, the license is revalidated
               at regular intervals. In case of FILE validation, this allows for hot
               replacement of license files (by keeping the file names). -->
-       {{- if eq .licenseType "DEMO"}}
-         <!--
-         <license_validation>ONLINE</license_validation>
-         -->
-       {{- else }}
-         {{- if not (mustHas .licenseValidation (list "ONLINE" "FILE")) }}
-           {{- fail "license.enterprise.licenseValidation must be one: of \"ONLINE\", \"FILE\"" -}}
-         {{- end }}
-         {{- if and (has .licenseType (list "EVALUATION" "STARTUP")) (ne .licenseValidation "ONLINE") }}
-           {{- fail "license.enterprise.licenseValidation must be \"ONLINE\" for EVALUATION and STARTUP license types" -}}
-         {{- else }}
+      {{- if not (eq .licenseType "DEMO") }}
+        {{- if not (mustHas .licenseValidation (list "ONLINE" "FILE")) }}
+          {{- fail "license.enterprise.licenseValidation must be one: of \"ONLINE\", \"FILE\"" -}}
+        {{- end }}
+        {{- if and (has .licenseType (list "EVALUATION" "STARTUP")) (ne .licenseValidation "ONLINE") }}
+          {{- fail "license.enterprise.licenseValidation must be \"ONLINE\" for EVALUATION and STARTUP license types" -}}
+        {{- end }}
+      {{- end }}
          <license_validation>{{ .licenseValidation }}</license_validation>
-         {{- end }}
-       {{- end }}
 
          <!-- Used only if <license_validation> above set to ONLINE.
               Password used for validation of online licenses.
               Leave blank if <contract_id> set to DEMO or <license_validation>
               set to FILE. -->
-       {{- if and (.licenseValidation | eq "ONLINE") (ne .licenseType "DEMO") }}
+      {{- if and (.licenseValidation | eq "ONLINE") (ne .licenseType "DEMO") }}
          <online_password>$env.LS_ENTERPRISE_LICENSE_ONLINE_PASSWORD</online_password>
-       {{- end }}
+      {{- else }}
+         <online_password></online_password>
+      {{- end }}
 
          <!-- Used only if <license_validation> above set to FILE.
               Cumulative. Path and name of the license file, relative to the conf
               directory. If multiple occurrences of this element are supplied,
               the files are all evaluated and the first acceptable one is considered.
               Example: mylicensefile.lic -->
-       {{- if .licenseValidation | eq "FILE" }}
-         {{- with required "license.enterprise.filePathSecretRef.key must be set" (.filePathSecretRef).key }}
-          <file_path>enterprise-license/{{ . }}</file_path>
-         {{- end }}
-       {{- end }}
+      {{- if .licenseValidation | eq "FILE" }}
+         <file_path>enterprise-license/{{ required "license.enterprise.filePathSecretRef.key must be set" (.filePathSecretRef).key }}</file_path>
+      {{- else }}
+          <file_path></file_path>
+      {{- end }}
          <!-- Restrict the feature set with respect to the license in use.
               Can be one of the following:
               - Y: use the feature set detailed in the <optional_features> element below.
@@ -171,8 +167,9 @@ Render the Lightstreamer edition configuration file
               - N: use the feature set specified by the license in use.
               Default: N -->
          <restricted_feature_set>{{ .enableRestrictedFeaturesSet | default false | ternary "Y" "N" }}</restricted_feature_set>
-    {{- end }} {{/* with .enterprise */}}
-  {{- end }} {{/* if eq .edition "ENTERPRISE" */}}
+    {{- end }} {{/* of with .enterprise */}}
+  {{- end }} {{/* of if eq .edition "ENTERPRISE" */}}
+
       </enterprise_edition_details>
 
       <!-- Audit logs are produced for Per-User Licenses only.
@@ -211,6 +208,7 @@ Render the Lightstreamer edition configuration file
          -->
   {{- end }}
   {{- end }}
+
       </audit_logs>
 
       <!-- CONFIGURATION OF OPTIONAL FEATURES
@@ -466,7 +464,8 @@ Render the Lightstreamer edition configuration file
            - Y: Perform automatic update check.
                 The following host name must be reachable on port 443
                 - https://service.lightstreamer.com/
-           - N: Do not perform automatic update check. -->
+           - N: Do not perform automatic update check.
+           Default: Y -->
   {{- if not (.enableAutomaticUpdateCheck | quote | empty) }}
       <automatic_update_check>{{ .enableAutomaticUpdateCheck | ternary "Y" "N" }}</automatic_update_check>
   {{- else }}
@@ -476,7 +475,6 @@ Render the Lightstreamer edition configuration file
   {{- end }}
 
    </license>
-
 
 <!--
   ===================
@@ -591,6 +589,7 @@ Render the Lightstreamer edition configuration file
       {{- end }} {{/* range .filePaths */}}
 
     {{- end }} {{/* with .pacFiles */}}
+
       </pac_files>
 
       <!-- In case no proxy configuration is provided or the provided
@@ -611,8 +610,8 @@ Render the Lightstreamer edition configuration file
            without a proxy.
            Example: 200.0.0.1 -->
       <network_interface>{{ .networkInterface }}</network_interface>
+  {{- end }} {{/* of .proxy */}}
 
-  {{- end }} {{/* with .proxy */}}
    </proxy>
 
     <!-- Optional. If set and not empty, modifies the behavior of the
@@ -644,4 +643,4 @@ Render the Lightstreamer edition configuration file
      Note that, on Windows, if a drive name is not specified, a double initial
      slash or backslash is needed to make a path absolute. -->
 {{- end }}
-{{- end }} {{/* with .license */}}
+{{- end }} {{/* of .license */}}
