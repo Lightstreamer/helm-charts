@@ -520,9 +520,10 @@ license:
       name:
       key:
 
-    # -- In case of file-based license validation, allows to activate periodic
-    # automatic upload. This makes it much easier for the system administrators
-    # to deliver the logs, as contractually agreed.
+    # -- Optional but effective only if `licenseValidation` is set to `FILE`.
+    # Allows to activate periodic automatic upload. This makes it much easier
+    # for the system administrators to deliver the logs, as contractually 
+    # agreed.
     # In case of online license validation, the audit logs are always
     # automatically uploaded to the Online License Manager, irrespective of this
     # setting.
@@ -606,6 +607,9 @@ license:
         # Unity Client API, .NET Client API, WinRT Client API, and Windows
         # Phone Client API.
         enableDotNETStandardClient: false
+
+        # -- Mandatory. C++ Client API.
+        enableCPPClient: false
 
         # -- Mandatory. macOS Client API.
         enableMacOSClient: false
