@@ -19,6 +19,10 @@ limitations under the License.
 <!-- Do not remove this line. File tag: apple_notif_conf-APV-20200124. -->
 
 <apple_notifier_conf>
+
+   <!-- Note: A very simple variable-expansion feature is available,
+        similarly to lightstreamer_conf.xml. See the related comment there. -->
+
 {{- with .Values.mpn.appleNotifierConfig }}
   <env_prefix>env.</env_prefix>
 
@@ -30,7 +34,7 @@ limitations under the License.
         it too much, and subsequently sending notifications with a high
         frequency, may cause Apple's Push Notification Service ("APNs")
         to close the connection and ban (temporarily or permanently) any
-        successive notifications.
+        successive notification.
         Mobile push notifications fired by a trigger are not subject to
         this limit and may be sent at higher pace.
         Default: 1000 (1 sec) -->
@@ -144,7 +148,7 @@ limitations under the License.
            is at least one match.
            Remember that the MPN Module supports, as trigger, any Java boolean
            expression, including use of JDK classes and methods, with the addition
-           of field references syntax (see the iOS Client SDK for more information).
+           of field references syntax (see the Client API in use for more information).
            Hence, this check is a safety measure required to avoid that clients
            can request triggers potentially dangerous for the Server, as each
            trigger may contain arbitrary Java code.
