@@ -234,7 +234,7 @@ spec:
           {{- /* END ENV VARIABLES FOR MANAGEMENT */ -}}
           {{- /* START ENV VARIABLES FOR MPN */ -}}
           {{- if .Values.mpn.enabled }}
-            {{- /* START ENV VARIABLES FOR HIBERNATE CONNECTION */ -}}
+            {{- /* START ENV VARIABLES FOR HIBERNATE CONNECTION */}}
             - name: LS_HIBERNATE_CONNECTION_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -247,7 +247,7 @@ spec:
                   key: password
             - name: LS_HIBERNATE_SYSTEM_PROPERTIES
               value: "-Dls_hibernate_connection_username=$(LS_HIBERNATE_CONNECTION_USERNAME) -Dls_hibernate_connection_password=$(LS_HIBERNATE_CONNECTION_PASSWORD)"
-          {{- /* END ENV VARIABLES FOR HIBERNATE CONNECTION */ -}}
+            {{/* END ENV VARIABLES FOR HIBERNATE CONNECTION */}}
           {{- /* START ENV VARIABLES FOR APPLE KEYSTORES */ -}}
             {{- range $keyStoreName, $keyStore := (.Values.mpn.appleNotifierConfig).keystores }}
               {{- if $keyStore }}
