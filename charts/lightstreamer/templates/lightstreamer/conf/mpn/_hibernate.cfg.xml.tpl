@@ -52,7 +52,7 @@ Render the Hibernate configuration file for the MPN module
 
     <!-- Mapping files: these paths are relative to the current directory.
          If the Server has been started with its scripts, the samples paths
-         here under are correct. But if it has been started with cron or another
+         hereunder are correct. But if it has been start with cron or another
          scheduler they may need to be fixed. -->
     <mapping file="../../conf/mpn/Module.hbm.xml"/>
     <mapping file="../../conf/mpn/Command.hbm.xml"/>
@@ -60,6 +60,7 @@ Render the Hibernate configuration file for the MPN module
     <mapping file="../../conf/mpn/Subscription.hbm.xml"/>
     <mapping file="../../conf/mpn/SubscriptionItem.hbm.xml"/>
   {{- end }} {{/* with Values.mpn.hibernateConfig */}}
+
   </session-factory>
 
 </hibernate-configuration>
