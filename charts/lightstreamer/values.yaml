@@ -1073,10 +1073,10 @@ servers:
       # logged at startup by the
       # `logging.loggers.lightstreamerLogger.subLoggers.io.ssl` logger at
       # `DEBUG` level.
-      removeProtocols: []
-        # - SSL
-        # - TLSv1$
-        # - TLSv1.1
+      removeProtocols:
+        - SSL
+        - TLSv1$
+        - TLSv1.1
 
       # -- (bool) Optional. Instructs the underlying Security Provider on
       # whether to use stateless (when `true`) or stateful (when `false`)
@@ -3311,7 +3311,7 @@ mpn:
         # there is at least one match.
         # Remember that the MPN Module supports, as trigger, any Java boolean
         # expression, including use of JDK classes and methods, with the
-        # addition of field references syntax (see the iOS Client SDK for more
+        # addition of field references syntax (Client API in use for more
         # information).
         # Hence, this check is a safety measure required to avoid that clients
         # can request triggers potentially dangerous for the Server, as each
@@ -3414,8 +3414,8 @@ mpn:
         # there is at least one match.
         # Remember that the MPN Module supports, as trigger, any Java boolean
         # expression, including use of JDK classes and methods, with the
-        # addition of field references syntax (see the iOS Client SDK for more
-        # information).
+        # addition of field references syntax (see the Client API in use for 
+        # more information).
         # Hence, this check is a safety measure required to avoid that clients
         # can request triggers potentially dangerous for the Server, as each
         # trigger may contain arbitrary Java code.
@@ -3534,7 +3534,7 @@ webServer:
   # The file path is relative to the conf directory.
   silverlightAccessPolicyPath:
 
-# -- Mandatory. Clustering configuration.
+# -- Optional. Clustering configuration.
 cluster:
 
   # -- Optional. Host address to be used for control/poll/rebind connections.
