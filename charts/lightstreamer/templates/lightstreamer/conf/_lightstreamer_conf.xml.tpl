@@ -393,7 +393,7 @@ Render the Lightstreamer configuration file.
              suites is logged at startup by the LightstreamerLogger.io.ssl
              logger at DEBUG level. -->
       {{- range $index, $cipherSuite := .removeCipherSuites }}
-        <allow_cipher_suite>{{ required (printf "servers.%s.sslConfig.removeCipherSuites[%d] must be set" $serverKey (int $index)) $cipherSuite }}</allow_cipher_suite>
+        <remove_cipher_suites>{{ required (printf "servers.%s.sslConfig.removeCipherSuites[%d] must be set" $serverKey (int $index)) $cipherSuite }}</remove_cipher_suites>
       {{- else }}             
         <!--
         <remove_cipher_suites>TLS_RSA_</remove_cipher_suites>
