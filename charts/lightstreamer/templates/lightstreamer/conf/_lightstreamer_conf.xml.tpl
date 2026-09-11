@@ -19,7 +19,7 @@ Render the Lightstreamer configuration file.
 */}}
 {{- define "lightstreamer.configuration" -}}
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Do not remove this line. File tag: server_conf-APV-7.4.0. -->
+<!-- Do not remove this line. File tag: server_conf-APV-8.0.0 b1. -->
 
 <lightstreamer_conf>
 
@@ -72,7 +72,7 @@ Render the Lightstreamer configuration file.
 
 {{- include "lightstreamer.configuration.servers.validateAllServers" . -}}
 {{- range $serverKey, $server :=.Values.servers }}
-  {{- if $server.enabled }}
+  {{- if $server.enabled }} {{/* The enabled flag is consolidated in validateAllServers */}}
     <!-- Optional and cumulative (but at least one from <http_server> and
          <https_server> should be defined). HTTP server socket configuration.
          Multiple listening sockets can be defined, by specifying multiple
@@ -101,7 +101,7 @@ Render the Lightstreamer configuration file.
         -->
   {{- end }}
 
-        <!-- Optional. Provides meta-information on how this listening socket
+       <!-- Optional. Provides meta-information on how this listening socket
              will be used, according with the deployment configuration.
              This can inform the Server of a restricted set of requests expected
              on the port, which may improve the internal backpressure mechanisms.
@@ -130,21 +130,35 @@ Render the Lightstreamer configuration file.
              - GENERAL_PURPOSE
                To be set when the port can be used for any kind of request.
                It can always be set in case of doubts.
+             The optional "WSF_only" attribute, whose default is "N", if set to "Y",
+             declares that the port is only devoted to receive requests from
+             clients based on the UCM (Unified Client Model) family of Client
+             SDKs (available since 2023). These clients create the sessions
+             with a "websocket-first" policy, which doesn't involve control
+             connections but for rare cases.
+             For this reason, if set with CREATE_ONLY, WSF_only="Y" prevents
+             some restrictive actions that are not useful in this case.
+             On the other hand, if set with GENERAL_PURPOSE, WSF_only="Y"
+             enables some restrictive actions that are not undertaken by
+             default, since they may affect control connections for sessions
+             already established.
              Note that ports can be CREATE_ONLY or CONTROL_ONLY only depending
              on client behavior. For clients based on LS SDK libraries, this is
              related to the use of the <control_link_address> setting. Usage
              examples are provided in the Clustering.pdf document.
+             Similarly, ports with WSF_only="Y" may be reached by clients that
+             don't follow the websocket-first policy. The Server will not enforce
+             the restriction.
              Default: GENERAL_PURPOSE. -->
-  {{- if .portType }}
-    {{- if not (mustHas .portType (list "CREATE_ONLY" "CONTROL_ONLY" "PRIORITY" "GENERAL_PURPOSE")) }}
-      {{- fail "portType must be set with a valid value" }}
-    {{- end }}
-        <port_type>{{ .portType }}</port_type>
-  {{- else }}
-        <!--
-        <port_type>PRIORITY</port_type>
-        -->
+  {{- $portType := .portType | default "GENERAL_PURPOSE" }}
+  {{- $wsfOnly := .enableWsfOnlyPolicy | default false }}
+  {{- if not (mustHas $portType (list "CREATE_ONLY" "CONTROL_ONLY" "PRIORITY" "GENERAL_PURPOSE")) }}
+    {{- fail "portType must be one of: \"CREATE_ONLY\", \"CONTROL_ONLY\", \"PRIORITY\", \"GENERAL_PURPOSE\"" }}
   {{- end }}
+  {{- if and $wsfOnly (not (mustHas $portType (list "CREATE_ONLY" "GENERAL_PURPOSE"))) }}
+     {{- fail "portType must be one of: \"CREATE_ONLY\", \"GENERAL_PURPOSE\" when enableWsfOnlyPolicy is set true" }}
+  {{- end }}
+       <port_type WSF_only={{ $wsfOnly | ternary "Y" "N" | quote }}>{{ $portType }}</port_type>
 
         <!-- Optional. Settings that allow some control over the HTTP headers
              of the provided responses. Header lines can only be added to those
@@ -231,10 +245,10 @@ Render the Lightstreamer configuration file.
              and the determined address may be a local one.
              If the whole block is omitted, this just means that all settings
              are at their defaults. -->
-  
+
   {{- $enablePrivate := (not (eq (.clientIdentification).enablePrivate false)) }}
   {{- $enableProxyProtocol := (.clientIdentification).enableProxyProtocol | default false }}
-  {{- $proxyProtocolTimeoutMillis := int (not (quote (.clientIdentification).proxyProtocolTimeoutMillis | empty) | ternary (.clientIdentification).proxyProtocolTimeoutMillis 1000) }}
+  {{- $proxyProtocolTimeoutMillis := int (not (quote (.clientIdentification).proxyProtocolTimeoutMillis | empty) | ternary (.clientIdentification).proxyProtocolTimeoutMillis 5000) }}
   {{- $enableForwardsLogging := (.clientIdentification).enableForwardsLogging | default false }}
   {{- $skipLocalForwards := int (.clientIdentification).skipLocalForwards }}
         <client_identification private={{ $enablePrivate | ternary "Y" "N" | quote }}>
@@ -261,12 +275,12 @@ Render the Lightstreamer configuration file.
                  the proxy protocol, when enabled. Note that a reverse proxy or
                  load balancer speaking the proxy protocol is bound to send
                  information immediately after connection start; so the timeout
-                 can only apply to cases of wrong configuration, local network
-                 issues or illegal access to this port.
-                 For this reason, the read is performed directly in the ACCEPT
-                 thread pool and this setting protects that pool against such
-                 unlikely events.
-                 Default: 1000. -->
+                 is expected to only apply to cases of wrong configuration,
+                 local network issues or illegal access to this port.
+                 The time actually considered may be approximated and may be a few
+                 seconds higher, for internal performance reasons.
+                 A 0 value suppresses the check.
+                 Default: 5000. -->
             <proxy_protocol_timeout_millis>{{ $proxyProtocolTimeoutMillis }}</proxy_protocol_timeout_millis>
 
             <!-- Optional, but nonzero values forbidden if "proxy_protocol_enabled"
@@ -302,7 +316,7 @@ Render the Lightstreamer configuration file.
         </client_identification>
 
   {{- if $enableHttps }}
-    {{ if .sslConfig | empty }} 
+    {{ if .sslConfig | empty }}
       {{ printf "servers.%s.sslConfig must be set" $serverKey | fail }}
     {{ end }}
     {{- with .sslConfig }}
@@ -394,7 +408,7 @@ Render the Lightstreamer configuration file.
              logger at DEBUG level. -->
       {{- range $index, $cipherSuite := .removeCipherSuites }}
         <allow_cipher_suite>{{ required (printf "servers.%s.sslConfig.removeCipherSuites[%d] must be set" $serverKey (int $index)) $cipherSuite }}</allow_cipher_suite>
-      {{- else }}             
+      {{- else }}
         <!--
         <remove_cipher_suites>TLS_RSA_</remove_cipher_suites>
         -->
@@ -421,6 +435,9 @@ Render the Lightstreamer configuration file.
       {{- $enabled := not (eq (.enforceServerCipherSuitePreference).enabled false) }}
       {{- if not (mustHas $order (list "JVM" "config")) }}
         {{- fail printf ("server.%s.sslConfig.enforceServerCipherSuitePreference must be one of: \"JVM\", \"config\"" $serverKey) }}
+      {{- end }}
+      {{- if and $enabled (eq $order "config") }}
+        {{- fail printf ("server.%s.sslConfig.enforceServerCipherSuitePreference.order cannot be set to 'config' if server.%s.sslConfig.allowCipherSuites is not used" $serverKey $serverKey) }}
       {{- end }}
         <enforce_server_cipher_suite_preference order={{ $order | quote }}>{{ $enabled | ternary "Y" "N" }}</enforce_server_cipher_suite_preference>
 
@@ -526,7 +543,7 @@ Render the Lightstreamer configuration file.
              In the latter case, the session also has to be kept in a cache.
              A value of 0 poses no time limit.
              Note, however, that the underlying Security Provider may ignore
-             this setting (possibly depending of the protocol version in use).
+             this setting (possibly depending on the protocol version in use).
              Default: If left empty or not defined, the maximum time is decided by the
              underlying Security Provider. For the default SunJSSE, it is 86400
              seconds, unless configured through the
@@ -557,9 +574,11 @@ Render the Lightstreamer configuration file.
              Can be one of the following:
              - Y: Upon each client connection, the availability of a client TLS/SSL
                   certificate is checked. If available, the included
-                  identification data will be supplied upon calls to notifyUser.
-             - N: No certificate information is supplied to notifyUser and no
-                  check is done on the client certificate.
+                  identification data will be supplied to the Metadata Adapter
+                  upon calls to the authentication method.
+             - N: No certificate information is supplied to the Metadata Adapter
+                  upon calls to the authentication method
+                  and no check is done on the client certificate.
              Note that a check on the client certificate can also be requested
              through <force_client_auth>.
              Default: N. -->
@@ -620,6 +639,7 @@ Render the Lightstreamer configuration file.
 
     <!-- GLOBAL SOCKET SETTINGS -->
 {{- with required "globalSocket must be set" .Values.globalSocket }}
+
     <!-- Mandatory. Longest inactivity time accepted while waiting for a slow
          request to be received. If this value is exceeded, the socket is
          closed. Reusable HTTP connections are also closed if they are not
@@ -656,7 +676,7 @@ Render the Lightstreamer configuration file.
   {{- if not (quote .requestLimit | empty) }}
     <request_limit>{{ int .requestLimit }}</request_limit>
   {{- else }}
-    <!-- 
+    <!--
     <request_limit>5000</request_limit>
     -->
   {{- end }}
@@ -667,7 +687,13 @@ Render the Lightstreamer configuration file.
          The time actually considered may be approximated and may be a few
          seconds higher, for internal performance reasons.
          If missing or 0, the check is suppressed. -->
-    <write_timeout_millis>{{ int .writeTimeoutMillis | default 120000 }}</write_timeout_millis>
+  {{- if not (quote .writeTimeoutMillis | empty) }}
+    <write_timeout_millis>{{ int .writeTimeoutMillis }}</write_timeout_millis>
+  {{- else }}
+    <!--
+    <write_timeout_millis>12000</write_timeout_millis>
+    -->
+  {{- end }}
 
     <!-- Optional. Enabling the use of the full HTTP 1.1 syntax for all the
          responses, upon HTTP 1.1 requests. Can be one of the following:
@@ -678,7 +704,7 @@ Render the Lightstreamer configuration file.
                  support specific response features.
          Default: Y. -->
     <!--
-    <use_http_11>Y</use_http_11>
+    <use_http_11>AUTO</use_http_11>
     -->
 
     <!-- Optional. WebSocket support configuration. The support is enabled
@@ -747,7 +773,7 @@ Render the Lightstreamer configuration file.
   {{- end }}
 
     </websocket>
-{{- end }}
+{{- end }} {{/* of .Values.globalSocket */}}
 
 <!--
   ======================
@@ -788,8 +814,7 @@ Render the Lightstreamer configuration file.
     <use_protected_js>{{ .enableProtectedJs | default false | ternary "Y" "N" }}</use_protected_js>
 
     <!-- Optional. Use this setting to enable the forwarding of the cookies to
-         the Metadata Adapter through the httpHeaders argument of the "notifyUser"
-         method.
+         the Metadata Adapter upon calls to the authentication method.
          Please note that in any case cookies should not be used to authenticate
          users, otherwise, having <use_protected_js> set to N and/or a too permissive
          policy in the <cross_domain_policy> will expose the server to CSRF attacks.
@@ -800,7 +825,7 @@ Render the Lightstreamer configuration file.
     <forward_cookies>{{ .enableCookiesForwarding | default false | ternary "Y" "N" }}</forward_cookies>
   {{ with required "security.crossDomainPolicy must be set" .crossDomainPolicy -}}
     {{- $crossDomainPolicyEnabled := not (eq .enabled false ) }}
-    {{- if $crossDomainPolicyEnabled }} 
+    {{- if $crossDomainPolicyEnabled }}
     <!-- Optional. List of origins to be allowed by the browsers to consume
          responses to requests sent to this Server through cross-origin XHR or
          through WebSockets; in fact, when a requesting page asks for streaming
@@ -839,10 +864,10 @@ Render the Lightstreamer configuration file.
          attribute of this element (default is 3600). Thus a previously authorized
          client may not give up its authorization, even if the related origin is
          removed from the list and the server is restarted, until its authorization
-         expires. -->    
-     {{- $acceptCredentials := not (eq .acceptCredentials false) }}
-     {{- $acceptExtraHeaders := .acceptExtraHeaders | default "" }}
-    <cross_domain_policy{{- if .optionsMaxAgeSeconds }} options_max_age={{ .optionsMaxAgeSeconds | quote }}{{- end }} accept_extra_headers={{ $acceptExtraHeaders | quote }} accept_credentials={{ $acceptCredentials | ternary "Y" "N" | quote }}>
+         expires. -->
+      {{- $acceptCredentials := not (eq .acceptCredentials false) }}
+      {{- $acceptExtraHeaders := .acceptExtraHeaders | default "" }}
+    <cross_domain_policy{{- if not (quote .optionsMaxAgeSeconds | empty) }} options_max_age="{{ int .optionsMaxAgeSeconds }}"{{- end }} accept_extra_headers={{ $acceptExtraHeaders | quote }} accept_credentials={{ $acceptCredentials | ternary "Y" "N" | quote }}>
 
         <!-- Optional and cumulative. Declaration of an Origin allowed
              to consume responses to cross-origin requests.
@@ -863,9 +888,9 @@ Render the Lightstreamer configuration file.
              not just http and https. -->
       {{- range $key, $value := .allowAccessFrom }}
         {{- if $value }}
-          {{- $scheme := required (printf "security.crossDomainPolicy.allowsAccess.%s.scheme must be set" $key) $value.scheme }} 
-          {{- $host := required (printf "security.crossDomainPolicy.allowsAccess.%s.host must be set" $key) $value.host }} 
-          {{- $port := required (printf "security.crossDomainPolicy.allowsAccess.%s.port must be set" $key) $value.port }} 
+          {{- $scheme := required (printf "security.crossDomainPolicy.allowsAccess.%s.scheme must be set" $key) $value.scheme }}
+          {{- $host := required (printf "security.crossDomainPolicy.allowsAccess.%s.host must be set" $key) $value.host }}
+          {{- $port := required (printf "security.crossDomainPolicy.allowsAccess.%s.port must be set" $key) $value.port }}
         <allow_access_from scheme={{ $scheme | quote }} host={{ $host | quote }} port={{ $port | quote }} />
         {{- end }}
       {{- else }}
@@ -888,7 +913,7 @@ Render the Lightstreamer configuration file.
 
     </cross_domain_policy>
     {{- end }}
-  {{- end }}
+  {{- end }} {{/* of .crossDomainPolicy */}}
 
     <!-- Optional and cumulative. Origin domain or subdomain to be allowed
          by the browsers to access data on HTML pages supplied by this Server.
@@ -935,7 +960,7 @@ Render the Lightstreamer configuration file.
              for Community edition, as:
                  Lightstreamer Server (Lightstreamer Push Server - www.lightstreamer.com) COMMUNITY edition
          Default: FULL. -->
-  {{- if .serverIdentificationPolicy }}
+  {{- if not (quote .serverIdentificationPolicy | empty) }}
     {{- $admittedIdentificationPolicies := list "FULL" "MINIMAL" }}
     {{- if not (has .serverIdentificationPolicy $admittedIdentificationPolicies) }}
       {{- printf "security.serverIdentificationPolicy must be one of: %s" $admittedIdentificationPolicies | fail }}
@@ -946,7 +971,7 @@ Render the Lightstreamer configuration file.
     <server_tokens>MINIMAL</server_tokens>
     -->
   {{- end }}
-{{- end }}
+{{- end }} {{/* of .Values.security */}}
 
 <!--
   ====================================
@@ -963,10 +988,8 @@ Render the Lightstreamer configuration file.
     <no_logging_ip>
 
         <!-- Cumulative. IP address of a Client to exclude from logging. -->
-  {{- if .noLoggingIpAddresses }}
-     {{- range .noLoggingIpAddresses }}
-        <ip_value>{{ . }}</ip_value>
-     {{- end }}
+  {{- range $index, $noLoggingIpAddress := .noLoggingIpAddresses }}
+        <ip_value>{{ required (printf "management.noLoggingIpAddress[%d] must be set" $index) $noLoggingIpAddress }}</ip_value>
   {{- else }}
         <!--
         <ip_value>200.0.0.10</ip_value>
@@ -985,13 +1008,13 @@ Render the Lightstreamer configuration file.
          but only at DEBUG level, which is never enabled in the default
          configuration.
          Default: N. -->
-  {{- if (quote .enablePasswordVisibilityOnRequestLog | empty) }}
+    {{- if not (quote .enablePasswordVisibilityOnRequestLog | empty) }}
+    <show_password_on_request_log>{{ .enablePasswordVisibilityOnRequestLog | ternary "Y" "N" }}</show_password_on_request_log>
+    {{- else }}
     <!--
     <show_password_on_request_log>Y</show_password_on_request_log>
     -->
-  {{- else }}
-    <show_password_on_request_log>{{ .enablePasswordVisibilityOnRequestLog | ternary "Y" "N" }}</show_password_on_request_log>
-  {{- end }}
+    {{- end }}
 
     <!-- Optional. Threshold time for long Adapter call alerts.
          All Data and Metadata Adapter calls should perform as fast
@@ -1002,7 +1025,11 @@ Render the Lightstreamer configuration file.
          takes more than this time.
          A 0 value disables the check.
          Default: 1000. -->
+    {{- if not (quote .unexpectedWaitThresholdMillis | empty )}}
     <unexpected_wait_threshold_millis>{{ int .unexpectedWaitThresholdMillis }}</unexpected_wait_threshold_millis>
+    {{- else }}
+    <unexpected_wait_threshold_millis>0</unexpected_wait_threshold_millis>
+    {{- end }}
 
     <!-- Optional. Threshold time for long asynchronous processing alerts.
          Data and Metadata Adapter calls, even when performed through
@@ -1015,8 +1042,11 @@ Render the Lightstreamer configuration file.
          threshold on a pool, a warning is logged. Note that warning messages
          can be issued repeatedly. A 0 value disables the check.
          Default: 10000. -->
-  {{- $asyncProcessingThresholdMillis := .asyncProcessingThresholdMillis | default 60000 }}
+    {{- if not (quote .asyncProcessingThresholdMillis | empty) }} 
     <async_processing_threshold_millis>{{ int .asyncProcessingThresholdMillis }}</async_processing_threshold_millis>
+    {{- else }}
+    <async_processing_threshold_millis>60000</async_processing_threshold_millis>
+    {{- end }}
 
     <!-- Optional. Threshold wait time for a task enqueued for running on any
          of the internal thread pools.
@@ -1025,12 +1055,12 @@ Render the Lightstreamer configuration file.
          a warning is logged. Note that warning messages can be issued
          repeatedly. A 0 value disables the check.
          Default: 10000. -->
-  {{- if (quote  .maxTaskWaitMillis | empty) }}
+  {{- if not (quote .maxTaskWaitMillis | empty) }}
+    <max_task_wait_millis>{{ int .maxTaskWaitMillis }}</max_task_wait_millis>  
+  {{- else }}
     <!--
     <max_task_wait_millis>0</max_task_wait_millis>
     -->
-  {{- else }}
-    <max_task_wait_millis>{{ int .maxTaskWaitMillis }}</max_task_wait_millis>
   {{- end }}
 
     <!-- Mandatory. Sampling time for internal load statistics (Server
@@ -1043,7 +1073,8 @@ Render the Lightstreamer configuration file.
 
     <!-- Mandatory (if you wish to use the provided "stop" script).
          JMX preferences and external access configuration.
-         Full JMX features is an optional feature, available depending
+         Full J
+         MX features is an optional feature, available depending
          on Edition and License Type; if not available, only the
          Server shutdown operation via JMX is allowed. To know what
          features are enabled by your license, please see the License
@@ -1071,7 +1102,8 @@ Render the Lightstreamer configuration file.
              (by default, available at /dashboard). -->
         <rmi_connector>
     {{- with required "management.jmx.rmiConnector must be set" .rmiConnector }}
-      {{- if .enabled}}
+      {{- $_ := set . "enabled" (not (eq .enabled false)) }}
+      {{- if .enabled }}
 
             <!-- Mandatory for this block. TCP port on which the RMI Connector will
                  be available. This is the port that has to be specified in the
@@ -1079,9 +1111,8 @@ Render the Lightstreamer configuration file.
                  The optional "ssl" attribute, when set to "Y", enables TLS/SSL
                  communication. Note that this case is not managed by some JMX
                  clients, like jconsole. -->
-        {{- $rmiPort := required "management.jmx.rmiConnector.port must be set" .port }}
-        {{- $rmiPortValue := required "management.jmx.rmiConnector.port.value must be set" $rmiPort.value }}
-        {{- $rmiPortEnableSsl := $rmiPort.enableSsl | default false }}
+        {{- $rmiPortValue := int (required "management.jmx.rmiConnector.port.value must be set" (.port).value) }}
+        {{- $rmiPortEnableSsl := .port.enableSsl | default false }}
             <port ssl={{ $rmiPortEnableSsl | ternary "Y" "N" | quote }}>{{ int $rmiPortValue }}</port>
 
             <!-- Optional. TCP port that will be used by the RMI Connector for
@@ -1094,7 +1125,7 @@ Render the Lightstreamer configuration file.
                  on the main port. If omitted, the same setting used for <port>
                  is considered.
                  Default: the same as configured in <port>. -->
-        {{- $rmiDataPortValue := (.dataPort).value | default $rmiPortValue }}
+        {{- $rmiDataPortValue := (quote (.dataPort).value | empty) | ternary $rmiPortValue (int .dataPort.value) }}
         {{- $rmiDataPortEnableSsl := ((.dataPort).enableSsl | quote | empty) | ternary $rmiPortEnableSsl (.dataPort).enableSsl }}
             <data_port ssl={{ $rmiDataPortEnableSsl | ternary "Y" "N" | quote }}>{{ int $rmiDataPortValue }}</data_port>
 
@@ -1106,7 +1137,7 @@ Render the Lightstreamer configuration file.
                  specified hostname has to be visible also from local clients.
                  Default: any setting provided to the "java.rmi.server.hostname"
                  JVM property. -->
-        {{- if .hostname }}
+        {{- if not (quote .hostname | empty) }}
             <hostname>{{ .hostname }}</hostname>
         {{- else }}
             <!--
@@ -1127,8 +1158,8 @@ Render the Lightstreamer configuration file.
                  - N: Disables the test, but this setting can be overridden by
                       setting <ensure_stopping_service> to Y.
                  Default: Y. -->
-            {{- $enablePortTest := not (eq .enablePortTest false) }}
-            <test_ports>{{ $enablePortTest | ternary "Y" "N" }}</test_ports>
+            {{- $enablePortTest := not (eq .enablePortTest false)| ternary "Y" "N"}}
+            <test_ports>{{ $enablePortTest }}</test_ports>
 
             <!-- Optional. Timeout to be posed on the connection attempts through
                  the RMI Connector. If 0, no timeout will be posed.
@@ -1144,7 +1175,11 @@ Render the Lightstreamer configuration file.
                    preventing the connector setup would be ignored.
                  On the other hand, the setting is ignored by the "stop" script.
                  Default: 0. -->
-            <test_timeout_millis>{{ int .testTimeoutMillis | default 5000 }}</test_timeout_millis>
+            {{- if not (quote .testTimeoutMillis | empty) }}
+            <test_timeout_millis>{{ int .testTimeoutMillis }}</test_timeout_millis>
+            {{- else }}
+            <test_timeout_millis>5000</test_timeout_millis>
+            {{- end }}
 
             <!-- Optional. Can be used on a multihomed host to specify the IP
                  address to bind the HTTP/HTTPS server sockets to, for all the
@@ -1154,13 +1189,15 @@ Render the Lightstreamer configuration file.
                  <hostname> setting may be needed to make the connector accessible,
                  even from local clients.
                  The default is to accept connections on any/all local addresses. -->
-        {{- if .listeningInterface }}
+        {{- if not (quote .listeningInterface | empty) }}
             <listening_interface>{{ .listeningInterface }}</listening_interface>
         {{- else }}
             <!--
             <listening_interface>200.0.0.1</listening_interface>
             -->
         {{- end }}
+
+        {{- if or $rmiPortEnableSsl $rmiDataPortEnableSsl }}
 
             <!-- Optional. Reference to the keystore to be used in case TLS/SSL
                  is enabled for part or all the communication.
@@ -1172,7 +1209,6 @@ Render the Lightstreamer configuration file.
                  Default: if the block is missing, any settings provided to the
                  "javax.net.ssl.keyStore" and "javax.net.ssl.keyStorePassword"
                  JVM properties will apply. -->
-        {{- if or $rmiPortEnableSsl $rmiDataPortEnableSsl }}
         {{- with required (printf "management.jmx.rmiConnector.sslConfig must be set") .sslConfig }}
           {{- with required "management.jmx.rmiConnector.sslConfig.keystoreRef must be set" .keystoreRef }}
             {{- include "lightstreamer.configuration.keystore" (list $.Values.keystores .) | nindent 12 }}
@@ -1182,21 +1218,26 @@ Render the Lightstreamer configuration file.
             {{ printf "management.jmx.rmiConnector.sslConfig.allowCipherSuites and management.jmx.rmiConnector.sslConfig.removeCipherSuites cannot be used together" | fail }}
           {{- end }}
 
+          {{- if .allowCipherSuites }}
+
             <!-- Optional and cumulative, but forbidden if <remove_cipher_suites> is used.
                  Specifies all the cipher suites allowed for the interaction, in case
                  TLS/SSL is enabled for part or all the communication.
                  See notes for <allow_cipher_suite> under <https_server>. -->
-          {{- range $index, $cipherSuite := .allowCipherSuites }}
+            {{- range $index, $cipherSuite := .allowCipherSuites }}
             <allow_cipher_suite>{{ required (printf "management.jmx.rmiConnector.sslConfig.allowCipherSuite[%d] must be set" (int $index)) $cipherSuite }}</allow_cipher_suite>
+            {{- end }}
           {{- end }}
 
+          {{- if .removeCipherSuites }}
             <!-- Optional and cumulative, but forbidden if <allow_cipher_suite> is used.
                  Pattern to be matched against the names of the enabled cipher suites
                  in order to remove the matching ones from the enabled cipher suites set
                  to be used in case TLS/SSL is enabled for part or all the communication.
                  See notes for <remove_cipher_suites> under <https_server>. -->
-          {{- range $index, $cipherSuite := .removeCipherSuites }}
+            {{- range $index, $cipherSuite := .removeCipherSuites }}
             <remove_cipher_suites>{{ required (printf "management.jmx.rmiConnector.sslConfig.removeCipherSuites[%d] must be set" (int $index)) $cipherSuite }}</remove_cipher_suites>
+            {{- end }}
           {{- end }}
 
             <!-- Optional. Determines which side should express the preference when
@@ -1208,6 +1249,11 @@ Render the Lightstreamer configuration file.
           {{- $enabled := not (eq (.enforceServerCipherSuitePreference).enabled false) }}
           {{- if not (mustHas $order (list "JVM" "config")) }}
             {{- fail printf ("management.jmx.rmiConnector.sslConfig.enforceServerCipherSuitePreference must be one of: \"JVM\", \"config\"") }}
+          {{- end }}
+          {{- if and $enabled (eq $order "config") }}
+            {{- if not .allowCipherSuites }}
+              {{- fail "management.jmx.rmiConnector.sslConfig.enforceServerCipherSuitePreference.order cannot be set to 'config' if management.jmx.rmiConnector.sslConfig.allowCipherSuites is not specified" }}            
+            {{- end }}
           {{- end }}
             <enforce_server_cipher_suite_preference order={{ $order | quote }}>{{ $enabled | ternary "Y" "N" }}</enforce_server_cipher_suite_preference>
 
@@ -1232,8 +1278,8 @@ Render the Lightstreamer configuration file.
           {{- range $index, $protocol := .removeProtocols }}
             <remove_protocols>{{ required (printf "management.jmx.rmiConnector.sslConfig.removeProtocols[%d] must be set" (int $index)) $protocol }}</remove_protocols>
           {{- end }}
-        {{- end }} {{/* sslConfig */}}
-        {{- end }} {{/* or .port.enableSsl (.dataPort).enableSsl */}}
+        {{- end }} {{/* of .sslConfig */}}
+        {{- end }} {{/* of .port.enableSsl (.dataPort).enableSsl */}}
 
             <!-- Optional. Enabling of the RMI Connector access without credentials.
                  Can be one of the following:
@@ -1250,9 +1296,9 @@ Render the Lightstreamer configuration file.
                  be supplied in order to allow access through the connector.
                  This is also needed if you wish to use the provided "stop" script;
                  the script will always use the first user supplied. -->
-        {{- if not .enablePublicAccess }}
+        {{- if and (not .enablePublicAccess) .credentialSecrets }}
           {{- range $index, $secretRef := .credentialSecrets}}
-            {{- $_ := required (printf "management.jmx.rmiConnector.credentialSecrets[%d] must be set" (int $index)) $secretRef }}
+            {{- $_ := required (printf "management.jmx.rmiConnector.credentialSecrets[%d] must be set" $index) $secretRef }}
             <user id="$env.LS_RMI_CREDENTIAL_{{ $secretRef | upper | replace "-" "_" }}_USER" password="$env.LS_RMI_CREDENTIAL_{{ $secretRef | upper | replace "-" "_"}}_PASSWORD" />
           {{- end }}
         {{- else}}
@@ -1261,10 +1307,10 @@ Render the Lightstreamer configuration file.
             -->
         {{- end }}
       {{- end }}
-    {{- end }} {{/* rmiConnector */}}
+    {{- end }} {{/* of .rmiConnector */}}
         </rmi_connector>
 
-        <!-- Optional. Enables Sun/Oracle's JMXMP connector.
+        <!-- Optional. Enables Sun/Oracle's JMXMP Connector.
              The connector is supported by the Server only if Sun/Oracle's JMXMP
              implementation library is added to the Server classpath;
              see README.TXT in the JMX SDK for details.
@@ -1309,12 +1355,11 @@ Render the Lightstreamer configuration file.
              are continuously created and closed. For this reason, the support is
              disabled by default.
              Default: Y. -->
-    {{- if .sessionMbeanAvailability }}
-      {{- $sessionAvailabilityMap := dict "active" "N" "inactive" "Y" "sampled_statistics_only" "sampled_statistics_only" -}}
-      {{- if not (mustHas .sessionMbeanAvailability (keys $sessionAvailabilityMap)) }}
-        {{- fail (printf "management.jmx.sessionMbeanAvailability must be one of: %s" (keys $sessionAvailabilityMap)) }}
+    {{- if not (quote .sessionMbeanAvailability | empty) }}
+      {{- if not (mustHas .sessionMbeanAvailability (list "Y" "N" "sampled_statistics_only")) }}
+        {{- fail (printf "management.jmx.sessionMbeanAvailability must be one of: \"Y\", \"N\", \"sampled_statistics_only\"") }}
       {{- end }}
-        <disable_session_mbeans>{{ get $sessionAvailabilityMap .sessionMbeanAvailability }}</disable_session_mbeans>
+        <disable_session_mbeans>{{ .sessionMbeanAvailability }}</disable_session_mbeans>
     {{- else }}
         <!--
         <disable_session_mbeans>N</disable_session_mbeans>
@@ -1334,10 +1379,15 @@ Render the Lightstreamer configuration file.
              - N: all list properties are enabled; in some cases, their value
                   may be an extremely long list; consider, for instance,
                   'CurrentSessionList' in the ResourceMBean.
-             Default: N. -->
-    {{- $enableLongListProperties := not (eq .enableLongListProperties false) }}
-        <disable_long_list_properties>{{ $enableLongListProperties | ternary "N" "Y"}}</disable_long_list_properties>
-  {{- end }}
+             Default: Y. -->
+    {{- if not (quote .enableLongListProperties | empty )}}
+        <disable_long_list_properties>{{ .enableLongListProperties | ternary "N" "Y"}}</disable_long_list_properties>
+    {{- else }}
+        <!--
+        <disable_long_list_properties>N</disable_long_list_properties>
+        -->
+    {{- end }}
+  {{- end }} {{/* of .jmx */}}
     </jmx>
 
     <!-- Optional. Startup check that the conditions for the correct working
@@ -1353,11 +1403,21 @@ Render the Lightstreamer configuration file.
               in other ways. The provided installation scripts also close
               the Server without resorting to the "stop" script.
          Default: N. -->
-    <ensure_stopping_service>{{ .enableStoppingServiceCheck | default false | ternary "Y" "N" }}</ensure_stopping_service>
+  {{- if not (quote .enableStoppingServiceCheck | empty) }}   
+    <ensure_stopping_service>{{ .enableStoppingServiceCheck | ternary "Y" "N" }}</ensure_stopping_service>
+  {{- else }}
+    <!--
+    <ensure_stopping_service>Y</ensure_stopping_service>
+    -->
+  {{- end }}
+
+    {{- with required "management.dashboard must be set" .dashboard }}
+      {{- $_ := set . "enabled" (not (eq .enabled false)) }}
+      {{- if .enabled }}
 
     <!-- Optional. Configuration of the Monitoring Dashboard.
          The dashboard is a webapp whose pages are embedded in Lightstreamer
-         Server and supplied by the internal web server. The main page has
+         Server and supplied by the Internal Web Server. The main page has
          several tabs, which provide basic monitoring statistics in graphical
          form; the last one shows the newly introduced JMX Tree,
          which enables JMX data view and management from the browser.
@@ -1380,9 +1440,9 @@ Render the Lightstreamer configuration file.
          Data Adapter. On the other hand, access restrictions to a monitoring
          Data Adapter instance embedded in a custom Adapter Set is only managed
          by the custom Metadata Adapter included. -->
-    <dashboard>
-  {{- with required "management.dashboard must be set" .dashboard }}
-    {{- if .enabled }}
+    <dashboard>    
+
+        {{- with required "management.dashboard.jmxTree must be set" .jmxTree }}
 
         <!-- Optional. Enabling of the requests for the JMX Tree page, which is
              part of the Monitoring Dashboard.
@@ -1396,9 +1456,124 @@ Render the Lightstreamer configuration file.
                   the credentials supplied and the server socket in use; the
                   dashboard tab will just show a "disabled page" notification.
              Default: N. -->
+          {{- $jmxTreeEnabled := not (eq .enabled false) }}
+          <jmxtree_enabled>{{ $jmxTreeEnabled | ternary "Y" "N" }}</jmxtree_enabled>
 
-      {{- $enableJmxTree := not (eq .enableJmxTree false) }}
-        <jmxtree_enabled>{{ $enableJmxTree | ternary "Y" "N" }}</jmxtree_enabled>
+          {{- if $jmxTreeEnabled }}
+            {{- with .sessionMbeans }}
+
+        <!-- Optional (only effective if <jmxtree_enabled> is Y).
+             Puts a limit to the support in the JMX Tree page of session-related
+             mbeans, the ones identified by type="Session", which are one per Session.
+             The support for session-related mbeans in the JMX Tree page can pose
+             a significant overload, especially on the browser and the network,
+             when many sessions are active. For this reason, the default value is low.
+             Only non-negative numbers are allowed, otherwise the default is applied.
+             Configuring unlimited support is not allowed.
+             This is the server-side limit. However, the JMX Tree page requests its own
+             limit, possibly lower, that can be set by interacting with the page.
+             The limit specified by the page upon loading is determined by the optional
+             "initial" attribute. Anyway, the applied limit is bound by the server-side
+             upper limit. The attribute's default is 100 (unless bound by the server-side
+             upper limit as well).
+             Note that, by default, the creation of session-related mbeans is also
+             disabled in the first place. See <disable_session_mbeans> under <jmx>.
+             Default: 100. -->
+              {{- $maxSessionMbeans := int ((quote .max | empty) | ternary 100 .max) }}
+              {{- $initialSessionMbeans := int ((quote .initial | empty) | ternary 100 .initial) }}
+        <jmxtree_max_session_mbeans initial="{{ $initialSessionMbeans }}">{{ $maxSessionMbeans }}</jmxtree_max_session_mbeans>
+            {{- end }} {{/* of. sessionMbeans */}}
+
+            {{- with required ("management.dashboard.jmxTree.hawtio must be set") .hawtio }}
+
+        <!-- Mandatory if <jmxtree_enabled> is Y.
+             Configuration of the implementation of the JMX Tree, which is based
+             on an embedded "hawtio" service. -->
+        <hawtio>
+
+            <!-- Mandatory if <jmxtree_enabled> is Y.
+                 Listening port to be opened by the hawtio service.
+                 This port is only used internally to communicate with the hawtio
+                 service. It only accepts requests from the local host, but it
+                 should not be made accessible from outside the host anyway. -->
+            <internal_port>{{ int (required ("management.dashboard.jmxTree.hawtio.internalPort must be set") .internalPort)}}</internal_port>
+
+              {{- with .mBeanRefreshMillis }}
+
+            <!-- Optional.
+                 Puts a lower limit to the refresh time applied by the hawtio front-end
+                 to update the properties of the MBean currently displayed.
+                 Only positive numbers are allowed, otherwise the default is applied.
+                 Disabling the refresh is not supported.
+                 This is the server-side limit. However, the JMX Tree page specifies
+                 its own refresh time, possibly longer, that can be set by interacting
+                 with the page. The time specified by the page upon loading is determined
+                 by the optional "initial" attribute. Anyway, the applied refresh time
+                 is bound by the server-side lower limit. The attribute's default is 5000
+                 (unless bound by the server-side lower limit as well).
+                 Default: 5000. -->
+                {{- $minMbeanRefreshTime := int ((quote .min | empty) | ternary 5000 .min) }}
+                {{- $initialMbeanRefreshTime := int ((quote .initial | empty) | ternary 5000 .initial) }}
+            <min_mbean_refresh_millis initial="{{ $initialMbeanRefreshTime }}">{{ $minMbeanRefreshTime }}</min_mbean_refresh_millis>
+              {{- end }} {{/* of .mBeanRefreshMillis */}}
+
+        </hawtio>
+            {{- end }} {{/* of .hawtio */}}
+
+            {{- if .additionalDomains }}
+
+        <!-- Optional and cumulative (but ineffective if "jmxtree_enabled"
+             is set to "N").
+             Requests specific domains of JMX MBeans to be added to the JMX Tree.
+             This allows MBeans available in the JVM (provided by either
+             in-process Adapters, or third-party libraries, or the JVM itself)
+             to be displayed in the JMX Tree. In fact, by default,
+             only the MBeans provided by LS Server and the ones that belong
+             to the JVM's "JMImplementation" domain are displayed. -->
+              {{- range $index, $additionalDomain := .additionalDomains }}
+        <add_jmxtree_domain>{{ required (printf "management.dashboard.jmxTree.additionalDomains[%d] must be set" $index) $additionalDomain }}</add_jmxtree_domain>
+              {{- end }}
+            {{- else }} 
+       <!--
+        <add_jmxtree_domain>com.my_app</add_jmxtree_domain>
+        -->
+        <!--
+        <add_jmxtree_domain>java.lang</add_jmxtree_domain>
+        -->
+            {{- end }} {{/* of .additionalDomains */}}
+
+            {{- with .enforceReferrer }}
+
+        <!-- Optional and only effective if <jmxtree_enabled> is set to "Y".
+             When set to Y, requests to the JMX Tree are accepted only if they
+             specify a Referrer (i.e. a "referer" http header) that indicates
+             that the request originates from actions performed within the
+             JMX Tree pages or, more generally, the Monitoring Dashboard.
+             This mechanism helps mitigate XSS attacks triggered by external links.
+             However, enabling this check may block legitimate requests, including:
+             - Requests issued by non-browser tools that do not set the Referrer
+               (although this is not the expected use of the JMX Tree);
+             - Requests from clients with privacy or security settings that hide
+               the Referrer;
+             - Requests passing through load balancers or proxies that modify
+               the request url;
+             - Requests to specific pages of the JMX Tree issued manually,
+               instead of through the Monitoring Dashboard or JMX Tree page.
+             Default: Y
+             The "support_TLS_termination" attribute addresses the specific case
+             of requests passing through a proxy performing TLS termination.
+             Such requests would come as HTTP requests with a HTTPS Referrer,
+             hence, if the element is set to Y, they would be refused.
+             However, if this attribute is also set to Y, then they will be
+             accepted, provided that the X-Forwarded-Proto header indicates https.
+             The default of the "support_TLS_termination" attribute is N.
+             It should only be enabled if a proxy operating TLS termination
+             is present and it is correctly configured. -->
+              {{- $enforceEnabled:= not (eq .enabled false) | ternary "Y" "N" }}
+        <enforce_jmxtree_referrer support_TLS_termination="{{ .enableTlsTermination | default false | ternary "Y" "N"}}">{{ $enforceEnabled }}</enforce_jmxtree_referrer>
+            {{- end }} {{/* of .enforceReferrer */}}
+          {{- end }} {{/* of $jmxTreeEabled */}}
+        {{- end }} {{/* of .jmxtree */}}
 
         <!-- Optional. Enabling of the access to the Monitoring Dashboard
              pages without credentials.
@@ -1411,7 +1586,8 @@ Render the Lightstreamer configuration file.
                   If no "user" elements are defined, the Monitoring Dashboard
                   will not be accessible in any way.
              Default: N. -->
-      {{- $enablePublicAccess := not (eq .enablePublicAccess false) }}
+        {{- $enablePublicAccess := not (eq .enablePublicAccess false) }}
+        {{- $_ := set . "enablePublicAccess" $enablePublicAccess }}
         <public>{{ $enablePublicAccess | ternary "Y" "N" }}</public>
 
         <!-- Optional and cumulative (but ineffective if "public" is set to "Y").
@@ -1420,20 +1596,20 @@ Render the Lightstreamer configuration file.
              The optional "jmxtree_visible" attribute (whose default is "Y")
              allows for restriction of the access to the JMX Tree on a user basis;
              it is only effective if <jmxtree_enabled> is set to "Y". -->
-      {{- if and .credentials (not .enablePublicAccess) }}
-        {{- range $credential := .credentials }}
-          {{- $secretRef := required "management.dashboard.credentials[].secretRef must be set" ($credential).secretRef }}
-          {{- $enableJmxTreeVisibility := not (eq $credential.enableJmxTreeVisibility false) }}
+        {{- if and .credentials (not $enablePublicAccess) }}
+          {{- range $index, $credential := .credentials }}
+            {{- $secretRef := required (printf "management.dashboard.credentials[%d].secretRef must be set" $index) ($credential).secretRef }}
+            {{- $enableJmxTreeVisibility := not (eq $credential.enableJmxTreeVisibility false) }}
         <user id="$env.LS_DASHBOARD_CREDENTIAL_{{ $credential.secretRef | upper | replace "-" "_" }}_USER" password="$env.LS_DASHBOARD_CREDENTIAL_{{ .secretRef | upper | replace "-" "_"}}_PASSWORD" jmxtree_visible={{ $enableJmxTreeVisibility | ternary "Y" "N" | quote }} />
-        {{- end }}
-      {{- else}}
+          {{- end }}
+        {{- else}}
         <!--
         <user id="put_your_dashboard_user_here" password="put_your_dashboard_password_here" />
         -->
         <!--
         <user id="other_user" password="other_password" jmxtree_visible="N" />
         -->
-      {{- end }}
+        {{- end }}
 
         <!-- Optional. Enabling of the access to the Monitoring Dashboard pages
              through all server sockets. Can be one of the following:
@@ -1449,7 +1625,7 @@ Render the Lightstreamer configuration file.
              Adapter Set to also become unavailable from that socket. This does not
              affect in any way the special "MONITOR" Data Adapter.
              Default: N. -->
-      {{- $enableAvailabilityOnAllServers := not (eq .enableAvailabilityOnAllServers false) }}
+        {{- $enableAvailabilityOnAllServers := not (eq .enableAvailabilityOnAllServers false) }}
         <available_on_all_servers>{{ $enableAvailabilityOnAllServers | ternary "Y" "N" }}</available_on_all_servers>
 
         <!-- Optional and cumulative (but ineffective if "available_on_all_servers"
@@ -1460,13 +1636,14 @@ Render the Lightstreamer configuration file.
              The optional "jmxtree_visible" attribute (whose default is "Y")
              allows for restriction of the access to the JMX Tree on a TCP port
              basis; it is only effective if <jmxtree_enabled> is set to "Y". -->
-      {{- if not $enableAvailabilityOnAllServers }}
-        {{- range $index, $value := .availableOnServers }}
-          {{- include "lightstreamer.configuration.servers.validateServerRef" (list $ (printf "management.dashboard.availableOnServers[%d].serverRef" (int $index)) $value.serverRef) }}
-          {{- $serverRef := (get $.Values.servers $value.serverRef).name }}
-          {{- $enableJmxTreeVisibility := not (eq $value.enableJmxTreeVisibility false) }}
-        <available_on_server name={{ $serverRef | quote }} jmxtree_visible={{ $enableJmxTreeVisibility | ternary "Y" "N" | quote }} />
-        {{- else }}
+        {{- if and (not $enableAvailabilityOnAllServers) .availableOnServers }}
+          {{- range $index, $value := .availableOnServers }}
+            {{- include "lightstreamer.configuration.servers.validateServerRef" (list $ (printf "management.dashboard.availableOnServers[%d].serverRef" (int $index)) $value.serverRef) }}
+            {{- $serverRef := (get $.Values.servers $value.serverRef).name }}
+            {{- $enableJmxTreeVisibility := not (eq $value.enableJmxTreeVisibility false) }}
+        <available_on_server name="{{ $serverRef }}" jmxtree_visible="{{ $enableJmxTreeVisibility | ternary "Y" "N" }}" />
+          {{- end }}
+        {{- else}}
         <!--
         <available_on_server name="Lightstreamer HTTPS Server" />
         -->
@@ -1474,21 +1651,20 @@ Render the Lightstreamer configuration file.
         <available_on_server name="Lightstreamer HTTP Server" jmxtree_visible="N" />
         -->
         {{- end }}
-      {{- end }}
 
         <!-- Optional. URL path to map the Monitoring Dashboard pages to.
              An absolute path must be specified.
              Default: /dashboard -->
-      {{- if .urlPath }}
-        {{ if not (hasPrefix "/" .urlPath) }}
-          {{ printf "management.dashboard.urlPath must start with a /" | fail }}
-        {{ end }}
+        {{- if not (quote .urlPath | empty) }}
+          {{- if not (hasPrefix "/" .urlPath) }}
+            {{ printf "management.dashboard.urlPath must start with a /" | fail }}
+          {{- end }}        
         <dashboard_url_path>{{ .urlPath }}</dashboard_url_path>
-      {{- else }}
+        {{- else }}
         <!--
         <dashboard_url_path>/my_dashboard</dashboard_url_path>
         -->
-      {{- end }}
+        {{- end }}
 
         <!-- Optional. Enabling of the reverse lookup on Client IPs and inclusion
              of the Client hostnames while monitoring client activity.
@@ -1502,12 +1678,19 @@ Render the Lightstreamer configuration file.
              - N: no reverse lookup is performed and the Client hostname is not
                   included on Client activity monitoring.
              Default: N. -->
+        {{- if not (quote .enableHostnameLookup | empty )}}  
         <enable_hostname_lookup>{{ .enableHostnameLookup | default false | ternary "Y" "N" }}</enable_hostname_lookup>
-    {{- end }} 
-  {{ end }} {{/* dashboard */}}
-    </dashboard>
+        {{- else }}
+        <!--
+        <enable_hostname_lookup>Y</enable_hostname_lookup>
+        -->
+        {{- end }}
+    </dashboard> 
+      {{- end }} {{/* .enabled */}}
+    {{- end }} {{/* dashboard */}}
+    
+  {{- with .healthCheck }}
 
-  {{- with required "management.healthCheck must be set" .healthCheck }}
     <!-- Optional. Configuration of the "/lightstreamer/healthcheck" request
          url, which allows a load balancer to test for Server responsiveness
          to external requests. The Server should always answer to the
@@ -1526,31 +1709,86 @@ Render the Lightstreamer configuration file.
                   sockets specified in the "available_on_server" elements,
                   if any.
              Default: N. -->
-      {{- if (quote .enableAvailabilityOnAllServers | empty) }}
-        <!--
-        <available_on_all_servers>Y</available_on_all_servers>
-        -->
-      {{- else }}
-        <available_on_all_servers>{{ .enableAvailabilityOnAllServers | ternary "Y" "N" }}</available_on_all_servers>
-      {{- end }}
+        <available_on_all_servers>{{ .enableAvailabilityOnAllServers | default false | ternary "Y" "N" }}</available_on_all_servers>
 
         <!-- Optional and cumulative (but ineffective if "available_on_all_servers"
              is set to "Y").
              Specific server sockets for which healthcheck requests can be issued,
              that can be identified through the mandatory "name" attribute. -->
-      {{- if not .enableAvailabilityOnAllServers }}
+      {{- if and (not .enableAvailabilityOnAllServers) .availableOnServers }}
         {{- range $index, $value := .availableOnServers }}
           {{- include "lightstreamer.configuration.servers.validateServerRef" (list $ (printf "management.healthCheck.availableOnServers[%d]" (int $index)) $value) }}
         <available_on_server name={{ (get $.Values.servers $value).name | quote }} />
-        {{- else }}
+        {{- end }}
+      {{- else }}
         <!--
         <available_on_server name="Lightstreamer HTTP Server" />
         -->
-        {{- end }}
       {{- end }}
-      </healthcheck>
-    {{- end }}
-{{- end }}
+
+    </healthcheck>
+  {{- end }}
+
+  {{- with .readinessCheck }}
+
+    <!-- Optional. Configuration of the "/lightstreamer/readiness_check" request
+         url, which allows cluster manager to get a report of the availability
+         of the Adapters currently loaded. The Server should always answer to the
+         request with a json string of the following form:
+            {
+              "SET1" : {
+                "metadataAdapter" : "enabled",
+                "dataAdapters" : {
+                  "DATA1" : "enabled",
+                  "DATA2" : "enabled",
+                  "DATA3" : "disabled"
+                }
+              },
+              "SET2" : {
+                "metadataAdapter" : "enabled",
+                "dataAdapters" : {
+                  "DATA1" : "enabled",
+                  "DATA2" : "disabled"
+                }
+              }
+            }
+         Note that the "disabled" flag is available only for Adapters based on
+         the SDK for Java In-process Adapters version 9.0.0 and above. All the
+         other Adapters are always reported as "enabled". The latter includes
+         all Remote Adapters, also when handled by a Robust Proxy Adapter. Hence,
+         a Robust Proxy Adapter currently disconnected from the Remote counterpart
+         will still be reported as "enabled".
+         Support for clustering is an optional feature, available depending
+         on Edition and License Type. -->
+    <readiness_check>
+
+        <!-- Optional. Enabling of the readiness_check url on all server sockets.
+             Can be one of the following:
+             - Y: readiness_check requests can be issued through all the defined
+                  server sockets;
+             - N: readiness_check requests can be issued only through the server
+                  sockets specified in the "available_on_server" elements,
+                  if any.
+             Default: N. -->
+        <available_on_all_servers>{{ .enableAvailabilityOnAllServers | default false | ternary "Y" "N" }}</available_on_all_servers>
+
+        <!-- Optional and cumulative (but ineffective if "available_on_all_servers"
+             is set to "Y").
+             Specific server sockets for which readiness_check requests can be issued,
+             that can be identified through the mandatory "name" attribute. -->
+      {{- if and (not .enableAvailabilityOnAllServers) .availableOnServers }}
+        {{- range $index, $value := .availableOnServers }}
+          {{- include "lightstreamer.configuration.servers.validateServerRef" (list $ (printf "management.healthCheck.availableOnServers[%d]" (int $index)) $value) }}
+        <available_on_server name={{ (get $.Values.servers $value).name | quote }} />
+        {{- end }}
+      {{- else }}
+        <!--
+        <available_on_server name="Lightstreamer HTTP Server" />
+        -->
+      {{- end }}
+    </readiness_check>
+  {{- end }}
+{{- end }} {{/* .Values.management */}}
 
 <!--
   =========================
@@ -1618,18 +1856,17 @@ Render the Lightstreamer configuration file.
          based on the prefix, even if the prefix is not stripped off by the proxy.
          However, this support does not apply to the Internal Web Server
          and to the Monitoring Dashboard. -->
-    {{- if .serviceUrlPrefixes }}
-      {{- range .serviceUrlPrefixes }}
-    <service_url_prefix>{{ . }}</service_url_prefix>
-      {{- end }}
-    {{- else }}
+
+  {{- range $index, $url := .serviceUrlPrefixes }}
+    <service_url_prefix>{{ required (printf "pushSession.serviceUrlPrefixes[%d] must be set" $index) $url }}</service_url_prefix>
+  {{- else }}
     <!--
     <service_url_prefix>/server1</service_url_prefix>
     -->
     <!--
     <service_url_prefix>/server1ws</service_url_prefix>
     -->
-    {{- end }}
+  {{- end }}
 
     <!-- Mandatory. Maximum size of HTTP streaming responses; when the maximum size is
          reached, the connection is closed but the session remains active and
@@ -1649,11 +1886,10 @@ Render the Lightstreamer configuration file.
          The lowest possible value for the content-length is decided by the Server,
          so as to allow the connection to send a minimal amount of data. -->
     <content_length>
-    {{- with .contentLength }}
 
         <!-- Mandatory for this block. Define the maximum size of HTTP streaming
              responses (and the upper limit for polling responses). -->
-        <default>{{ int (required "pushSession.contentLength.default must be set" .default) }}</default>
+        <default>{{ int (required "pushSession.contentLength.default must be set" (.contentLength).default) }}</default>
 
         <!-- Optional and cumulative. Through the "value" attribute, defines the
              HTTP content-length to be used for stream/poll responses (overriding
@@ -1661,22 +1897,21 @@ Render the Lightstreamer configuration file.
              the subelements are met.
              Multiple occurrences of "special_case" are evaluated in sequence,
              until one is enabled. -->
-        {{- if .specialCases }}
-          {{- range .specialCases }}
-        <special_case value={{ required "pushSession.specialCases[].value must be set" .value | quote }}>
+  {{- range $index, $specialCase := .contentLength.specialCases }}
+        <special_case value={{ int (required (printf "pushSession.specialCases[%d].value must be set" $index) ($specialCase).value) }}>
             <!-- Mandatory and cumulative. Defines a condition on the user-agent
                  supplied with the request, which should include the string
                  specified through the "contains" attribute. -->
-            {{- if empty .userAgentContains }}
-               {{- fail "pushSession.specialCases[].userAgentContains must be set" }}
-            {{- else }}
-               {{- range .userAgentContains }}
-            <user_agent contains={{ . | quote }} />
-               {{- end }}
-            {{- end }}
+    {{- $userAgentContains := $specialCase.userAgentContains | default list }}
+    {{- if not (gt (len $userAgentContains) 0) }}           
+      {{- fail (printf "pushSession.contentLength.specialCases[%d].userAgentContains must be set" $index) }}
+    {{- end }}
+    {{- range $userAgentIndex, $userAgent := $userAgentContains}}
+            <user_agent contains="{{ required (printf "pushSession.contentLength.specialCases[%d].userAgentContains[%d] must be set" $index $userAgentIndex) $userAgent }}" />
+     {{- end }}
         </special_case>
-          {{- end }}
-        {{- else }}
+     
+  {{- else }}
         <!--
         <special_case value="100000">
         -->
@@ -1689,8 +1924,7 @@ Render the Lightstreamer configuration file.
         <!--
         </special_case>
         -->
-        {{- end }}
-    {{- end }}
+  {{- end }} {{/* .contentLength.specialCases */}}
     </content_length>
 
     <!-- Optional. Maximum lifetime allowed for single HTTP streaming responses;
@@ -1705,12 +1939,12 @@ Render the Lightstreamer configuration file.
          If not specified, no limit is set; the streaming session duration
          will be limited only by the "content_length" setting and, at least,
          by the keep-alive message activity. -->
-    {{- if (quote .maxStreamingMillis | empty) }}
+    {{- if not (quote .maxStreamingMillis | empty) }}
+    <max_streaming_millis>{{ int .maxStreamingMillis }}</max_streaming_millis>    
+    {{- else }}
     <!--
     <max_streaming_millis>480000</max_streaming_millis>
     -->
-    {{- else }}
-    <max_streaming_millis>{{ int .maxStreamingMillis }}</max_streaming_millis>
     {{- end }}
 
     <!-- Optional. Enabling the use of the "chunked" transfer encoding,
@@ -1751,7 +1985,7 @@ Render the Lightstreamer configuration file.
          of the Server performance. Note that bandwidth control and output
          statistics are still based on the non-compressed content.
          Default: AUTO. -->
-    {{- if .useCompression}}
+    {{- if not (quote .useCompression | empty) }}
       {{- if not (has .useCompression (list "Y" "N" "AUTO")) }}
         {{- fail "pushSession.useCompression must be one of: \"Y\", \"N\", \"AUTO\"" }}
       {{- end }}
@@ -1767,12 +2001,12 @@ Render the Lightstreamer configuration file.
          that no benefit would come. It is not applied to streaming responses,
          which are compressed incrementally.
          Default: 1024 bytes. -->
-    {{- if (quote .compressionThreshold | empty) }}
+    {{- if not (quote .compressionThreshold | empty) }}
+    <compression_threshold>{{ int .compressionThreshold }}</compression_threshold>
+    {{- else }}
     <!--
     <compression_threshold>0</compression_threshold>
     -->
-    {{- else }}
-    <compression_threshold>{{ int .compressionThreshold }}</compression_threshold>
     {{- end }}
 
     <!-- Optional. Configuration of the content-type to be specified in the
@@ -1784,12 +2018,12 @@ Render the Lightstreamer configuration file.
          that may otherwise buffer streaming connections.
          - N: the server will specify the text/plain content-type.
          Default: Y. -->
-    {{- if (quote .enableEnrichedContentType | empty) }}
+    {{- if not (quote .enableEnrichedContentType | empty) }}
+    <use_enriched_content_type>{{ .enableEnrichedContentType | ternary "Y" "N" }}</use_enriched_content_type>    
+    {{- else }}
     <!--
     <use_enriched_content_type>Y</use_enriched_content_type>
     -->
-    {{- else }}
-    <use_enriched_content_type>{{ .enableEnrichedContentType | ternary "Y" "N" }}</use_enriched_content_type>
     {{- end }}
 
     <!-- Optional. Maximum size for any ItemEventBuffer. It applies to RAW and
@@ -1798,7 +2032,7 @@ Render the Lightstreamer configuration file.
          buffer size that can be granted by the Metadata Adapter or requested
          through the subscription parameters. Similarly, it poses an upper
          limit to the length of the snapshot that can be sent in DISTINCT mode,
-         regardless of the value returned by getDistinctSnapshotLength.
+         regardless of the value returned by "getDistinctSnapshotLength".
          See the General Concepts document for details on when these buffers
          are used. An excessive use of these buffers may give rise to a
          significant memory footprint; to prevent this, a lower size limit
@@ -1811,13 +2045,13 @@ Render the Lightstreamer configuration file.
          LightstreamerLogger.pump logger at INFO level, if a low buffer size
          limit is set, it is advisable also setting this logger at WARN level.
          Aggregate statistics on lost updates are also provided by the JMX
-         interface (if available) and by the Internal Monitor. -->
-    {{- if (quote .maxBufferSize | empty) }}
-    <!--
-    <max_buffer_size>1000</max_buffer_size>
-    -->
+         interface (if available) and by the Internal Monitor.
+         A zero (or negative) value poses no limits (i.e. unlimited buffer).
+         Default: unlimited buffer. -->
+    {{- if not (quote .maxBufferSize | empty) }}
+    <max_buffer_size>{{ int .maxBufferSize }}</max_buffer_size>    
     {{- else }}
-    <max_buffer_size>{{ int .maxBufferSize }}</max_buffer_size>
+    <max_buffer_size>1000</max_buffer_size>
     {{- end }}
 
     <!-- Mandatory. Longest time a disconnected session can be kept alive
@@ -1832,7 +2066,8 @@ Render the Lightstreamer configuration file.
          the current streaming connection will be ended and the client
          will be requested to rebind to the session (which triggers the
          previous case). -->
-    <session_timeout_millis>{{ int (required "pushSession.sessionTimeoutMillis must be set" .sessionTimeoutMillis) }}</session_timeout_millis>
+    {{-  $sessionTimeoutMillis := int (required "pushSession.sessionTimeoutMillis must be set" .sessionTimeoutMillis) }}
+    <session_timeout_millis>{{ $sessionTimeoutMillis }}</session_timeout_millis>
 
     <!-- Optional. Longest time a session can be kept alive, after the
          interruption of a connection at network level, waiting for the Client
@@ -1850,12 +2085,10 @@ Render the Lightstreamer configuration file.
          other version were involved, the session would be closed immediately.
          A 0 value also prevents any accumulation of memory.
          Default: 0. -->
-    {{- if (quote .sessionRecoveryMillis | empty) }}
-    <!--
-    <session_recovery_millis>13000</session_recovery_millis>
-    -->
-    {{- else }}
+    {{- if not (quote .sessionRecoveryMillis | empty) }}
     <session_recovery_millis>{{ int .sessionRecoveryMillis }}</session_recovery_millis>
+    {{- else }}
+    <session_recovery_millis>13000</session_recovery_millis>
     {{- end }}
 
     <!-- Optional. Maximum number of bytes of streaming data, already sent
@@ -1867,12 +2100,12 @@ Render the Lightstreamer configuration file.
          if any other version were involved, no data would be kept.
          A 0 value also prevents any accumulation of memory.
          Default: the value configured for "sendbuf". -->
-    {{- if (quote .maxRecoveryLength | empty) }}
+    {{- if not (quote .maxRecoveryLength | empty) }}
+    <max_recovery_length>{{ int .maxRecoveryLength }}</max_recovery_length>
+    {{- else }}    
     <!--
     <max_recovery_length>5000</max_recovery_length>
     -->
-    {{- else }}
-    <max_recovery_length>{{ int .maxRecoveryLength }}</max_recovery_length>
     {{- end }}
 
     <!-- Optional. Maximum size supported for keeping a polling response,
@@ -1885,45 +2118,61 @@ Render the Lightstreamer configuration file.
          A 0 value also prevents any accumulation of memory. On the other
          hand, a value of -1 relieves any limit.
          Default: -1. -->
-    {{- if (quote .maxRecoveryPollLength | empty) }}
+    {{- if not (quote .maxRecoveryPollLength | empty) }}
+    <max_recovery_poll_length>{{ int .maxRecoveryPollLength }}</max_recovery_poll_length>    
+    {{- else }}
     <!--
     <max_recovery_poll_length>0</max_recovery_poll_length>
     -->
-    {{- else }}
-    <max_recovery_poll_length>{{ int .maxRecoveryPollLength }}</max_recovery_poll_length>
     {{- end }}
 
-    <!-- Optional. Longest time the subscriptions currently in place on a
-         session can be kept active after the session has been closed,
-         in order to prevent unsubscriptions from the Data Adapter that would
-         be immediately followed by new subscriptions in case the client
-         were just refreshing the page.
+    {{- with .subscriptionTimeoutConfig }} 
+
+    <!-- Optional. Delay to be applied to unsubscriptions issued by the
+         clients to prevent immediate unsubscription from the Data Adapter
+         (in case an unsubscription is the last one), to allow further
+         subscriptions occurred within short time to resume the item.
+         The setting can be accomplished in two ways, depending on the
+         optional "scope" attribute:
+         - If "ALL", the delay is applied to all unsubscriptions.
+         - If "INTERRUPTION" (the default) the delay is applied only to
+           implicit unsubscriptions caused by the termination of a session
+           (according with the assumption that the client could be just
+           refreshing the page and new subscriptions will follow shortly).
+           If a session is closed after being kept active because of the
+           "session_timeout_millis" or "session_recovery_millis" setting,
+           the accomplished wait is considered as valid also for this
+           subscription wait purpose.
          As a consequence of this wait, some items might temporarily appear
          as being subscribed to, even if no session were using them.
-         If a session is closed after being kept active because of the
-         "session_timeout_millis" or "session_recovery_millis" setting,
-         the accomplished wait is considered as valid also for the
-         subscription wait purpose.
-         Default: the time configured for "session_timeout_millis". -->
-    {{- if (quote .subscriptionTimeoutMillis | empty) }}
-    <!--
-    <subscription_timeout_millis>5000</subscription_timeout_millis>
-    -->
-    {{- else }}
-    <subscription_timeout_millis>{{ int .subscriptionTimeoutMillis }}</subscription_timeout_millis>
+         Default: depends on the "scope" setting:
+         - if "ALL", it is 0;
+         - If "INTERRUPTION" or missing, it is the time configured for
+           "session_timeout_millis". -->
+      {{- $scope := .scope | default "INTERRUPTION" }}
+      {{- if not (mustHas $scope (list "ALL" "INTERRUPTION")) }}
+        {{- fail "pushSession.subscriptionTimeoutConfig.scope must be one of: \"ALL\", \"INTERRUPTION\"" }}
+      {{- end }}
+      {{- $subscriptionTimeoutMillis := .timeoutMillis }}
+      {{- if (quote $subscriptionTimeoutMillis | empty )}}
+          {{- $subscriptionTimeoutMillis = ternary 0 $sessionTimeoutMillis (eq $scope "ALL") }}
+      {{- end}}
+    <subscription_timeout_millis scope="{{ $scope }}">{{ $subscriptionTimeoutMillis }}</subscription_timeout_millis>    
     {{- end }}
 
     <!-- Optional. Timeout used to ensure the proper ordering of client-sent
          messages, within the specified message sequence, before sending them
-         to the Metadata Adapter through notifyUserMessage.
+         to the Metadata Adapter's message-processing method.
          In case a client request is late or does not reach the Server,
          the next request may be delayed until this timeout expires, while
          waiting for the late request to be received; then, the next request
          is forwarded and the missing one is discarded with no further recovery
          and the client application is notified.
+         Note that missing or delayed messages can only occur if the client,
+         for any reason, cannot use websockets and resorts to HTTP.
          Message ordering does not concern the old synchronous interfaces for
-         message submission. Ordering and delaying also does not apply to the
-         special "UNORDERED_MESSAGES" sequence, although, in this case,
+         client message submission. Ordering and delaying also does not apply
+         to the special "UNORDERED_MESSAGES" sequence, although, in this case,
          discarding of late messages is still possible, in order to ensure
          that the client eventually gets a notification.
          A high timeout (as the default one) reduces the discarded messages,
@@ -1932,12 +2181,12 @@ Render the Lightstreamer configuration file.
          a request has got lost and can be used if message dropping is
          acceptable.
          Default: 30000. -->
-    {{- if (quote .missingMessageTimeoutMillis | empty) }}
+    {{- if not (quote .missingMessageTimeoutMillis | empty) }}
+    <missing_message_timeout_millis>{{ int .missingMessageTimeoutMillis }}</missing_message_timeout_millis>    
+    {{- else }}
     <!--
     <missing_message_timeout_millis>1000</missing_message_timeout_millis>
     -->
-    {{- else }}
-    <missing_message_timeout_millis>{{ int .missingMessageTimeoutMillis }}</missing_message_timeout_millis>
     {{- end }}
 
     <!-- Optional. Configuration of the policy adopted for the delivery of
@@ -1968,12 +2217,12 @@ Render the Lightstreamer configuration file.
          Forcing a redundant delivery would simplify the client code in all
          the above cases.
          Default: Y. -->
-    {{- if (quote .enableDeltaDelivery | empty) }}
+    {{- if not (quote .enableDeltaDelivery | empty) }}
+    <delta_delivery>{{ .enableDeltaDelivery | ternary "Y" "N" }}</delta_delivery>    
+    {{- else }}
     <!--
     <delta_delivery>N</delta_delivery>
     -->
-    {{- else }}
-    <delta_delivery>{{ .enableDeltaDelivery | ternary "Y" "N" }}</delta_delivery>
     {{- end }}
 
     <!-- Optional. List of algorithms to be tried by default to perform the
@@ -1990,7 +2239,11 @@ Render the Lightstreamer configuration file.
              values are valid JSON representations;
          - diff_match_patch
              computes the difference with Google's "diff-match-patch" algorithm
-             (the result is then serialized to the custom "TLCP-diff" format).
+             (the result is then serialized to the custom "TLCP-diff" format);
+         - prefix_suffix_diff
+             computes the difference by just taking into consideration any
+             common prefix and/or suffix of the values and expresses the
+             result in the custom "TLCP-diff" format.
          Note that trying "diff" algorithms on unsuitable data may waste
          resources. For this reason, the default algorithm list is empty,
          which means that no algorithm is ever tried by default. The best
@@ -1998,11 +2251,11 @@ Render the Lightstreamer configuration file.
          through the Data Adapter interface.
          Default: an empty list. -->
     {{- if .defaultDiffOrders }}
-      {{- range $key, $diff := .defaultDiffOrders }}
-        {{- if not (has $diff (list "jsonpatch" "diff_match_patch") )}}
-          {{ printf "pushSession.defaultDiffOrders[%d] must be one of: \"jsonpatch\",\"diff_match_patch\"" $key | fail }}
-        {{- end }}
+    {{- range $key, $diff := .defaultDiffOrders }}
+      {{- if not (has $diff (list "jsonpatch" "diff_match_patch" "prefix_suffix_diff") )}}
+        {{ printf "pushSession.defaultDiffOrders[%d] must be one of: \"jsonpatch\",\"diff_match_patch\",\"prefix_suffix_diff\"" $key | fail }}
       {{- end }}
+    {{- end }}
     <default_diff_order>{{ join "," .defaultDiffOrders }}</default_diff_order>
     {{- else }}
     <!--
@@ -2020,14 +2273,15 @@ Render the Lightstreamer configuration file.
          it will always be used, regardless of efficiency reasons. This can
          be leveraged in special application scenarios, when the clients
          require to directly retrieve the updates in the form of JSON Patch
-         differences.
+         differences. Note, however, that whenever some data is not compliant
+         with JSON Patch, the full value will still be sent.
          Default: 50. -->
-    {{- if (quote .jsonPatchMinLength | empty) }}
+    {{- if not (quote .jsonPatchMinLength | empty) }}
+    <jsonpatch_min_length>{{ int .jsonPatchMinLength }}</jsonpatch_min_length>    
+    {{- else }}
     <!--
     <jsonpatch_min_length>500</jsonpatch_min_length>
     -->
-    {{- else }}
-    <jsonpatch_min_length>{{ int .jsonPatchMinLength }}</jsonpatch_min_length>
     {{- end }}
 
     <!-- Optional. Configuration of the update management for items subscribed to
@@ -2048,12 +2302,12 @@ Render the Lightstreamer configuration file.
          No item-level choice is possible. However, setting this flag as Y
          allows for backward compatibility to versions before 4.0, if needed.
          Default: N. -->
-    {{- if (quote .preserveUnfilteredCommandOrdering | empty) }}
+    {{- if not (quote .preserveUnfilteredCommandOrdering | empty) }}
+    <preserve_unfiltered_command_ordering>{{ .preserveUnfilteredCommandOrdering | ternary "Y" "N" }}</preserve_unfiltered_command_ordering>    
+    {{- else }}
     <!--
     <preserve_unfiltered_command_ordering>Y</preserve_unfiltered_command_ordering>
     -->
-    {{- else }}
-    <preserve_unfiltered_command_ordering>{{ .preserveUnfilteredCommandOrdering | ternary "Y" "N" }}</preserve_unfiltered_command_ordering>
     {{- end }}
 
     <!--
@@ -2072,12 +2326,15 @@ Render the Lightstreamer configuration file.
                  setting "delta_delivery" as N may denote the need for
                  reducing permanent per-session memory.
          Default: AUTO. -->
-    {{- if (quote .reusePumpBuffers | empty) }}
-    <!--
-    <reuse_pump_buffers>Y</reuse_pump_buffers>
-    -->
-    {{- else }}
+    {{- if not (quote .reusePumpBuffers | empty) }}
+      {{- if not (has .reusePumpBuffers (list "Y" "N" "AUTO")) }}
+        {{- fail "pushSession.reusePumpBuffers must be one of: \"Y\", \"N\", \"AUTO\"" }}
+      {{- end }}
     <reuse_pump_buffers>{{ .reusePumpBuffers }}</reuse_pump_buffers>
+    {{- else }}
+    <!--
+    <reuse_pump_buffers>N</reuse_pump_buffers>
+    -->
     {{- end }}
 
     <!-- STREAMING MODE -->
@@ -2103,12 +2360,12 @@ Render the Lightstreamer configuration file.
          Higher values should make sense only if the expected throughput is
          high and responsive updates are desired.
          Default: 1600. -->
-    {{- if (quote .sendbuf | empty) }}
+    {{- if not (quote .sendbuf | empty) }}
+    <sendbuf>{{ int .sendbuf }}</sendbuf>    
+    {{- else }}
     <!--
     <sendbuf>5000</sendbuf>
     -->
-    {{- else }}
-    <sendbuf>{{ int .sendbuf }}</sendbuf>
     {{- end }}
 
     <!-- Optional. Longest delay that the Server is allowed to apply to
@@ -2118,12 +2375,10 @@ Render the Lightstreamer configuration file.
          maximum update frequency for items not subscribed with unlimited
          or unfiltered frequency.
          Default: 0. -->
-    {{- if (quote .maxDelayMillis | empty) }}
-    <!--
-    <max_delay_millis>30</max_delay_millis>
-     -->
+    {{- if not (quote .maxDelayMillis | empty) }}
+    <max_delay_millis>{{ int .maxDelayMillis }}</max_delay_millis>    
     {{- else }}
-    <max_delay_millis>{{ int .maxDelayMillis }}</max_delay_millis>
+    <max_delay_millis>30</max_delay_millis>
     {{- end }}
 
     <!-- Mandatory. Longest write inactivity time allowed on the socket.
@@ -2139,13 +2394,9 @@ Render the Lightstreamer configuration file.
          setting). This can be useful if many sessions subscribe to the same
          items and updates for these items are rare, to avoid that also the
          keepalives for these sessions occur at the same times. -->
-    {{- if empty .defaultKeepaliveMillis }}
-      {{- fail "pushSession.defaultKeepaliveMillis must be set" }}
-    {{- else }}
-      {{- with .defaultKeepaliveMillis }}
-    <default_keepalive_millis{{ if not (quote .randomize | empty) }} randomize={{ .randomize | ternary "Y" "N" | quote }}{{- end }}>{{ int (required "pushSession.defaultKeepaliveMillis.value must be set" .value) }}</default_keepalive_millis>
-      {{- end }}
-    {{- end }}
+    {{- $defaultKeepaliveMillis := int (required "pushSession.defaultKeepaliveMillis.value must be set" (.defaultKeepaliveMillis).value) }}
+    {{- $randomize := .defaultKeepaliveMillis.randomize | default false | ternary "Y" "N" }}
+    <default_keepalive_millis randomize="{{ $randomize }}">{{ $defaultKeepaliveMillis }}</default_keepalive_millis>
 
     <!-- Mandatory. Lower bound to the keep-alive time requested by a Client.
          Must be lower than the "default_keepalive_millis" setting. -->
@@ -2179,13 +2430,9 @@ Render the Lightstreamer configuration file.
          inactivity time. This can be useful if many sessions subscribe to
          the same items and updates for these items are rare, to avoid that
          also the following polls for these sessions occur at the same times. -->
-    {{- if empty .maxIdleMillis }}
-      {{- fail "pushSession.maxIdleMillis must be set" }}
-    {{- else }}
-      {{- with .maxIdleMillis }}
-    <max_idle_millis{{ if not (quote .randomize | empty) }} randomize={{ .randomize | ternary "Y" "N" | quote }}{{- end }}>{{ int (required "pushSession.maxIdle.value must be set" .value) }}</max_idle_millis>
-      {{- end }}
-    {{- end }}
+    {{- $maxIdleMillis := int (required "pushSession.maxIdleMillis.value must be set" (.maxIdleMillis).value) }}
+    {{- $randomize := .maxIdleMillis.randomize | default false | ternary "Y" "N" }}
+    <max_idle_millis randomize="{{ $randomize }}">{{ $maxIdleMillis }}</max_idle_millis>
 
     <!-- Optional. Shortest time allowed between consecutive polls on a
          session. If the client issues a new polling request and less than
@@ -2200,14 +2447,14 @@ Render the Lightstreamer configuration file.
          on the Server, this setting can be used as a protection, to limit the
          polling frequency.
          Default: 0. -->
-    {{- if (quote .minInterPollMillis | empty) }}
+    {{- if not (quote .minInterPollMillis | empty) }}
+    <min_interpoll_millis>{{ int .minInterPollMillis }}</min_interpoll_millis>    
+    {{- else }}
     <!--
     <min_interpoll_millis>1000</min_interpoll_millis>
     -->
-    {{- else }}
-    <min_interpoll_millis>{{ int .minInterPollMillis }}</min_interpoll_millis>
     {{- end }}
-{{- end }}
+{{- end }} {{/* of .Values.pushSession */}}
 
 <!--
   ======================================
@@ -2226,8 +2473,7 @@ Render the Lightstreamer configuration file.
          by your license, please see the License tab of the Monitoring Dashboard
          (by default, available at /dashboard). -->
     <mpn>
-{{- if and .Values.mpn (.Values.mpn).enabled }}
-{{- with .Values.mpn }}
+{{- with required "mpn must be set" .Values.mpn }}
 
         <!-- Optional. MPN module master switch. If N, the MPN module will
              not start in any case, and all requests related to mobile push
@@ -2240,6 +2486,8 @@ Render the Lightstreamer configuration file.
              Default: N. -->
         <enabled>{{ .enabled | default false | ternary "Y" "N"}}</enabled>
 
+  {{- if .enabled }}
+   
         <!-- Optional. Specifies the root path of the web service URL to be
              invoked by the client application on a Safari browser to enable
              Web Push Notifications. Currently, the latter is achieved by invoking
@@ -2248,29 +2496,29 @@ Render the Lightstreamer configuration file.
              is reserved and the Server identifies these
              special requests and processes them as required. Setting the internal
              web server enabling setting as "Y" is not needed for this;
-             note that if the internal web server is enabled, the processing
+             note that if the Internal Web Server is enabled, the processing
              of this path is different from the processing of the other URLs.
              Default: /apple_web_service. -->
-  {{- if .appleWebServicePath }}
+    {{- if not (quote .appleWebServicePath | empty) }}
         <apple_web_service_path>{{ .appleWebServicePath }}</apple_web_service_path>
-  {{- else }}
+    {{- else }}
         <!--
         <apple_web_service_path>/applewebservice</apple_web_service_path>
         -->
-  {{- end }}
+    {{- end }}
 
         <!-- Optional. Specifies the name of the built-in data adapter that client
              SDKs may subscribe to to obtain the current status of MPN devices
              and subscriptions. This data adapter is automatically added
              to all configured Adapter Sets in an MPN-enabled Server.
              Default: MPN_INTERNAL_DATA_ADAPTER. -->
-  {{- if .internalDataAdapter }}
-        <internal_data_adapter>MPN_ADAPTER</internal_data_adapter>
-  {{- else}}
+    {{- if not (quote .internalDataAdapter | empty) }}
+        <internal_data_adapter>{{ .internalDataAdapter }}</internal_data_adapter>
+    {{- else}}
         <!--
         <internal_data_adapter>MPN_ADAPTER</internal_data_adapter>
         -->
-  {{- end }}
+    {{- end }}
 
         <!-- Mandatory if <enabled> is Y. Hibernate configuration file path.
              The MPN module uses an Hibernate-mapped database to make the
@@ -2285,13 +2533,13 @@ Render the Lightstreamer configuration file.
              timeout occurs during a request processing, the client receives
              a specific error.
              Default: 15000. -->
-  {{- if not (quote .requestTimeoutMillis | empty) }}
+    {{- if not (quote .requestTimeoutMillis | empty) }}
         <request_timeout_millis>{{ int .requestTimeoutMillis }}</request_timeout_millis>
-  {{- else }}
+    {{- else }}
         <!--
         <request_timeout_millis>15000</request_timeout_millis>
         -->
-  {{- end }}
+    {{- end }}
 
         <!-- Optional. Interval between health checks on the database.
              During this health check, a number of tasks are carried out:
@@ -2299,14 +2547,13 @@ Render the Lightstreamer configuration file.
              subscriptions updated by other module instances, and
              deletion of abandoned subscriptions.
              Default: 5000. -->
-
-  {{- if not (quote .moduleCheckPeriodMillis | empty) }}
+    {{- if not (quote .moduleCheckPeriodMillis | empty) }}
         <module_check_period_millis>{{ int .moduleCheckPeriodMillis }}</module_check_period_millis>
-  {{- else }}
+    {{- else }}
         <!--
         <module_check_period_millis>5000</module_check_period_millis>
         -->
-  {{- end }}
+    {{- end }}
 
         <!-- Optional. Timeout for a health check of other modules. If a module
              fails to do its health check for this period of time, other module
@@ -2317,14 +2564,13 @@ Render the Lightstreamer configuration file.
              values of <module_check_period_millis> configured for the various
              instances in the cluster.
              Default: 30000. -->
-  {{- if not (quote .moduleTimeoutMillis | empty) }}
+    {{- if not (quote .moduleTimeoutMillis | empty) }}
         <module_timeout_millis>{{ int .moduleTimeoutMillis }}</module_timeout_millis>
-  {{- else }}
+    {{- else }}
         <!--
         <module_timeout_millis>30000</module_timeout_millis>
         -->
-  {{- end }}
-
+    {{- end }}
 
         <!-- Optional. Enabling of the startup of the module upon Server startup.
              If module startup is prevented, or not yet completed, or completed
@@ -2337,7 +2583,8 @@ Render the Lightstreamer configuration file.
                   if the module startup fails, the Server startup will fail
                   in turn.
                   Otherwise, the Server startup will be blocked only up to the
-                  specified delay. If the delay expires, the Server may start with
+                  specified delay (expressed in milliseconds).
+                  If the delay expires, the Server may start with
                   the module temporarily inactive; moreover, if the module startup
                   eventually fails, the Server will keep running with an inactive
                   module.
@@ -2348,17 +2595,17 @@ Render the Lightstreamer configuration file.
              JMX interface (full JMX features is an optional feature, available
              depending on Edition and License Type).
              Default: Y. -->
-  {{- with .activationOnStartUp }}
-    {{- if (not (quote .enabled | empty)) }}
+    {{- with .activationOnStartUp }}
+      {{- if (not (quote .enabled | empty)) }}
        <activate_on_startup{{ if not (quote .maxDelayMillis | empty) }} max_delay={{ .maxDelayMillis | quote }}{{ end }}>{{ .enabled | ternary "Y" "N" }}</activate_on_startup>
-    {{- else }}
+      {{- else }}
        <activate_on_startup{{ if not (quote .maxDelayMillis | empty) }} max_delay={{ .maxDelayMillis | quote }}{{ end }}>Y</activate_on_startup>
-    {{- end }}
-  {{- else }}
+      {{- end }}
+    {{- else }}
         <!--
         <activate_on_startup max_delay="-1">Y</activate_on_startup>
         -->
-  {{- end }}
+    {{- end }}
 
         <!-- Optional. Enabling of the automatic initialization of a new module
              upon health check failure.
@@ -2370,13 +2617,13 @@ Render the Lightstreamer configuration file.
                   and the Server will keep running with an inactive module.
              See <activate_on_startup> for notes on inactive modules.
              Default: Y. -->
-  {{- if not (quote .enableModuleRecovery | empty) }}
+    {{- if not (quote .enableModuleRecovery | empty) }}
         <module_recovery_enabled>{{ .enableModuleRecovery | ternary "Y" "N" }}</module_recovery_enabled>
-  {{- else }}
+    {{- else }}
         <!--
         <module_recovery_enabled>N</module_recovery_enabled>
         -->
-  {{- end }}
+    {{- end }}
 
         <!-- Optional. Timeout after which an inactive device is
              considered abandoned and is permanently deleted. A device is
@@ -2385,25 +2632,25 @@ Render the Lightstreamer configuration file.
              A suspended device may be resumed with a token change (typically,
              client libraries handle this situation automatically).
              Default: 10080 (7 days). -->
-  {{- if not (quote .deviceInactivityTimeoutMinutes | empty) }}
+    {{- if not (quote .deviceInactivityTimeoutMinutes | empty) }}
         <device_inactivity_timeout_minutes>{{ int .deviceInactivityTimeoutMinutes }}</device_inactivity_timeout_minutes>
-  {{- else }}
+    {{- else }}
         <!--
         <device_inactivity_timeout_minutes>10080</device_inactivity_timeout_minutes>
         -->
-  {{- end }}
+    {{- end }}
 
         <!-- Optional. Periodicity of the device garbage collector. Once every
              this number of minutes, devices that have been inactive for more than
              <device_inactivity_timeout_minutes> are permanently deleted.
              Default: 60 (1 hour). -->
-  {{- if not (quote .collectorPeriodMinutes | empty) }}
+    {{- if not (quote .collectorPeriodMinutes | empty) }}
         <device_collector_period_minutes>{{ int .collectorPeriodMinutes }}</device_collector_period_minutes>
-  {{- else }}
+    {{- else }}
         <!--
         <collector_period_minutes>60</collector_period_minutes>
         -->
-  {{- end }}
+    {{- end }}
 
         <!-- Optional. Sizes of request processor's ("MPN EXECUTOR") thread pool.
              The <max_size> parameter specifies the maximum number of threads
@@ -2416,27 +2663,28 @@ Render the Lightstreamer configuration file.
              Default for <max_size>: 10 threads.
              Default for <max_free>: 0, meaning the pool will not consume
              resources when idle. -->
-  {{- with .executorPool }}
-     <executor_pool>
-     {{- if not (quote .maxSize | empty) }}
+    {{- with .executorPool }}
+        <executor_pool>
+      {{- if not (quote .maxSize | empty) }}
           <max_size>{{ int .maxSize }}</max_size>
-     {{- else }}
+      {{- else }}
+      
           <!-- <max_size>10</max_size> -->
-     {{- end }}
-     {{- if not (quote .maxFree | empty) }}
+      {{- end }}
+      {{- if not (quote .maxFree | empty) }}
           <max_free>{{ int .maxFree }}</max_free>
-     {{- else }}
+      {{- else }}
           <!-- <max_free>0</max_free> -->
-     {{- end }}
+      {{- end }}
         </executor_pool>
-  {{- else }}
+    {{- else }}
         <!--
         <executor_pool>
             <max_size>10</max_size>
             <max_free>0</max_free>
         </executor_pool>
         -->
-  {{- end }}
+    {{- end }}
 
         <!-- Optional. Requests the creation of a specific thread pool,
              "MPN DEVICE HANDLER", specifically dedicated to the handling
@@ -2453,20 +2701,28 @@ Render the Lightstreamer configuration file.
              If the pool is not defined, each "subscribe" call will be managed
              by the thread pool associated with the involved Data Adapter,
              similarly to ordinary sessions. -->
-  {{- with .deviceHandlerPool }}
-    {{- if compact (values .) }}
+    {{- with .deviceHandlerPool }}
+      {{- if compact (values .) }}
         <device_handler_pool>
-    {{- if not (quote .maxSize | empty) }}
+      {{- if not (quote .maxSize | empty) }}
             <max_size>{{ int .maxSize }}</max_size>
-    {{- else }}
+      {{- else }}
             <!-- <max_size>10</max_size> -->
-    {{- end }}
-    {{- if not (quote .maxFree | empty) }}
+      {{- end }}
+      {{- if not (quote .maxFree | empty) }}
             <max_free>{{ int .maxFree }}</max_free>
-    {{- else }}
+      {{- else }}
             <!-- <max_free>0</max_free> -->
-    {{- end }}
+      {{- end }}
         </device_handler_pool>
+      {{- else }}
+        <!--
+        <device_handler_pool>
+            <max_size>100</max_size>
+            <max_free>0</max_free>
+        </device_handler_pool>
+        -->
+      {{- end }}
     {{- else }}
         <!--
         <device_handler_pool>
@@ -2475,14 +2731,6 @@ Render the Lightstreamer configuration file.
         </device_handler_pool>
         -->
     {{- end }}
-  {{- else }}
-        <!--
-        <device_handler_pool>
-            <max_size>100</max_size>
-            <max_free>0</max_free>
-        </device_handler_pool>
-        -->
-  {{- end }}
 
         <!-- Optional. Size of the notifiers' "MPN XXX NOTIFIER" internal
              thread pool, which is devoted to composing the notifications
@@ -2492,13 +2740,13 @@ Render the Lightstreamer configuration file.
              for this task may be beneficial.
              Default: The number of available total cores, as detected by the
              JVM. -->
-  {{- if not (quote .notifierPoolSize | empty) }}
+    {{- if not (quote .notifierPoolSize | empty) }}
         <notifier_pool_size>{{ int .notifierPoolSize }}</notifier_pool_size>
-  {{- else }}
+    {{- else }}
         <!--
         <notifier_pool_size>10</notifier_pool_size>
         -->
-  {{- end }}
+    {{- end }}
 
         <!-- Optional. Size of the "MPN PUMP" internal thread pool, which is
              devoted to integrating the update events pertaining to each MPN
@@ -2508,13 +2756,13 @@ Render the Lightstreamer configuration file.
              allocating multiple threads for this task may be beneficial.
              Default: The number of available total cores, as detected by the
              JVM. -->
-  {{- if not (quote .mpnPumpPoolSize | empty) }}
+    {{- if not (quote .mpnPumpPoolSize | empty) }}
         <pump_pool_size>{{ int .mpnPumpPoolSize }}</pump_pool_size>
-  {{- else }}
+    {{- else }}
         <!--
         <mpn_pump_pool_size>10</mpn_pump_pool_size>
         -->
-  {{- end }}
+    {{- end }}
 
         <!-- Optional. Number of threads used to parallelize the implementation
              of the internal MPN timers.
@@ -2523,13 +2771,13 @@ Render the Lightstreamer configuration file.
              multiprocessor machines, allocating multiple threads for this task
              may be beneficial.
              Default: 1. -->
-  {{- if not (quote .mpnTimerPoolSize | empty) }}
+    {{- if not (quote .mpnTimerPoolSize | empty) }}
         <mpn_timer_pool_size>{{ int .mpnTimerPoolSize }}</mpn_timer_pool_size>
-  {{- else }}
+    {{- else }}
         <!--
         <mpn_timer_pool_size>2</mpn_timer_pool_size>
         -->
-  {{- end }}
+    {{- end }}
 
         <!-- Mandatory if <enabled> is Y. Specifies what to do in case of
              database failure.
@@ -2553,11 +2801,11 @@ Render the Lightstreamer configuration file.
              Specify:
              - "abort_operation" to abort the ongoing operation or
              - "continue_operation" to continue the ongoing operation. -->
-  {{- if not (has .reactionOnDatabaseFailure (list "abort_operation" "continue_operation")) }}
-    {{- fail "mpn.reactionOnDatabaseFailure must be one of: \"abort_operation\", \"continue_operation\"" }}
-  {{- else }}
+    {{- if not (has .reactionOnDatabaseFailure (list "abort_operation" "continue_operation")) }}
+      {{- fail "mpn.reactionOnDatabaseFailure must be one of: \"abort_operation\", \"continue_operation\"" }}
+    {{- else }}
         <reaction_on_database_failure>{{ .reactionOnDatabaseFailure }}</reaction_on_database_failure>
-  {{- end }}
+    {{- end }}
 
         <!-- Optional. Path of the configuration file for Apple platforms notifier.
              The file path is relative to the conf directory. -->
@@ -2567,8 +2815,8 @@ Render the Lightstreamer configuration file.
              The file path is relative to the conf directory. -->
         <google_notifier_conf>./mpn/google/google_notifier_conf.xml</google_notifier_conf>
 
-{{- end }}
-{{- end }}
+  {{- end }} {{/* of $mpnEnabled */}}
+{{- end }} {{/* of .Values.mpn */}}
     </mpn>
 
 <!--
@@ -2577,10 +2825,11 @@ Render the Lightstreamer configuration file.
   ========================
 -->
 
-{{- with .Values.webServer }}
+{{- with required "webServer must be set" .Values.webServer }}
+
     <!-- Optional. Path of an HTML page to be returned upon unexpected request
          URLs. This applies to URLs in reserved ranges that have no meaning.
-         If the Internal web server is not enabled, this also applies to all
+         If the Internal Web Server is not enabled, this also applies to all
          non-reserved URLs; otherwise, nonexisting non-reserved URLs will get the
          HTTP 404 error as usual.
          The file content should be encoded with the iso-8859-1 charset.
@@ -2595,7 +2844,7 @@ Render the Lightstreamer configuration file.
   {{- end }}
 
 
-    <!-- Optional. Internal web server configuration.
+    <!-- Optional. Internal Web Server configuration.
          Note that some of the included settings may also apply to the
          Monitoring Dashboard pages, which are supplied through the internal
          web server. In particular, this holds for the <use_compression> and
@@ -2604,15 +2853,17 @@ Render the Lightstreamer configuration file.
          is only configured through the <dashboard> block. -->
     <web_server>
 
-        <!-- Optional. Enabling of the internal web server.
+        <!-- Optional. Enabling of the Internal Web Server.
              Can be one of the following:
              - Y: the Server accepts requests for file resources;
              - N: the Server ignores requests for file resources.
              Default: N. -->
-        <enabled>{{ .enabled | default false | ternary "Y" "N"}}</enabled>
+  {{- $webServerEnabled := not (eq .enabled false) }}
+  {{- $_:= set . "enabled" $webServerEnabled }}
+        <enabled>{{ $webServerEnabled | ternary "Y" "N"}}</enabled>
 
         <!-- Optional. Path of the file system directory to be used
-             by the internal web server as the root for URL path mapping.
+             by the Internal Web Server as the root for URL path mapping.
              The path is relative to the conf directory.
              Note that the /lightstreamer URL path (as any alternative
              paths defined through <service_url_prefix>) is reserved,
@@ -2621,58 +2872,61 @@ Render the Lightstreamer configuration file.
              hence, subdirectories of the pages directory with conflicting
              names would be ignored.
              Default: ../pages -->
-        {{- if (.pagesVolume).name }}
-        {{- include "lightstreamer.validateExtraVolumeRef" (list $.Values.deployment.extraVolumes .pagesVolume.name "webServer.pagesVolume.name") }}
+  {{- if $webServerEnabled }} 
+    {{- if .pagesVolume }}
+      {{- $pagesVolumeName := required "webServer.pagesVolume.name must be set" .pagesVolume.name }}
+      {{- include "lightstreamer.validateExtraVolumeRef" (list $.Values.deployment.extraVolumes $pagesVolumeName "webServer.pagesVolume.name") }}
         <pages_dir>{{ include "lightstreamer.webServer.pages-source.dir" . }}{{ with .pagesVolume.path }}/{{ . }}{{ end }}</pages_dir>
-        {{- else }}
+    {{- else }}
         <!--
         <pages_dir>../my_pages</pages_dir>
         -->
-        {{- end }}
+    {{- end }}
 
         <!-- Optional. Caching time, in minutes, to be allowed to the browser
              (through the "expires" HTTP header) for all the resources supplied
-             by the internal web server.
+             by the Internal Web Server.
              A zero value disables caching by the browser.
              Default: 0. -->
-        {{- if (quote .persistencyMinutes | empty) }}
+    {{- if not (quote .persistencyMinutes | empty) }}
+        <persistency_minutes>{{ int .persistencyMinutes }}</persistency_minutes>
+
+    {{- else }}
         <!--
         <persistency_minutes>1000000</persistency_minutes>
-        -->
-        {{- else }}
-        <persistency_minutes>{{ .persistencyMinutes }}</persistency_minutes>
-        {{- end }}
+        -->    
+    {{- end }}
 
         <!-- Optional. Path of the MIME types configuration property file.
              The file path is relative to the conf directory.
              Default: ./mime_types.properties -->
-        {{- if empty .mimeTypesConfig }}
+    {{- if not (quote .mimeTypesConfig | empty) }}
+        <mime_types_config>{{ .mimeTypesConfig }}</mime_types_config>
+    {{- else }}
         <!--
         <mime_types_config>./my_mime_types.properties</mime_types_config>
         -->
-        {{- else }}
-        <mime_types_config>{{ .mimeTypesConfig }}</mime_types_config>
-        {{- end }}
+    {{- end }}
 
         <!-- Optional. Path of an HTML page to be returned as the body upon
              a "404 Not Found" answer caused by the request of a nonexistent URL.
              The file content should be encoded with the iso-8859-1 charset.
              The file path is relative to the conf directory.
              Default: the proper page is provided by the Server. -->
-        {{- if empty .notFoundPage }}
+    {{- if not (quote .notFoundPage | empty) }}
+        <notfound_page>{{ .notFoundPage }}</notfound_page>
+    {{- else }}
         <!--
         <notfound_page>./404Page.html</notfound_page>
         -->
-        {{- else }}
-        <notfound_page>{{ .notFoundPage }}</notfound_page>
-        {{- end }}
+    {{- end }}
 
         <!-- Optional. Use of the "gzip" content encoding, as defined by the
              HTTP 1.1 specifications, for sending the resource contents.
              It is specified for various cases through the included rules.
              Note that the use of compression for static pages would benefit
              from an internal cache of compressed pages. However, no cache is
-             provided, as the internal web server is not meant for production use.
+             provided, as the Internal Web Server is not meant for production use.
              Default: The "gzip" content encoding is never used. -->
         <use_compression>
 
@@ -2705,37 +2959,34 @@ Render the Lightstreamer configuration file.
              is not applied, regardless of the "use_compression" setting, as we
              guess that no overall benefit would be reached.
              Default: 8192 bytes. -->
-        {{- if (quote .compressionThreshold | empty) }}
+    {{- if not (quote .compressionThreshold | empty) }}
+        <compression_threshold>{{ int .compressionThreshold }}</compression_threshold>
+    {{- else}}
         <!--
         <compression_threshold>0</compression_threshold>
         -->
-        {{- else}}
-        <compression_threshold>{{ .compressionThreshold }}</compression_threshold>
-        {{- end }}
+    {{- end }}
 
         <!-- Optional. Enables the processing of the "/crossdomain.xml" URL,
              required by the Flash player in order to allow pages from
              a different host to request data to Lightstreamer Server host.
-             See the "WebSite Controls" section on
-             http://www.adobe.com/devnet/flashplayer/articles/flash_player_9_security.pdf
-             for details on the contents of the document to be returned.
+             This is left for legacy clients, as support for the Flash player
+             was dismissed by all browsers several years ago.
              Can be one of the following:
              - Y: The Server accepts requests for "/crossdomain.xml";
                   the file configured through the "flex_crossdomain_path"
                   setting is returned.
-                  Setting the internal web server enabling setting as "Y"
-                  is not needed; note that if the internal web server is
+                  Setting the Internal Web Server enabling setting as "Y"
+                  is not needed; note that if the Internal Web Server is
                   enabled, the processing of the "/crossdomain.xml" URL is
                   different than the processing of the other URLs.
              - N: No special processing for the "/crossdomain.xml" requests
                   is performed.
-                  Note that if the internal web server is enabled, then the
+                  Note that if the Internal Web Server is enabled, then the
                   processing of the "/crossdomain.xml" URL is performed as for
                   any other URL (i.e. a file named "crossdomain.xml" is looked
                   for in the directory configured as the root for URL path
                   mapping).
-             Note that "/crossdomain.xml" is also used by the Silverlight
-             runtime when "/clientaccesspolicy.xml" is not provided.
              Default: N. -->
         <!--
         <flex_crossdomain_enabled>Y</flex_crossdomain_enabled>
@@ -2754,33 +3005,33 @@ Render the Lightstreamer configuration file.
         <!-- Optional. Enables the processing of the "/clientaccesspolicy.xml"
              URL, required by the Silverlight runtime in order to allow pages
              from a different host to request data to Lightstreamer Server host.
-             See http://msdn.microsoft.com/en-us/library/cc838250(VS.95).aspx#crossdomain_communication
-             for details on the contents of the document to be returned.
+             This is left for legacy clients, as support for the Silverlight runtime
+             was dismissed by all browsers several years ago.
              Can be one of the following:
              - Y: The Server accepts requests for "/clientaccesspolicy.xml";
                   the file configured through the "silverlight_accesspolicy_path"
                   setting is returned.
-                  Setting the internal web server enabling setting as "Y"
-                  is not needed; note that if the internal web server is
+                  Setting the Internal Web Server enabling setting as "Y"
+                  is not needed; note that if the Internal Web Server is
                   enabled, the processing of the "/clientaccesspolicy.xml" URL
                   is different than the processing of the other URLs.
              - N: No special processing for the "/clientaccesspolicy.xml"
                   requests is performed.
-                  Note that if the internal web server is enabled, then the
+                  Note that if the Internal Web Server is enabled, then the
                   processing of the "/clientaccesspolicy.xml" URL is performed
                   as for any other URL (i.e. a file named "clientaccesspolicy.xml"
                   is looked for in the directory configured as the root for
                   URL path mapping).
-             Note that "/crossdomain.xml" is also used by the Silverlight
-             runtime when "/clientaccesspolicy.xml" is not provided.
+             Note that when "/clientaccesspolicy.xml" is not provided, the Silverlight
+             runtime also tries "/crossdomain.xml" (see <flex_crossdomain_enabled>).
              Default: N. -->
-        {{- if (quote .enableSilverlightAccessPolicy | empty) }}
+    {{- if not (quote .enableSilverlightAccessPolicy | empty) }}
+        <silverlight_accesspolicy_enabled>{{ .enableSilverlightAccessPolicy | ternary "Y" "N" }}</silverlight_accesspolicy_enabled>
+    {{- else }}
         <!--
         <silverlight_accesspolicy_enabled>Y</silverlight_accesspolicy_enabled>
         -->
-        {{- else }}
-        <silverlight_accesspolicy_enabled>{{ .enableSilverlightAccessPolicy | ternary "Y" "N" }}</silverlight_accesspolicy_enabled>
-        {{- end }}
+    {{- end }}
 
         <!-- Mandatory when "silverlight_accesspolicy_enabled" is set as "Y".
              Path of the file to be returned upon requests for the
@@ -2788,16 +3039,16 @@ Render the Lightstreamer configuration file.
              "silverlight_accesspolicy_enabled" is not set as "Y".
              The file content should be encoded with the iso-8859-1 charset.
              The file path is relative to the conf directory. -->
-        {{- if .silverlightAccessPolicyPath }}
+    {{- if .silverlightAccessPolicyPath }}
         <silverlight_accesspolicy_path>{{ .silverlightAccessPolicyPath }}</silverlight_accesspolicy_path>
-        {{- else }}
+    {{- else }}
         <!--
         <silverlight_accesspolicy_path>./silverlightaccesspolicy.xml</silverlight_accesspolicy_path>
         -->
-        {{- end }}
-
+    {{- end }} 
+  {{- end }} {{/* of $webServerEnabled */}}
     </web_server>
-{{- end }}
+{{- end }} {{/* of .Values.webserver */}}
 
 <!--
   ========================
@@ -2805,7 +3056,7 @@ Render the Lightstreamer configuration file.
   ========================
 -->
 
-{{- with .Values.cluster }}
+{{- with required "cluster muts be set" .Values.cluster }}
     <!-- Optional. Host address to be used for control/poll/rebind connections.
          A numeric IP address can be specified as well. The use of non standard,
          unicode names may not be supported yet by some Client SDKs.
@@ -2824,7 +3075,7 @@ Render the Lightstreamer configuration file.
          comment for <control_link_machine_name> for details.
          Support for clustering is an optional feature, available depending
          on Edition and License Type. When not available, this setting is ignored. -->
-    {{- if .controlLinkAddress }}
+    {{- if not (quote .controlLinkAddress | empty) }}
     <control_link_address>{{ .controlLinkAddress }}</control_link_address>
     {{- else }}
     <!--
@@ -2858,11 +3109,11 @@ Render the Lightstreamer configuration file.
          Refer to <control_link_address> for other remarks.
          Support for clustering is an optional feature, available depending
          on Edition and License Type. When not available, this setting is ignored. -->
-    {{- if .controlLinkMachineName }}
+    {{- if not (quote .controlLinkMachineName | empty) }}
     <control_link_machine_name>{{ .controlLinkMachineName }}</control_link_machine_name>
     {{- else }}
     <!--
-    <control_link_machine_name>push1</control_link_machine_name>
+    <>push1</control_link_machine_name>
     -->
     {{- end }}
 
@@ -2873,15 +3124,15 @@ Render the Lightstreamer configuration file.
          opportunity to migrate the new session to a different instance.
          See the Clustering document for details on this mechanism and on how
          rebalancing can be pursued. -->
-    {{- if (quote .maxSessionDurationMinutes | empty) }}
+    {{- if not (quote .maxSessionDurationMinutes | empty) }}
+    <max_session_duration_minutes>{{ int .maxSessionDurationMinutes }}</max_session_duration_minutes>
+    {{- else }}
     <!--
     <max_session_duration_minutes>5</max_session_duration_minutes>
     -->
-    {{- else }}
-    <max_session_duration_minutes>{{ int .maxSessionDurationMinutes }}</max_session_duration_minutes>
     {{- end }}
 
-{{- end }}
+{{- end }} {{/* of .Values.cluster */}}
 
 <!--
   ==================
@@ -2889,7 +3140,7 @@ Render the Lightstreamer configuration file.
   ==================
 -->
 
-{{- with .Values.load }}
+{{- with required "load must be set" .Values.load }}
     <!-- Optional. Maximum number of concurrent client sessions allowed.
          Requests for new sessions received when this limit is currently
          exceeded will be refused; on the other hand, operation on sessions
@@ -2898,27 +3149,30 @@ Render the Lightstreamer configuration file.
          is currently met may cause the new session request to be refused.
          The limit can be set as a simple, heuristic protection from Server
          overload.
+         A zero or negative value means unlimited.
          Default: unlimited. -->
-    {{- if (quote .maxSessions | empty) }}
-    <!--
+    {{- if not (quote .maxSessions | empty) }}
+    <max_sessions>{{ int .maxSessions }}</max_sessions>
+    {{- else }}
+     <!--
     <max_sessions>1000</max_sessions>
     -->
-    {{- else }}
-    <max_sessions>{{ int .maxSessions }}</max_sessions>
     {{- end }}
 
     <!-- Optional. Maximum number of concurrent MPN devices sessions allowed.
+         Only used if the MPN Module is enabled through the &lt;mpn&gt; block.
          Once this number of devices has been reached, requests to active
          mobile push notifications will be refused.
          The limit can be set as a simple, heuristic protection from Server
          overload from MPN subscriptions.
+         A zero or negative value means unlimited.
          Default: unlimited. -->
-    {{- if (quote .maxMpnDevices | empty) }}
+    {{- if not (quote .maxMpnDevices | empty) }}
+    <max_mpn_devices>{{ int .maxMpnDevices }}</max_mpn_devices>
+    {{- else }}
     <!--
     <max_mpn_devices>1000</max_mpn_devices>
-    -->
-    {{- else }}
-    <max_mpn_devices>{{ int .maxMpnDevices }}</max_mpn_devices>
+    -->    
     {{- end }}
 
     <!-- Optional. Limit to the overall size, in bytes, of the buffers
@@ -2928,12 +3182,13 @@ Render the Lightstreamer configuration file.
          If -1, disables buffer reuse at all and causes all allocated
          buffers to be released immediately.
          Default: 200000000 -->
-    {{- if (quote .maxCommonNioBufferAllocation | empty) }}
+    {{- if not (quote .maxCommonNioBufferAllocation | empty) }}
+    <max_common_nio_buffer_allocation>{{ int .maxCommonNioBufferAllocation }}</max_common_nio_buffer_allocation>    
+    {{- else }}
     <!--
     <max_common_nio_buffer_allocation>0</max_common_nio_buffer_allocation>
     -->
-    {{- else }}
-    <max_common_nio_buffer_allocation>{{ int .maxCommonNioBufferAllocation }}</max_common_nio_buffer_allocation>
+
     {{- end }}
 
     <!-- Optional. Limit to the overall size, in bytes, of the buffers
@@ -2944,12 +3199,12 @@ Render the Lightstreamer configuration file.
          If -1, disables buffer reuse at all and causes all allocated
          buffers to be released immediately.
          Default: 200000000 -->
-    {{- if (quote .maxCommonPumpBufferAllocation | empty) }}
+    {{- if not (quote .maxCommonPumpBufferAllocation | empty) }}
+    <max_common_pump_buffer_allocation>{{ int .maxCommonPumpBufferAllocation }}</max_common_pump_buffer_allocation>
+    {{- else }}
     <!--
     <max_common_pump_buffer_allocation>0</max_common_pump_buffer_allocation>
-    -->
-    {{- else }}
-    <max_common_pump_buffer_allocation>{{ int .maxCommonPumpBufferAllocation }}</max_common_pump_buffer_allocation>
+    -->    
     {{- end }}
 
     <!--
@@ -2960,12 +3215,12 @@ Render the Lightstreamer configuration file.
          Further selectors may be created because of the <selector_max_load>
          setting.
          Default: The number of available total cores, as detected by the JVM. -->
-    {{- if (quote .selectorPoolSize | empty) }}
+    {{- if not (quote .selectorPoolSize | empty) }}
+    <selector_pool_size>{{ int .selectorPoolSize }}</selector_pool_size>    
+    {{- else }}
     <!--
     <selector_pool_size>1</selector_pool_size>
     -->
-    {{- else }}
-    <selector_pool_size>{{ int .selectorPoolSize }}</selector_pool_size>
     {{- end }}
 
     <!-- Optional. Maximum number of keys allowed for a single NIO selector.
@@ -2975,12 +3230,12 @@ Render the Lightstreamer configuration file.
          The base number of selectors is determined by the <selector_pool_size>
          setting.
          Default: 0. -->
-    {{- if (quote .selectorMaxLoad | empty) }}
+    {{- if not (quote .selectorMaxLoad | empty) }}
+    <selector_max_load>{{ int .selectorMaxLoad }}</selector_max_load>    
+    {{- else }}
     <!--
     <selector_max_load>1000</selector_max_load>
     -->
-    {{- else }}
-    <selector_max_load>{{ int .selectorMaxLoad }}</selector_max_load>
     {{- end }}
 
     <!--
@@ -2990,12 +3245,12 @@ Render the Lightstreamer configuration file.
          may be heavy under high update activity; hence, on multiprocessor
          machines, allocating multiple threads for this task may be beneficial.
          Default: 1. -->
-    {{- if (quote .timerPoolSize | empty) }}
+    {{- if not (quote .timerPoolSize | empty) }}
+    <timer_pool_size>{{ int .timerPoolSize }}</timer_pool_size>    
+    {{- else }}
     <!--
     <timer_pool_size>2</timer_pool_size>
     -->
-    {{- else }}
-    <timer_pool_size>{{ int .timerPoolSize }}</timer_pool_size>
     {{- end }}
 
     <!--
@@ -3006,12 +3261,12 @@ Render the Lightstreamer configuration file.
          multiprocessor machines, allocating multiple threads for this task
          may be beneficial.
          Default: The number of available total cores, as detected by the JVM. -->
-    {{- if (quote .eventsPoolSize | empty) }}
+    {{- if not (quote .eventsPoolSize | empty) }}
+    <events_pool_size>{{ int .eventsPoolSize }}</events_pool_size>    
+    {{- else }}
     <!--
     <events_pool_size>10</events_pool_size>
     -->
-    {{- else }}
-    <events_pool_size>{{ int .eventsPoolSize }}</events_pool_size>
     {{- end }}
 
     <!--
@@ -3023,12 +3278,12 @@ Render the Lightstreamer configuration file.
          may be beneficial.
          Default: The number of available total cores, as detected by the JVM,
          or 10, if the number of cores is less. -->
-    {{- if (quote .snapshotPoolSize | empty) }}
+    {{- if not (quote .snapshotPoolSize | empty) }}
+    <snapshot_pool_size>{{ int .snapshotPoolSize }}</snapshot_pool_size>    
+    {{- else }}
     <!--
     <snapshot_pool_size>10</snapshot_pool_size>
     -->
-    {{- else }}
-    <snapshot_pool_size>{{ int .snapshotPoolSize }}</snapshot_pool_size>
     {{- end }}
 
     <!--
@@ -3039,12 +3294,12 @@ Render the Lightstreamer configuration file.
          multiprocessor machines, allocating multiple threads for this task
          may be beneficial.
          Default: The number of available total cores, as detected by the JVM. -->
-    {{- if (quote .pumpPoolSize | empty) }}
+    {{- if not (quote .pumpPoolSize | empty) }}
+    <pump_pool_size>{{ int .pumpPoolSize }}</pump_pool_size>    
+    {{- else }}
     <!--
     <pump_pool_size>10</pump_pool_size>
     -->
-    {{- else }}
-    <pump_pool_size>{{ int .pumpPoolSize }}</pump_pool_size>
     {{- end }}
 
     <!--
@@ -3057,13 +3312,13 @@ Render the Lightstreamer configuration file.
         a CPU shortage due to a huge streaming activity.
         A negative value disables the check.
         Default: -1. -->
-    {{- if (quote .pumpPoolMaxQueue | empty) }}
+    {{- if not (quote .pumpPoolMaxQueue | empty) }}
+    <pump_pool_max_queue>{{ int .pumpPoolMaxQueue }}</pump_pool_max_queue>
+    {{- else }}
     <!--
     <pump_pool_max_queue>1000</pump_pool_max_queue>
     -->
-    {{- else }}
-    <pump_pool_max_queue>{{ int .pumpPoolMaxQueue }}</pump_pool_max_queue>
-    {{- end }}
+    {{- end }}    
 
     <!--
         Optional. Maximum number of threads allowed for the "SERVER" internal
@@ -3072,26 +3327,26 @@ Render the Lightstreamer configuration file.
         - getHostName;
         - socket close;
         - calls to a Metadata Adapter that may need to access to some
-          external resource (i.e. mainly notifyUser, getItems, getSchema;
-          other methods should be implemented as nonblocking, by leaning
-          on data cached by notifyUser);
+          external resource (for instance, methods devoted to user
+          request authorization, whereas authentication and message-processing
+          methods already feature an asynchronous interface);
         - calls to a Data Adapter that may need to access to some
           external resource (i.e. subscribe and unsubscribe, though it
           should always be possible to implement such calls asynchronously);
-        - file access by the internal web server, though it should be used
+        - file access by the Internal Web Server, though it should be used
           only in demo and test scenarios.
         Note that specific thread pools can optionally be defined in order
         to handle some of the tasks that, by default, are handled by the
         SERVER thread pool. They are defined in "adapters.xml"; see the
-        templates provided in the In-Process Adapter SDK for details.
+        templates provided in the distribution package for details.
         A zero value means a potentially unlimited number of threads.
         Default: 1000. -->
-    {{- if (quote .serverPoolMaxSize | empty) }}
+    {{- if not (quote .serverPoolMaxSize | empty) }}
+    <server_pool_max_size>{{ int .serverPoolMaxSize }}</server_pool_max_size>    
+    {{- else }}
     <!--
     <server_pool_max_size>100</server_pool_max_size>
     -->
-    {{- else }}
-    <server_pool_max_size>{{ int .serverPoolMaxSize }}</server_pool_max_size>
     {{- end }}
 
     <!--
@@ -3111,12 +3366,12 @@ Render the Lightstreamer configuration file.
         Default: 10, if "server_pool_max_size" is not defined;
         otherwise, the same as "server_pool_max_size", unless the latter
         is set to 0, i.e. unlimited, in which case this setting is mandatory. -->
-    {{- if (quote .serverPoolMaxFree | empty) }}
+    {{- if not (quote .serverPoolMaxFree | empty) }}
+    <server_pool_max_free>{{ int .serverPoolMaxFree }}</server_pool_max_free>    
+    {{- else }}
     <!--
     <server_pool_max_free>0</server_pool_max_free>
     -->
-    {{- else }}
-    <server_pool_max_free>{{ int .serverPoolMaxFree }}</server_pool_max_free>
     {{- end }}
 
     <!--
@@ -3129,18 +3384,19 @@ Render the Lightstreamer configuration file.
         that <accept_pool_max_queue> itself is set).
         In case some dedicated pool is defined in "adapters.xml" to override
         the SERVER pool for specific tasks, its queue is still considered
-        and it is added to the SERVER pool queue length.
+        and it is added to the SERVER pool queue length for the sake of this
+        check, unless a "max_queue" check has been defined for that pool as well.
         On the other hand, if the MPN DEVICE HANDLER pool is defined in the <mpn>
         block, it also overrides the SERVER or dedicated pools, but its queue
         is not included in the check.
         A negative value disables the check.
         Default: 100. -->
-    {{- if (quote .serverPoolMaxQueue | empty) }}
+    {{- if not (quote .serverPoolMaxQueue | empty) }}
+    <server_pool_max_queue>{{ int .serverPoolMaxQueue }}</server_pool_max_queue>    
+    {{- else }}
     <!--
     <server_pool_max_queue>-1</server_pool_max_queue>
     -->
-    {{- else }}
-    <server_pool_max_queue>{{ int .serverPoolMaxQueue }}</server_pool_max_queue>
     {{- end }}
 
     <!--
@@ -3153,40 +3409,40 @@ Render the Lightstreamer configuration file.
         out to be blocking; in particular:
         - getHostName, only if banned hostnames are configured;
         - socket close, only if banned hostnames are configured;
-        - read from the "proxy protocol", only if configured;
         - service of requests on a "priority port", only available for
           internal use.
         A zero value means a potentially unlimited number of threads.
         Default: The number of available total cores, as detected by the JVM,
         which is also the minimum number of threads left in the pool. -->
-    {{- if (quote .acceptPoolMaxSize | empty) }}
+    {{- if not (quote .acceptPoolMaxSize | empty) }}
+    <accept_pool_max_size>{{ int .acceptPoolMaxSize }}</accept_pool_max_size>    
+    {{- else }}
     <!--
     <accept_pool_max_size>100</accept_pool_max_size>
     -->
-    {{- else }}
-    <accept_pool_max_size>{{ int .acceptPoolMaxSize }}</accept_pool_max_size>
     {{- end }}
 
     <!--
         Optional. Maximum number of tasks allowed to be queued to enter
         the "ACCEPT" thread pool before undertaking backpressure actions.
         The setting only affects the listening sockets with <port_type>
-        configured as CREATE_ONLY. As long as the number is exceeded,
+        configured as CREATE_ONLY, or as GENERAL_PURPOSE but with the
+        "WSF_only" attribute as "Y". As long as the number is exceeded,
         the accept loops of these sockets will be kept waiting.
         By suspending the accept loop, some SYN packets from the clients may be
         discarded; the effect may vary depending on the backlog settings.
-        Note that, in the absence of sockets configured as CREATE_ONLY,
+        Note that, in the absence of sockets configured as specified above,
         no backpressure action will take place.
         A long queue on the ACCEPT pool may be the consequence of a CPU
         shortage during (or caused by) a high client connection activity.
         A negative value disables the check.
         Default: -1. -->
-    {{- if (quote .acceptPoolMaxQueue | empty) }}
+    {{- if not (quote .acceptPoolMaxQueue | empty) }}
+    <accept_pool_max_queue>{{ int .acceptPoolMaxQueue }}</accept_pool_max_queue>    
+    {{- else }}
     <!--
     <accept_pool_max_queue>100</accept_pool_max_queue>
     -->
-    {{- else }}
-    <accept_pool_max_queue>{{ int .acceptPoolMaxQueue }}</accept_pool_max_queue>
     {{- end }}
 
     <!--
@@ -3201,12 +3457,12 @@ Render the Lightstreamer configuration file.
         available cores.
         Default: Half the number of available total cores, as detected by the JVM
         (obviously, if there is only one core, the default will be 1). -->
-    {{- if (quote .handshakePoolSize | empty) }}
+    {{- if not (quote .handshakePoolSize | empty) }}
+    <handshake_pool_size>{{ int .handshakePoolSize }}</handshake_pool_size>    
+    {{- else }}
     <!--
     <handshake_pool_size>10</handshake_pool_size>
     -->
-    {{- else }}
-    <handshake_pool_size>{{ int .handshakePoolSize }}</handshake_pool_size>
     {{- end }}
 
     <!--
@@ -3216,28 +3472,32 @@ Render the Lightstreamer configuration file.
         <https_server> that are not configured to request the client certificate.
         More precisely:
         - If there are https sockets with <port_type> configured as CREATE_ONLY,
+          or as GENERAL_PURPOSE but with the "WSF_only" attribute as "Y",
           then, as long as the number is exceeded, the accept loops of these
           sockets will be kept waiting.
           By suspending the accept loop, some SYN packets from the clients may be
           discarded; the effect may vary depending on the backlog settings.
-        - Otherwise, if there are https sockets configured as CONTROL_ONLY and none
-          is configured as the default GENERAL_PURPOSE, then, as long as the
-          number is exceeded, the accept loops of these sockets will be kept
-          waiting instead.
-          Additionally, the same action on the accept loops associated to the
-          <accept_pool_max_queue> check will be performed (regardless that
-          <accept_pool_max_queue> itself is set). Note that the latter action
+        - Otherwise, if there are only https sockets configured as CONTROL_ONLY,
+          then, as long as the number is exceeded, the accept loops of these
+          sockets will be kept waiting instead.
+          Additionally, the same restrictive actions associated to the
+          <prestarted_max_queue> check will be performed (regardless that
+          <prestarted_max_queue> itself is set). Note that the latter action
           may affect both http and https sockets.
+        - Otherwise, if there are https sockets configured as the default
+          GENERAL_PURPOSE and possibly others configured as CONTROL_ONLY,
+          then only the same restrictive actions associated to the
+          <prestarted_max_queue> check (as explained above) will be performed.
         Note that, in the absence of sockets configured as specified above,
         no backpressure action will take place.
         A negative value disables the check.
         Default: 100. -->
-    {{- if (quote .handshakePoolMaxQueue | empty) }}
+    {{- if not (quote .handshakePoolMaxQueue | empty) }}
+    <handshake_pool_max_queue>{{ int .handshakePoolMaxQueue }}</handshake_pool_max_queue>    
+    {{- else }}
     <!--
     <handshake_pool_max_queue>-1</handshake_pool_max_queue>
     -->
-    {{- else }}
-    <handshake_pool_max_queue>{{ int .handshakePoolMaxQueue }}</handshake_pool_max_queue>
     {{- end }}
 
     <!--
@@ -3248,12 +3508,12 @@ Render the Lightstreamer configuration file.
         a blocking behavior in some cases.
         A zero value means a potentially unlimited number of threads.
         Default: The same as configured for the SERVER thread pool. -->
-    {{- if (quote .httpsAuthPoolMaxSize | empty) }}
+    {{- if not (quote .httpsAuthPoolMaxSize | empty) }}
+    <https_auth_pool_max_size>{{ int .httpsAuthPoolMaxSize }}</https_auth_pool_max_size>    
+    {{- else }}
     <!--
     <https_auth_pool_max_size>10</https_auth_pool_max_size>
     -->
-    {{- else }}
-    <https_auth_pool_max_size>{{ int .httpsAuthPoolMaxSize }}</https_auth_pool_max_size>
     {{- end }}
 
     <!--
@@ -3261,12 +3521,12 @@ Render the Lightstreamer configuration file.
         "TLS-SSL AUTHENTICATION" internal pool.
         It behaves in the same way as the "server_pool_max_free" setting.
         Default: The same as configured for the SERVER thread pool. -->
-    {{- if (quote .httpsAuthPoolMaxFree | empty) }}
+    {{- if not (quote .httpsAuthPoolMaxFree | empty) }}
+    <https_auth_pool_max_free>{{ int .httpsAuthPoolMaxFree }}</https_auth_pool_max_free>    
+    {{- else }}
     <!--
     <https_auth_pool_max_free>0</https_auth_pool_max_free>
     -->
-    {{- else }}
-    <https_auth_pool_max_free>{{ int .httpsAuthPoolMaxFree }}</https_auth_pool_max_free>
     {{- end }}
 
     <!--
@@ -3279,23 +3539,30 @@ Render the Lightstreamer configuration file.
         (see <use_client_auth> and <force_client_auth>).
         A negative value disables the check.
         Default: 100. -->
-    {{- if (quote .httpsAuthPoolMaxQueue | empty) }}
+    {{- if not (quote .httpsAuthPoolMaxQueue | empty) }}
+    <https_auth_pool_max_queue>{{ int .httpsAuthPoolMaxQueue }}</https_auth_pool_max_queue>    
+    {{- else }}
     <!--
     <https_auth_pool_max_queue>-1</https_auth_pool_max_queue>
     -->
-    {{- else }}
-    <https_auth_pool_max_queue>{{ int .httpsAuthPoolMaxQueue }}</https_auth_pool_max_queue>
     {{- end }}
 
     <!--
         Optional. Maximum number of sessions that can be left in "prestarted"
         state, that is, waiting for the first bind or control operation,
         before undertaking backpressure actions.
-        In particular, the same restrictive actions associated to the
-        <server_pool_max_queue> check will be performed (regardless
-        that <server_pool_max_queue> itself is set).
+        In particular, as long as the number is exceeded, the creation
+        of new sessions will be refused and made to fail, but for creations
+        of the "websocket-first" type (the ones performed by Client SDKs
+        of the UCM family, available since 2023), for which the completion
+        of prestarted sessions is very light.
+        Additionally, the same restrictive action on the accept loops
+        associated to the <accept_pool_max_queue> check will be performed
+        (regardless that <accept_pool_max_queue> itself is set), but
+        excluding ports with the "WSF_only" attribute set as "Y".
         The setting is meant to be used in configurations which define
-        a CREATE_ONLY port in http and a CONTROL_ONLY port in https.
+        a CREATE_ONLY port in http and a CONTROL_ONLY port in https,
+        to serve clients that don't perform websocket-first creations.
         In these cases, and when a massive client reconnection is occurring,
         the number of pending bind operations can grow so much that the
         needed TLS handshakes can take arbitrarily long and cause the
@@ -3307,12 +3574,12 @@ Render the Lightstreamer configuration file.
         from affecting the accept loop of CONTROL_ONLY ports in https.
         A negative value disables the check.
         Default: -1. -->
-    {{- if (quote .prestartedMaxQueue | empty) }}
+    {{- if not (quote .prestartedMaxQueue | empty) }}
+    <prestarted_max_queue>{{ int .prestartedMaxQueue }}</prestarted_max_queue>    
+    {{- else }}
     <!--
     <prestarted_max_queue>1000</prestarted_max_queue>
     -->
-    {{- else }}
-    <prestarted_max_queue>{{ int .prestartedMaxQueue }}</prestarted_max_queue>
     {{- end }}
 
     <!--
@@ -3333,15 +3600,15 @@ Render the Lightstreamer configuration file.
              lead to poor scaling in case many clients subscribe to the same
              item.
         Default: Y. -->
-    {{- if (quote .forceEarlyConversions | empty) }}
+    {{- if not (quote .forceEarlyConversions | empty) }}
+    <force_early_conversions>{{ .forceEarlyConversions | ternary "Y" "N" }}</force_early_conversions>    
+    {{- else }}
     <!--
     <force_early_conversions>N</force_early_conversions>
     -->
-    {{- else }}
-    <force_early_conversions>{{ .forceEarlyConversions | ternary "Y" "N" }}</force_early_conversions>
     {{- end }}
 
-{{- end }}
+{{- end }} {{/* of .Values.load */}}
 
 </lightstreamer_conf>
 {{- end -}}

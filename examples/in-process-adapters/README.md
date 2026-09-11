@@ -98,7 +98,20 @@ cd example-adapter-set/
 
 At the end, the script prints the `image.repository` and `image.tag` values to set in your Helm values file.
 
-### 2. Install the Lightstreamer Helm chart
+### 2. Create the readiness-script ConfigMap./undeploy.sh kubernetes
+
+Return to the example root, then create the ConfigMap from [`readiness.sh`](readiness.sh). The readiness probe defined in [`values.yaml`](values.yaml) invokes the script bundled in a ConfigMap named `readiness-script-map`:
+
+```sh
+cd ..
+kubectl create configmap readiness-script-map \
+  --from-file=readiness.sh=readiness.sh \
+  --namespace lightstreamer
+```
+
+The bundled [`readiness.sh`](readiness.sh) is a sample implementation that demonstrates how to interpret the JSON body returned by the `/lightstreamer/readiness_check` endpoint (mapping each Adapter Set to the state of its Metadata Adapter and Data Adapters) and turn it into a probe exit code. Use it as a starting point for your own readiness logic — for example, gating readiness only on specific Adapter Sets or on particular Data Adapters.
+
+### 3. Install the Lightstreamer Helm chart
 
 Install the chart using the provided [`values.yaml`](values.yaml), overriding the image to point to the custom image built in the previous step:
 
@@ -110,7 +123,6 @@ Install the chart using the provided [`values.yaml`](values.yaml), overriding th
     --set image.tag=1.0.0 \
     --namespace lightstreamer
   kubectl rollout status deployment/lightstreamer -n lightstreamer
-    
   ```
 
 - **OpenShift** — use the image reference printed by `build.sh`, for example:
@@ -158,6 +170,12 @@ Uninstall the Helm chart first to stop the pods:
 
 ```sh
 helm uninstall lightstreamer --namespace lightstreamer
+```
+
+Then delete the readiness-script ConfigMap created in step 2 (Helm does not manage it because it is created out-of-band):
+
+```sh
+kubectl delete configmap readiness-script-map --namespace lightstreamer
 ```
 
 Then remove the image build resources from the [`example-adapter-set/`](example-adapter-set/) folder:
