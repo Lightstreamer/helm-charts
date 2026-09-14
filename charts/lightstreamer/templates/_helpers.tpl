@@ -308,7 +308,7 @@ Render the keystore settings for the main configuration file.
 {{- $keyStore := required (printf "keystores.%s not defined" $key) (get $top $key) -}}
 {{- if not (quote $keyStore.type | empty) }}
   {{- if not (has $keyStore.type (list "JKS" "PKCS12" "PKCS11" ))}}
-    {{ fail (printf "keystores.%s.type must be one of: \"JKS\", \"PKCS12\", \"PKCS11\"") }}
+    {{ fail (printf "keystores.%s.type must be one of: \"JKS\", \"PKCS12\", \"PKCS11\"" $key) }}
   {{- end }}
 {{- end }}
 <keystore{{- if not (quote $keyStore.type | empty) }} type="{{ $keyStore.type }}"{{- end }}>
