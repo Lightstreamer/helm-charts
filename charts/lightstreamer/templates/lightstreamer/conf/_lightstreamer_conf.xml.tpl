@@ -1217,6 +1217,11 @@ Render the Lightstreamer configuration file.
           {{- if not (mustHas $order (list "JVM" "config")) }}
             {{- fail (printf "management.jmx.rmiConnector.sslConfig.enforceServerCipherSuitePreference must be one of: \"JVM\", \"config\"") }}
           {{- end }}
+          {{- if and $enabled (eq $order "config") }}
+            {{- if not .allowCipherSuites }}
+              {{- fail "management.jmx.rmiConnector.sslConfig.enforceServerCipherSuitePreference.order cannot be set to 'config' if management.jmx.rmiConnector.sslConfig.allowCipherSuites is not specified" }}            
+            {{- end }}
+          {{- end }}
             <enforce_server_cipher_suite_preference order={{ $order | quote }}>{{ $enabled | ternary "Y" "N" }}</enforce_server_cipher_suite_preference>
 
           {{- if and .allowProtocols .removeProtocols }}
