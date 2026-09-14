@@ -1142,8 +1142,9 @@ keystores:
       name: myserver-keystore-keypass-secret
       key: myserver-keystore.keypass
 
-    # -- Optional. Secret name and key where the password of the private key
-    # in the keystore is stored.
+    # -- Optional but only effective when this keystore is referenced by the 
+    # Kafka Connector configuration. Secret name and key where the password of 
+    # the private key in the keystore is stored.    
     keyPasswordSecretRef:
       # name:
       # key:
