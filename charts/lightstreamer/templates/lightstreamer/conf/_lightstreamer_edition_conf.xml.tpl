@@ -166,7 +166,7 @@ Render the Lightstreamer edition configuration file
                 server will not start;
               - N: use the feature set specified by the license in use.
               Default: N -->
-         <restricted_feature_set>{{ .optionalFeatures.enableRestrictedFeaturesSet | default false | ternary "Y" "N" }}</restricted_feature_set>
+         <restricted_feature_set>{{ (.optionalFeatures).enableRestrictedFeaturesSet | default false | ternary "Y" "N" }}</restricted_feature_set>
     {{- end }} {{/* of with .enterprise */}}
   {{- end }} {{/* of if eq .edition "ENTERPRISE" */}}
 
