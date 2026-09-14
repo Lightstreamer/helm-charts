@@ -229,7 +229,7 @@ data:
     # Setup the Adapters
     /lightstreamer/bin/init-scripts/setup-adapters.sh
 
-    {{- if .Values.deployment.preCommands }}
+    {{- if (.Values.deployment).preCommands }}
     # Launch the pre-commands
       {{- range .Values.deployment.preCommands }}
     {{ . }}
