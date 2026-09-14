@@ -788,8 +788,8 @@ servers:
       echo: []
         # - "cookie"
 
-      # -- Optional. Requests to add to the HTTP response header a line with
-      # the specified `name` (mandatory) and `value` (optional).
+      # -- Optional. Requests to add to the HTTP response header a line with the
+      # specified `name` and `value`, both of which are mandatory.      
       # The suggested setting for _X-Accel-Buffering_ may help to enable
       # streaming support when proxies of several types are involved.
       add:
