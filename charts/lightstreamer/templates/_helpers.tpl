@@ -107,9 +107,10 @@ Create the management Service name.
 Create the Service target port.
 */}}
 {{- define "lightstreamer.service.targetPort" -}}
-{{- $ := index . 0}}
-{{- $serverKeyName := "service.ports[].targetPort" }}
-{{- $serverKey := index . 1 }}
+{{- $ := index . 0 }}
+{{- $portIndex := index .1 }}
+{{- $serverKeyName := printf "service.ports[%d].targetPort" (int $portIndex) }}
+{{- $serverKey := index . 2 }}
 {{- include "lightstreamer.configuration.servers.validateServerRef" (list $ $serverKeyName $serverKey) }}
 {{- include "lightstreamer.configuration.servers.serverPortName" $serverKey -}}
 {{- end }}
@@ -355,7 +356,7 @@ server exists and no duplicated names or ports are used.
     {{- $usedPorts = append $usedPorts $serverPort }}
   {{- end }}
 {{- end }}
-{{- if $usedNames | empty }}
+{{- if not $usedNames }}
   {{- fail "At least one enabled server must be defined" }}
 {{- end }}
 {{- end }}
@@ -387,7 +388,12 @@ Render the keystore settings for the main configuration file.
 {{- $top := index . 0 -}}
 {{- $key := index . 1 -}}
 {{- $keyStore := required (printf "keystores.%s not defined" $key) (get $top $key) -}}
-<keystore{{- if not (quote $keyStore.type | empty) }} type={{ $keyStore.type | quote }}{{- end }}>
+{{- if not (quote $keyStore.type | empty) }}
+  {{- if not (has $keyStore.type (list "JKS" "PKCS12" "PKCS11" ))}}
+    {{ fail (printf "keystores.%s.type must be one of: \"JKS\", \"PKCS12\", \"PKCS11\"" $key) }}
+  {{- end }}
+{{- end }}
+<keystore{{- if not (quote $keyStore.type | empty) }} type="{{ $keyStore.type }}"{{- end }}>
 
     <!-- Specifies a path relative to the conf directory.
          The referred file can be replaced at runtime and the new keystore
