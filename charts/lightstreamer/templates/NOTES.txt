@@ -9,7 +9,7 @@ Check the rollout status:
 View the broker logs:
 
   kubectl logs -l app.kubernetes.io/name={{ include "lightstreamer.name" . }},app.kubernetes.io/instance={{ .Release.Name }} -n {{ $ns }}
-{{- if .Values.ingress.enabled }}
+{{- if (.Values.ingress).enabled }}
 
 The broker is exposed via Ingress:
 {{- range .Values.ingress.rules }}
