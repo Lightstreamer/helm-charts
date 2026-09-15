@@ -171,18 +171,16 @@ spec:
           {{- end }}
           {{- /* END ENV VARIABLES FOR KEYSTORES */ -}}
           {{- /* START ENV VARIABLES FOR LICENSE */ -}}
-          {{- if and (ne ((.Values.license).enterprise).licenseType "DEMO") (eq ((.Values.license).enterprise).licenseValidation "ONLINE") }}
-            {{- with required "license.enterprise.onlinePasswordSecretRef must be set" .Values.license.enterprise.onlinePasswordSecretRef }}
+          {{- if and (ne (.Values.license.enterprise).licenseType "DEMO") (eq (.Values.license.enterprise).licenseValidation "ONLINE") }}
             - name: LS_ENTERPRISE_LICENSE_ONLINE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ required "license.enterprise.onlinePasswordSecretRef.name must be set" .name }}
-                  key: {{ required "license.enterprise.onlinePasswordSecretRef.key must be set" .key }}
-            {{- end }}
+                  name: {{ required "license.enterprise.onlinePasswordSecretRef.name must be set" (.Values.license.enterprise.onlinePasswordSecretRef).name }}
+                  key: {{ required "license.enterprise.onlinePasswordSecretRef.key must be set" (.Values.license.enterprise.onlinePasswordSecretRef).key }}
           {{- end }}
           {{- $allSecrets := list }}
-          {{- range $key, $httpProxy := concat (.Values.license).proxy.socksProxies (.Values.license).proxy.httpProxies }}
-            {{- if $httpProxy.host }}
+          {{- range $key, $httpProxy := concat ((.Values.license.proxy).socksProxies | default list) ((.Values.license.proxy).httpProxies | default list) }}
+            {{- if and $httpProxy.host $httpProxy.credentialsSecretRef }}
               {{- $allSecrets = append $allSecrets ($httpProxy.credentialsSecretRef) }}
             {{- end }}
           {{- end }}
@@ -240,7 +238,7 @@ spec:
           {{- /* END ENV VARIABLES FOR MANAGEMENT */ -}}
           {{- /* START ENV VARIABLES FOR MPN */ -}}
           {{- if (.Values.mpn).enabled }}
-            {{/* START ENV VARIABLES FOR HIBERNATE CONNECTION */}}
+            {{- /* START ENV VARIABLES FOR HIBERNATE CONNECTION */}}
             - name: LS_HIBERNATE_CONNECTION_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -440,17 +438,15 @@ spec:
           {{- end }}
           {{- /* END VOLUME MOUNTS FOR LOG APPENDER VOLUMES */ -}}
           {{- /* START VOLUME MOUNTS FOR LICENSE FILE */ -}}
-          {{- if and (ne ((.Values.license).enterprise).licenseType "DEMO") (eq ((.Values.license).enterprise).licenseValidation "FILE") }}
-            {{- with .Values.license.enterprise.filePathSecretRef }}
+          {{- if and (ne (.Values.license.enterprise).licenseType "DEMO") (eq (.Values.license.enterprise).licenseValidation "FILE") }}
             - name: lightstreamer-enterprise-license
               mountPath: /lightstreamer/conf/enterprise-license/
-            {{- end }}
           {{- end }}
           {{- /* END VOLUME MOUNTS FOR LICENSE FILE */ -}}
           {{- /* START VOLUME MOUNTS FOR PAC FILES */ -}}
           {{- $configMaps := list }}
           {{- range $index, $filePath := (((.Values.license).proxy).pacFiles).filePaths }}
-            {{- $configMaps = append $configMaps (required (printf "license.proxy.pacFiles.filePaths[%d].name must be set" $index) $filePath.name) }}
+            {{- $configMaps = append $configMaps $filePath.name }}
           {{- end }}
           {{- $configMaps := $configMaps | uniq }}
           {{- range $configMaps }}
@@ -625,12 +621,10 @@ spec:
         {{- end }}
       {{- end }}
       {{- /* START VOLUMES FOR LICENSE FILE */ -}}
-      {{- if and (ne ((.Values.license).enterprise).licenseType "DEMO") (eq ((.Values.license).enterprise).licenseValidation "FILE") }}
-        {{- with required "license.enterprise.filePathSecretRef must be set" .Values.license.enterprise.filePathSecretRef }}
+      {{- if and (ne (.Values.license.enterprise).licenseType "DEMO") (eq (.Values.license.enterprise).licenseValidation "FILE") }}
         - name: lightstreamer-enterprise-license
           secret:
-            secretName: {{ required "license.enterprise.filePathSecretRef.name must be set" .name }}
-        {{- end }}
+            secretName: {{ required "license.enterprise.filePathSecretRef.name must be set" (.Values.license.enterprise.filePathSecretRef).name }}
       {{- end }}
       {{- /* END VOLUMES FOR LICENSE FILE */ -}}
       {{- /* START VOLUMES FOR PAC FILES */ -}}

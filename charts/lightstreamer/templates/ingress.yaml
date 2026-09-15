@@ -34,22 +34,33 @@ spec:
   {{- end }}
   {{- if .Values.ingress.tls }}
   tls:
-    {{- range .Values.ingress.tls }}
+    {{- range $tlsIndex, $tls := .Values.ingress.tls }}
     - hosts:
-        {{- range .hosts }}
-        - {{ . | quote }}
+        {{- range $hostIndex, $host := ($tls).hosts }}
+          {{- if $host }}
+        -  {{ $host }}
+          {{- end }}
         {{- end }}
-      secretName: {{ .secretName }}
+      secretName: {{ ($tls).secretName }}
     {{- end }}
   {{- end }}
   {{- if .Values.ingress.rules }}
   rules:
     {{- range $ruleIndex, $rule := .Values.ingress.rules }}
+      {{- $_ := required (printf "ingress.rules[%d] must be set" $ruleIndex) $rule }}
     - host: {{ $rule.host | quote }}
       {{- if $rule.paths }}
       http:
         paths:
           {{- range $pathIndex, $path := $rule.paths }}
+          {{- if not (has $path.pathType (list "Prefix" "Exact" "ImplementationSpecific")) }}
+            {{- fail (printf "rules[%d].paths[%d].pathType must be one of: \"Prefix\", \"Exact\", \"ImplementationSpecific\"" $ruleIndex $pathIndex) }}
+          {{- end }}
+          {{- if has $path.pathType (list "Prefix" "Exact") }}
+            {{- if not (hasPrefix "\"/" ($path.path | quote )) }}
+              {{- fail (printf "rules[%d].paths[%d].path must begin with a \"/\" when pathType is \"Prefix\" or \"Exact\"" $ruleIndex $pathIndex) }}
+            {{- end }}          
+          {{- end }}
           - path: {{ $path.path }}
             pathType: {{ required (printf "rules[%d].paths[%d].pathType is required" $ruleIndex $pathIndex) $path.pathType }}
             backend:

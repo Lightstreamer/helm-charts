@@ -411,8 +411,8 @@ license:
   # - `ENTERPRISE`
   edition: ENTERPRISE
 
-  # -- Mandatory if edition is set to `COMMUNITY`. The Client API to use with
-  # your Lightstreamer free license.
+  # -- Optional but effective only if edition is set to `COMMUNITY`. The Client 
+  # API to use with your Lightstreamer free license.
   # Possible values:
   # - `javascript_client` (for web browser clients)
   # - `nodejs_client` (for Node.js clients)
@@ -423,6 +423,7 @@ license:
   # - `javase_client` (for Java SE clients)
   # - `python_client` (for Python clients)
   # - `dotnet_standard_client` (for .NET Standard clients)
+  # - `cpp_client` (for C++ clients)
   # - `macos_client` (for macOS clients)
   # - `tvos_client` (for tvOS clients)
   # - `watchos_client` (for watchOS clients)
@@ -787,8 +788,8 @@ servers:
       echo: []
         # - "cookie"
 
-      # -- Optional. Requests to add to the HTTP response header a line with
-      # the specified `name` (mandatory) and `value` (optional).
+      # -- Optional. Requests to add to the HTTP response header a line with the
+      # specified `name` and `value`, both of which are mandatory.      
       # The suggested setting for _X-Accel-Buffering_ may help to enable
       # streaming support when proxies of several types are involved.
       add:
@@ -835,7 +836,7 @@ servers:
       # For instance, the flag can and should be set to `true` in case the
       # identification of the remote address is not properly tuned and the
       # determined address may be a local one.
-      enablePrivate: true
+      enablePrivate: false
 
       # -- Optional. If set to `true`, instructs the Server that the connection
       # endpoint is a reverse proxy or load balancer that sends client address
@@ -1013,10 +1014,10 @@ servers:
       # logged at startup by the
       # `logging.loggers.lightstreamerLogger.subLoggers.io.ssl` logger at
       # `DEBUG` level.
-      removeProtocols: []
-        # - SSL
-        # - TLSv1$
-        # - TLSv1.1
+      removeProtocols:
+        - SSL
+        - TLSv1$
+        - TLSv1.1
 
       # -- (bool) Optional. Instructs the underlying Security Provider on
       # whether to use stateless (when `true`) or stateful (when `false`)
@@ -1141,8 +1142,9 @@ keystores:
       name: myserver-keystore-keypass-secret
       key: myserver-keystore.keypass
 
-    # -- Optional. Secret name and key where the password of the private key
-    # in the keystore is stored.
+    # -- Optional but only effective when this keystore is referenced by the 
+    # Kafka Connector configuration. Secret name and key where the password of 
+    # the private key in the keystore is stored.    
     keyPasswordSecretRef:
       # name:
       # key:
@@ -1507,7 +1509,7 @@ logging:
         # -- Optional. Logging of system components initialization.
         # At `DEBUG` level, initialization details, error details and all
         # configuration settings are reported.
-        init: DEBUG
+        init: INFO
 
         # -- Optional. Logging of license check phase.
         # At `DEBUG` level, check details and error details can be found in case
@@ -2104,10 +2106,10 @@ management:
         # order to remove the matching ones from the enabled protocols set to be
         # used in case TLS/SSL is enabled for part or all the communication.
         # See notes for `servers.{}.sslConfig.removeProtocols`.
-        removeProtocols: []
-          # - SSL
-          # - TLSv1$
-          # - TLSv1.1
+        removeProtocols:
+          - SSL
+          - TLSv1$
+          - TLSv1.1
 
       # -- Optional. Enables the RMI Connector access without credentials.
       # If set to `true`, requests to the RMI Connector are always allowed.
@@ -3392,7 +3394,7 @@ load:
   # This task does not involve blocking operations, but its computation may be
   # heavy under high update activity; hence, on multiprocessor machines,
   # allocating multiple threads may be beneficial.
-  timerPoolSize: -1
+  timerPoolSize: 1
 
   # -- (int) Optional. Size of the `EVENTS` internal thread pool, which is
   # devoted to dispatching the update events received from a Data Adapter to

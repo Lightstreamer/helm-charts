@@ -178,8 +178,10 @@ Render the Lightstreamer configuration file.
                  The "name" attribute is mandatory; a final ":" is optional.
                  The suggested setting for "X-Accel-Buffering" may help to enable
                  streaming support when proxies of several types are involved. -->
-    {{- range .add }}
-            <add name={{ required "responseHttpHeaders.add[].name must be set" .name | quote }}>{{ .value }}</add>
+    {{- range $index, $add:= .add }}
+      {{- $name := required (printf "servers.%s.responseHttpHeaders.add[%d].name must be set" $serverKey $index) ($add).name }}
+      {{- $value := required (printf "servers.%s.responseHttpHeaders.add[%d].value must be set" $serverKey $index) $add.value }}
+            <add name="{{ $name  }}">{{ $value }}</add>
     {{- else }}
             <!--
             <add name="my-header">MyValue</add>
@@ -393,7 +395,7 @@ Render the Lightstreamer configuration file.
              suites is logged at startup by the LightstreamerLogger.io.ssl
              logger at DEBUG level. -->
       {{- range $index, $cipherSuite := .removeCipherSuites }}
-        <allow_cipher_suite>{{ required (printf "servers.%s.sslConfig.removeCipherSuites[%d] must be set" $serverKey (int $index)) $cipherSuite }}</allow_cipher_suite>
+        <remove_cipher_suites>{{ required (printf "servers.%s.sslConfig.removeCipherSuites[%d] must be set" $serverKey (int $index)) $cipherSuite }}</remove_cipher_suites>
       {{- else }}             
         <!--
         <remove_cipher_suites>TLS_RSA_</remove_cipher_suites>
@@ -420,7 +422,13 @@ Render the Lightstreamer configuration file.
       {{- $order := (.enforceServerCipherSuitePreference).order | default "JVM" }}
       {{- $enabled := not (eq (.enforceServerCipherSuitePreference).enabled false) }}
       {{- if not (mustHas $order (list "JVM" "config")) }}
-        {{- fail printf ("server.%s.sslConfig.enforceServerCipherSuitePreference must be one of: \"JVM\", \"config\"" $serverKey) }}
+        {{- fail (printf "server.%s.sslConfig.enforceServerCipherSuitePreference must be one of: \"JVM\", \"config\"" $serverKey) }}
+      {{- end }}
+
+      {{- if and $enabled (eq $order "config") }}
+        {{- if not .allowCipherSuites }}
+          {{- fail (printf "server.%s.sslConfig.enforceServerCipherSuitePreference.order cannot be set to 'config' if server.%s.sslConfig.allowCipherSuites is not used" $serverKey $serverKey) }}
+        {{- end }}      
       {{- end }}
         <enforce_server_cipher_suite_preference order={{ $order | quote }}>{{ $enabled | ternary "Y" "N" }}</enforce_server_cipher_suite_preference>
 
@@ -1207,7 +1215,12 @@ Render the Lightstreamer configuration file.
           {{- $order := (.enforceServerCipherSuitePreference).order | default "JVM" }}
           {{- $enabled := not (eq (.enforceServerCipherSuitePreference).enabled false) }}
           {{- if not (mustHas $order (list "JVM" "config")) }}
-            {{- fail printf ("management.jmx.rmiConnector.sslConfig.enforceServerCipherSuitePreference must be one of: \"JVM\", \"config\"") }}
+            {{- fail (printf "management.jmx.rmiConnector.sslConfig.enforceServerCipherSuitePreference must be one of: \"JVM\", \"config\"") }}
+          {{- end }}
+          {{- if and $enabled (eq $order "config") }}
+            {{- if not .allowCipherSuites }}
+              {{- fail "management.jmx.rmiConnector.sslConfig.enforceServerCipherSuitePreference.order cannot be set to 'config' if management.jmx.rmiConnector.sslConfig.allowCipherSuites is not specified" }}            
+            {{- end }}
           {{- end }}
             <enforce_server_cipher_suite_preference order={{ $order | quote }}>{{ $enabled | ternary "Y" "N" }}</enforce_server_cipher_suite_preference>
 
