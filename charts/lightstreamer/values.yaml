@@ -460,6 +460,7 @@ license:
   # - `javase_client` (for Java SE clients)
   # - `python_client` (for Python clients)
   # - `dotnet_standard_client` (for .NET Standard clients)
+  # - `cpp_client` (for C++ clients)
   # - `macos_client` (for macOS clients)
   # - `tvos_client` (for tvOS clients)
   # - `watchos_client` (for watchOS clients)
@@ -752,8 +753,6 @@ servers:
   defaultServer:
 
     # -- Optional. Enables this socket configuration.
-    # To disable the socket configuration, either set this value to `false` or
-    # set `servers.defaultServer` to `null`.
     enabled: true
 
     # -- Mandatory. The name of the HTTP/S server. Note that it is notified to
@@ -848,7 +847,7 @@ servers:
         # - "cookie"
 
       # -- Optional. Requests to add to the HTTP response header a line with the
-      # specified `name` (mandatory) and `value` (optional).
+      # specified `name` and `value`, both of which are mandatory.
       # The suggested setting for _X-Accel-Buffering_ may help to enable
       # streaming support when proxies of several types are involved.
       add:
@@ -895,7 +894,7 @@ servers:
       # For instance, the flag can and should be set to `true` in case the
       # identification of the remote address is not properly tuned and the
       # determined address may be a local one.
-      enablePrivate: true
+      enablePrivate: false
 
       # -- Optional. If set to `true`, instructs the Server that the connection
       # endpoint is a reverse proxy or load balancer that sends client address
@@ -1203,8 +1202,9 @@ keystores:
       name: myserver-keystore-keypass-secret
       key: myserver-keystore.keypass
 
-    # -- Optional. Secret name and key where the password of the private key
-    # in the keystore is stored.
+    # -- Optional but only effective when this keystore is referenced by the 
+    # Kafka Connector configuration. Secret name and key where the password of 
+    # the private key in the keystore is stored.
     keyPasswordSecretRef:
       # name:
       # key:
