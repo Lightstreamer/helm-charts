@@ -1913,7 +1913,7 @@ This ClassLoader loads classes from the `lib` and `classes` subfolders found in 
    sharedDir:
      fromVolume:
        name: shared-libs     # must match an entry in deployment.extraVolumes
-       path: shared           # optional subdirectory within the volume
+       path: shared            # optional subdirectory within the volume
    ```
 
 ###### `dedicated` ClassLoader
