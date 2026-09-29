@@ -270,7 +270,7 @@ spec:
                 {{- $authSecretRefs = concat $authSecretRefs .metadataProvider.proxyMetadataAdapter.authentication.credentialSecrets }}
               {{- end }}
               {{- range $dataProvider := .dataProviders}}
-                {{- if ($dataProvider).enabled }}
+                {{- if $dataProvider.enabled }}
                   {{- if ((.proxyDataAdapter).authentication).enabled }}
                     {{- $authSecretRefs = concat $authSecretRefs .proxyDataAdapter.authentication.credentialSecrets }}
                   {{- end }}
@@ -503,9 +503,11 @@ spec:
             - name: lightstreamer-{{ $adapterName | kebabcase }}-adapter-conf
               mountPath: {{ include "lightstreamer.adapters.source-conf.dir" . }}/{{ $adapterName | kebabcase}}/adapters.xml
               subPath: adapters.xml
-              {{- with ($adapterSet.provisioning).fromVolume }}
+              {{- if $adapterSet.requireProvisioning }}
+                {{- with $adapterSet.provisioning.fromVolume }}
             - name: {{ .name }}
               mountPath: {{ include "lightstreamer.adapters.source-repo.dir" . }}/{{ $adapterName | kebabcase}}
+                {{- end }}
               {{- end }}
               {{- $configMapRefs := list }}
               {{- with $adapterSet.metadataProvider.inProcessMetadataAdapter }}
@@ -690,7 +692,7 @@ spec:
       {{- /* END VOLUMES FOR MPN */ -}}
       {{- /* START VOLUMES FOR KAFKA CONNECTOR */ -}}
       {{- if ((.Values.connectors).kafkaConnector).enabled }}
-        {{- if not (((.Values.connectors).kafkaConnector).provisioning).fromPathInImage }}
+        {{- if not ((.Values.connectors.kafkaConnector).provisioning).fromPathInImage }}
         - name: kafka-connector-deployer-script
           configMap:
             name: {{ include "lightstreamer.kafka-connector.name" . }}-deployer-script
@@ -698,14 +700,14 @@ spec:
         - name: kafka-connector-configuration
           configMap:
             name: {{ include "lightstreamer.kafka-connector.name" . }}-conf
-        {{- range $key, $value := ((.Values.connectors).kafkaConnector).localSchemaFiles }}
+        {{- range $key, $value := (.Values.connectors.kafkaConnector).localSchemaFiles }}
           {{- if $value}}
         - name: kafka-connector-schema-files-{{ $key | lower }}
           configMap:
             name: {{ required (printf "connectors.kafkaConnector.localSchemaFiles.%s.name must be set" $key) ($value.name) }}
           {{- end }}
         {{- end }}
-        {{- with ((.Values.connectors).kafkaConnector).provisioning }}
+        {{- with (.Values.connectors.kafkaConnector).provisioning }}
           {{- if or .fromUrl .fromGitHubRelease }}
         - name: kafka-connector-source-storage
           emptyDir: {}
