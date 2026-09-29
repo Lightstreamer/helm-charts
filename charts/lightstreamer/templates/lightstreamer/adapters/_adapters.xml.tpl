@@ -69,7 +69,13 @@ Render the Lightstreamer configuration file of an Adapter Set
          If not defined, the default value is "Y" (i.e. Metadata Adapter
          initialised first). -->
   {{- end }}
-    <metadata_adapter_initialised_first>{{ not (eq .enableMetadataInitializedFirst false) | ternary "Y" "N" }}</metadata_adapter_initialised_first>
+  {{- if not (quote .enableMetadataInitializedFirst | empty) }}
+    <metadata_adapter_initialised_first>{{ .enableMetadataInitializedFirst | ternary "Y" "N" }}</metadata_adapter_initialised_first>
+  {{- else }}
+    <!--
+    <metadata_adapter_initialised_first>Y</metadata_adapter_initialised_first>
+    -->  
+  {{- end }}
 
   {{- with .metadataProvider }}
     {{- with .inProcessMetadataAdapter }}
@@ -236,6 +242,11 @@ Render the Lightstreamer configuration file of an Adapter Set
     <!-- Mandatory. The Metadata Adapter is the Java Proxy Adapter. -->
     <metadata_provider>
 
+        <!-- Optional. Specify a directory other than "."
+             for this Adapter's configuration files (e.g. the keystore). -->
+        <!--
+        <install_dir>metadata</install_dir>
+        -->
       {{- $isRobust := .enableRobustAdapter | default false }}
       {{- if $isRobust }}
 
@@ -319,7 +330,7 @@ Render the Lightstreamer configuration file of an Adapter Set
              notifications (that is, all the invocations to the Notify New Tables
              and Notify Tables Close methods) pertaining to the same session will
              be sequential, with no overlapping; if "N", then concurrent
-             invocations will be possible.s
+             invocations will be possible.
              Note that the final invocation to Notify Session Close is always
              guaranteed to occur after all the above notifications have terminated.
 
@@ -352,17 +363,27 @@ Render the Lightstreamer configuration file of an Adapter Set
         <exit_on_failure>Y</exit_on_failure>
         -->
 
-        <!-- List of initialization parameters specific to the{{ if $isRobust }} Robust Proxy Metadata Adapter{{ else }} Proxy Metadata Adapter{{ end }}. -->
-      {{- $commentSuffix := $isRobust | ternary " for all Robust Proxy Metadata Adapters" "" }}
-
+        <!-- List of initialization parameters specific to the{{ if $isRobust }} Robust{{ else }}{{ end }} Proxy Metadata Adapter. -->
+      {{- $commentSuffix := $isRobust | ternary " for all Proxy Metadata Adapters" "" }}
       {{- include "lightstreamer.adapters.proxy.common" (list $adapterName false .) | nindent 8 }}
       {{- include "lightstreamer.adapters.proxy.common.sslConfig" (list $adapterName $.Values.keystores false .) | nindent 8 }}
       {{- include "lightstreamer.adapters.proxy.common.authentication" (list $adapterName false .) | nindent 8 }}
       {{- include "lightstreamer.adapters.proxy.common.connection" (list false .) | nindent 8 }}
+      {{- if $isRobust }}
       {{- include "lightstreamer.adapters.proxy.metadata-provider.notification" (list $adapterName .) | nindent 8 }}
+      {{- end }}
+
+       <!-- Optional{{ $commentSuffix }}.
+            Name of the Proxy Metadata Adapter, to better identify its connections
+            and threads when assessing problems.
+            If not specified, the Adapter Set id,
+            as configured in this file, will be used. -->
+        <!--
+        <param name="name">MyFeedMetadata</param>
+        -->
       {{- include "lightstreamer.adapters.proxy.common.remoteParams" (list $adapterName false .) | nindent 8 }}
 
-        <!-- Optional{{- if $isRobust }} for all Robust Proxy Metadata Adapters{{- end }}.
+        <!-- Optional{{ $commentSuffix }}.
              If set to false, suppresses clearing of the cached profile data
              for a user when no sessions for the user are active. This is only for
              troubleshooting purpose, as profile data are always refreshed upon
@@ -376,7 +397,7 @@ Render the Lightstreamer configuration file of an Adapter Set
         -->
       {{- end }}
 
-        <!-- Optional{{- if $isRobust }} for all Robust Proxy Metadata Adapters{{- end }}.
+        <!-- Optional{{ $commentSuffix }}.
              Sets the minimum time (in milliseconds) cached profile data are kept;
              these cached data are needed in order to manage request processing before a session
              is fully started. Ignored if clear_on_session_close is false.
@@ -421,7 +442,7 @@ Render the Lightstreamer configuration file of an Adapter Set
   {{- end }} {{/* of .metadataProvider */}}
 
     </metadata_provider>
-  {{- range $dataProviderName, $dataProvider := .dataProviders }}
+  {{ range $dataProviderName, $dataProvider := .dataProviders }}
     {{- if $dataProvider.enabled }}
       {{- $dataProviderName := default "DEFAULT" $dataProvider.name }}
       {{- with $dataProvider.inProcessDataAdapter }}
@@ -463,7 +484,7 @@ Render the Lightstreamer configuration file of an Adapter Set
         -->
         {{- end }}
 
-        {{- include "lightstreamer.adapters.in-process.data-provider.dataAdapterPool" (list $adapterName $dataProviderName .) | nindent 8 -}}
+        {{- include "lightstreamer.adapters.in-process.data-provider.dataAdapterPool" (list $adapterName $dataProviderName .) | nindent 8 }}
 
         <!-- Optional. Determines the effect of a "failure" invocation
              or "FailureException" throw issued by the Adapter
@@ -500,7 +521,15 @@ Render the Lightstreamer configuration file of an Adapter Set
          if multiple Data Adapters are defined in the same Adapter Set,
          then using the "name" attribute is needed to distinguish them. -->
     <data_provider name="{{ $dataProviderName }}">
+
+        <!-- Optional. Specify a directory other than "."
+             for this Adapter's configuration files (e.g. the keystore). -->
+        <!--
+        <install_dir>data</install_dir>
+        -->
+
         {{- $isRobust := .enableRobustAdapter | default false }}
+        {{- $commentSuffix := $isRobust | ternary " for all Proxy Data Adapters" "" }}
         {{- if $isRobust }}
 
         <!-- Mandatory. Java class name of the Robust Proxy Data Adapter.
@@ -571,25 +600,21 @@ Render the Lightstreamer configuration file of an Adapter Set
         <exit_on_failure>Y</exit_on_failure>
         -->
 
-        {{- include "lightstreamer.adapters.proxy.common" (list $adapterName true .) | nindent 8 -}}
-        {{- include "lightstreamer.adapters.proxy.common.sslConfig" (list $adapterName $.Values.keystores true .) | indent 8 }}
+        <!-- List of initialization parameters specific to the{{ if $isRobust }} Robust{{ else }}{{ end }} Proxy Data Adapter. -->
+        {{- include "lightstreamer.adapters.proxy.common" (list $adapterName true .) | nindent 8 }}
+        {{- include "lightstreamer.adapters.proxy.common.sslConfig" (list $adapterName $.Values.keystores true .) | nindent 8 }}
         {{- include "lightstreamer.adapters.proxy.common.authentication" (list $adapterName true .) | nindent 8 }}
         {{- include "lightstreamer.adapters.proxy.common.connection" (list true .) | nindent 8 }}
         {{- include "lightstreamer.adapters.proxy.data-provider.events-recovery" (list $adapterName $dataProviderName .) | indent 8 }}
 
-        {{- if $isRobust }}
-          {{- if .eventsRecovery }}
-            {{- $possibleValues := list "leave_hole" "use_snapshot" "enforce_snapshot" -}}
-            {{- if not (has .eventsRecovery $possibleValues) }}
-              {{ printf "adapters.%s.dataProviders.%s.eventsRecovery must be one of: %s" $adapterName $dataProviderName $possibleValues | fail }}
-            {{- end }}
-        <param name="events_recovery">{{ .eventsRecovery }}</param>
-          {{- end }}
-
-          {{- if not (quote .statusItem | empty) }}
-        <param name="status_item">{{ .statusItem }}</param>
-          {{- end }}
-        {{- end }}
+        <!-- Optional{{ $commentSuffix }}.
+             Name of the Proxy Data Adapter, to better identify its connections
+             and threads when assessing problems.
+             If not specified, the Adapter Set id and the Data Adapter name,
+             as configured in this file, will be used. -->
+         <!--
+         <param name="name">MyFeedData</param>
+         -->
 
         {{- include "lightstreamer.adapters.proxy.common.remoteParams" (list $adapterName true .) | nindent 8 }}
         {{- include "lightstreamer.adapters.proxy.common.closing" (list $adapterName true .) | nindent 8 }}
