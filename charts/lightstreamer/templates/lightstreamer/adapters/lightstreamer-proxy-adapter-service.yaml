@@ -14,13 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */}}
 
+{{- include "lightstreamer.adapters.validateAllAdapterSets" . }}
 {{/* Extract the list of proxy adapters*/}}
 {{- $proxyAdapters := dict }}
 {{- $metaCounter := 0}}
 {{- $dataCounter := 0}}
 {{- range $adapterName, $adapterSet := .Values.adapters }}
   {{- if $adapterSet.enabled }}
-    {{- with ($adapterSet.metadataProvider).proxyMetadataAdapter }}
+    {{- with $adapterSet.metadataProvider.proxyMetadataAdapter }}
       {{- if not .remoteHost }}
         {{- $metaCounter = add1 $metaCounter }}
         {{- $key := printf "proxy-meta-%d" $metaCounter }}

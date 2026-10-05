@@ -5,7 +5,7 @@ image:
 
 deployment:
   # Download the QuickStart web client from GitHub into a shared volume,
-  # which is then served by the internal web server at /QuickStart.
+  # which is then served by the Internal Web Server at /QuickStart.
   extraInitContainers:
     - name: web-client
       image: alpine/git:latest

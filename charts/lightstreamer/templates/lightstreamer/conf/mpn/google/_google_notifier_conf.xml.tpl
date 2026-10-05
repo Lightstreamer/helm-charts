@@ -19,6 +19,10 @@ limitations under the License.
 <!-- Do not remove this line. File tag: google_notif_conf-APV-20200124. -->
 
 <google_notifier_conf>
+
+   <!-- Note: A very simple variable-expansion feature is available,
+        similarly to lightstreamer_conf.xml. See the related comment there. -->
+
 {{- with .Values.mpn.googleNotifierConfig }}
 
    <!-- Optional. Minimum delay between successive mobile push
@@ -29,17 +33,17 @@ limitations under the License.
         it too much, and subsequently sending notifications with a high
         frequency, may cause Google's Firebase Cloud Messaging service ("FCM")
         to close the connection and ban (temporarily or permanently) any
-        successive notifications.
+        successive notification.
         Mobile push notifications fired by a trigger are not subject to
         this limit and may be sent at higher pace.
         Default: 1000 (1 sec) -->
-   {{- if not (quote .minSendDelayMillis) | empty }}
+  {{- if not (quote .minSendDelayMillis) | empty }}
      <min_send_delay_millis>{{ int .minSendDelayMillis }}</min_send_delay_millis>
-   {{- else }}
+  {{- else }}
    <!--
    <min_send_delay_millis>1000</min_send_delay_millis>
    -->
-   {{- end }}
+  {{- end }}
 
    <!-- Optional. Size of the notifier's "MPN XXX MESSAGING" internal thread
         pool, which is devoted to sending the notifications payload. Each
@@ -47,13 +51,15 @@ limitations under the License.
         allocating multiple threads for this task may be beneficial.
         Default: The number of available total cores, as detected by the
         JVM. -->
-   {{- if not (quote .messagingPoolSize) | empty }}
+  {{- if not (quote .messagingPoolSize) | empty }}
    <messaging_pool_size>{{ int .messagingPoolSize }}</messaging_pool_size>
-   {{- else }}
+  {{- else }}
    <!--
    <messaging_pool_size>10</messaging_pool_size>
    -->
-   {{- end }}
+  {{- end }}
+
+  {{- if .apps }}
 
    <!-- Optional and cumulative.
         Configuration of a specific app that should receive mobile push
@@ -61,7 +67,7 @@ limitations under the License.
         package name specified in the "packageName" attribute. -->
   {{- range $appName, $app := .apps }}
     {{- if ($app).enabled }}
-   <app packageName={{ (required (printf "mpn.googleNotifierConfig.apps.%s.packageName must be set" $appName) $app.packageName) | quote }}>
+   <app packageName="{{ (required (printf "mpn.googleNotifierConfig.apps.%s.packageName must be set" $appName) $app.packageName) }}">
 
       <!-- Mandatory. Specifies the intended service level for the
            current app, must be one of: test, dry_run, production.
@@ -88,8 +94,8 @@ limitations under the License.
            The file path is relative to the directory that contains this
            configuration file. See the General Concepts document for more
            information on how to obtain this file. -->
-      {{- if has $app.serviceLevel (list "dry_run" "production" ) }}
-      <service_json_file>{{ $appName }}/{{ $app.serviceJsonFileRef.key }}</service_json_file>
+      {{- if has $app.serviceLevel (list "dry_run" "production") }}
+      <service_json_file>{{ $appName }}/{{ required (printf "mpn.googleNotifierConfig.apps.%s.serviceJsonFile.key must be set" $appName) ($app.serviceJsonFileRef).key }}</service_json_file> 
       {{- else }}
       <!--
       <service_json_file>my_app_service.json</service_json_file>
@@ -103,7 +109,7 @@ limitations under the License.
            is at least one match.
            Remember that the MPN Module supports, as trigger, any Java boolean
            expression, including use of JDK classes and methods, with the addition
-           of field references syntax (see the iOS Client SDK for more information).
+           of field references syntax (see the Client API in use for more information).
            Hence, this check is a safety measure required to avoid that clients
            can request triggers potentially dangerous for the Server, as each
            trigger may contain arbitrary Java code.
@@ -120,7 +126,8 @@ limitations under the License.
            not the "${name}" format. -->
       {{- if $app.triggerExpressions }}
       <trigger_expressions>
-        {{- range $trigger := $app.triggerExpressions }}
+        {{- range $index, $trigger := $app.triggerExpressions }}
+          {{- $_ := required (printf "mpn.googleNotifierConfig.apps.%s.triggerExpressions[%d] must be set" $appName $index) $trigger }}
          <accept>{{ $trigger | replace "<" "&lt;" | replace ">" "&gt;" }}</accept>
         {{- end }}
       </trigger_expressions>
@@ -133,8 +140,9 @@ limitations under the License.
       {{- end }}
    </app>
 
-    {{- end }} {{/* if ($app).enabled */}}
-  {{- end }} {{/* range .apps */}}
+    {{- end }} {{/* of if ($app).enabled */}}
+  {{- end }} {{/* of range .apps */}}
+  {{- end }} {{/* of if .apps */}}
 {{- end }} {{/* with Values.mpn.googleNotifierConfig */}}
 </google_notifier_conf>
 {{- end }}

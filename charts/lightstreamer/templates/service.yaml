@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */}}
 
+{{- $_ := required "service must be set" .Values.service }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -45,25 +46,25 @@ spec:
   {{- $serviceCount := len .Values.service.ports }}
   {{- $usedNames := list }}
   {{- $usedPorts := list }}
-  {{- range $serviceIndex, $service:= .Values.service.ports }}
-    - port: {{ $service.port }}
-      targetPort: {{ include "lightstreamer.service.targetPort" (list $ $service.targetPort) }}
+  {{- range $portIndex, $service:= .Values.service.ports }}
+    - port: {{ required (printf "service.ports[%d].port is required" $portIndex) ($service).port }}
+      targetPort: {{ include "lightstreamer.service.targetPort" (list $ (int $portIndex) $service.targetPort) }}
       protocol: TCP
       {{- if $service.nodePort }}
       nodePort: {{ $service.nodePort }}
       {{- end }}
-      {{- $serviceName := $service.name | kebabcase | trunc 15 | trimSuffix "-" }}
+      {{- $serviceName := $service.name | default "" | kebabcase | trunc 15 | trimSuffix "-" }}
       {{- $servicePort := int $service.port }}
       {{- if has $servicePort $usedPorts }}
-        {{ printf "service.ports[%d].port %d is duplicated, ports must be unique" $serviceIndex $servicePort | fail }}
+        {{ printf "service.ports[%d].port %d is duplicated, ports must be unique" $portIndex $servicePort | fail }}
       {{- end }}
       {{- $usedPorts = append $usedPorts $servicePort }}
       {{- if gt $serviceCount 1 }}
         {{- if not $serviceName }}
-          {{ printf "service.ports[%d].name must be set when multiple ports are defined" $serviceIndex | fail }}
+          {{ printf "service.ports[%d].name must be set when multiple ports are defined" $portIndex | fail }}
         {{- end }}
         {{- if has $serviceName $usedNames }}
-          {{ printf "service.ports[%d].name '%s' is duplicated, names must be unique" $serviceIndex $serviceName | fail }}
+          {{ printf "service.ports[%d].name '%s' is duplicated, names must be unique" $portIndex $serviceName | fail }}
         {{- end }}
         {{- $usedNames = append $usedNames $serviceName }}
       {{- end }}
