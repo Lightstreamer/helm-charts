@@ -33,8 +33,8 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: {{ include "lightstreamer.fullname" . }}
+  maxReplicas: {{ required "autoscaling.maxReplicas must be set" .Values.autoscaling.maxReplicas }}
   minReplicas: {{ .Values.autoscaling.minReplicas }}
-  maxReplicas: {{ .Values.autoscaling.maxReplicas }}
   metrics:
     {{- if .Values.autoscaling.targetCPUUtilizationPercentage }}
     - type: Resource

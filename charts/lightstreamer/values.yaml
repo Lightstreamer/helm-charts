@@ -134,7 +134,7 @@ deployment:
 
       # -- Mandatory if `enabled` is set to `true` and `liveness.default` is
       # not specified. The reference to a server socket configuration (defined
-      # in `servers`). When set, the liveness probe uses the built-in
+      # in `servers`). If set, the liveness probe uses the built-in
       # Lightstreamer health check endpoint on that server.
       # If left empty, use `default` to specify a raw Kubernetes probe instead.
       serverRef:
@@ -164,7 +164,7 @@ deployment:
 
       # -- Mandatory if `enabled` is set to `true` and `readiness.default` is
       # not specified. The reference to a server socket configuration (defined
-      # in `servers`). When set, the readiness probe uses the built-in
+      # in `servers`). IF set, the readiness probe uses the built-in
       # Lightstreamer health check endpoint on that server.
       # If left empty, use `default` to specify a raw Kubernetes probe instead.
       serverRef:
@@ -195,7 +195,7 @@ deployment:
 
       # -- Mandatory if `enabled` is set to `true` and `startup.default` is
       # not specified. The reference to a server socket configuration (defined
-      # in `servers`). When set, the startup probe uses the built-in
+      # in `servers`). If set, the startup probe uses the built-in
       # Lightstreamer health check endpoint on that server.
       # If left empty, use `default` to specify a raw Kubernetes probe instead.
       serverRef:
@@ -285,7 +285,7 @@ service:
   labels: {}
 
   # -- Optional. Additional selectors.
-  additionalSelectors:
+  additionalSelectors: {}
 
   # -- Optional. The service type.
   # See https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types.
@@ -349,7 +349,7 @@ ingress:
   # If not set and multiple service ports are defined, `defaultBackend` must be
   # explicitly specified.
   # See https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-rules.
-  rules:
+  rules: []
     # - host:
     #   paths:
     #     - path: /
@@ -387,16 +387,16 @@ autoscaling:
   # -- Additional HPA labels.
   labels: {}
 
-  # -- The minimum number of replicas.
-  minReplicas:
+  # -- Optional. The minimum number of replicas.
+  minReplicas: 1
 
-  # -- The maximum number of replicas.
+  # -- (int) Mandatory. The maximum number of replicas.
   maxReplicas:
 
-  # -- The target CPU utilization percentage.
+  # -- (int) Optional. The target CPU utilization percentage.
   targetCPUUtilizationPercentage:
 
-  # -- The target memory utilization percentage.
+  # -- (int) Optional. The target memory utilization percentage.
   targetMemoryUtilizationPercentage:
 
 # -- Mandatory. Configure the edition, the optional features, and the type of
@@ -411,8 +411,8 @@ license:
   # - `ENTERPRISE`
   edition: ENTERPRISE
 
-  # -- Mandatory if edition is set to `COMMUNITY`. The Client API to use with
-  # your Lightstreamer free license.
+  # -- Optional but only effective if edition is set to `COMMUNITY`. The Client
+  # API to use with your Lightstreamer free license.
   # Possible values:
   # - `javascript_client` (for web browser clients)
   # - `nodejs_client` (for Node.js clients)
@@ -423,6 +423,7 @@ license:
   # - `javase_client` (for Java SE clients)
   # - `python_client` (for Python clients)
   # - `dotnet_standard_client` (for .NET Standard clients)
+  # - `cpp_client` (for C++ clients)
   # - `macos_client` (for macOS clients)
   # - `tvos_client` (for tvOS clients)
   # - `watchos_client` (for watchOS clients)
@@ -787,8 +788,8 @@ servers:
       echo: []
         # - "cookie"
 
-      # -- Optional. Requests to add to the HTTP response header a line with
-      # the specified `name` (mandatory) and `value` (optional).
+      # -- Optional. Requests to add to the HTTP response header a line with the
+      # specified `name` and `value`, both of which are mandatory.
       # The suggested setting for _X-Accel-Buffering_ may help to enable
       # streaming support when proxies of several types are involved.
       add:
@@ -835,7 +836,7 @@ servers:
       # For instance, the flag can and should be set to `true` in case the
       # identification of the remote address is not properly tuned and the
       # determined address may be a local one.
-      enablePrivate: true
+      enablePrivate: false
 
       # -- Optional. If set to `true`, instructs the Server that the connection
       # endpoint is a reverse proxy or load balancer that sends client address
@@ -1013,10 +1014,10 @@ servers:
       # logged at startup by the
       # `logging.loggers.lightstreamerLogger.subLoggers.io.ssl` logger at
       # `DEBUG` level.
-      removeProtocols: []
-        # - SSL
-        # - TLSv1$
-        # - TLSv1.1
+      removeProtocols:
+        - SSL
+        - TLSv1$
+        - TLSv1.1
 
       # -- (bool) Optional. Instructs the underlying Security Provider on
       # whether to use stateless (when `true`) or stateful (when `false`)
@@ -1136,13 +1137,14 @@ keystores:
       key: myserver.keystore
 
     # -- Mandatory if type is set to `JKS` or `PKCS12`. Secret name and key
-    # where keystore password is stored.
+    # where the keystore password is stored.
     keystorePasswordSecretRef:
       name: myserver-keystore-keypass-secret
       key: myserver-keystore.keypass
 
-    # -- Optional. Secret name and key where the password of the private key
-    # in the keystore is stored.
+    # -- (object) Optional but only effective if this keystore is referenced by 
+    # the Kafka Connector configuration. Secret name and key where the password
+    # of the private key in the keystore is stored.
     keyPasswordSecretRef:
       # name:
       # key:
@@ -1507,7 +1509,7 @@ logging:
         # -- Optional. Logging of system components initialization.
         # At `DEBUG` level, initialization details, error details and all
         # configuration settings are reported.
-        init: DEBUG
+        init: INFO
 
         # -- Optional. Logging of license check phase.
         # At `DEBUG` level, check details and error details can be found in case
@@ -1936,7 +1938,7 @@ management:
   jmx:
 
     # -- Optional. JMX Service configuration.
-    # When enabled, creates a dedicated Kubernetes Service that exposes JMX
+    # If enabled, creates a dedicated Kubernetes Service that exposes JMX
     # connector ports (RMI and/or JMXMP). The chart auto-discovers which
     # connectors are enabled and includes their ports in the Service.
     # This is useful for in-cluster monitoring tools that need a stable DNS
@@ -2104,10 +2106,10 @@ management:
         # order to remove the matching ones from the enabled protocols set to be
         # used in case TLS/SSL is enabled for part or all the communication.
         # See notes for `servers.{}.sslConfig.removeProtocols`.
-        removeProtocols: []
-          # - SSL
-          # - TLSv1$
-          # - TLSv1.1
+        removeProtocols:
+          - SSL
+          - TLSv1$
+          - TLSv1.1
 
       # -- Optional. Enables the RMI Connector access without credentials.
       # If set to `true`, requests to the RMI Connector are always allowed.
@@ -2371,7 +2373,7 @@ pushSession:
     # when the user-agent supplied with the request contains all the specified
     # string (through the`specialCases[].userAgentContains`).
     # Special cases are evaluated in sequence, until one is enabled.
-    specialCases:
+    specialCases: []
       # - value: 100000
       #   userAgentContains:
       #     - "Symbian OS"
@@ -2556,10 +2558,10 @@ pushSession:
   # above cases.
   enableDeltaDelivery: true
 
-  # --  Optional. List of algorithms to be tried by default to perform
-  # the "delta delivery" of changed fields in terms of difference between
-  # previous and new value. This list is applied only on fields of items for
-  # which no specific information is provided by the Data Adapter.
+  # -- Optional. List of algorithms to be tried by default to perform the "delta
+  # delivery" of changed fields in terms of difference between previous and new
+  # value. This list is applied only on fields of items for which no specific
+  # information is provided by the Data Adapter.
   # For each value to be sent to some client, the algorithms are tried in the
   # order specified by this list, until one is found which is compatible with
   # both client capabilities and the involved values.
@@ -2634,7 +2636,7 @@ pushSession:
   # or a big snapshot has to be sent, and the roundtrip time is high; in this
   # case, the delivery could be slow. However, the Server tries to detect these
   # cases and temporarily enlarge the buffer.
-  # Hence, the factory setting is very small and it is comparable with a
+  # Hence, the default setting is very small and it is comparable with a
   # typical packet size. There shouldn't be any need for an even smaller value;
   # also note that the system may force a minimum size.
   # Higher values should make sense only if the expected throughput is high and
@@ -2906,9 +2908,9 @@ mpn:
   # to the devices. In particular, during the startup phase, all the
   # subscriptions needed to handle all the active push notifications are
   # performed in a burst. If defined, the pool should be sized wide enough to
-  # support this burst of activity. If the pool is not defined, each
-  # "subscribe" call will be managed by the thread pool associated with the
-  # involved Data Adapter, similarly to ordinary sessions.
+  # support this burst of activity. If the pool is not defined, each "subscribe"
+  # call will be managed by the thread pool associated with the involved Data
+  # Adapter, similarly to ordinary sessions.
   # @default -- {}
   deviceHandlerPool:
 
@@ -2955,7 +2957,7 @@ mpn:
   # subscription, e.g.: when the price of a stock raises above a threshold, the
   # MPN module must both send the mobile push notification and mark the
   # subscription as triggered on the database. If the database is not available,
-  # the MPN module may react by aborting the  operation, i.e. no mobile push
+  # the MPN module may react by aborting the operation, i.e. no mobile push
   # notification is sent, another one will only be sent if the price drops and
   # then rises above the threshold again. Alternatively, it may react by
   # continuing with the operation, i.e. the mobile push notification is sent
@@ -3031,11 +3033,12 @@ mpn:
         # the app ID is stored.
         keystoreRef:
 
-        # -- Optional. The configmap name and key where the push package zip
-        # file is stored. This file contains a descriptor of the web app (i.e.
-        # targeting Safari push notification), and is mandatory only for web
-        # apps (ignore in other cases). See the General Concepts document for
-        # more information on how to produce this file.
+        # -- (object) Optional. The configmap name and key where the push
+        # package zip file is stored. This file contains a descriptor of the web
+        # app (i.e. targeting Safari push notification), and is mandatory only
+        # for web apps (ignore in other cases).
+        # See the General Concepts document for more information on how to
+        # produce this file.
         pushPackageFileRef:
           # name: push-package-map
           # key: push_package.zip
@@ -3072,14 +3075,14 @@ mpn:
       # -- Keystore configuration for the app.
       myAppKeystore:
 
-        # -- Mandatory. The secret name and the key where the keystore file is
-        # stored.
+        # -- (object) Mandatory. The secret name and the key where the keystore
+        # file is stored.
         keystoreFileSecretRef:
           # name:
           # key:
 
-        # -- Mandatory. The secret name and the key where the keystore password
-        # is stored.
+        # -- (object) Mandatory. The secret name and the key where the keystore
+        # password is stored.
         keystorePasswordSecretRef:
           # name:
           # key:
@@ -3134,11 +3137,12 @@ mpn:
         # by Google's servers but not delivered to the user's device.
         serviceLevel: test
 
-        # -- Mandatory if `serviceLevel` is set to `dry_run` or `production`.
-        # The configmap name and the key where the JSON descriptor for the
-        # service account credentials of this project on Firebase console is
-        # stored. See the General Concepts document for more information on how
-        # to obtain this file.
+        # -- (object) Mandatory if `serviceLevel` is set to `dry_run` or
+        # `production`. The configmap name and the key where the JSON descriptor
+        # for the service account credentials of this project on Firebase
+        # console is stored.
+        # See the General Concepts document for more information on how to
+        # obtain this file.
         serviceJsonFileRef:
           # name: service-account-secret
           # key: service-account.json
@@ -3183,8 +3187,8 @@ webServer:
   # If set to `false`, the Server ignores requests for file resources.
   enabled: true
 
-  # -- Optional. The configmap name and the key where an HTML page to be
-  # returned upon unexpected request URLs is stored. This applies to URLs in
+  # -- (object) Optional. The configmap name and the key where an HTML page to 
+  # be returned upon unexpected request URLs is stored. This applies to URLs in
   # reserved ranges that have no meaning.
   # If the Internal web server is not enabled (`webServer.enabled` set to
   # `false`), this also applies to all non-reserved URLs; otherwise,
@@ -3196,7 +3200,7 @@ webServer:
     # key: ErrorPage.html
 
   # -- Optional. The reference to a volume where the static page files are
-  # stored. When set, the volume is mounted into the container and used as the
+  # stored. If set, the volume is mounted into the container and used as the
   # root directory for URL path mapping by the internal web server.
   # Note that the `/lightstreamer` URL path (as any alternative paths defined
   # through `pushSession.serviceUrlPrefix`) is reserved, as well as the base
@@ -3392,7 +3396,7 @@ load:
   # This task does not involve blocking operations, but its computation may be
   # heavy under high update activity; hence, on multiprocessor machines,
   # allocating multiple threads may be beneficial.
-  timerPoolSize: -1
+  timerPoolSize: 1
 
   # -- (int) Optional. Size of the `EVENTS` internal thread pool, which is
   # devoted to dispatching the update events received from a Data Adapter to
@@ -3755,7 +3759,7 @@ adapters:
         #   Adapter Set ClassLoader, is used. In this case, it is mandatory that
         #   a specific `installDir` is assigned to the Adapter; hence, classes
         #   found in its `lib` and `classes` subfolders are added to the
-        #   dedicated the ClassLoader.
+        #   dedicated ClassLoader.
         #
         # - `log-enabled`: A dedicated ClassLoader which also includes the
         #   `slf4j` library used by the Server is used; hence the Adapter shares
@@ -4109,7 +4113,7 @@ adapters:
           # -- See `servers.{}.sslConfig.removeCipherSuites`.
           removeCipherSuites: []
 
-          # -- (object) See `servers.{}.sslConfig.enforceServerCipherPreference`.
+          # -- (object) See `servers.{}.sslConfig.enforceServerCipherSuitePreference`.
           enforceServerCipherSuitePreference:
 
           # -- See `servers.{}.sslConfig.allowProtocols`.
@@ -4123,8 +4127,9 @@ adapters:
 
           # -- (string) Mandatory if `enableMandatoryClientAuth` is set to
           # `true`. The reference to a keystore configuration (defined in
-          # `keystores`). See the `keystores.myServerKeystore` settings for
-          # general details on keystore configuration.
+          # `keystores`).
+          # See the `keystores.myServerKeystore` settings for general details on
+          # keystore configuration.
           truststoreRef:
 
           # -- Optional. Only used if `remoteHost` is configured.
@@ -4151,10 +4156,9 @@ adapters:
           # Every secret must contains the keys `user` and `password`.
           credentialSecrets: []
 
-        # -- (int) Optional but only effective when `remoteHost` is set.
-        # Delay to be enforced before retrying a connection attempt to the
-        # Remote Server, to prevent a possible strict loop of unsuccessful
-        # attempts.
+        # -- (int) Optional but only effective if `remoteHost` is set. Delay to
+        # be enforced before retrying a connection attempt to the Remote Server,
+        # to prevent a possible strict loop of unsuccessful attempts.
         connectionRetryMillis: 10000
 
         # -- (int) Optional but only effective if `enableRobustAdapter` is set
@@ -4218,7 +4222,7 @@ adapters:
         #    already omitted, unless requested by the remote server through the
         #    `wantsTablesNotification` method.
         #
-        closeNotificationsRecovery: unneeded
+        closeNotificationsRecovery: pessimistic
 
         # -- (string) Optional but only effective if `enableRobustAdapter` is
         # set to `true`. The action to be performed when the authentication of
@@ -4255,7 +4259,7 @@ adapters:
         # @default -- no code will be used, hence `notifyUserOnDisconnection` will be set as fail
         notifyUserDisconnectionCode:
 
-        # -- (string) Optional but only effective when
+        # -- (string) Optional but only effective if
         # `notifyUserDisconnectionCode` is set. A string to be supplied as a
         # custom error message by `notifyUser`, through a `CreditsException`,
         # when the request is being refused because of the unavailability of the
@@ -4294,7 +4298,7 @@ adapters:
           # @default -- "" (no custom initialization parameters will be sent)
           prefix:
 
-          # -- (object) Optional but only effective when `prefix` is set. Map of
+          # -- (object) Optional but only effective if `prefix` is set. Map of
           # custom initialization parameters to be sent to the remote
           # counterpart.
           # Every key is the name of the parameter and must start with the value
@@ -4320,10 +4324,11 @@ adapters:
         # session is fully started.
         userDataTimeoutMillis: 10000
 
-        # -- Optional but only effective if `enableRobust` is set to `true`. If
-        # set to `true`, enforces the clearing of all internal caches when a new
-        # Remote Metadata Adapter instance is connected after the disconnection
-        # of the previous instance.
+        # -- Optional but only effective if `enableRobustAdapter` is set to
+        # `true`.
+        # If set to `true`, enforces the clearing of all internal caches when a
+        # new Remote Metadata Adapter instance is connected after the
+        # disconnection of the previous instance.
         # In fact, some requests to the Remote Adapter involve aggregate data
         # and are meant to be used to fulfill multiple subsequent requests from
         # the Server, hence their responses are cached for a few seconds.
@@ -4426,7 +4431,7 @@ adapters:
           # some calls to the Metadata Adapter. Among the latter, the most
           # critical are `getItems`, `getSchema`, and `notifyNewTables`; the
           # pool associated with each Metadata Adapter call can be found in the
-          # related API  documentation.
+          # related API documentation.
           #
           # If not specified, these requests are managed by the thread pool
           # related to the Adapter Set, if, in turn, defined.
@@ -4562,7 +4567,7 @@ adapters:
             # -- See `servers.{}.sslConfig.removeCipherSuites`.
             removeCipherSuites: []
 
-            # -- (object). See `servers.{}.sslConfig.enforceServerCipherPreference`.
+            # -- (object). See `servers.{}.sslConfig.enforceServerCipherSuitePreference`.
             enforceServerCipherSuitePreference:
 
             # -- See `servers.{}.sslConfig.allowProtocols`.
@@ -4596,10 +4601,9 @@ adapters:
             # Every secret must contains the keys `user` and `password`.
             credentialSecrets: []
 
-          # -- (int) Optional but only effective when `remoteHost` is set.
-          # Delay to be enforced before retrying a connection attempt to the
-          # Remote Server, to prevent a possible strict loop of unsuccessful
-          # attempts.
+          # -- (int) Optional but only effective if `remoteHost` is set. Delay
+          # to be enforced before retrying a connection attempt to the Remote 
+          # Server, to prevent a possible strict loop of unsuccessful attempts.
           connectionRetryMillis: 10000
 
           # -- (int) Optional but only effective if `enableRobustAdapter` is
@@ -4735,8 +4739,8 @@ adapters:
             # @default -- "" (no custom initialization parameters will be sent)
             prefix:
 
-            # -- (object) Optional but only effective when `prefix` is set. Map
-            # of custom initialization parameters to be sent to the remote
+            # -- (object) Optional but only effective if `prefix` is set. Map of
+            # custom initialization parameters to be sent to the remote
             # counterpart.
             # Every key is the name of the parameter and must start with the
             # value specified in the `prefix` setting.
@@ -5002,7 +5006,7 @@ connectors:
 
     # -- Mandatory. Maps of connection configurations. The Kafka Connector
     # allows the configuration of different independent connections to different
-    # Kafka  broker/clusters.
+    # Kafka broker/clusters.
     # Every entry in the map defines a connection configuration.
     connections:
 
@@ -5034,18 +5038,18 @@ connectors:
 
         # -- (string) Optional. The consumer mode for this connection.
         # Possible values:
-        # - `GROUP`: The internal Kafka Consumer joins a consumer group and uses 
-        #   the group coordination protocol (partition assignment, offset 
-        #   commits via __consumer_offsets). The consumer group is identified by 
+        # - `GROUP`: The internal Kafka Consumer joins a consumer group and uses
+        #   the group coordination protocol (partition assignment, offset
+        #   commits via __consumer_offsets). The consumer group is identified by
         #   the `group.id` parameter.
-        # -  `MANUAL`: The internal Kafka Consumer operates independently, using 
-        #   manual partition assignment without joining any consumer group and 
-        #   without persisting offsets to Kafka. The `group.id` parameter is 
+        # - `MANUAL`: The internal Kafka Consumer operates independently, using
+        #   manual partition assignment without joining any consumer group and
+        #   without persisting offsets to Kafka. The `group.id` parameter is
         #   ignored.
         consumerMode: GROUP
 
-        # -- (string) Optional but only effective when `consumer.mode` is set 
-        # to `GROUP`. The name of the consumer group this connection belongs to.
+        # -- (string) Optional but only effective if `consumer.mode` is set to
+        # `GROUP`. The name of the consumer group this connection belongs to.
         # Sets the value for the `group.id` key used to configure the internal
         # Kafka Consumer.
         # See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_group.id
@@ -5065,14 +5069,12 @@ connectors:
           # Possible values:
           # - `TLSv1.2`
           # - `TLSv1.3`
-          # If not specified, the default value is `TLSv1.3` when running on
-          # Java 11 or newer, `TLSv1.2` otherwise.
-          protocol:
+          protocol: TLSv1.3
 
           # -- Optional. List of enabled secure communication protocols.
-          # If not specified, the default value is `[TLSv1.2, TLSv1.3]` when
-          # running on Java 11 or newer, `[TLSv1.2]` otherwise.
-          allowProtocols: []
+          allowProtocols:
+            - TLSv1.2
+            - TLSv1.3
 
           # -- Optional. List of enabled secure cipher suites.
           # If not specified, all the available cipher suites in the running JVM
@@ -5084,13 +5086,14 @@ connectors:
 
           # -- (string) Optional. The reference to a keystore (defined in
           # 'keystores') used to validate the certificates provided by the Kafka
-          # brokers. See the `keystores.myServerKeystore` settings for general
+          # brokers.
+          # See the `keystores.myServerKeystore` settings for general
           # details on keystore configuration for the Kafka Connector.
           truststoreRef:
 
           # -- (string) Optional. The reference to a keystore (defined in
-          # 'keystores') used if mutual TLS is enabled on Kafka brokers. See the
-          # `keystores.myServerKeystore` settings for general details on
+          # 'keystores') used if mutual TLS is enabled on Kafka brokers.
+          # See the `keystores.myServerKeystore` settings for general details on
           # keystore configuration for the Kafka Connector.
           keystoreRef:
 
@@ -5101,8 +5104,7 @@ connectors:
           # the Kafka Cluster.
           enabled: false
 
-          # -- (string) Mandatory if `enabled` is set to `true`. The SASL
-          # mechanism type.
+          # -- Optional. The SASL mechanism type.
           # The Kafka Connector accepts the following authentication
           # mechanisms:
           # - `PLAIN`
@@ -5125,8 +5127,8 @@ connectors:
             # -- Optional. Enables the use of a keytab.
             enableKeytab: false
 
-            # -- Mandatory if `enableKeytab` is set to `true`. The configmap
-            # name and key where the keytab file is stored
+            # -- (object) Mandatory if `enableKeytab` is set to `true`. The
+            # ConfigMap name and key where the keytab file is stored
             keytabFilePathRef:
               # name:
               # key:
@@ -5137,14 +5139,14 @@ connectors:
             # -- (string) Mandatory. The name of the Kerberos service.
             kerberosServiceName:
 
-            # -- (string) Mandatory if `enableTicketCache` is set to `true`.
+            # -- Mandatory if `enableTicketCache` is set to `false`.
             # The name of the principal to be used.
             principal:
 
             # -- Optional. Enables the use of a ticket cache.
             enableTicketCache: false
 
-          # -- Optional but only effective if `mechanism` is set to 
+          # -- Optional but only effective if `mechanism` is set to
           # `AWS_MSK_IAM`.
           iam:
 
@@ -5159,11 +5161,11 @@ connectors:
             # specific role with temporary credentials.
             roleArn:
 
-            # -- (string) Optional but only effective when `roleArn` is set.
-            # The name of the session for the assumed IAM role.
+            # -- (string) Optional but only effective if `roleArn` is set. The
+            # name of the session for the assumed IAM role.
             roleSessionName:
 
-            # -- (string) Optional but only effective when `roleArn` is set.
+            # -- (string) Optional but only effective if `roleArn` is set.
             # Specifies the AWS region of the STS endpoint to use when assuming
             # the IAM role.
             stsRegion:
@@ -5172,8 +5174,8 @@ connectors:
         # If not specified, all settings at their defaults will be used.
         record:
 
-          # -- (string) Optional but ineffective if `snapshot.mode` is set to 
-          # any value other than `NONE`. Specifies where to start consuming 
+          # -- (string) Optional but ineffective if `snapshot.mode` is set to
+          # any value other than `NONE`. Specifies where to start consuming
           # events from:
           # - `LATEST`: Start consuming events from the end of the topic
           # partition.
@@ -5262,7 +5264,7 @@ connectors:
             # -- Mandatory if `type` is set to `AVRO` or `PROTOBUF` and no
             # local schema paths are provided. Enables the Confluent Schema
             # Registry for validation of the key.
-            # When enabled, the reference to a Schema Registry configuration is
+            # If enabled, the reference to a Schema Registry configuration is
             # mandatory through the `record.schemaRegistryRef` parameter.
             enableSchemaRegistry: false
 
@@ -5304,14 +5306,14 @@ connectors:
             # -- Mandatory if `type` is set to `AVRO` or `PROTOBUF` and no
             # local schema paths are provided. Enables the Confluent Schema
             # Registry for validation of the value.
-            # When enabled, the reference to a Schema Registry configuration is
+            # If enabled, the reference to a Schema Registry configuration is
             # mandatory through the `record.schemaRegistryRef` parameter.
             enableSchemaRegistry: false
 
             # -- Mandatory if `type` is set to `PROTOBUF` and a binary
             # descriptor file is provided through `localSchemaFilePathRef`.
             # Specifies the name of the Protobuf message type to be used for
-            # deserializing the value a Kafka record.
+            # deserializing the value of a Kafka record.
             protobufMessageType:
 
             # -- Optional but only effective if `type` is set to `KVP`.
@@ -5337,7 +5339,7 @@ connectors:
           # Lightstreamer clients subscribed to this connection is forced.
           extractionErrorStrategy: IGNORE_AND_CONTINUE
 
-          # -- (string) Mandatory when either `record.keyEvaluator` or
+          # -- (string) Mandatory if either `record.keyEvaluator` or
           # `record.valueEvaluator` requires a Schema Registry. The reference to
           # a Schema Registry configuration (defined in
           # `connectors.kafkaConnector.schemaRegistries`).
@@ -5381,10 +5383,10 @@ connectors:
                 # - "stockTemplate"
                 # - "anotherTemplate"
 
-              # -- Optional but only effective when `consumer.mode` is set to 
-              # `MANUAL`. Lists the partitions of the topic to be manually 
+              # -- Optional but only effective if `consumer.mode` is set to
+              # `MANUAL`. Lists the partitions of the topic to be manually
               # assigned to this consumer.
-              # Every entry in the list must be a valid partition number or an 
+              # Every entry in the list must be a valid partition number or an
               # inclusive range (e.g. "0", "1", "2-4").
               fromPartitions: []
                 # - 0
@@ -5394,8 +5396,8 @@ connectors:
 
           # -- Optional. Enables treating
           # `connectors.kafkaConnector.routing.topicMappings.{}.topic` as a
-          # regular expression instead of a literal topic name. Not supported 
-          # when `consumer.mode` is set to `MANUAL`.
+          # regular expression instead of a literal topic name. Not supported
+          # if `consumer.mode` is set to `MANUAL`.
           enableTopicRegEx: false
 
         # -- Mandatory. Record mappings configuration.
@@ -5411,15 +5413,40 @@ connectors:
             # expressions. The extraction expressions follow the Data Extraction
             # Language syntax. For a complete reference, see:
             # https://github.com/lightstreamer/Lightstreamer-kafka-connector?tab=readme-ov-file#record-mapping-fieldfield_name.
-            aLightstreamerFieldName: "#{extraction_expression}"
-
+            #
+            # Example:
             # stock_name: "#{VALUE.name}"
             # last_price: "#{VALUE.last_price}"
             #
             # Dynamic Field Discovery: Use wildcards in both the entry (`*`) and
             # extraction expression to automatically discover and map field
             # names at runtime from the record structure.
+            #
+            # Example:
             # "*": "#{VALUE.*}"
+            #
+            # Static field mappings take precedence over wildcards.
+            aLightstreamerFieldName: "#{extraction_expression}"
+
+            # COMMAND-mode field mapping. When the adapter operates in COMMAND 
+            # mode (enabled by setting `snapshot.mode` to `COMMAND`, see below),
+            # each Lightstreamer item is managed as a dynamic table whose rows 
+            # are inserted, updated, and removed  through `ADD`, `UPDATE`, and 
+            # `DELETE` operations. Two mandatory fields are required in the
+            # item's schema - `key` (the row identifier) and `command` (the
+            # operation) - and the way they are mapped is a special case of the
+            # general  mechanism:
+            #
+            # - `key` is mapped explicitly by the user through the `fields.key` 
+            #   parameter, like any other field. It identifies the row each
+            #   record refers to.
+            # - `command` is NOT mapped: the connector synthesises it for every
+            #   record from the record state and the per-item key history:
+            #   - `ADD`:    The mapped key has not been seen before on this
+            #     item.
+            #   - `UPDATE`: The mapped key has already been seen on this item.
+            #   - `DELETE`: The record has a null payload (tombstone record).
+            key: "#{KEY}"
 
           # -- Optional. If set to `true`, if a field mapping fails, that
           # specific field's value will simply be omitted from the update sent
@@ -5457,18 +5484,18 @@ connectors:
           #   record; you only map `field.key`.
           mode: NONE
 
-          # -- (int) Optional but only effective when `mode` is set to 
-          #  `DISTINCT`. The maximum idle time in seconds after which the
-          #  snapshot of an item is discarded, so that the next incoming record
-          #  starts a fresh one. Must be a non-negative integer; a value of `0`
-          #  disables the idle check.
+          # -- (int) Optional but only effective if `mode` is set to `DISTINCT`.
+          # The maximum idle time in seconds after which the snapshot of an
+          # item is discarded, so that the next incoming record starts a fresh
+          # one. Must be a non-negative integer; a value of `0` disables the
+          # idle check.
           distinctLength: 10
 
-          # -- (int) Optional but only effective when `mode` is set to any
-          # value other than `NONE`. The maximum idle time in seconds after
-          # which the snapshot of an item is discarded, so that the next
-          # incoming record starts a fresh one. Must be a non-negative integer;
-          # a value of `0` disables the idle check.
+          # -- (int) Optional but only effective if `mode` is set to any value
+          # other than `NONE`. The maximum idle time in seconds after which the
+          # snapshot of an item is discarded, so that the next incoming record
+          # starts a fresh one. Must be a non-negative integer; a value of `0`
+          # disables the idle check.
           maxIdleSeconds: 0
 
         # -- Optional. Logger configuration for the connection.
@@ -5486,12 +5513,14 @@ connectors:
     # -- Optional. Local schema files used for message validation.
     localSchemaFiles:
 
-      # -- Optional. The configmap name and key where the local schema file
-      # is stored.
+      # -- (object) Optional. The configmap name and key where the local key
+      # schema file is stored.
       myKeySchema:
         # name: record-key
         # key: record_key.avsc
 
+      # -- (object) Optional. The configmap name and key where the local value
+      # schema file is stored.
       myValueSchema:
         # name: record-value
         # key: record_value.avsc
@@ -5534,20 +5563,20 @@ connectors:
             # The secret must contain the keys `user` and `password`.
             credentialsSecretRef:
 
-          # -- Mandatory if the https protocol is specified in `url`. TLS/SSL
-          # settings.
+          # -- Optional but effective only if the https protocol is specified in
+          # `url`. TLS/SSL settings.
           sslConfig:
 
-            # -- (string) Optional. The SSL protocol to be used. Possible
-            # values: `TLSv1.2`, `TLSv1.3`.
-            # If not specified, the default value is `TLSv1.3` when running on
-            # Java 11 or newer, `TLSv1.2` otherwise.
-            protocol:
+            # -- Optional. The SSL protocol to be used.
+            # Possible values:
+            # - `TLSv1.2`,
+            # - `TLSv1.3`
+            protocol: TLSv1.3
 
             # -- Optional. List of enabled secure communication protocols.
-            # If not specified, the default value is `[TLSv1.2, TLSv1.3]` when
-            # running on Java 11 or newer, `[TLSv1.2]` otherwise.
-            allowProtocols: []
+            allowProtocols:
+              - TLSv1.2
+              - TLSv1.3
 
             # -- Optional. List of enabled secure cipher suites.
             # If not specified, all the available cipher suites in the running
@@ -5559,9 +5588,9 @@ connectors:
 
             # -- (string) Optional. The reference to a keystore (defined in
             # 'keystores') used to validate the certificates provided by the
-            # Schema Registry.See the `keystores.myKafkaConnectorKeystore`
-            # settings for general details on keystore configuration for the
-            # Kafka Connector.
+            # Schema Registry.
+            # See the `keystores.myKafkaConnectorKeystore` settings for general
+            # details on keystore configuration for the Kafka Connector.
             truststoreRef:
 
             # -- (string) Optional. The reference to a keystore (defined in

@@ -15,42 +15,17 @@ limitations under the License.
 */}}
 
 {{/*
-Render the logger configuration.
-*/}}
-{{- define "lightstreamer.kafka-connector.logging-logger-conf" -}}
-{{- $admittedLoggingLevels := list "INFO" "DEBUG" "WARN" "ERROR" "FATAL" -}}
-{{- $globalAppenders := index . 0 -}}
-{{- $loggerName := index . 1 -}}
-{{- $logger := index . 2 -}}
-{{- range $appenderName := $logger.appenders }}
-  {{- if not (hasKey $globalAppenders $appenderName) }}
-    {{- fail (printf "connectors.kafkaConnector.logging.appenders.%s not defined" $appenderName) }}
-  {{- end }}
-{{- end }}
-{{- if not (mustHas $logger.level $admittedLoggingLevels) }}
-  {{- fail (printf "connectors.kafkaConnector.logging.kafkaConnector.logging.loggers.%s.level must be one of %s" $loggerName $admittedLoggingLevels) }}
-{{- end }}
-{{- $appendersList := "" }}
-{{- if $logger.appenders }} 
-  {{- $appendersList = printf ", %s" (join ", " $logger.appenders) }}
-{{- end }}
-log4j.logger.{{ $loggerName }}={{ $logger.level }}{{ $appendersList }}
-{{- end }}
-
-{{/*
 Render the Kafka Connector logging configuration file.
 */}}
 {{- define "lightstreamer.kafka-connector.logging-conf" -}}
-{{- with required "kafkaConnector.logging must be set" .Values.connectors.kafkaConnector.logging }}
-
-  {{- /* Render the global loggers */ -}}
+{{- with required "kafkaConnector.logging must be set" .Values.connectors.kafkaConnector.logging -}}
 # Global loggers
   {{- range $loggerName, $logger := .loggers }}
     {{- include "lightstreamer.kafka-connector.logging-logger-conf" (list $.Values.connectors.kafkaConnector.logging.appenders $loggerName $logger) }}
   {{- end }}
 
-  {{- /* Render the appenders */}}
-  {{ range $appenderName, $appender := .appenders }}
+  {{- range $appenderName, $appender := .appenders }}
+
 # {{ $appenderName | quote }} Appender
     {{- $type := default "" ($appender).type }}
     {{- if not (mustHas $type (list "DailyRollingFile" "Console")) }}
@@ -73,15 +48,38 @@ log4j.appender.{{ $appenderName }}.Target=System.out
     {{- $pattern := required (printf "kafkaConnector.logging.appenders.%s.pattern must be set" $appenderName) $appender.pattern }}
 log4j.appender.{{ $appenderName }}.layout=org.apache.log4j.PatternLayout
 log4j.appender.{{ $appenderName }}.layout.ConversionPattern={{ $pattern }}
-  {{ end }}
+  {{- end }}
 {{- end }}
 
-{{- /* Render connection loggers */ -}}
+{{- /* Render the connection loggers */ -}}
 {{- range $key, $connection := $.Values.connectors.kafkaConnector.connections }}
   {{- if and $connection.enabled $connection.logger }}
+
 # {{ $connection.name | quote }} logger
     {{- include "lightstreamer.kafka-connector.logging-logger-conf" (list $.Values.connectors.kafkaConnector.logging.appenders $connection.name $connection.logger) }}
   {{- end }}
-{{ end }}
+{{- end }}
+{{- end }}
 
+{{/*
+Render the logger configuration.
+*/}}
+{{- define "lightstreamer.kafka-connector.logging-logger-conf" }}
+{{- $admittedLoggingLevels := list "INFO" "DEBUG" "WARN" "ERROR" "FATAL" }}
+{{- $globalAppenders := index . 0 }}
+{{- $loggerName := index . 1 }}
+{{- $logger := index . 2 }}
+{{- range $appenderName := $logger.appenders }}
+  {{- if not (hasKey $globalAppenders $appenderName) }}
+    {{- fail (printf "connectors.kafkaConnector.logging.appenders.%s not defined" $appenderName) }}
+  {{- end }}
+{{- end }}
+{{- if not (mustHas $logger.level $admittedLoggingLevels) }}
+  {{- fail (printf "connectors.kafkaConnector.logging.kafkaConnector.logging.loggers.%s.level must be one of %s" $loggerName $admittedLoggingLevels) }}
+{{- end }}
+{{- $appendersList := "" }}
+{{- if $logger.appenders }} 
+  {{- $appendersList = printf ", %s" (join ", " $logger.appenders) }}
+{{- end }}
+log4j.logger.{{ $loggerName }}={{ $logger.level }}{{ $appendersList }}
 {{- end }}
