@@ -24,40 +24,39 @@ Render the Lightstreamer Kafka Connector configuration file.
     This is the configuration file of the Lightstreamer Kafka Connector pluggable into Lightstreamer Server.
 
     A very simple variable-expansion feature is available; see
-    <enable_expansion_for_adapters_config> in the Server's main configuration file.
+    <enable_expansion_for_adapters_config> in the Server{{"'"}}s main configuration file.
 -->
 
 <!-- Mandatory. Define the Kafka Connector Adapter Set and its unique ID. -->
 {{- with .Values.connectors.kafkaConnector }}
 <adapters_conf id={{ required "connectors.kafkaConnector.adapterSetId must be set" .adapterSetId | quote }}>
     <metadata_provider>
-        <!-- Mandatory. Java class name of the Kafka Connector Metadata Adapter. It is possible to 
+        <!-- Mandatory. Java class name of the Kafka Connector Metadata Adapter. It is possible to
              provide a custom implementation by extending this class. -->
         <adapter_class>{{ required "connectors.kafkaConnector.adapterClassName must be set" .adapterClassName }}</adapter_class>
 
-        <!-- Mandatory. The path of the reload4j configuration file, relative to the deployment 
+        <!-- Mandatory. The path of the reload4j configuration file, relative to the deployment
              folder (LS_HOME/adapters/lightstreamer-kafka-connector), or as an absolute path. -->
         <param name="logging.configuration.path">log4j.properties</param>
+
     </metadata_provider>
-
-    {{- range $key, $connection := required "kafkaConnectors.connections must be set" .connections }}
+    {{ range $key, $connection := required "kafkaConnectors.connections must be set" .connections }}
       {{- if $connection.enabled }}
-
-    <!-- Mandatory. The Kafka Connector allows the configuration of different independent 
+    <!-- Mandatory. The Kafka Connector allows the configuration of different independent
          connections to different Kafka broker/clusters.
 
-         Every single connection is configured via the definition of its own Lightstreamer Data 
+         Every single connection is configured via the definition of its own Lightstreamer Data
          Adapter. At least one connection configuration must be provided.
 
-         Since the Kafka Connector manages the physical connection to Kafka by wrapping an internal 
-         Kafka Consumer, several configuration settings in the Data Adapter are identical to those 
+         Since the Kafka Connector manages the physical connection to Kafka by wrapping an internal
+         Kafka Consumer, several configuration settings in the Data Adapter are identical to those
          required by the usual Kafka Consumer configuration.
 
-         The Kafka Connector leverages the "name" attribute of the <data_provider> tag as the 
-         connection name, which will be used by the Clients to request real-time data from this 
+         The Kafka Connector leverages the "name" attribute of the <data_provider> tag as the
+         connection name, which will be used by the Clients to request real-time data from this
          specific Kafka connection through a Subscription object.
 
-         The connection name is also used to group all logging messages belonging to the same 
+         The connection name is also used to group all logging messages belonging to the same
          connection.
 
          Its default value is "DEFAULT", but only one "DEFAULT" configuration is permitted. -->
@@ -72,27 +71,21 @@ Render the Lightstreamer Kafka Connector configuration file.
              - true
              - false
 
-             If disabled, Lightstreamer Server will automatically deny every subscription made to 
+             If disabled, Lightstreamer Server will automatically deny every subscription made to
              this connection.
 
              Default value: true. -->
         <param name="enable">true</param>
 
-        <!-- Mandatory. The Kafka Cluster bootstrap server endpoint expressed as the list of 
+        <!-- Mandatory. The Kafka Cluster bootstrap server endpoint expressed as the list of
              host/port pairs used to establish the initial connection.
 
-             The parameter sets the value of the "bootstrap.servers" key to configure the internal 
+             The parameter sets the value of the "bootstrap.servers" key to configure the internal
              Kafka Consumer.
-             See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_bootstrap.servers 
+             See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_bootstrap.servers
              for more details.
         -->
         <param name="bootstrap.servers">{{ required (printf "connectors.kafkaConnector.connections.%s.bootstrapServers must be set" $key) $connection.bootstrapServers }}</param>
-
-        {{- $consumerMode := $connection.consumerMode | default "GROUP" }}
-        {{- if $consumerMode }}
-          {{- if not (mustHas $consumerMode (list "GROUP" "MANUAL")) }}
-              {{- fail (printf "connectors.kafkaConnector.connections.%s.consumerMode must be one of: \"GROUP\", \"MANUAL\"" $key) }}
-          {{- end }}
 
         <!-- Optional. The consumer mode for this connection. Can be one of the following:
 
@@ -105,31 +98,41 @@ Render the Lightstreamer Kafka Connector configuration file.
                        to Kafka. The "group.id" parameter is ignored.
 
              Default value: GROUP. -->
+        {{- $consumerMode := $connection.consumerMode | default "GROUP" }}
+        {{- if not (quote $connection.consumerMode | empty )}}
+          {{- if not (mustHas $consumerMode (list "GROUP" "MANUAL")) }}
+              {{- fail (printf "connectors.kafkaConnector.connections.%s.consumerMode must be one of: \"GROUP\", \"MANUAL\"" $key) }}
+          {{- end }}
         <param name="consumer.mode">{{ $consumerMode }}</param>
+        {{- else }}
+        <!--
+        <param name="consumer.mode">MANUAL</param>
+        -->
+        {{- end }}
 
-          {{- if eq $consumerMode "GROUP" }}
-            {{- if $connection.groupId }}
+        <!-- Optional but only effective if "consumer.mode" is set to "GROUP" (the default). The
+             name of the consumer group this connection belongs to.
 
-        <!-- Optional. The name of the consumer group this connection belongs to.
-
-             The parameter sets the value of the "group.id" key to configure the internal Kafka 
+             The parameter sets the value of the "group.id" key to configure the internal Kafka
              Consumer.
-             See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_group.id 
+             See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_group.id
              for more details.
 
              Default value: Adapter Set id + the Data Adapter name + randomly generated suffix. -->
+        {{- if and (eq $consumerMode "GROUP") (not (quote $connection.groupId | empty )) }}
         <param name="group.id">{{ required (printf "connectors.kafkaConnector.connections.%s.groupId must be set" $key) $connection.groupId }}</param>
-            {{- end }} {{/* of .groupId */}}
-          {{- end }}
-        {{- end }} {{/* of .consumerMode */}}
-
-        {{- if (($connection.sslConfig)).enabled }}
+        {{- else }}
+        <!--
+        <param name="group.id">kafka-connector-group</param>
+        -->
+        {{- end }}
 
         <!-- ##### ENCRYPTION SETTINGS ##### -->
-          {{- with $connection.sslConfig }}
 
         <!-- A TCP secure connection to Kafka is configured through parameters with the "encryption"
              prefix. -->
+
+        {{- $sslConfig := ($connection.sslConfig).enabled | default false | ternary $connection.sslConfig dict }}
 
         <!-- Optional. Enables encryption of this connection. Can be one of the following:
 
@@ -137,49 +140,62 @@ Render the Lightstreamer Kafka Connector configuration file.
              - false
 
              Default value: false. -->
+        {{- if $sslConfig.enabled }}
         <param name="encryption.enable">true</param>
-            {{- if .protocol }}
+        {{- else }}
+        <!--
+        <param name="encryption.enable">true</param>
+        -->
+        {{- end }}
 
         <!-- Optional. The SSL protocol to be used. Can be one of the following:
 
              - TLSv1.2
              - TLSv1.3
 
-             Default value: TLSv1.3 when running on Java 11 or newer, TLSv1.2 otherwise. -->
-
-              {{- if not (mustHas .protocol (list "TLSv1.2" "TLSv1.3")) }}
-                {{- fail (printf "connectors.kafkaConnector.connections.%s.sslConfig.protocol must be one of: \"TLSv1.2\", \"TLSv1.3\"" $key) }}
-              {{- end }}
-        <param name="encryption.protocol">{{ .protocol }}</param>
-            {{- end }} {{/* of .protocol */}}
-
-            {{- if .allowProtocols }}
+             Default value: TLSv1.3. -->
+        {{- if not (quote $sslConfig.protocol | empty) }}
+          {{- if not (mustHas $sslConfig.protocol (list "TLSv1.2" "TLSv1.3")) }}
+            {{- fail (printf "connectors.kafkaConnector.connections.%s.sslConfig.protocol must be one of: \"TLSv1.2\", \"TLSv1.3\"" $key) }}
+          {{- end }}
+        <param name="encryption.protocol">{{ $sslConfig.protocol }}</param>
+        {{- else }}
+        <!--
+        <param name="encryption.protocol">TLSv1.2</param>
+        -->
+        {{- end }}
 
         <!-- Optional. The list of enabled secure communication protocols.
 
-             Default value: TLSv1.2,TLSv1.3 when running on Java 11 or newer, TLSv1.2 otherwise. -->
-              {{- range $protocol := .allowProtocols}}
-                {{- if not (mustHas $protocol (list "TLSv1.2" "TLSv1.3")) }}
-                  {{- fail (printf "connectors.kafkaConnector.connections.%s.sslConfig.allowProtocols must be a list of \"TLSv1.2\", \"TLSv1.3\"" $key) }}
-                {{- end }}
-              {{- end }}
-        <param name="encryption.enabled.protocols">{{ join "," .allowProtocols }}</param>
-            {{- end }} {{/* of .allowProtocols */}}
-
-            {{- if .allowCipherSuites }}
+             Default value: TLSv1.2,TLSv1.3. -->
+        {{- range $protocol := $sslConfig.allowProtocols}}
+          {{- if not (mustHas $protocol (list "TLSv1.2" "TLSv1.3")) }}
+            {{- fail (printf "connectors.kafkaConnector.connections.%s.sslConfig.allowProtocols must be a list of \"TLSv1.2\", \"TLSv1.3\"" $key) }}
+          {{- end }}
+        {{- end }}
+        {{- if $sslConfig.allowProtocols }}
+        <param name="encryption.enabled.protocols">{{ join "," $sslConfig.allowProtocols }}</param>
+        {{- else }}
+        <!--
+        <param name="encryption.enabled.protocols">TLSv1.3</param>
+        -->
+        {{- end }}
 
         <!-- Optional. The list of enabled secure cipher suites.
 
-            Default value: all the available cipher suites in the running JVM. -->
-              {{- range $cipherSuite := .allowCipherSuites}}
-                {{- if $cipherSuite | empty }}
-                  {{- fail (printf "connectors.kafkaConnector.connections.%s.sslConfig.allowCipherSuites must be a list of valid values" $key) }}
-                {{- end }}
-              {{- end }}
-        <param name="encryption.cipher.suites">{{ join "," .allowCipherSuites }}</param>
-            {{- end }} {{/* of .allowCipherSuites */}}
-
-            {{- if .enableHostnameVerification }}
+             Default value: all the available cipher suites in the running JVM. -->
+        {{- range $cipherSuite := $sslConfig.allowCipherSuites}}
+          {{- if $cipherSuite | empty }}
+            {{- fail (printf "connectors.kafkaConnector.connections.%s.sslConfig.allowCipherSuites must be a list of valid values" $key) }}
+          {{- end }}
+        {{- end }}
+        {{- if $sslConfig.allowCipherSuites }}
+        <param name="encryption.cipher.suites">{{ join "," $sslConfig.allowCipherSuites }}</param>
+        {{- else }}
+        <!--
+        <param name="encryption.cipher.suites">TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA</param>
+        -->
+        {{- end }}
 
         <!-- Optional. Enables hostname verification. Can be one of the following:
 
@@ -187,31 +203,24 @@ Render the Lightstreamer Kafka Connector configuration file.
              - false
 
              Default value: false. -->
+        {{- if not (quote $sslConfig.enableHostnameVerification | empty) }}
+        <param name="encryption.hostname.verification.enable">{{ $sslConfig.enableHostnameVerification | ternary "true" "false" }}</param>
+        {{- else }}
+        <!--
         <param name="encryption.hostname.verification.enable">true</param>
-            {{- end }} {{/* of .enableHostnameVerification */}}
+        -->
+        {{- end }}
 
-            {{- if .truststoreRef}}
+        {{- include "lightstreamer.kafka-connector.configuration.truststore" (list $.Values.keystores $sslConfig)  | nindent 8 }}
+        {{- include "lightstreamer.kafka-connector.configuration.keystore" (list $.Values.keystores $sslConfig)  | nindent 8 }}
 
-        <!-- Optional. The path of the trust store file, relative to the deployment folder
-             (LS_HOME/adapters/lightstreamer-kafka-connector-<version>), or as an absolute path.
-             The trust store is used to validate the certificates provided by the Kafka brokers. -->
-              {{- include "lightstreamer.kafka-connector.configuration.truststore" (list "encryption.truststore" $.Values.keystores .truststoreRef)  | nindent 8 }}
-            {{- end }} {{/* of .truststoreRef */}}
-
-            {{- if .keystoreRef }}
-
-              {{- include "lightstreamer.kafka-connector.configuration.keystore" (list "encryption.keystore" $.Values.keystores .keystoreRef)  | nindent 8 }}
-            {{- end }} {{/* of .keystoreRef */}}
-          {{- end }} {{/* of .sslConfig */}}
-        {{- end }} {{/* of .sslConfig.enabled */}}
-
-        {{- with $connection.authentication }}
+        {{- $authentication := ($connection.authentication).enabled | default false | ternary $connection.authentication dict }}
 
         <!-- ##### AUTHENTICATION SETTINGS ##### -->
 
-        <!-- Broker authentication is configured through parameters with the
-             `authentication` prefix. -->
-          {{- if .enabled }}
+        <!-- Broker authentication is configured through parameters with the "authentication"
+             prefix. -->
+
         <!-- Optional. Enables the authentication of this connection against the Kafka Cluster.
              Can be one of the following:
 
@@ -219,9 +228,15 @@ Render the Lightstreamer Kafka Connector configuration file.
              - false
 
              Default value: false. -->
+        {{- if $authentication.enabled }}
         <param name="authentication.enable">true</param>
+        {{- else }}
+        <!--
+        <param name="authentication.enable">true</param>
+        -->
+        {{- end }}
 
-        <!-- Mandatory if authentication is enabled. The SASL mechanism type.
+        <!-- Optional. The SASL mechanism type.
              The Kafka Connector accepts the following authentication mechanisms:
 
              - PLAIN
@@ -231,240 +246,273 @@ Render the Lightstreamer Kafka Connector configuration file.
              - AWS_MSK_IAM
 
              Default value: PLAIN.-->
-            {{- $mechanism := .mechanism | default "PLAIN" }}
-            {{- if not (mustHas $mechanism (list "PLAIN" "SCRAM-SHA-256" "SCRAM-SHA-512" "GSSAPI" "AWS_MSK_IAM")) }}
-              {{- fail (printf "connectors.kafkaConnector.connections.%s.authentication.mechanism must be one of: \"PLAIN\", \"SCRAM-SHA-256\", \"SCRAM-SHA-512\", \"GSSAPI\", \"AWS_MSK_IAM\"" $key) }}
-            {{- end }}
-        <param name="authentication.mechanism">{{ $mechanism }}</param>
-
-        <!-- Mandatory if authentication.mechanism is one of PLAIN, SCRAM-SHA-256, SCRAM-SHA-512. The credentials. -->
-            {{- if has $mechanism (list "PLAIN" "SCRAM-SHA-256" "SCRAM-SHA-512") }}
-        <param name="authentication.username">$env.LS_KAFKA_PLAIN_AUTH_{{ required (printf "connectors.kafkaConnector.connections.%s.authentication.credentialsSecretRef must be set" $key) .credentialsSecretRef | upper | replace "-" "_" }}_USERNAME</param>
-        <param name="authentication.password">$env.LS_KAFKA_PLAIN_AUTH_{{ required (printf "connectors.kafkaConnector.connections.%s.authentication.credentialsSecretRef must be set" $key) .credentialsSecretRef | upper | replace "-" "_" }}_PASSWORD</param>
-            {{- else }}
+        {{- $mechanism := $authentication.mechanism }}
+        {{- if and $authentication.enabled (not (quote $authentication.mechanism | empty)) }}
+          {{- if not (mustHas $authentication.mechanism (list "PLAIN" "SCRAM-SHA-256" "SCRAM-SHA-512" "GSSAPI" "AWS_MSK_IAM")) }}
+             {{- fail (printf "connectors.kafkaConnector.connections.%s.authentication.mechanism must be one of: \"PLAIN\", \"SCRAM-SHA-256\", \"SCRAM-SHA-512\", \"GSSAPI\", \"AWS_MSK_IAM\"" $key) }}
+          {{- end }}
+        <param name="authentication.mechanism">{{ $authentication.mechanism }}</param>
+        {{- else }}
         <!--
+        <param name="authentication.mechanism">SCRAM-SHA-256</param>
+        -->
+        {{- end }}
+
+        <!-- In the case of "PLAIN", "SCRAM-SHA-256", and "SCRAM-SHA-512" mechanisms, the
+             credentials must be configured through the following mandatory parameters:
+        {{- if has ($authentication.mechanism | default "PLAIN") (list "PLAIN" "SCRAM-SHA-256" "SCRAM-SHA-512") -}}-->
+        <param name="authentication.username">$env.LS_KAFKA_PLAIN_AUTH_{{ required (printf "connectors.kafkaConnector.connections.%s.authentication.credentialsSecretRef must be set" $key) $authentication.credentialsSecretRef | upper | replace "-" "_" }}_USERNAME</param>
+        <param name="authentication.password">$env.LS_KAFKA_PLAIN_AUTH_{{ required (printf "connectors.kafkaConnector.connections.%s.authentication.credentialsSecretRef must be set" $key) $authentication.credentialsSecretRef | upper | replace "-" "_" }}_PASSWORD</param>
+        {{- else }}
+
         <param name="authentication.username">authorized-kafka-user</param>
         <param name="authentication.password">authorized-kafka-user-password</param>
         -->
-            {{- end }} {{/* of .mechanism */}}
+        {{- end }}
 
-            {{- if eq $mechanism "GSSAPI"}}
-        <!-- ##### GSSAPI AUTHENTICATION SETTINGS ##### -->
-              {{- with required "connectors.kafkaConnector.connections.%s.authentication.gssapi must be set" .gssapi }}
+        <!-- ##### GSSAPI Authentication settings ##### -->
 
-        <!-- When this mechanism is specified, you can configure the following authentication 
+        <!-- If this mechanism is specified, you can configure the following authentication
              parameters: -->
 
-        <!-- Optional. Enable the use of a keytab. Can be one of the following:
+        {{- $isGssapi := eq $authentication.mechanism "GSSAPI" }}
 
-            - true
-            - false
-
-             Default value: false. -->
-                {{- if .enableKeytab }}
-        <param name="authentication.gssapi.key.tab.enable">true</param>
-                {{- else }}
-        <!--
-        <param name="authentication.gssapi.key.tab.enable">true</param>
-        -->
-                {{- end }} {{/* of .enableKeytab */}}
-
-        <!-- Mandatory if keytab is enabled. The path to the keytab file, relative to
-             the deployment folder (LS_HOME/adapters/lightstreamer-kafka-connector-<version>), or as
-             an absolute path. -->
-                {{- if .keytabFilePathRef }}
-        <param name="authentication.gssapi.key.tab.path">./keytabs/{{ required (printf "connectors.kafkaConnector.connections.%s.authentication.gssapi.keytabFilePathRef.key must be set" $key) .keytabFilePathRef.key }}</param>
-                {{- else }}
-                  {{- if .enableKeytab }}
-                    {{- fail (printf "connectors.kafkaConnector.connections.%s.authentication.gssapi.keytabRef must be set" $key) }}
-                  {{- end }}
-        <!--
-        <param name="authentication.gssapi.key.tab.path">gssapi/kafka-connector.keytab</param>
-        -->
-                {{- end }} {{/* of .keytabFilePathRef */}}
-
-        <!--  Optional. Enable storage of the principal key. Can be one of the following:
-
-              - true
-              - false
-
-              Default value: false. -->
-                {{- if .enableStoreKey }}
-        <param name="authentication.gssapi.store.key.enable">true</param>
-                {{- else }}
-        <!--
-        <param name="authentication.gssapi.store.key.enable">true</param>
-        -->
-                {{- end }} {{/* of .enableStoreKey */}}
-
-        <!-- Mandatory. The name of the Kerberos service. -->
-        <param name="authentication.gssapi.kerberos.service.name">{{ required (printf "connectors.kafkaConnector.connections.%s.authentication.gssapi.kerberosServiceName must be set" $key) .kerberosServiceName }}</param>
-
-        <!-- Mandatory. if ticket cache is disabled. The name of the principal to be used. -->
-                {{- if .principal }}
-        <param name="authentication.gssapi.principal">{{ .principal }}</param>
-                {{- else }}
-                  {{- if .enableTicketCache }}
-                    {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.authentication.gssapi.principal or disable connectors.kafkaConnector.connections.%s.authentication.gssapi.enableTicketCache" $key $key) }}
-                  {{- end }}
-        <!--
-        <param name="authentication.gssapi.principal">kafka-connector-1@LIGHTSTREAMER.COM</param>
-        -->
-                {{- end }} {{/* of .principal */}}
-
-        <!-- Optional. Enable the use of a ticket cache. Can be one of the following:
+        <!-- Optional. Enables the use of a keytab. Can be one of the following:
 
              - true
              - false
 
              Default value: false. -->
-                {{- if .enableTicketCache }}
-        <param name="authentication.gssapi.ticket.cache.enable">true</param>
-                {{- else }}
+        {{- if and $isGssapi (not (quote ($authentication.gssapi).enableKeytab | empty )) }}
+        <param name="authentication.gssapi.key.tab.enable">{{ $authentication.gssapi.enableKeytab | ternary "true" "false" }}</param>
+        {{- else }}
+        <!--
+        <param name="authentication.gssapi.key.tab.enable">true</param>
+        -->
+        {{- end }}
+
+        <!-- Mandatory if keytab is enabled. The path to the keytab file, relative to
+             the deployment folder (LS_HOME/adapters/lightstreamer-kafka-connector-<version>), or as
+             an absolute path. -->
+        {{- if and $isGssapi ($authentication.gssapi).enableKeytab }}
+          {{- $keytabSubpath := (required (printf "connectors.kafkaConnector.connections.%s.authentication.gssapi.keytabFilePathRef.name must be set" $key) ($authentication.gssapi.keytabFilePathRef).name) | lower | replace "_" "-" }}
+          {{- $keytabKey := required (printf "connectors.kafkaConnector.connections.%s.authentication.gssapi.keytabFilePathRef.key must be set" $key) ($authentication.gssapi.keytabFilePathRef).key }}
+        <param name="authentication.gssapi.key.tab.path">{{ include "lightstreamer.kafka-connector.keytabs.dir.name" . }}/{{ $keytabSubpath }}/{{ $keytabKey }}</param>
+        {{- else }}
+        <!--
+        <param name="authentication.gssapi.key.tab.path">gssapi/kafka-connector.keytab</param>
+        -->
+        {{- end }}
+
+        <!-- Optional. Enables storage of the principal key. Can be one of the following:
+
+             - true
+             - false
+
+             Default value: false. -->
+        {{- if and $isGssapi (not (quote ($authentication.gssapi).enableStoreKey | empty)) }}
+        <param name="authentication.gssapi.store.key.enable">{{ $authentication.gssapi.enableStoreKey | ternary "true" "false" }}</param>
+        {{- else }}
+        <!--
+        <param name="authentication.gssapi.store.key.enable">true</param>
+        -->
+        {{- end }}
+
+        <!-- Mandatory. The name of the Kerberos service. -->
+        {{- if $isGssapi }}
+        <param name="authentication.gssapi.kerberos.service.name">{{ required (printf "connectors.kafkaConnector.connections.%s.authentication.gssapi.kerberosServiceName must be set" $key) ($authentication.gssapi).kerberosServiceName }}</param>
+        {{- else }}
+        <!--
+        <param name="authentication.gssapi.kerberos.service.name">kafka</param>
+        -->
+        {{- end }}
+
+        <!-- Mandatory if ticket cache is disabled. The name of the principal to be used. -->
+        {{- if and $isGssapi (not ($authentication.gssapi).enableTicketCache) }}
+        <param name="authentication.gssapi.principal">{{ required (printf "connectors.kafkaConnector.connections.%s.authentication.gssapi.principal must be set" $key) $authentication.gssapi.principal }}</param>
+        {{- else }}
+        <!--
+        <param name="authentication.gssapi.principal">kafka-connector-1@LIGHTSTREAMER.COM</param>
+        -->
+        {{- end }}
+
+        <!-- Optional. Enables the use of a ticket cache. Can be one of the following:
+
+             - true
+             - false
+
+             Default value: false. -->
+        {{- if and $isGssapi (not (quote ($authentication.gssapi).enableTicketCache | empty )) }}
+        <param name="authentication.gssapi.ticket.cache.enable">{{ $authentication.gssapi.enableTicketCache | ternary "true" "false" }}</param>
+        {{- else }}
         <!--
         <param name="authentication.gssapi.ticket.cache.enable">true</param>
         -->
-                {{- end }} {{/* of .enableTicketCache */}}
-              {{- end }} {{/* of .gssapi */}}
-            {{- else if eq $mechanism "AWS_MSK_IAM" }}
-              {{- with .iam }}
-        <!-- ##### IAM AUTHENTICATION SETTINGS ##### -->
+        {{- end }}
 
-        <!-- The AWS_MSK_IAM authentication mechanism enables access to Amazon Managed Streaming 
-             for Apache Kafka (MSK) clusters through IAM access control.
+        <!-- ##### IAM Authentication settings ##### -->
 
-             When specified, the following parameters will be part of the authentication 
+        {{- $isAwsMskIam := eq $authentication.mechanism "AWS_MSK_IAM" }}
+
+        <!-- The AWS_MSK_IAM authentication mechanism enables access to Amazon Managed Streaming for
+             Apache Kafka (MSK) clusters through IAM access control.
+
+             If specified, the following parameters will be part of the authentication
              configuration:
         -->
-                {{- if not (quote .credentialProfileName | empty) }}
 
-        <!-- Optional. The name of the AWS credential profile to use for authentication. These 
+        <!-- Optional. The name of the AWS credential profile to use for authentication. These
              profiles are defined in the AWS shared credentials file.
         -->
-        <param name="authentication.iam.credential.profile.name">{{ .credentialProfileName }}</param>
-                {{- end }}
 
-                {{- if not (quote .roleArn | empty) }}
+        {{- if and $isAwsMskIam (not (quote ($authentication.iam).credentialProfileName | empty) ) }}
+        <param name="authentication.iam.credential.profile.name">{{ $authentication.iam.credentialProfileName }}</param>
+        {{- else }}
+        <!--
+        <param name="authentication.iam.credential.profile.name">msk_client<param>
+        -->
+        {{- end }}
 
-        <!-- Optional. The Amazon Resource Name (ARN) of the IAM role that the Kafka Connector 
-             should assume for authentication with MSK. Use this when you want the connector to 
+        <!-- Optional. The Amazon Resource Name (ARN) of the IAM role that the Kafka Connector
+             should assume for authentication with MSK. Use this when you want the connector to
              assume a specific role with temporary credentials.
         -->
-        <param name="authentication.iam.role.arn">{{ .roleArn }}</param>
-                {{- end }}
+        {{- if and $isAwsMskIam (not (quote ($authentication.iam).roleArn | empty) ) }}
+        <param name="authentication.iam.role.arn">{{ $authentication.iam.roleArn }}</param>
+        {{- else }}
+        <!--
+        <param name="authentication.iam.role.arn">arn:aws:iam::123456789012:role/msk_client_role</param>
+        -->
+        {{- end }}
 
-                {{- if not (quote .roleSessionName | empty) }}
-
-        <!-- Optional but only effective when "authentication.iam.role.arn" is set. The name of the 
+        <!-- Optional but only effective if "authentication.iam.role.arn" is set. The name of the
              session for the assumed IAM role.
         -->
-        <param name="authentication.iam.role.session.name">{{ .roleSessionName }}</param>
-                {{- end }}
-
-                {{- if not (quote .stsRegion | empty) }}
-        <!-- Optional but only effective when "authentication.iam.role.arn" is set. Specifies the 
-             AWS region of the STS endpoint to use when assuming the IAM role.
+        {{- if and $isAwsMskIam (not (quote ($authentication.iam).roleSessionName | empty) ) }}
+        <param name="authentication.iam.role.session.name">{{ $authentication.iam.roleSessionName }}</param>
+        {{- else }}
+        <!--
+        <param name="authentication.iam.role.session.name">consumer</param>
         -->
-        <param name="authentication.iam.sts.region">{{ .stsRegion }}</param>
-                {{- end }}
+        {{- end }}
 
-              {{- end }} {{/* of .iam */}}
-
-            {{- end }} {{/* of .mechanism */}}
-          {{- end }} {{/* of .authentication.enable */}}
-        {{- end }} {{/* of connection.authentication */}}
+        <!-- Optional but only effective if "authentication.iam.role.arn" is set. Specifies the AWS
+             region of the STS endpoint to use when assuming the IAM role.
+        -->
+        {{- if and $isAwsMskIam (not (quote ($authentication.iam).stsRegion | empty) ) }}
+        <param name="authentication.iam.sts.region">{{ $authentication.iam.stsRegion }}</param>
+        {{- else }}
+        <!--
+        <param name="authentication.iam.sts.region">us-west-1</param>
+        -->
+        {{- end }}
 
         <!-- ##### RECORD PROCESSING SETTINGS ##### -->
 
-        {{- with $connection.record }}
-          {{- if .consumeFrom }}
+        {{- $record := $connection.record | default dict }}
 
-        <!-- Optional but ineffective when "item.snapshot.enabled.mode" is set to any value other 
-             than "NONE". Specifies where to start consuming events from. Can be one of the 
+        <!-- Optional but ineffective if "item.snapshot.enabled.mode" is set to any value other than
+             "NONE" (see the "Snapshot Management" section in the README for the partition-position
+             behavior in that case). Specifies where to start consuming events. Can be one of the
              following:
 
              - EARLIEST: Start consuming events from the beginning of the topic partition.
              - LATEST:   Start consuming events from the end of the topic partition.
 
-             The parameter sets the value of the "auto.offset.reset"  key to configure the internal 
-             Kafka Consumer.
-             See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_auto.offset.reset 
-             for more details.
+             How this parameter is applied depends on the consumer mode:
 
-             When snapshot management is active, the connector manages partition positions 
-             explicitly: newly assigned partitions are always seeked to the beginning (so that 
-             the snapshot replay covers the full topic history), and re-assigned partitions 
-             resume from their committed offset. See the "Snapshot Management" section in the 
-             README for details.
+             - In GROUP mode, it sets the value of the "auto.offset.reset" key on the internal Kafka
+               Consumer and therefore only takes effect for partitions that have no committed offset
+               yet; partitions with a committed offset resume from there.
+               See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_auto.offset.reset
+               for more details.
+             - In MANUAL mode, since offsets are never committed, the connector seeks every assigned
+               partition to the requested position on every startup. The setting therefore applies
+               uniformly to all assigned partitions on every restart.
 
              Default value: LATEST. -->
-            {{- if not (mustHas .consumeFrom (list "EARLIEST" "LATEST")) }}
-               {{- fail (printf "connectors.kafkaConnector.connections.%s.record.consumeFrom must be one of: \"EARLIEST\", \"LATEST\"" $key) }}
-            {{- end }}
-        <param name="record.consume.from">{{ .consumeFrom }}</param>
-          {{- end }} {{/* of .consumeFrom */}}
-
-          {{- if not (quote .consumeWithMaxPollRecords | empty) }}
+        {{- if not (quote $record.consumeFrom | empty) }}
+          {{- if not (mustHas $record.consumeFrom (list "EARLIEST" "LATEST")) }}
+            {{- fail (printf "connectors.kafkaConnector.connections.%s.record.consumeFrom must be one of: \"EARLIEST\", \"LATEST\"" $key) }}
+          {{- end }}
+        <param name="record.consume.from">{{ $record.consumeFrom }}</param>
+        {{- else }}
+        <!--
+        <param name="record.consume.from">EARLIEST</param>
+        -->
+        {{- end }}
 
         <!-- Optional. The maximum number of records fetched in each polling cycle.
 
-             The parameter sets the value of the "max.poll.records" key to configure the internal 
+             The parameter sets the value of the "max.poll.records" key to configure the internal
              Kafka Consumer.
-             See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_max.poll.records 
+             See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_max.poll.records
              for more details.
 
              Default value: 500. -->
-        <param name="record.consume.with.max.poll.records">{{ .consumeWithMaxPollRecords }}</param>
-          {{- end }} {{/* of .consumeWithMaxPollRecords */}}
+        {{- if not (quote $record.consumeWithMaxPollRecords | empty) }}
+        <param name="record.consume.with.max.poll.records">{{ $record.consumeWithMaxPollRecords }}</param>
+        {{- else }}
+        <!--
+        <param name="record.consume.with.max.poll.records">200</param>
+        -->
+        {{- end }}
 
-          {{- if not (quote .consumeWithMaxSessionTimeoutMillis | empty) }}
-
-        <!-- Optional. The timeout used to detect client failures when using Kafka's group 
+        <!-- Optional. The timeout used to detect client failures when using Kafka{{"'"}}s group
              management facility.
 
-             The parameter sets the value of the "session.timeout.ms" key to configure the internal 
+             The parameter sets the value of the "session.timeout.ms" key to configure the internal
              Kafka Consumer.
-             See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_session.timeout.ms 
+             See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_session.timeout.ms
              for more details.
 
              Default value: 45000. -->
-        <param name="record.consume.with.session.timeout.ms">{{ .consumeWithMaxSessionTimeoutMillis }}</param>
-        {{- end }} {{/* of .consumeWithMaxSessionTimeoutMillis */}}
+        {{- if not (quote $record.consumeWithMaxSessionTimeoutMillis | empty) }}
+        <param name="record.consume.with.session.timeout.ms">{{ $record.consumeWithMaxSessionTimeoutMillis }}</param>
+        {{- else }}
+        <!--
+        <param name="record.consume.with.session.timeout.ms">30000</param>
+        -->
+        {{- end }}
 
-        {{- if not (quote .consumeWithMaxPollIntervalMillis | empty) }}
+        <!-- Optional. The maximum delay between invocations of poll() when using consumer group
+             management. This places an upper bound on the amount of time that the consumer can be
+             idle before fetching more records.
 
-        <!-- Optional. The maximum delay between invocations of poll() when using consumer group 
-             management. This places an upper bound on the amount of time that the consumer can be 
-             idle before  fetching more records.
-
-             The parameter sets the value of the "max.poll.interval.ms" key to configure the 
+             The parameter sets the value of the "max.poll.interval.ms" key to configure the
              internal Kafka Consumer.
-             See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_max.poll.interval.ms 
+             See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_max.poll.interval.ms
              for more details.
 
              Default value: 30000. -->
-        <param name="record.consume.with.max.poll.interval.ms">{{ .consumeWithMaxPollIntervalMillis }}</param>
-          {{- end }} {{/* of .consumeWithMaxPollIntervalMillis */}}
+        {{- if not (quote $record.consumeWithMaxPollIntervalMillis | empty) }}
+        <param name="record.consume.with.max.poll.interval.ms">{{ $record.consumeWithMaxPollIntervalMillis }}</param>
+        {{- else }}
+        <!--
+        <param name="record.consume.with.max.poll.interval.ms">50000</param>
+        -->
+        {{- end }}
 
-          {{- if not (quote .consumeWithThreadNumber | empty) }}
-
-        <!-- Optional. The number of threads to be used for concurrent processing of the incoming 
-             deserialized records. If set to -1, the number of threads will be  automatically 
+        <!-- Optional. The number of threads to be used for concurrent processing of the incoming
+             deserialized records. If set to -1, the number of threads will be  automatically
              determined based on the number of available CPU cores.
 
              Default value: 1. -->
-            {{- if or (eq (int .consumeWithThreadNumber) -1) (gt (int .consumeWithThreadNumber) 0) }}
-        <param name="record.consume.with.num.threads">{{ .consumeWithThreadNumber }}</param>
-            {{- else }}
+        {{- if not (quote $record.consumeWithThreadNumber | empty) }}
+          {{- if or (eq (int $record.consumeWithThreadNumber) -1) (gt (int $record.consumeWithThreadNumber) 0) }}
+        <param name="record.consume.with.num.threads">{{ $record.consumeWithThreadNumber }}</param>
+          {{- else }}
               {{- fail (printf "connectors.kafkaConnector.connections.%s.record.consumeWithThreadNumber must be set with a valid value" $key) }}
-            {{- end }}
-          {{- end }} {{/* of .consumeWithThreadNumber */}}
+          {{- end }}
+        {{- else }}
+        <!--
+        <param name="record.consume.with.num.threads">4</param>
+        -->
+        {{- end }}
 
-          {{- if .consumeWithOrderStrategy }}
-
-        <!-- Optional but only effective when "record.consume.with.num.threads" is set to a value 
+        <!-- Optional but only effective if "record.consume.with.num.threads" is set to a value
              greater than 1 (which includes the default value). The order strategy to be used for
-             concurrent processing of the incoming deserialized records. Can be one of the 
+             concurrent processing of the incoming deserialized records. Can be one of the
              following:
 
              - ORDER_BY_PARTITION: Maintain the order of records within each partition.
@@ -472,58 +520,67 @@ Render the Lightstreamer Kafka Connector configuration file.
              - UNORDERED:          Provide no ordering guarantees.
 
              Default value: ORDER_BY_PARTITION. -->
-            {{- if not (mustHas .consumeWithOrderStrategy (list "ORDER_BY_PARTITION" "ORDER_BY_KEY" "UNORDERED")) }}
-              {{- fail (printf "connectors.kafkaConnector.connections.%s.record.consumeWithOrderStrategy must be one of: \"ORDER_BY_PARTITION\", \"ORDER_BY_KEY\", \"UNORDERED\"" $key) }}
-            {{- else }}
-        <param name="record.consume.with.order.strategy">{{ .consumeWithOrderStrategy }}</param>
-            {{- end }}
-          {{- end }} {{/* of .consumeWithOrderStrategy */}}
+        {{- if not (quote $record.consumeWithOrderStrategy | empty) }}
+          {{- if not (mustHas $record.consumeWithOrderStrategy (list "ORDER_BY_PARTITION" "ORDER_BY_KEY" "UNORDERED")) }}
+            {{- fail (printf "connectors.kafkaConnector.connections.%s.record.consumeWithOrderStrategy must be one of: \"ORDER_BY_PARTITION\", \"ORDER_BY_KEY\", \"UNORDERED\"" $key) }}
+          {{- else }}
+        <param name="record.consume.with.order.strategy">{{ $record.consumeWithOrderStrategy }}</param>
+          {{- end }}
+        {{- else }}
+        <!--
+        <param name="record.consume.with.order.strategy">ORDER_BY_KEY</param>
+        -->
+        {{- end }}
 
-          {{- include "lightstreamer.kafka-connector.configuration.record.evaluator" (list $ $connection "key" $key) | nindent 8 }}
-          {{- include "lightstreamer.kafka-connector.configuration.record.evaluator" (list $ $connection "value" $key) | nindent 8 }}
+        {{- include "lightstreamer.kafka-connector.configuration.record.evaluator" (list $ $connection.record "key" $key) | nindent 8 }}
+        {{- include "lightstreamer.kafka-connector.configuration.record.evaluator" (list $ $connection.record "value" $key) | nindent 8 }}
 
-          {{- if .extractionErrorStrategy }}
-
-        <!-- Optional but forced to "IGNORE_AND_CONTINUE" when "item.snapshot.enabled.mode" is set 
-             to any value other than "NONE". The error handling strategy to be used if an error 
-             occurs while extracting data from incoming deserialized records. Can be one of the 
+        <!-- Optional but forced to "IGNORE_AND_CONTINUE" when "item.snapshot.enabled.mode" is set
+             to any value other than "NONE". The error handling strategy to be used if an error
+             occurs while extracting data from incoming deserialized records. Can be one of the
              following:
 
              - IGNORE_AND_CONTINUE:  Ignore the error and continue to process the next record.
              - FORCE_UNSUBSCRIPTION: Stop processing records and force unsubscription of the items
-                                     requested by all the Lightstreamer clients subscribed to this 
+                                     requested by all the Lightstreamer clients subscribed to this
                                      connection.
 
              See the "Snapshot Management" section in the README for the rationale of the override.
 
              Default: "IGNORE_AND_CONTINUE". -->
-            {{- if not (mustHas .extractionErrorStrategy (list "IGNORE_AND_CONTINUE" "FORCE_UNSUBSCRIPTION")) }}
-              {{- fail (printf "connectors.kafkaConnector.connections.%s.record.extractionErrorStrategy must be one of: \"IGNORE_AND_CONTINUE\", \"FORCE_UNSUBSCRIPTION\"" $key) }}
-            {{- end }}
-        <param name="record.extraction.error.strategy">{{ .extractionErrorStrategy }}</param>
-          {{- end }} {{/* of .extractionErrorStrategy */}}
-        {{- end }} {{/* of .record */}}
+        {{- if not (quote $record.extractionErrorStrategy) | empty }}
+          {{- if not (mustHas $record.extractionErrorStrategy (list "IGNORE_AND_CONTINUE" "FORCE_UNSUBSCRIPTION")) }}
+            {{- fail (printf "connectors.kafkaConnector.connections.%s.record.extractionErrorStrategy must be one of: \"IGNORE_AND_CONTINUE\", \"FORCE_UNSUBSCRIPTION\"" $key) }}
+          {{- end }}
+        <param name="record.extraction.error.strategy">{{ $record.extractionErrorStrategy }}</param>
+        {{- else}}
+        <!--
+        <param name="record.extraction.error.strategy">FORCE_UNSUBSCRIPTION</param>
+        -->
+        {{- end }}
 
         <!-- ##### RECORD ROUTING SETTINGS ##### -->
-        {{- with required (printf "connectors.kafkaConnector.connections.%s.routing must be set" $key) $connection.routing }}
-          {{- range $key, $itemTemplate := .itemTemplates }}
 
-        <!-- Multiple and Optional. Define an item template expression, which is made of:
+        {{- with required (printf "connectors.kafkaConnector.connections.%s.routing must be set" $key) $connection.routing }}
+
+        <!-- Multiple and optional. Define an item template expression, which is made of:
 
              - ITEM_PREFIX: the prefix of the item name
-             - BINDABLE_EXPRESSIONS: a sequence of bindable extraction expressions. See 
+             - BINDABLE_EXPRESSIONS: a sequence of bindable extraction expressions. See
                documentation at: https://github.com/lightstreamer/Lightstreamer-kafka-connector?tab=readme-ov-file#filtered-record-routing-item-templatetemplate_name
         -->
+          {{- range $key, $itemTemplate := .itemTemplates }}
             {{- if not (quote $itemTemplate | empty) }}
         <param name="item-template.{{ $key }}">{{ $itemTemplate }}</param>
-            {{- else }}
+            {{- end }}
+          {{- else }}
         <!--
         <param name="item-template.TEMPLATE_NAME">ITEM_PREFIX-BINDABLE_EXPRESSIONS</param>
         -->
-            {{- end }}
-          {{- end }} {{/* of .itemTemplates */}}
+          {{- end }}
 
         <!-- Multiple and mandatory. Maps the Kafka topic TOPIC_NAME to:
+
              - one or more simple items
              - one or more item templates
              - any combination of the above
@@ -533,8 +590,18 @@ Render the Lightstreamer Kafka Connector configuration file.
              <param name="map.TOPIC_NAME.to">item1,item2,itemN,...</param>
 
              At least one mapping must be provided. -->
+        <!-- Example 1:
+        <param name="map.aTopicName.to">item1,item2,itemN,...</param>
+        -->
+        <!-- Example 2:
+        <param name="map.aTopicName.to">item-template.template-name1,item-template.template-name2...</param>
+        -->
+        <!-- Example 3:
+        <param name="map.aTopicName.to">item-template.template-name1,item1,item-template.template-name2,item2,...</param>
+        -->
           {{- $itemTemplates := .itemTemplates }}
           {{- $usedTopicNames := list }}
+          {{- $alreadyCommentedPartitions := false }}
           {{- range $mappingKey, $mapping := .topicMappings }}
             {{- if not $mapping }}
               {{- printf "connectors.kafkaConnector.connections.%s.routing.topicMappings.%s must be set" $key $mappingKey | fail }}
@@ -544,7 +611,6 @@ Render the Lightstreamer Kafka Connector configuration file.
               {{- fail (printf "connectors.kafkaConnector.connections.%s.routing.topicMappings.%s.topic %s already mapped" $key $mappingKey $topic) }}
             {{- end }}
             {{- $usedTopicNames = append $usedTopicNames $topic }}
-
             {{- $templateRefs := list }}
             {{- $itemsList := list }}
             {{- range $mapping.itemTemplateRefs }}
@@ -555,38 +621,63 @@ Render the Lightstreamer Kafka Connector configuration file.
             {{- else }}
               {{- $itemsList = required (printf "Either specify %s.itemTemplateRefs or %s.items" $mappingKey $mappingKey) $mapping.items }}
             {{- end }}
+            {{- if $alreadyCommentedPartitions }}
+            {{- "\n" }}
+            {{- end }}
         <param name="map.{{ $topic }}.to">{{ join "," (concat ($templateRefs) $itemsList) }}</param>
-            {{- if eq $consumerMode "MANUAL" }}
-              {{- $partitions := join "," $mapping.fromPartitions }}
-              {{- if $partitions }}
+
+            {{- if not $alreadyCommentedPartitions}}
+              {{- $alreadyCommentedPartitions = true }}
+
+        <!-- Optional but only effective if "consumer.mode" is set to "MANUAL". Lists the partitions
+             of the topic TOPIC_NAME to be manually assigned to this consumer.
+
+             The value is a comma-separated list of non-negative partition numbers and inclusive
+             ranges (e.g. "0,2,4-6").
+
+             If omitted, all partitions of the topic are assigned. -->
+        <!-- Example 1:
+        <param name="map.aTopicName.from.partitions">0,1,2,3</param>
+        -->
+        <!-- Example 2:
+        <param name="map.aTopicName.from.partitions">0-3,4-6,9</param>
+        -->
+            {{- end}} 
+            {{- $partitions := join "," $mapping.fromPartitions }}
+            {{- if and (eq $consumerMode "MANUAL") $partitions }}
         <param name="map.{{ $topic }}.from.partitions">{{ $partitions }}</param>
-              {{- end }}
             {{- end }}
           {{- else }}
             {{- fail (printf "connectors.kafkaConnector.connections.%s.routing.topicMappings must be set" $key) }}
-          {{- end }} {{/* of .topicMappings */}}
+          {{- end }}
 
-          {{- if .enableTopicRegEx }}
-            {{- if eq $consumerMode "MANUAL" }}
-              {{ fail (printf "connectors.kafkaConnector.connections.%s.routing.enableTopicRegEx must be set to 'false' when consumerMode is MANUAL" $key)}}
-            {{- end }}
-
-        <!-- Optional. Enables the "TOPIC_NAME" part of the "map.TOPIC_NAME.to" parameter to be 
+        <!-- Optional. Enables the "TOPIC_NAME" part of the "map.TOPIC_NAME.to" parameter to be
              treated as a regular expression rather than of a literal topic name.
+
+             Not supported if "consumer.mode" is set to "MANUAL"; the setting will be rejected at
+             startup.
         -->
+          {{- if not (quote .enableTopicRegEx | empty) }}
+            {{- if and .enableTopicRegEx (eq $consumerMode "MANUAL") }}
+              {{ fail (printf "connectors.kafkaConnector.connections.%s.routing.enableTopicRegEx must be set to 'false' if consumerMode is MANUAL" $key)}}
+            {{- end }}
+        <param name="map.regex.enable">{{ .enableTopicRegEx | ternary "true" "false" }}</param>
+          {{- else }}
+        <!--
         <param name="map.regex.enable">true</param>
-          {{- end }} {{/* of .enableTopicRegEx */}}
-        {{- end }} {{/* of .routing */}}
+        -->
+          {{- end }}
+        {{- end }}
 
         <!-- ##### RECORD MAPPING SETTINGS ##### -->
         {{- with required (printf "connectors.kafkaConnector.connections.%s.fields must be set" $key) $connection.fields }}
 
-        <!-- Multiple and Mandatory. Maps the value extracted through "extraction_expression" to
-             field FIELD_NAME. The expression is written in the Data Extraction Language. See 
+        <!-- Multiple and mandatory. Maps the value extracted through "extraction_expression" to
+             field FIELD_NAME. The expression is written in the Data Extraction Language. See
              documentation at: https://github.com/lightstreamer/Lightstreamer-kafka-connector?tab=readme-ov-file#record-mapping-fieldfield_name
 
-             Dynamic Field Discovery: Use wildcards in both parameter name (field.*) and extraction 
-             expression to automatically discover and map field names at runtime from the record 
+             Dynamic Field Discovery: Use wildcards in both parameter name (field.*) and extraction
+             expression to automatically discover and map field names at runtime from the record
              structure. For example:
 
              <param name="field.*">#{VALUE.*}</param>
@@ -598,63 +689,67 @@ Render the Lightstreamer Kafka Connector configuration file.
              Static field.fieldName mappings take precedence over field.* wildcards.
 
              At least one mapping must be provided. -->
+        <!--
+        <param name="field.FIELD_NAME">extraction_expression</param>
+        -->
           {{- range $fieldName, $extractionExpression := required (printf "connectors.kafkaConnector.connections.%s.fields.mapping must be set" $key) .mappings }}
         <param name="field.{{ $fieldName }}">{{ $extractionExpression }}</param>
-          {{- end }} {{/* of .mappings */}}
+          {{- end }}
 
-          {{- if .enableSkipFailedMapping }}
-
-        <!-- Optional. By enabling the parameter, if a field mapping fails, that specific field's 
-             value will simply be omitted from the update sent to Lightstreamer clients, while other 
-             successfully mapped fields from the same record will still be delivered. Can be one of 
+        <!-- Optional. By enabling the parameter, if a field mapping fails, that specific field{{"'"}}s
+             value will simply be omitted from the update sent to Lightstreamer clients, while other
+             successfully mapped fields from the same record will still be delivered. Can be one of
              the following:
 
              - true
              - false
 
              Default value: false. -->
-        <param name="fields.skip.failed.mapping.enable">{{ .enableSkipFailedMapping }}</param>
-          {{- end }} {{/* of .enableSkipFailedMapping */}}
+          {{- if not (quote .enableSkipFailedMapping | empty) }}
+        <param name="fields.skip.failed.mapping.enable">{{ .enableSkipFailedMapping | ternary "true" "false" }}</param>
+          {{- else }}
+        <!--
+        <param name="fields.skip.failed.mapping.enable">true</param>
+        -->
+          {{- end }}
 
-          {{- if .enableNonScalarValuesMapping }}
-
-        <!-- Optional. Enabling this parameter allows mapping of non-scalar values to Lightstreamer 
+        <!-- Optional. Enabling this parameter allows mapping of non-scalar values to Lightstreamer
              fields.
              For example, in the following mapping:
 
              <param name="field.structured">#{VALUE.complexAttribute}</param>
 
-             the value of "complexAttribute" will be mapped as generic text (e.g. JSON string) to 
+             the value of "complexAttribute" will be mapped as generic text (e.g. JSON string) to
              the "structured" Lightstreamer field.
 
              Can be one of the following:
+
              - true
              - false
 
              Default value: false. -->
+          {{- if not (quote .enableNonScalarValuesMapping | empty) }}
         <param name="fields.map.non.scalar.values.enable">{{ .enableNonScalarValuesMapping }}</param>
-          {{- end }} {{/* of .enableNonScalarValuesMapping */}}
-
-        {{- end }} {{/* of $connection.fields */}}
-
-        {{- with $connection.snapshot }}
+          {{- else }}
+        <!--
+        <param name="fields.map.non.scalar.values.enable">true</param>
+        -->
+          {{- end }}
+        {{- end }}
 
         <!-- ##### ITEM SNAPSHOT SETTINGS ##### -->
 
-          {{- if .mode }}
-            {{- if not (mustHas .mode (list "NONE" "MERGE" "COMMAND" "DISTINCT")) }}
-              {{- fail (printf "connectors.kafkaConnector.connections.%s.snapshot.mode must be one of: \"NONE\", \"MERGE\", \"DISTINCT\", \"COMMAND\"" $key) }}
-            {{- end }}
+        {{- $snapshot := $connection.snapshot | default dict }}
 
         <!-- Optional. Selects the snapshot behavior for subscribed items and, when not set to
-             "NONE", pins the Lightstreamer subscription Mode the connector is willing to serve.
-             Any non-"NONE" value activates the eager pipeline: the consumer starts at adapter
-             initialization, replays the topic from the beginning to seed the Server's item store,
+             "NONE", pins the Lightstreamer subscription Mode the connector is willing to serve. Any
+             non-"NONE" value activates the eager pipeline: the consumer starts at adapter
+             initialization, replays the topic from the beginning to seed the Server{{"'"}}s item store,
              then transitions to realtime tailing. Can be one of the following:
 
-             - NONE:     Snapshot disabled. The consumer starts on the first client subscription
-                         and every record is delivered as a realtime update. The subscription Mode
-                         is not constrained by the adapter.
+             - NONE:     Snapshot disabled. The consumer starts on the first client subscription and
+                         every record is delivered as a realtime update. The subscription Mode is
+                         not constrained by the adapter.
              - MERGE:    Snapshot enabled; subscription Mode pinned to MERGE. A new subscriber
                          receives a single snapshot event per item (the current value), followed by
                          realtime updates.
@@ -663,155 +758,234 @@ Render the Lightstreamer Kafka Connector configuration file.
                          (the most recent ones), followed by realtime updates.
              - COMMAND:  Snapshot enabled; subscription Mode pinned to COMMAND. A new subscriber
                          receives all rows currently in the per-item table. The connector
-                         synthesises the "command" field from each record; you only map
-                         "field.key".
+                         synthesises the "command" field from each record; you only map "field.key".
+
+             Any non-"NONE" value also bypasses "record.consume.from" and forces
+             "record.extraction.error.strategy" to "IGNORE_AND_CONTINUE", overriding the configured
+             values.
 
              Default value: NONE. -->
-        <param name="item.snapshot.enabled.mode">{{ .mode }}</param>
-          {{- end }} {{/* of .mode */}}
+        {{- if not (quote $snapshot.mode) | empty }}
+          {{- if not (mustHas $snapshot.mode (list "NONE" "MERGE" "COMMAND" "DISTINCT")) }}
+            {{- fail (printf "connectors.kafkaConnector.connections.%s.snapshot.mode must be one of: \"NONE\", \"MERGE\", \"DISTINCT\", \"COMMAND\"" $key) }}
+          {{- end }}
+          {{- if and (eq $snapshot.mode "COMMAND") (not $connection.fields.mappings.key) }}
+            {{- fail (printf "connectors.kafkaConnector.connections.%s.snapshot.mode is COMMAND but no key mapping is defined" $key) }}
+          {{- end }}
+        <param name="item.snapshot.enabled.mode">{{ $snapshot.mode }}</param>
+        {{- else }}
+        <!--
+        <param name="item.snapshot.enabled.mode">MERGE</param>
+        -->
+        {{- end }}
 
-          {{- if eq .mode "DISTINCT" }}
-            {{- if not (quote .distinctLength | empty) }}
-              {{- if lt (int .distinctLength) 0 }}
-                {{- fail (printf "connectors.kafkaConnector.connections.%s.snapshot.distinctLength must be non-negative" $key) }}
-              {{- end }}
-
-        <!-- Optional but only effective when "item.snapshot.enabled.mode" is set to "DISTINCT".
-             The maximum allowed length for the snapshot of an item that has been requested with
+        <!-- Optional but only effective if "item.snapshot.enabled.mode" is set to "DISTINCT". The
+             maximum allowed length for the snapshot of an item that has been requested with
              publishing Mode DISTINCT. Must be a positive integer.
 
              Default value: 10. -->
-        <param name="item.snapshot.distinct.length">{{ int .distinctLength }}</param>
-            {{- end }} 
-          {{- end }} {{/* of .distinctLength */}}
+        {{- if eq $snapshot.mode "DISTINCT" }}
+          {{- if not (quote $snapshot.distinctLength | empty) }}
+            {{- if lt (int $snapshot.distinctLength) 0 }}
+              {{- fail (printf "connectors.kafkaConnector.connections.%s.snapshot.distinctLength must be non-negative" $key) }}
+            {{- end }}
+          {{- end }}
+        <param name="item.snapshot.distinct.length">{{ int $snapshot.distinctLength }}</param>
+        {{- else }}
+        <!--
+        <param name="item.snapshot.distinct.length">100</param>
+        -->
+        {{- end }}
 
-          {{- if ne .mode "NONE" }}
-            {{- if not (quote .maxIdleSeconds | empty )}}
-              {{- if lt (int .maxIdleSeconds) 0 }} 
-                {{- fail (printf "connectors.kafkaConnector.connections.%s.snapshot.maxIdleSeconds must be non-negative" $key) }}
-              {{- end }}
-
-        <!-- Optional but only effective when "item.snapshot.enabled.mode" is set to any value
-             other than "NONE". The maximum idle time in seconds after which the snapshot of an
-             item is discarded, so that the next incoming record starts a fresh one. Must be a
-             non-negative integer; a value of 0 disables the idle check.
+        <!-- Optional but only effective if "item.snapshot.enabled.mode" is set to any value other
+             than "NONE". The maximum idle time in seconds after which the snapshot of an item is
+             discarded, so that the next incoming record starts a fresh one. Must be a non-negative
+             integer; a value of 0 disables the idle check.
 
              Default value: 0. -->
-        <param name="item.snapshot.max.idle.seconds">{{ int .maxIdleSeconds }}</param>
-            {{- end }}
-          {{- end }} {{/* of .maxIdleSeconds */}}
-        {{- end }} {{/* of $connection.snapshot */}}
-
-        {{- if ($connection.record).renderSchemaRegistry }} {{/* Flag set by the "lightstreamer.kafka-connector.configuration.record.evaluator" function */}}
+        {{- if and (ne $snapshot.mode "NONE") (not (quote $snapshot.maxIdleSeconds | empty)) }}
+          {{- if lt (int $snapshot.maxIdleSeconds) 0 }}
+            {{- fail (printf "connectors.kafkaConnector.connections.%s.snapshot.maxIdleSeconds must be non-negative" $key) }}
+          {{- end }}
+        <param name="item.snapshot.max.idle.seconds">{{ int $snapshot.maxIdleSeconds }}</param>
+        {{- else }}
+        <!--
+        <param name="item.snapshot.max.idle.seconds">30</param>
+        -->
+        {{- end }}
 
         <!-- ##### SCHEMA REGISTRY SETTINGS ##### -->
-          {{- $schemaRegistryRef := $connection.record.schemaRegistryRef  }}
-          {{- $schemaRegistry := $connection.record.schemaRegistry }}
+
+        {{- $schemaRegistryRef := ($connection.record).schemaRegistryRef  }}
+        {{- $schemaRegistry := ($connection.record).schemaRegistry }}
+        {{- $isConfluent := eq ($schemaRegistry.provider | default "CONFLUENT") "CONFLUENT" }}
 
         <!-- Optional. Specifies the Schema Registry provider to use. Can be one of the following:
 
              - CONFLUENT: Use the Confluent Schema Registry.
-             - AZURE: Use the Azure Schema Registry.
+             - AZURE:     Use the Azure Schema Registry.
 
              Default value: CONFLUENT. -->
+        {{- /* Flag set by the "lightstreamer.kafka-connector.configuration.record.evaluator" function */ -}}
+        {{- if and ($connection.record).renderSchemaRegistry (not (quote $schemaRegistry.provider | empty) )}}
         <param name="schema.registry.provider">{{ $schemaRegistry.provider }}</param>
+        {{- else }}
+        <!--
+        <param name="schema.registry.provider">AZURE</param>
+        -->
+        {{- end }}
 
-        <!-- Mandatory if the Confluent Schema Registry is enabled. The URL of the Confluent Schema Registry.
+        <!-- Mandatory if a Schema Registry is enabled. The URL of the Schema Registry endpoint
+             (either Confluent Schema Registry or Azure Schema Registry).
+
              An encrypted connection is enabled by specifying the "https" protocol. -->
+        {{- if ($connection.record).renderSchemaRegistry }}
         <param name="schema.registry.url">{{ $schemaRegistry.url }}</param>
+        {{- else }}
+        <!-- Example for the Confluent Schema Registry:
+        <param name="schema.registry.url">https://schema-registry:8084</param>
+        -->
+        <!-- Example for the Azure Schema Registry:
+        <param name="schema.registry.url">https://my-namespace.servicebus.windows.net</param>
+        -->
+        {{- end }}
 
-          {{- if eq $schemaRegistry.provider "CONFLUENT" -}}
-            {{- $confluent := $schemaRegistry.confluent | default dict }}
-            {{- with $confluent }}
-              {{- if (.basicAuthentication).enabled }}
+        <!-- ##### Confluent Schema Registry settings ##### -->
+        {{- $confluent := $isConfluent | ternary $schemaRegistry.confluent dict }}
+        {{- $confluentAuthentication := dict }}
+        {{- if $isConfluent }}
+          {{- $confluentAuthentication = $confluent.basicAuthentication | default dict }}
+        {{- end}}
 
-        <!-- Optional. Enable Basic HTTP authentication of this connection against the Schema Registry. Can be one of the following:
+        <!-- Optional. Enables Basic HTTP authentication of this connection against the Schema
+             Registry. Can be one of the following:
+
              - true
              - false
 
              Default value: false. -->
-                {{- with .basicAuthentication }}
+        {{- if not (quote $confluentAuthentication.enabled | empty ) }}
+        <param name="schema.registry.confluent.basic.authentication.enable">{{ $confluentAuthentication.enabled | ternary "true" "false" }}</param>
+        {{- else }}
+        <!--
         <param name="schema.registry.confluent.basic.authentication.enable">true</param>
-                  {{- with required (printf "connectors.kafkaConnector.schemaRegistries.%s.basicAuthentication.credentialsSecretRef must be set" $schemaRegistryRef) .credentialsSecretRef }}
+        -->
+        {{- end }}
 
         <!-- Mandatory if Basic HTTP authentication is enabled. The credentials. -->
+        {{- if $confluentAuthentication.enabled }}
+          {{- with required (printf "connectors.kafkaConnector.schemaRegistries.%s.basicAuthentication.credentialsSecretRef must be set" $schemaRegistryRef) $confluentAuthentication.credentialsSecretRef }}
         <param name="schema.registry.confluent.basic.authentication.username">$env.LS_KAFKA_CONFLUENT_SCHEMA_REGISTRY_{{ . | upper | replace "-" "_" }}_USERNAME</param>
         <param name="schema.registry.confluent.basic.authentication.password">$env.LS_KAFKA_CONFLUENT_SCHEMA_REGISTRY_{{ . | upper | replace "-" "_" }}_PASSWORD</param>
-                  {{- end }} {{/* of .credentialsSecretRef */}}
-                {{- end }} {{/* of .basicAuthentication */}}
-              {{- end }} {{/* of .basicAuthentication.enabled */}}
+          {{- end }}
+        {{- else }}
+        <!--
+        <param name="schema.registry.confluent.basic.authentication.username">authorized-schema-registry-user</param>
+        <param name="schema.registry.confluent.basic.authentication.password">authorized-schema-registry-user-password</param>
+        -->
+        {{- end }}
 
-              {{- with .sslConfig }}
-
-        <!-- The following parameters have the same meaning as the homologous ones defined in
-             the ENCRYPTION SETTINGS section. -->
+        <!-- The following parameters have the same meaning as the homologous ones defined in the
+             ENCRYPTION SETTINGS section. -->
+        {{- $sslConfig := $isConfluent | ternary $confluent.sslConfig dict }}
 
         <!-- Set general encryption settings -->
-                {{- if .protocol }}
-                  {{- if not (mustHas .protocol (list "TLSv1.2" "TLSv1.3")) }}
-                    {{- fail (printf "connectors.kafkaConnector.schemaRegistries.%s.sslConfig.protocol must be one of: \"TLSv1.2\", \"TLSv1.3\"" $schemaRegistryRef) }}
-                  {{- end }}
-        <param name="schema.registry.confluent.encryption.protocol">{{ .protocol }}</param>
-                {{- end }} {{/* of .protocol */}}
-                {{- if .allowProtocols }}
-                  {{- range $protocol := .allowProtocols}}
-                    {{- if not (mustHas $protocol (list "TLSv1.2" "TLSv1.3")) }}
-                      {{- fail (printf "connectors.kafkaConnector.schemaRegistries.%s.sslConfig.allowProtocols must be a list of \"TLSv1.2\", \"TLSv1.3\"" $schemaRegistryRef) }}
-                    {{- end }}
-                  {{- end }}
-        <param name="schema.registry.confluent.encryption.enabled.protocols">{{ join "," .allowProtocols }}</param>
-                {{- end }} {{/* of .allowProtocols */}}
+        {{- $renderedSslConfigComments := dict "protocol" "TLSv1.2" "enabled.protocols" "TLSv1.3" "cipher.suites" "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA" "hostname.verification.enable" "true" }}
 
-                {{- if .allowCipherSuites }}
-                  {{- range $cipherSuite := .allowCipherSuites}}
-                    {{- if $cipherSuite | empty }}
-                      {{- fail (printf "connectors.kafkaConnector.schemaRegistries.%s.sslConfig.allowCipherSuites must be a list of valid values" $schemaRegistryRef) }}
-                    {{- end }}
-                  {{- end }}
-        <param name="schema.registry.confluent.encryption.cipher.suites">{{ join "," .allowCipherSuites }}</param>
-                {{- end }} {{/* of .allowCipherSuites */}}
+        {{- if not (quote $sslConfig.protocol | empty ) }}
+          {{- $_ := unset $renderedSslConfigComments "protocol" }}
+          {{- if not (mustHas $sslConfig.protocol (list "TLSv1.2" "TLSv1.3")) }}
+            {{- fail (printf "connectors.kafkaConnector.schemaRegistries.%s.sslConfig.protocol must be one of: \"TLSv1.2\", \"TLSv1.3\"" $schemaRegistryRef) }}
+          {{- end }}
+        <param name="schema.registry.confluent.encryption.protocol">{{ $sslConfig.protocol }}</param>
+        {{- end }}
 
-                {{- if .enableHostnameVerification }}
+        {{- if $sslConfig.allowProtocols }}
+          {{- $_ := unset $renderedSslConfigComments "enabled.protocols" }}
+          {{- range $protocol := $sslConfig.allowProtocols}}
+            {{- if not (mustHas $protocol (list "TLSv1.2" "TLSv1.3")) }}
+              {{- fail (printf "connectors.kafkaConnector.schemaRegistries.%s.sslConfig.allowProtocols must be a list of \"TLSv1.2\", \"TLSv1.3\"" $schemaRegistryRef) }}
+            {{- end }}
+          {{- end }}
+        <param name="schema.registry.confluent.encryption.enabled.protocols">{{ join "," $sslConfig.allowProtocols }}</param>
+        {{- end }}
+
+        {{- if $sslConfig.allowCipherSuites }}
+          {{- $_ := unset $renderedSslConfigComments "cipher.suites" }}
+          {{- range $cipherSuite := $sslConfig.allowCipherSuites}}
+            {{- if $cipherSuite | empty }}
+              {{- fail (printf "connectors.kafkaConnector.schemaRegistries.%s.sslConfig.allowCipherSuites must be a list of valid values" $schemaRegistryRef) }}
+            {{- end }}
+          {{- end }}
+        <param name="schema.registry.confluent.encryption.cipher.suites">{{ join "," $sslConfig.allowCipherSuites }}</param>
+            {{- end }}
+
+        {{- if $sslConfig.enableHostnameVerification }}
+          {{- $_ := unset $renderedSslConfigComments "hostname.verification.enable" }}
         <param name="schema.registry.confluent.encryption.hostname.verification.enable">true</param>
-                {{- end }} {{/* of .enableHostnameVerification */}}
+        {{- end }}
 
-                {{- if .truststoreRef }}
-        <!-- If required, configure the trust store to trust the Confluent Schema Registry certificates -->
+        {{- if $renderedSslConfigComments }}
+        <!--
+          {{- if hasKey $renderedSslConfigComments "protocol" }}
+        <param name="schema.registry.confluent.encryption.protocol">{{ $renderedSslConfigComments.protocol }}</param>
+          {{- end }}
+          {{- if hasKey $renderedSslConfigComments "enabled.protocols" }}
+        <param name="schema.registry.confluent.encryption.enabled.protocols">{{ get $renderedSslConfigComments "enabled.protocols" }}</param>
+          {{- end }}
+          {{- if hasKey $renderedSslConfigComments "cipher.suites" }}
+        <param name="schema.registry.confluent.encryption.cipher.suites">{{ get $renderedSslConfigComments "cipher.suites" }}</param>
+          {{- end }}
+          {{- if hasKey $renderedSslConfigComments "hostname.verification.enable" }}
+        <param name="schema.registry.confluent.encryption.hostname.verification.enable">{{ get $renderedSslConfigComments "hostname.verification.enable" }}</param>
+          {{- end }}
+        -->
+        {{- end }}
 
-                  {{- include "lightstreamer.kafka-connector.configuration.truststore" (list "schema.registry.encryption.truststore" $.Values.keystores .truststoreRef)  | nindent 8 }}
-                {{- end }} {{/* of .truststoreRef */}}
+        {{- include "lightstreamer.kafka-connector.configuration.schema-registry.confluent.truststore" (list $.Values.keystores $sslConfig) | nindent 8 }}
+        {{- include "lightstreamer.kafka-connector.configuration.schema-registry.confluent.keystore" (list $.Values.keystores $sslConfig) | nindent 8 }}
 
-                {{- if .keystoreRef }}
-
-        <!-- If mutual TLS is enabled on the Confluent Schema Registry, enable and configure the key store -->
-                  {{- include "lightstreamer.kafka-connector.configuration.keystore" (list "schema.registry.encryption.keystore" $.Values.keystores .keystoreRef)  | nindent 8 }}
-                {{- end }} {{/* of .keystoreRef */}}
-              {{- end }} {{/* of .sslConfig */}}
-            {{- end }} {{/* of with $confluent */}}
-          {{- else if eq $schemaRegistry.provider "AZURE" -}}
-              {{- $azure := $schemaRegistry.azure | default dict }}
-              {{- with required (printf "connectors.kafkaConnector.schemaRegistries.%s.azure.credentialsSecretRef must be set " $schemaRegistryRef) $azure.credentialsSecretRef }}
         <!-- ##### Azure Schema Registry settings ##### -->
+        {{- $azureCredentials := "" -}}
+        {{- if not $isConfluent }}
+          {{- $azureCredentials = required (printf "1connectors.kafkaConnector.schemaRegistries.%s.azure.credentialsSecretRef must be set " $schemaRegistryRef) ($schemaRegistry.azure).credentialsSecretRef -}}
+        {{- end }}
 
-        <!-- Mandatory if the Azure Schema Registry is enabled. The Application (client) ID assigned to the application
-             registered in Microsoft Entra ID with appropriate permissions to access the Schema Registry. -->
-        <param name="schema.registry.azure.client.id">$env.LS_KAFKA_AZURE_SCHEMA_REGISTRY_{{ . | upper | replace "-" "_" }}_CLIENT_ID</param>
+        <!-- Mandatory if the Azure Schema Registry is enabled. The Application (client) ID assigned
+             to the application registered in Microsoft Entra ID with appropriate permissions to
+             access the Schema Registry. -->
+        {{- if $azureCredentials }}
+        <param name="schema.registry.azure.client.id">$env.LS_KAFKA_AZURE_SCHEMA_REGISTRY_{{ $azureCredentials | upper | replace "-" "_" }}_CLIENT_ID</param>
+        {{- else }}
+        <!--
+        <param name="schema.registry.azure.client.id">11111111-2222-3333-4444-555555555555</param>
+        -->
+        {{- end }}
 
-        <!-- Mandatory if the Azure Schema Registry is enabled. The Directory (tenant) ID of the Microsoft Entra ID tenant
-             where the application is registered. -->
-        <param name="schema.registry.azure.tenant.id">$env.LS_KAFKA_AZURE_SCHEMA_REGISTRY_{{ . | upper | replace "-" "_" }}_TENANT_ID</param>
+        <!-- Mandatory if the Azure Schema Registry is enabled. The Directory (tenant) ID of the
+             Microsoft Entra ID tenant where the application is registered. -->
+        {{- if $azureCredentials }}
+        <param name="schema.registry.azure.tenant.id">$env.LS_KAFKA_AZURE_SCHEMA_REGISTRY_{{ $azureCredentials | upper | replace "-" "_" }}_TENANT_ID</param>
+        {{- else}}
+        <!--
+        <param name="schema.registry.azure.tenant.id">aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee</param>
+        -->
+        {{- end }}
 
-        <!-- Mandatory if the Azure Schema Registry is enabled. The client secret value of the application registered
-             in Microsoft Entra ID. -->
-        <param name="schema.registry.azure.client.secret">$env.LS_KAFKA_AZURE_SCHEMA_REGISTRY_{{ . | upper | replace "-" "_" }}_CLIENT_SECRET</param>
-              {{- end }} {{/* of .credentialsSecretRef */}}
-            {{- end }} {{/* of $schemaRegistry.provider */}}
-          {{- end }} {{/* of .record.renderSchemaRegistry */}}
+        <!-- Mandatory if the Azure Schema Registry is enabled. The client secret value of the
+             application registered in Microsoft Entra ID. -->
+        {{- if $azureCredentials }}
+        <param name="schema.registry.azure.client.secret">$env.LS_KAFKA_AZURE_SCHEMA_REGISTRY_{{ $azureCredentials | upper | replace "-" "_" }}_CLIENT_SECRET</param>
+        {{- else }}
+        <!--
+        <param name="schema.registry.azure.client.secret">your-azure-client-secret-value</param>
+        -->
+        {{- end }}
 
     </data_provider>
-      {{- end }} {{/* of .enabled */}}
-    {{- end -}} {{/* of .connections */}}
+      {{- end }}
+    {{- end }}
 
 </adapters_conf>
-{{- end }} {{/* of .Values.connectors.kafkaConnector */}}
+{{- end }}
 {{- end }}
