@@ -274,7 +274,7 @@ server exists and no duplicated names or ports are used.
     {{- $usedPorts = append $usedPorts $serverPort }}
   {{- end }}
 {{- end }}
-{{- if $usedNames | empty }}
+{{- if not $usedNames }}
   {{- fail "At least one enabled server must be defined" }}
 {{- end }}
 {{- end }}
@@ -482,7 +482,7 @@ Create the name of the temp directory to use for storing the connectors' source 
 {{- end }}
 
 {{/*
-  Create the name of the temp directory to use for storing the Lightstreamer Kafka Connector source configuration files
+Create the name of the temp directory to use for storing the Lightstreamer Kafka Connector source configuration files
 */}}
 {{- define "lightstreamer.connectors.source-config.kafka-connector.dir" -}}
 {{ print (include "lightstreamer.connectors.source-config.dir" .) "/kafka" }}
@@ -496,7 +496,7 @@ Create the name of the temp directory to use for storing the connectors' source 
 {{- end }}
 
 {{/*
-  Create the name of the temp directory to use for storing the Kafka Connector source zip archive
+Create the name of the temp directory to use for storing the Kafka Connector source zip archive
 */}}
 {{- define "lightstreamer.kafka.connector.source-archive.dir" -}}
 {{ print (include "lightstreamer.connectors.source-archives.dir" .) "/kafka" }}
@@ -570,6 +570,10 @@ Create the name of the deployment folder the Lightstreamer Kafka Connector.
 {{- printf "schemas" }}
 {{- end }}
 
+{{- define "lightstreamer.kafka-connector.keytabs.dir.name" -}}
+{{- printf "keytabs" }}
+{{- end }}
+
 {{/*
 Create the name of the logs folder for the Lightstreamer Kafka Connector.
 */}}
@@ -580,106 +584,144 @@ Create the name of the logs folder for the Lightstreamer Kafka Connector.
 {{/*
 Render the truststore settings for the Lightstreamer Kafka Connector configuration file.
 */}}
-{{- define "lightstreamer.kafka-connector.configuration.truststore" -}}
-{{- $prefix := index . 0 -}}
-{{- $top := index . 1 -}}
-{{- $key := index . 2 -}}
-{{- $keyStore := required (printf "keystores.%s not defined" $key) (get $top $key) -}}
-
-<param name="{{ $prefix }}.path">{{ include "lightstreamer.keystores.dir" . }}/{{ $key }}/{{ required (printf "keystores.%s.keystoreFileSecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</param>
-
-<!-- Optional. The password of the trust store.
-
-     If not set, checking the integrity of the trust store file configured will not
-     be possible. -->
-<param name="{{ $prefix }}.password">$env.LS_KEYSTORE_{{ $key | upper |replace "-" "_" }}_PASSWORD</param>
-
-{{- if not (quote $keyStore.type | empty) }}
-  {{- if not (mustHas $keyStore.type (list "JKS" "PKCS12")) }}
-    {{- fail (printf "keystores.%s.type must be one of: \"JKS\", \"PKCS12\"" $key) }}
-  {{- end }}
+{{- define "lightstreamer.kafka-connector.configuration.truststore" }}
+{{- $keyStores := index . 0 }}
+{{- $top := index . 1 }}
+<!-- Optional. The path of the trust store file, relative to the deployment folder
+     (LS_HOME/adapters/lightstreamer-kafka-connector-<version>), or as an absolute path.
+     The trust store is used to validate the certificates provided by the Kafka brokers. -->
+{{- $keyStore := dict }}
+{{- if $top.truststoreRef }}
+  {{- $keyStore = required (printf "keystores.%s not defined" $top.truststoreRef) (get $keyStores $top.truststoreRef) }}
+<param name="encryption.truststore.path">{{ include "lightstreamer.keystores.dir" . }}/{{ $top.truststoreRef }}/{{ required (printf "keystores.%s.keystoreFileSecretRef.key must be set" $top.truststoreRef) ($keyStore.keystoreFileSecretRef).key }}</param>
+{{- else }}
+<!--
+<param name="encryption.truststore.path">secrets/kafka-connector.truststore.jks</param>
+-->
+{{- end }}
 
 <!-- Optional. The type of the trust store. Can be one of the following:
 
-      - JKS
-      - PKCS12
+     - JKS
+     - PKCS12
 
-      Default value: JKS. -->
-<param name="{{ $prefix }}.type">{{ $keyStore.type }}</param>
-{{- end -}}
-{{- end -}}
+     Default value: JKS. -->
+{{- if and $top.truststoreRef (not (quote $keyStore.type | empty)) }}
+  {{- if not (mustHas $keyStore.type (list "JKS" "PKCS12")) }}
+    {{- fail (printf "keystores.%s.type must be one of: \"JKS\", \"PKCS12\"" $top.truststoreRef) }}
+  {{- end }}
+<param name="encryption.truststore.type">{{ $keyStore.type }}</param>
+{{- else }}
+<!--
+<param name="encryption.truststore.type">PKCS12</param>
+-->
+{{- end }}
+
+<!-- Optional. The password of the trust store.
+
+     If not set, checking the integrity of the trust store file configured will not be
+     possible. -->
+{{- if $top.truststoreRef }}
+<param name="encryption.truststore.password">$env.LS_KEYSTORE_{{ $top.truststoreRef | upper |replace "-" "_" }}_PASSWORD</param>
+{{- else }}
+<!--
+<param name="encryption.truststore.password">kafka-connector-truststore-password</param>
+-->
+{{- end }}
+{{- end }}
 
 {{/*
 Render the keystore settings for the Lightstreamer Kafka Connector configuration file.
 */}}
-{{- define "lightstreamer.kafka-connector.configuration.keystore" -}}
-{{- $prefix := index . 0 -}}
-{{- $top := index . 1 -}}
-{{- $key := index . 2 -}}
-{{- $keyStore := required (printf "keystores.%s not defined" $key) (get $top $key) -}}
-<!-- Optional. Enable a key store. Can be one of the following:
-      - true
-      - false
+{{- define "lightstreamer.kafka-connector.configuration.keystore" }}
+{{- $keyStores := index . 0 }}
+{{- $top := index . 1 }}
+<!-- Optional. Enables a key store. Can be one of the following:
 
-      A key store is required if the mutual TLS is enabled on Kafka.
+     - true
+     - false
 
-      If enabled, the following parameters configure the key store settings:
-      - encryption.keystore.path
-      - encryption.keystore.type
-      - encryption.keystore.password
-      - encryption.keystore.key.password
+     A key store is required if the mutual TLS is enabled on Kafka.
 
-      Default value: false. -->
-<param name="{{ $prefix }}.enable">true</param>
+     If enabled, the following parameters configure the key store settings:
 
-<!-- Mandatory if key store is enabled. The path of the key store file, relative to
-      the deployment folder (LS_HOME/adapters/lightstreamer-kafka-connector-<version>). -->
-<param name="{{ $prefix }}.path">{{ include "lightstreamer.keystores.dir" . }}/{{ $key }}/{{ required (printf "keystores.%s.keystoreFilesecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</param>
+     - encryption.keystore.path
+     - encryption.keystore.type
+     - encryption.keystore.password
+     - encryption.keystore.key.password
+
+     Default value: false. -->
+{{- $keyStore := dict }}
+{{- if $top.keystoreRef }}
+  {{- $keyStore = required (printf "keystores.%s not defined" $top.keystoreRef) (get $keyStores $top.keystoreRef) }}
+<param name="encryption.keystore.enable">true</param>
+{{- else }}
+<!--
+<param name="encryption.keystore.enable">true</param>
+-->
+{{- end }}
+
+<!-- Mandatory if key store is enabled. The path of the key store file, relative to the
+     deployment folder (LS_HOME/adapters/lightstreamer-kafka-connector-<version>), or as an
+     absolute path. -->
+{{- if $top.keystoreRef }}
+<param name="encryption.keystore.path">{{ include "lightstreamer.keystores.dir" . }}/{{ $top.keystoreRef }}/{{ required (printf "keystores.%s.keystoreFilesecretRef.key must be set" $top.keystoreRef) ($keyStore.keystoreFileSecretRef).key }}</param>
+{{- else }}
+<!--
+<param name="encryption.keystore.path">secrets/kafka-connector.keystore.jks</param>
+-->
+{{- end }}
+
+<!-- Optional. The type of the key store. Can be one of the following:
+
+     - JKS
+     - PKCS12
+
+     Default value: JKS. -->
+{{- if and $top.keystoreRef (not (quote $keyStore.type | empty)) }}
+  {{- if not (mustHas $keyStore.type (list "JKS" "PKCS12")) }}
+    {{- fail (printf "keystores.%s.type must be one of: \"JKS\", \"PKCS12\"" $top.keystoreRef) }}
+  {{- end }}
+<param name="encryption.keystore.type">{{ $keyStore.type }}</param>
+{{- else }}
+<!--
+<param name="encryption.keystore.type">PKCS12</param>
+-->
+{{- end }}
 
 <!-- Optional. The password of the key store.
 
-      If not set, checking the integrity of the key store file configured
-      will not be possible. -->
-<param name="{{ $prefix }}.password">$env.LS_KEYSTORE_{{ $key | upper |replace "-" "_" }}_PASSWORD</param>
-
-{{- if $keyStore.keyPasswordSecretRef }}
-
-<!-- Optional. The password of the private key in the key store file. -->
-<param name="{{ $prefix }}.key.password">$env.LS_KEYSTORE_{{ $key | upper |replace "-" "_" }}_KEY_PASSWORD</param>
+     If not set, checking the integrity of the key store file configured will not be
+     possible. -->
+{{- if $top.keystoreRef }}
+<param name="encryption.keystore.password">$env.LS_KEYSTORE_{{ $top.keystoreRef | upper |replace "-" "_" }}_PASSWORD</param>
+{{- else }}
+<!--
+<param name="encryption.keystore.password">kafka-connector-password</param>
+-->
 {{- end }}
 
-{{- if not (quote $keyStore.type | empty) }}
-  {{- if not (mustHas $keyStore.type (list "JKS" "PKCS12")) }}
-    {{- fail (printf "keystores.%s.type must be one of: \"JKS\", \"PKCS12\"" $key) }}
-  {{- end }}
-
-<!-- Optional. The type of the key store.
-      Can be one of the following:
-      - JKS
-      - PKCS12
-
-      Default value: JKS. -->  
-<param name="{{ $prefix }}.keystore.type">{{ $keyStore.type }}</param>
-{{- end -}}
-{{- end -}}
+<!-- Optional. The password of the private key in the key store file. -->
+{{- if and $top.keystoreRef (not (quote $keyStore.keyPasswordSecretRef | empty)) }}
+<param name="encryption.keystore.key.password">$env.LS_KEYSTORE_{{ $top.keystoreRef | upper |replace "-" "_" }}_KEY_PASSWORD</param>
+{{- else }}
+<!--
+<param name="encryption.keystore.key.password">kafka-connector-private-key-password</param>
+-->
+{{- end }}
+{{- end }}
 
 {{/*
 Render the key/value record evaluator settings for the Lightstreamer Kafka Connector configuration file.
 */}}
-{{- define "lightstreamer.kafka-connector.configuration.record.evaluator" -}}
-{{- $ := index . 0 -}}
-{{- $connection := index . 1 -}}
-{{- $keyOrValue := index . 2 -}}
-{{- $evaluator := get $connection.record (printf "%sEvaluator" $keyOrValue) }}
-{{- if $evaluator }}
-  {{- $localSchemaFiles := $.Values.connectors.kafkaConnector.localSchemaFiles }}
-  {{- $key := index . 3 -}}
-  {{- $type := $evaluator.type | default "STRING" }}
-  {{- $protobufMessageType := $evaluator.protobufMessageType }}
-  {{- if not (mustHas $type (list "AVRO" "JSON" "PROTOBUF" "KVP" "STRING" "INTEGER" "BOOLEAN" "BYTE_ARRAY" "BYTE_BUFFER" "BYTES" "DOUBLE" "FLOAT" "LONG" "SHORT" "UUID")) }}
-    {{- fail (printf "connectors.kafkaConnector.connections.%s.record.%sEvaluator.type must be one of: \"AVRO\", \"JSON\", \"PROTOBUF\", \"KVP\", \"STRING\", \"INTEGER\", \"BOOLEAN\", \"BYTE_ARRAY\", \"BYTE_BUFFER\", \"BYTES\", \"DOUBLE\", \"FLOAT\", \"LONG\", \"SHORT\", \"UUID\"" $key $keyOrValue) }}
-  {{- end }}
-<!-- Optional. The format to be used to deserialize respectively the key and value of a 
+{{- define "lightstreamer.kafka-connector.configuration.record.evaluator" }}
+{{- $ := index . 0 }}
+{{- $record := (index . 1) | default (dict) }}
+{{- $keyOrValue := index . 2 }}
+{{- $key := index . 3 -}}
+{{- $evaluator := (get $record (printf "%sEvaluator" $keyOrValue)) | default dict }}
+{{- $localSchemaFiles := $.Values.connectors.kafkaConnector.localSchemaFiles | default dict}}
+<!-- Optional. The format to be used to deserialize respectively the key and value of a
      Kafka record. Can be one of the following:
 
      - AVRO
@@ -699,86 +741,212 @@ Render the key/value record evaluator settings for the Lightstreamer Kafka Conne
      - UUID
 
      Default: STRING -->
+{{- $type := $evaluator.type }}
+{{- $protobufMessageType := $evaluator.protobufMessageType }}
+{{- if not (quote $type | empty) }}
+  {{- if not (mustHas $type (list "AVRO" "JSON" "PROTOBUF" "KVP" "STRING" "INTEGER" "BOOLEAN" "BYTE_ARRAY" "BYTE_BUFFER" "BYTES" "DOUBLE" "FLOAT" "LONG" "SHORT" "UUID")) }}
+    {{- fail (printf "connectors.kafkaConnector.connections.%s.record.%sEvaluator.type must be one of: \"AVRO\", \"JSON\", \"PROTOBUF\", \"KVP\", \"STRING\", \"INTEGER\", \"BOOLEAN\", \"BYTE_ARRAY\", \"BYTE_BUFFER\", \"BYTES\", \"DOUBLE\", \"FLOAT\", \"LONG\", \"SHORT\", \"UUID\"" $key $keyOrValue) }}
+  {{- end }}
 <param name="record.{{ $keyOrValue }}.evaluator.type">{{ $type }}</param>
+{{- else }}
+<!--
+<param name="record.{{ $keyOrValue }}.evaluator.type">STRING</param>
+-->
+{{- end }}
 
-  {{- if has $type (list "AVRO" "JSON" "PROTOBUF") -}}
-    {{- if $evaluator.enableSchemaRegistry }}
-      {{- $schemaRegistryRef := $connection.record.schemaRegistryRef }}
-      {{- if not $schemaRegistryRef }}
-        {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.record.schemaRegistryRef or disable connectors.kafkaConnector.connections.%s.record.%sEvaluator.enableSchemaRegistry" $key $key $keyOrValue) }}
-      {{- end }}
-      
-      {{- $schemaRegistry := required (printf "connectors.kafkaConnector.schemaRegistries.%s not defined" $schemaRegistryRef) (get ($.Values.connectors.kafkaConnector.schemaRegistries | default (dict)) $schemaRegistryRef) }}
-      {{- $schemaRegistryProvider := $schemaRegistry.provider | default "CONFLUENT" }}
-      {{- $_ := set $schemaRegistry "provider" $schemaRegistryProvider }}
-      
-      {{- if not (mustHas $schemaRegistryProvider (list "CONFLUENT" "AZURE")) }}
-        {{- fail (printf "connectors.kafkaConnector.schemaRegistries.%s.provider must be one of: \"CONFLUENT\", \"AZURE\"" $schemaRegistryRef) }}
-      {{- end }}
-      {{- $_ := required (printf "connectors.kafkaConnector.schemaRegistries.%s.url must be set" $schemaRegistryRef) $schemaRegistry.url }}
+<!-- Mandatory if evaluator type is set to "AVRO" or "PROTOBUF" and no Schema Registry is
+     enabled. The path of the local schema (or binary descriptor) file, relative to the
+     deployment folder (LS_HOME/adapters/lightstreamer-kafka-connector-<version>) or as an
+     absolute path, for message validation respectively of the key and the value.
 
-      {{- if and (eq $schemaRegistryProvider "AZURE") (eq $type "PROTOBUF") }}
-        {{- fail (printf "connectors.kafkaConnector.schemaRegistries.%s with provider AZURE does not support PROTOBUF evaluator type" $schemaRegistryRef) }}
-      {{- end }}
+     This parameter takes precedence over the homologous
+     "record.key/value.evaluator.schema.registry.enable" parameter: if a local schema path
+     is set, it is used for deserialization even when the Schema Registry is enabled. -->     
+{{- if $evaluator.localSchemaFilePathRef }}
+  {{- $localSchema := required (printf "connectors.kafkaConnector.localSchemaFiles.%s not defined" $evaluator.localSchemaFilePathRef ) (get $localSchemaFiles $evaluator.localSchemaFilePathRef) }}
+<param name="record.{{ $keyOrValue }}.evaluator.schema.path">{{ include "lightstreamer.kafka-connector.schemas.dir.name" . }}/{{ $evaluator.localSchemaFilePathRef }}/{{ required (printf "connectors.kafkaConnector.localSchemaFiles.%s.key must be set" .) $localSchema.key }}</param>
+{{- else}}
+  {{- if and (has $type (list "AVRO" "PROTOBUF")) (not $evaluator.enableSchemaRegistry) }}
+    {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.record.%sEvaluator.localSchemaFilePathRef or enable connectors.kafkaConnector.connections.%s.record.%sEvaluator.enableSchemaRegistry" $key $keyOrValue $key $keyOrValue) }}
+  {{- end }}
+<!--
+<param name="record.{{ $keyOrValue }}.evaluator.schema.path">schemas/record_{{ $keyOrValue }}.avsc</param>
+-->
+{{- end }}
 
-      {{- /* Triggers rendering of the Schema Registry settings */ -}}
-      {{- $_ := set $connection.record "renderSchemaRegistry" true }}
-      {{- /* Set the whole schema registry configuration in the current context, to be used for rendering the schema registry settings */ -}}
-      {{- $_ := set $connection.record "schemaRegistry" $schemaRegistry }}
+<!-- Mandatory if the evaluator type is set to "PROTOBUF" and a binary descriptor file is
+     provided through the "record.key/value.evaluator.schema.path" parameters. Specifies the
+     name of the Protobuf message type to be used for deserializing the key and value of a
+     Kafka record.
+-->
+{{- if and (eq $type "PROTOBUF") $evaluator.localSchemaFilePathRef }}
+<param name="record.{{ $keyOrValue }}.evaluator.protobuf.message.type">{{ required (printf "connectors.kafkaConnector.connections.%s.record.%sEvaluator.protobufMessageType must be set" $key $keyOrValue) $protobufMessageType }}</param>
+{{- else }}
+<!--
+<param name="record.{{ $keyOrValue }}.evaluator.protobuf.message.type">aMessageTypeFor{{ $keyOrValue | title }}</param>
+-->
+{{- end }}
 
-<!-- Mandatory when the evaluator type is set to "AVRO" or "PROTOBUF" and no local schema 
+<!-- Mandatory if the evaluator type is set to "AVRO" or "PROTOBUF" and no local schema
      paths are provided. Enables the use of a Schema Registry for validation respectively of
      the key and value. Can be one of the following:
 
      - true
      - false
 
-      Default value: false. -->
+     The homologous "record.key/value.evaluator.schema.path" parameter takes precedence: if
+     a local schema path is also set, it is used for deserialization instead.
+
+     Default value: false. -->
+{{- if not (quote $evaluator.enableSchemaRegistry | empty) }}
+  {{- if and $evaluator.enableSchemaRegistry }}
+    {{- $schemaRegistryRef := $record.schemaRegistryRef }}
+    {{- if not $schemaRegistryRef }}
+      {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.record.schemaRegistryRef or disable connectors.kafkaConnector.connections.%s.record.%sEvaluator.enableSchemaRegistry" $key $key $keyOrValue) }}
+    {{- end }}
+
+    {{- $schemaRegistry := required (printf "connectors.kafkaConnector.schemaRegistries.%s not defined" $schemaRegistryRef) (get ($.Values.connectors.kafkaConnector.schemaRegistries | default (dict)) $schemaRegistryRef) }}
+    {{- $schemaRegistryProvider := $schemaRegistry.provider | default "CONFLUENT" }}
+    {{- $_ := set $schemaRegistry "provider" $schemaRegistryProvider }}
+
+    {{- if not (mustHas $schemaRegistryProvider (list "CONFLUENT" "AZURE")) }}
+      {{- fail (printf "connectors.kafkaConnector.schemaRegistries.%s.provider must be one of: \"CONFLUENT\", \"AZURE\"" $schemaRegistryRef) }}
+    {{- end }}
+    {{- $_ := required (printf "connectors.kafkaConnector.schemaRegistries.%s.url must be set" $schemaRegistryRef) $schemaRegistry.url }}
+    {{- if and (eq $schemaRegistryProvider "AZURE") (eq $type "PROTOBUF") }}
+      {{- fail (printf "connectors.kafkaConnector.schemaRegistries.%s with provider AZURE does not support PROTOBUF evaluator type" $schemaRegistryRef) }}
+     {{- end }}
+    {{- /* Triggers rendering of the Schema Registry settings */ -}}
+    {{- $_ := set $record "renderSchemaRegistry" true }}
+    {{- /* Set the whole schema registry configuration in the current context, to be used for rendering the schema registry settings */ -}}
+    {{- $_ := set $record "schemaRegistry" $schemaRegistry }}
+  {{- end }}
+<param name="record.{{ $keyOrValue }}.evaluator.schema.registry.enable">{{ $evaluator.enableSchemaRegistry | ternary "true" "false" }}</param>
+{{- else }}
+<!--
 <param name="record.{{ $keyOrValue }}.evaluator.schema.registry.enable">true</param>
-    {{- else }}
-      {{- with $evaluator.localSchemaFilePathRef }}
-        {{ $localSchema := required (printf "connectors.kafkaConnector.localSchemaFiles.%s not defined" . ) (get ($localSchemaFiles | default dict) .) }}
-
-<!-- Mandatory if evaluator type is set to "AVRO" or "PROTOBUF" and no Schema Registry is 
-     enabled. The path of the local schema (or binary descriptor) file, relative to the 
-     deployment folder (LS_HOME/adapters/lightstreamer-kafka-connector-<version>) or as an 
-     absolute path, for message validation respectively of the key and the value. -->
-<param name="record.{{ $keyOrValue }}.evaluator.schema.path">{{ include "lightstreamer.kafka-connector.schemas.dir.name" . }}/{{ . }}/{{ required (printf "connectors.kafkaConnector.localSchemaFiles.%s.key must be set" .) $localSchema.key }}</param>
-        {{ if (eq $type "PROTOBUF") }}
-
-<!-- Mandatory when the evaluator type is set to "PROTOBUF" and a binary descriptor file is 
-     provided through the "record.key/value.evaluator.schema.path" parameters. Specifies the
-     name of the Protobuf message type to be used for deserializing the key and value of a 
-     Kafka record.
 -->
-<param name="record.{{ $keyOrValue }}.evaluator.protobuf.message.type">{{ required (printf "connectors.kafkaConnector.connections.%s.record.%sEvaluator.protobufMessageType must be set" $key $keyOrValue) $protobufMessageType }}</param>
-        {{- end }}
-      {{- else }}
-        {{- if has $type (list "AVRO" "PROTOBUF") }}
-          {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.record.%sEvaluator.localSchemaFilePathRef or enable connectors.kafkaConnector.connections.%s.record.%sEvaluator.enableSchemaRegistry" $key $keyOrValue $key $keyOrValue) }}
-        {{- end }}
-      {{- end }} {{/* of .localSchemaFilePathRef */}}
-    {{- end }} {{/* of .enableSchemaRegistry */}}
-  {{- else if eq $type "KVP" }}
-    {{- $keyValueSeparator := ($evaluator.kvp).keyValueSeparator | default "=" }}
-    {{- $pairSeparator := ($evaluator.kvp).pairsSeparator | default "," }}
+{{- end }}
 
-<!-- Optional but only effective when "record.key/value.evaluator.type" is set to "KVP".
-     Specifies the symbol used to separate keys from values in a record key (or record 
+<!-- Optional but only effective if "record.key/value.evaluator.type" is set to "KVP".
+     Specifies the symbol used to separate keys from values in a record key (or record
      value) serialized in the KVP format.
 
      Default value: "=".
 -->
-<param name="record.{{ $keyOrValue }}.evaluator.kvp.key-value.separator">{{ $keyValueSeparator }}</param>
+{{- if and (eq $type "KVP") (not (quote ($evaluator.kvp).keyValueSeparator | empty ))}}
+<param name="record.{{ $keyOrValue }}.evaluator.kvp.key-value.separator">{{ $evaluator.kvp.keyValueSeparator  }}</param>
+{{- else }}
+<!--
+<param name="record.{{ $keyOrValue }}.evaluator.kvp.key-value.separator">-</param>
+-->
+{{- end }}
 
-<!-- Optional but only effective when "record.key/value.evaluator.type" is set to "KVP".
-     Specifies the symbol used to separate multiple key-value pairs in a record key (or 
+<!-- Optional but only effective if "record.key/value.evaluator.type" is set to "KVP".
+     Specifies the symbol used to separate multiple key-value pairs in a record key (or
      record value) serialized in the KVP format.
 
      Default value: ",".
 -->
-<param name="record.{{ $keyOrValue }}.evaluator.kvp.pairs.separator">{{ $pairSeparator }}</param>
-  {{- end }} {{/* of has $type (list "AVRO" "JSON" "PROTOBUF") */}}
+{{- if and (eq $type "KVP") (not (quote ($evaluator.kvp).pairsSeparator | empty ))}}
+<param name="record.{{ $keyOrValue }}.evaluator.kvp.pairs.separator">{{ $evaluator.kvp.pairsSeparator }}</param>
+{{- else }}
+<!--
+<param name="record.{{ $keyOrValue }}.evaluator.kvp.pairs.separator">;</param>
+-->
+{{- end }}
+{{- end }}
+
+{{/*
+Render the truststore configuration for the Confluent Schema Registry.
+*/}}
+{{- define "lightstreamer.kafka-connector.configuration.schema-registry.confluent.truststore" }}
+{{- $keyStores := index . 0 }}
+{{- $top := index . 1 }}
+{{- $keyStore := dict }}
+{{- $renderedComments := dict "path" "secrets/kafka-connector.truststore.jks" "type" "JKS" "password" "kafka-connector-truststore-password" }}
+<!-- If required, configure the trust store to trust the Confluent Schema Registry
+     certificates -->
+{{- if $top.truststoreRef }}
+  {{- $_ := unset $renderedComments "path" }}
+  {{- $keyStore = required (printf "keystores.%s not defined" $top.truststoreRef) (get $keyStores $top.truststoreRef) }}
+<param name="schema.registry.confluent.encryption.truststore.path">{{ include "lightstreamer.keystores.dir" . }}/{{ $top.truststoreRef }}/{{ required (printf "keystores.%s.keystoreFileSecretRef.key must be set" $top.truststoreRef) ($keyStore.keystoreFileSecretRef).key }}</param>
+
+  {{- if not (quote $keyStore.type | empty) }}
+    {{- $_ := unset $renderedComments "type" }}
+    {{- if not (mustHas $keyStore.type (list "JKS" "PKCS12")) }}
+      {{- fail (printf "keystores.%s.type must be one of: \"JKS\", \"PKCS12\"" $top.truststoreRef) }}
+    {{- end }}
+<param name="schema.registry.confluent.encryption.truststore.type">{{ $keyStore.type }}</param>
+  {{- end }}
+  {{- $_ := unset $renderedComments "password" }}
+<param name="schema.registry.confluent.encryption.truststore.password">$env.LS_KEYSTORE_{{ $top.truststoreRef | upper |replace "-" "_" }}_PASSWORD</param>
+{{- end }}
+
+{{- if $renderedComments }}
+<!--
+  {{- if hasKey $renderedComments "path" }}
+<param name="schema.registry.confluent.encryption.truststore.path">{{ get $renderedComments "path" }}</param>
+  {{- end }}
+  {{- if hasKey $renderedComments "type" }}
+<param name="schema.registry.confluent.encryption.truststore.type">{{ get $renderedComments "type" }}</param>
+  {{- end }}
+  {{- if hasKey $renderedComments "password" }}
+<param name="schema.registry.confluent.encryption.truststore.password">{{ get $renderedComments "password" }}</param>
+  {{- end }}
+-->
+{{- end }}
+{{- end }}
+
+{{/*
+Render the keystore configuration for the Confluent Schema Registry.
+*/}}
+{{- define "lightstreamer.kafka-connector.configuration.schema-registry.confluent.keystore" }}
+{{- $keyStores := index . 0 }}
+{{- $top := index . 1 }}
+{{- $keyStore := dict }}
+{{- $renderedComments := dict "enable" "true" "path" "secrets/kafka-connector.keystore.jks" "type" "JKS" "password" "kafka-connector-password" "key.password" "kafka-connector-private-key-password" }}
+<!-- If mutual TLS is enabled on the Confluent Schema Registry, enable and configure the key
+     store -->
+{{- if $top.keystoreRef }}
+  {{- $_ := unset $renderedComments "enable" }}
+<param name="schema.registry.confluent.encryption.keystore.enable">true</param>
+  {{- $_ := unset $renderedComments "path" }}
+  {{- $keyStore = required (printf "keystores.%s not defined" $top.keystoreRef) (get $keyStores $top.keystoreRef) }}
+<param name="schema.registry.confluent.encryption.keystore.path">{{ include "lightstreamer.keystores.dir" . }}/{{ $top.keystoreRef }}/{{ required (printf "keystores.%s.keystoreFileSecretRef.key must be set" $top.keystoreRef) ($keyStore.keystoreFileSecretRef).key }}</param>
+  {{- if not (quote $keyStore.type | empty) }}
+    {{- $_ := unset $renderedComments "type" }}
+    {{- if not (mustHas $keyStore.type (list "JKS" "PKCS12")) }}
+      {{- fail (printf "keystores.%s.type must be one of: \"JKS\", \"PKCS12\"" $top.keystoreRef) }}
+    {{- end }}
+<param name="schema.registry.confluent.encryption.keystore.type">{{ $keyStore.type }}</param>
+  {{- end }}
+  {{- $_ := unset $renderedComments "password" }}
+<param name="schema.registry.confluent.encryption.keystore.password">$env.LS_KEYSTORE_{{ $top.keystoreRef | upper |replace "-" "_" }}_PASSWORD</param>
+  {{- if not (quote $keyStore.keyPasswordSecretRef | empty) }}
+    {{- $_ := unset $renderedComments "key.password" }}
+<param name="schema.registry.confluent.encryption.keystore.key.password">$env.LS_KEYSTORE_{{ $top.keystoreRef | upper |replace "-" "_" }}_KEY_PASSWORD</param>
+  {{- end }}
+{{- end }}
+
+{{- if $renderedComments }}
+<!--
+  {{- if hasKey $renderedComments "enable" }}
+<param name="schema.registry.confluent.encryption.keystore.enable">{{ get $renderedComments "enable" }}</param>
+  {{- end }}
+  {{- if hasKey $renderedComments "path" }}
+<param name="schema.registry.confluent.encryption.keystore.path">{{ get $renderedComments "path" }}</param>
+  {{- end }}
+  {{- if hasKey $renderedComments "type" }}
+<param name="schema.registry.confluent.encryption.keystore.type">{{ get $renderedComments "type" }}</param>
+  {{- end }}
+  {{- if hasKey $renderedComments "password" }}
+<param name="schema.registry.confluent.encryption.keystore.password">{{ get $renderedComments "password" }}</param>
+  {{- end }}
+  {{- if hasKey $renderedComments "key.password" }}
+<param name="schema.registry.confluent.encryption.keystore.key.password">{{ get $renderedComments "key.password" }}</param>
+  {{- end }}
+-->
 {{- end }}
 {{- end }}
 
