@@ -28,7 +28,7 @@ metadata:
     {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
-  {{- if not .Values.autoscaling.enabled }}
+  {{- if not (.Values.autoscaling).enabled }}
   replicas: {{ .Values.deployment.replicas }}
   {{- end }}
   selector:
@@ -490,6 +490,21 @@ spec:
               mountPath: {{ include "lightstreamer.connectors.source-config.kafka-connector.dir" . }}/{{ include "lightstreamer.kafka-connector.schemas.dir.name" . }}/{{ $key }}
                 {{- end }}
               {{- end }}
+            {{- $keytabFilePathRefs := list }}
+            {{- range $key, $connection := .connections }}
+              {{- if $connection.enabled }}
+                {{- if and (($connection.authentication).enabled) (eq $connection.authentication.mechanism "GSSAPI") }}
+                  {{- $keytabFilePathRef := $connection.authentication.gssapi.keytabFilePathRef.name }}
+                  {{- $keytabFilePathRefs = append $keytabFilePathRefs $keytabFilePathRef }}
+                {{- end }}
+              {{- end }}
+            {{- end }}
+            {{- $keytabFilePathRefs = uniq $keytabFilePathRefs }}
+            {{- $_ := set . "keytabFilePathRefs" $keytabFilePathRefs }}
+            {{- range $keytabFilePathRefs }}
+            - name: kafka-connector-keytab-{{ . | lower | replace "_" "-" }}
+              mountPath: {{ include "lightstreamer.connectors.source-config.kafka-connector.dir" . }}/{{ include "lightstreamer.kafka-connector.keytabs.dir.name" . }}/{{ . | lower | replace "_" "-" }}
+            {{- end }}
             {{- end }}
           {{- end }}
           {{- /* END VOLUME MOUNTS FOR KAFKA CONNECTOR */ -}}
@@ -701,6 +716,11 @@ spec:
         - name: kafka-connector-source-storage
           emptyDir: {}
           {{- end }}
+        {{- end }}
+        {{- range ((.Values.connectors.kafkaConnector).keytabFilePathRefs) }}
+        - name: kafka-connector-keytab-{{ . | lower | replace "_" "-" }}
+          configMap:
+            name: {{ . }}
         {{- end }}
       {{- end }}
       {{- /* END VOLUMES FOR KAFKA CONNECTOR */ -}}
