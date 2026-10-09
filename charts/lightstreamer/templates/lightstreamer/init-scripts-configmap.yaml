@@ -90,6 +90,10 @@ data:
       echo "Copying schemas from ConfigMap"
       cp -a "${CONFIG_SOURCE}/schemas" "${KAFKA_CONNECTOR_DEPLOYMENT}/{{ include "lightstreamer.kafka-connector.schemas.dir.name" . }}"
     fi
+    if [ -d "${CONFIG_SOURCE}/keytabs" ]; then
+      echo "Copying keytabs from ConfigMap"
+      cp -a "${CONFIG_SOURCE}/keytabs" "${KAFKA_CONNECTOR_DEPLOYMENT}/{{ include "lightstreamer.kafka-connector.keytabs.dir.name" . }}"
+    fi
   {{- end }}
 
   {{- /*
@@ -97,7 +101,7 @@ data:
   */}}
   setup-adapters.sh: |
     #!/bin/bash
-    set -euo pipefail
+    set -exuo pipefail
 
     # Copy the adapter resources from source to destination
     function copy_resources {
