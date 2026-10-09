@@ -24,7 +24,7 @@ type: application
 version: 1.1.1
 
 # The Lightstreamer Broker version
-appVersion: "7.4.8"
+appVersion: "7.4.9"
 
 home: "https://github.com/Lightstreamer/helm-charts"
 sources: ["https://github.com/Lightstreamer/helm-charts/tree/main/charts/lightstreamer"]
