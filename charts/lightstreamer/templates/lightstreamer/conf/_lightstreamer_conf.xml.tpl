@@ -134,7 +134,7 @@ Render the Lightstreamer configuration file.
              declares that the port is only devoted to receive requests from
              clients based on the UCM (Unified Client Model) family of Client
              SDKs (available since 2023). These clients create the sessions
-             with a "websocket-first" policy, which doesn't involve control
+             with a "websocket-first" policy, which doesn{{"'"}}t involve control
              connections but for rare cases.
              For this reason, if set with CREATE_ONLY, WSF_only="Y" prevents
              some restrictive actions that are not useful in this case.
@@ -147,7 +147,7 @@ Render the Lightstreamer configuration file.
              related to the use of the <control_link_address> setting. Usage
              examples are provided in the Clustering.pdf document.
              Similarly, ports with WSF_only="Y" may be reached by clients that
-             don't follow the websocket-first policy. The Server will not enforce
+             don{{"'"}}t follow the websocket-first policy. The Server will not enforce
              the restriction.
              Default: GENERAL_PURPOSE. -->
   {{- $portType := .portType | default "GENERAL_PURPOSE" }}
@@ -320,7 +320,7 @@ Render the Lightstreamer configuration file.
   {{- if $enableHttps }}
     {{- with required (printf "servers.%s.sslConfig must be set" $serverKey) .sslConfig }}
 
-        <!-- Optional. If defined, overrides the default JVM's Security Provider
+        <!-- Optional. If defined, overrides the default JVM{{ "'" }}s Security Provider
              configured in the java.security file of the JDK installation. This allows
              the use of different Security Providers dedicated to single listening ports.
              When configuring a Security Provider, the related libraries should be added
@@ -338,7 +338,7 @@ Render the Lightstreamer configuration file.
         <!-- Mandatory for this block. Reference to the keystore used by the HTTPS
              service. The keystore type should be specified in the optional "type"
              attribute; the currently supported types are:
-             - JKS, which is the Sun/Oracle's custom keystore type, whose
+             - JKS, which is the Sun/Oracle{{ "'" }}s custom keystore type, whose
                support is made available by every Java installation;
              - PKCS12, which is supported by all recent Java installations;
              - PKCS11, which as a bridge to an external PKCS11 implementation;
@@ -431,18 +431,21 @@ Render the Lightstreamer configuration file.
              Note, however, that the underlying Security Provider may ignore
              this setting. This is the case, for instance, of the Conscrypt provider.
              Default: N. -->
-      {{- $order := (.enforceServerCipherSuitePreference).order | default "JVM" }}
       {{- $enabled := not (eq (.enforceServerCipherSuitePreference).enabled false) }}
-      {{- if not (mustHas $order (list "JVM" "config")) }}
-        {{- fail (printf "server.%s.sslConfig.enforceServerCipherSuitePreference must be one of: \"JVM\", \"config\"" $serverKey) }}
-      {{- end }}
-
-      {{- if and $enabled (eq $order "config") }}
-        {{- if not .allowCipherSuites }}
-          {{- fail (printf "server.%s.sslConfig.enforceServerCipherSuitePreference.order cannot be set to 'config' if server.%s.sslConfig.allowCipherSuites is not used" $serverKey $serverKey) }}
-        {{- end }}      
-      {{- end }}
+      {{- if $enabled }}
+        {{- $order := (.enforceServerCipherSuitePreference).order | default "JVM" }}
+        {{- if not (mustHas $order (list "JVM" "config")) }}
+          {{- fail (printf "server.%s.sslConfig.enforceServerCipherSuitePreference must be one of: \"JVM\", \"config\"" $serverKey) }}
+        {{- end }}
+        {{- if and (eq $order "config") (not .allowCipherSuites) }}
+            {{- fail (printf "server.%s.sslConfig.enforceServerCipherSuitePreference.order cannot be set to 'config' if server.%s.sslConfig.allowCipherSuites is not used" $serverKey $serverKey) }}
+        {{- end }}
         <enforce_server_cipher_suite_preference order="{{ $order }}">{{ $enabled | ternary "Y" "N" }}</enforce_server_cipher_suite_preference>
+      {{- else }}
+        <!--
+        <enforce_server_cipher_suite_preference order="JVM">Y</enforce_server_cipher_suite_preference>
+        -->
+      {{- end }} 
 
         <!-- Optional. If Y, causes any client-initiated TLS renegotiation request
              to be refused by closing the connection. This policy may be evaluated
@@ -618,9 +621,9 @@ Render the Lightstreamer configuration file.
              See the <keystore> block above for general details on keystore
              configuration (although the subelement names are different).
              Note that the further constraints reported there with regard to
-             accessing the certificates in a JKS keystore don't hold in this
+             accessing the certificates in a JKS keystore don{{"'"}}t hold in this
              case, where the latter is used as a truststore.
-             Moreover, the handling of keystore replacement doesn't apply here. -->
+             Moreover, the handling of keystore replacement doesn{{"'"}}t apply here. -->
       {{- if or .enableClientAuth .enableMandatoryClientAuth }}
           {{- with required "sslConfig.truststoreRef must be set since either sslConfig.enableClientAuth or sslConfig.enableMandatoryClientAuth are enabled " .truststoreRef }}
                {{- include "lightstreamer.configuration.truststore" (list $.Values.keystores .)  | nindent 8 }}
@@ -848,8 +851,8 @@ Render the Lightstreamer configuration file.
          Note that sending the Origin header is a client-side duty. In fact,
          most modern browsers, upon a request for a cross-origin XHR or WebSocket
          by a page, will send the Origin header, while older browsers will directly
-         fail to send the request. Non-browser clients usually don't have to perform
-         origin checks; so they don't send the Origin header and thus their requests
+         fail to send the request. Non-browser clients usually don{{"'"}}t have to perform
+         origin checks; so they don{{"'"}}t send the Origin header and thus their requests
          are always authorized.
          In case the client wishes to send custom headers to the server, it requires
          an approval from the server itself. The accept_extra_headers attribute
@@ -879,7 +882,7 @@ Render the Lightstreamer configuration file.
              Origin headers will be checked.
              Each rule must define a scheme, a host and a port in the following way:
              - scheme: a valid scheme name (usually http or https) or *; the latter
-               matches both http and https scheme, but it doesn't match other schemes.
+               matches both http and https scheme, but it doesn{{"'"}}t match other schemes.
              - host: a valid host name, IPv4 or IPv6 representing an authorized Origin.
                Also a * is accepted with the meaning of "any host or IP".
                If a host name is specified it can be prefixed with a wildcard as long
@@ -887,7 +890,7 @@ Render the Lightstreamer configuration file.
                *.my-domain.com and *.sites.my-domain.com are valid entries
                while *.com is not)
              - port: a valid port or * to specify any port.
-             Note that by setting three *'s any origin will be accepted, without
+             Note that by setting three *{{"'"}}s any origin will be accepted, without
              performing any check. In particular, any scheme will be accepted,
              not just http and https. -->
       {{- range $key, $value := .allowAccessFrom }}
@@ -937,7 +940,7 @@ Render the Lightstreamer configuration file.
          then this check is disabled. Note that, in any case, the consistency
          of the declared subdomain with the url used to request the data page
          must be ensured by the browser.
-         If the requesting page doesn't specify any subdomain for the response,
+         If the requesting page doesn{{"'"}}t specify any subdomain for the response,
          the request will always be allowed; in this case, a same-domain access
          to the Server data page will be performed by the browser. -->
   {{- range $index, $domain := .allowedDomains }}
@@ -1125,7 +1128,7 @@ Render the Lightstreamer configuration file.
                  firewall settings.
                  The optional "ssl" attribute, when set to "Y", enables TLS/SSL
                  communication by the Connector; TLS/SSL at this level is supported
-                 by some JMX clients, like jconsole, that don't support TLS/SSL
+                 by some JMX clients, like jconsole, that don{{"'"}}t support TLS/SSL
                  on the main port. If omitted, the same setting used for <port>
                  is considered.
                  Default: the same as configured in <port>. -->
@@ -1259,17 +1262,21 @@ Render the Lightstreamer configuration file.
                  (in case TLS/SSL is enabled for part or all the communication).
                  See notes for <enforce_server_cipher_suite_preference> under <https_server>.
                  Default: N. -->
-            {{- $order := (.enforceServerCipherSuitePreference).order | default "JVM" }}
             {{- $enabled := not (eq (.enforceServerCipherSuitePreference).enabled false) }}
-            {{- if not (mustHas $order (list "JVM" "config")) }}
-              {{- fail (printf "management.jmx.rmiConnector.sslConfig.enforceServerCipherSuitePreference must be one of: \"JVM\", \"config\"") }}
-            {{- end }}
-            {{- if and $enabled (eq $order "config") }}
-              {{- if not .allowCipherSuites }}
-                {{- fail "management.jmx.rmiConnector.sslConfig.enforceServerCipherSuitePreference.order cannot be set to 'config' if management.jmx.rmiConnector.sslConfig.allowCipherSuites is not specified" }}            
+            {{- if $enabled}}
+              {{- $order := (.enforceServerCipherSuitePreference).order | default "JVM" }}
+              {{- if not (mustHas $order (list "JVM" "config")) }}
+                {{- fail (printf "management.jmx.rmiConnector.sslConfig.enforceServerCipherSuitePreference must be one of: \"JVM\", \"config\"") }}
               {{- end }}
-            {{- end }}
+              {{- if and (eq $order "config") (not .allowCipherSuites) }}
+                  {{- fail "management.jmx.rmiConnector.sslConfig.enforceServerCipherSuitePreference.order cannot be set to 'config' if management.jmx.rmiConnector.sslConfig.allowCipherSuites is not specified" }}            
+               {{- end }}
             <enforce_server_cipher_suite_preference order={{ $order | quote }}>{{ $enabled | ternary "Y" "N" }}</enforce_server_cipher_suite_preference>
+            {{- else }}
+            <!--
+            <enforce_server_cipher_suite_preference order="JVM">Y</enforce_server_cipher_suite_preference>
+            -->
+            {{- end }}
 
             {{- if and .allowProtocols .removeProtocols }}
               {{ printf "management.jmx.rmiConnector.sslConfig.allowProtocols and management.jmx.rmiConnector.sslConfig.removeProtocols cannot be used together" | fail }}
@@ -1334,8 +1341,8 @@ Render the Lightstreamer configuration file.
 
         </rmi_connector>
 
-        <!-- Optional. Enables Sun/Oracle's JMXMP Connector.
-             The Connector is supported by the Server only if Sun/Oracle's JMXMP
+        <!-- Optional. Enables Sun/Oracle{{"'"}}s JMXMP Connector.
+             The Connector is supported by the Server only if Sun/Oracle{{"'"}}s JMXMP
              implementation library is added to the Server classpath;
              see README.TXT in the JMX SDK for details.
              The remote server will be accessible through the url:
@@ -1343,7 +1350,7 @@ Render the Lightstreamer configuration file.
       {{- if (.jmxmpConnector).enabled }}
         <jmxmp_connector>
 
-            <!-- Mandatory for this block. TCP port on which Sun/Oracle's JMXMP
+            <!-- Mandatory for this block. TCP port on which Sun/Oracle{{"'"}}s JMXMP
                  Connector will be listening. This is the port that has to be
                  specified in the client access url. -->
             <port>{{ int (required "management.jmx.jmxmpConnector.port must be set" .jmxmpConnector.port) }}</port>
@@ -1354,7 +1361,7 @@ Render the Lightstreamer configuration file.
         <jmxmp_connector>
         -->
 
-            <!-- Mandatory for this block. TCP port on which Sun/Oracle's JMXMP
+            <!-- Mandatory for this block. TCP port on which Sun/Oracle{{"'"}}s JMXMP
                  Connector will be listening. This is the port that has to be
                  specified in the client access url. -->
             <!--
@@ -1399,7 +1406,7 @@ Render the Lightstreamer configuration file.
              For all these properties, corresponding operations are also provided.
              Can be one of the following:
              - Y: properties that can, potentially, return extremely long lists
-                  won't yield the correct value, but just a reminder text; for
+                  won{{"'"}}t yield the correct value, but just a reminder text; for
                   instance, this applies to 'CurrentSessionList' in the ResourceMBean.
              - N: all list properties are enabled; in some cases, their value
                   may be an extremely long list; consider, for instance,
@@ -1500,7 +1507,7 @@ Render the Lightstreamer configuration file.
              limit, possibly lower, that can be set by interacting with the page.
              The limit specified by the page upon loading is determined by the optional
              "initial" attribute. Anyway, the applied limit is bound by the server-side
-             upper limit. The attribute's default is 100 (unless bound by the server-side
+             upper limit. The attribute{{"'"}}s default is 100 (unless bound by the server-side
              upper limit as well).
              Note that, by default, the creation of session-related mbeans is also
              disabled in the first place. See <disable_session_mbeans> under <jmx>.
@@ -1535,7 +1542,7 @@ Render the Lightstreamer configuration file.
                  its own refresh time, possibly longer, that can be set by interacting
                  with the page. The time specified by the page upon loading is determined
                  by the optional "initial" attribute. Anyway, the applied refresh time
-                 is bound by the server-side lower limit. The attribute's default is 5000
+                 is bound by the server-side lower limit. The attribute{{"'"}}s default is 5000
                  (unless bound by the server-side lower limit as well).
                  Default: 5000. -->
                 {{- $minMbeanRefreshTime := int ((quote .min | empty) | ternary 5000 .min) }}
@@ -1555,7 +1562,7 @@ Render the Lightstreamer configuration file.
              in-process Adapters, or third-party libraries, or the JVM itself)
              to be displayed in the JMX Tree. In fact, by default,
              only the MBeans provided by LS Server and the ones that belong
-             to the JVM's "JMImplementation" domain are displayed. -->
+             to the JVM{{"'"}}s "JMImplementation" domain are displayed. -->
               {{- range $index, $additionalDomain := .additionalDomains }}
         <add_jmxtree_domain>{{ required (printf "management.dashboard.jmxTree.additionalDomains[%d] must be set" $index) $additionalDomain }}</add_jmxtree_domain>
               {{- end }}
@@ -1837,7 +1844,7 @@ Render the Lightstreamer configuration file.
 
     <!-- Optional. If Y, enables the $propname syntax on the "adapters.xml"
          files. It is the same variable-expansion feature available on this file.
-         See the comment in this file's header for the full description of the
+         See the comment in this file{{"'"}}s header for the full description of the
          feature, where the optional "env_prefix" attribute here takes the place
          of the <env_prefix> element cited there (note that setting an empty
          attribute value corresponds to not setting the attribute at all).
@@ -2188,7 +2195,7 @@ Render the Lightstreamer configuration file.
 
     <!-- Optional. Timeout used to ensure the proper ordering of client-sent
          messages, within the specified message sequence, before sending them
-         to the Metadata Adapter's message-processing method.
+         to the Metadata Adapter{{"'"}}s message-processing method.
          In case a client request is late or does not reach the Server,
          the next request may be delayed until this timeout expires, while
          waiting for the late request to be received; then, the next request
@@ -2264,7 +2271,7 @@ Render the Lightstreamer configuration file.
              computes the difference in JSON Patch format, provided that the
              values are valid JSON representations;
          - diff_match_patch
-             computes the difference with Google's "diff-match-patch" algorithm
+             computes the difference with Google{{"'"}}s "diff-match-patch" algorithm
              (the result is then serialized to the custom "TLCP-diff" format);
          - prefix_suffix_diff
              computes the difference by just taking into consideration any
@@ -2283,7 +2290,7 @@ Render the Lightstreamer configuration file.
       {{- end }}
     {{- end }}
     <default_diff_order>{{ join "," .defaultDiffOrders }}</default_diff_order>
-    {{- else }}
+    {{- else }}initial
     <!--
     <default_diff_order>jsonpatch,prefix_suffix_diff</default_diff_order>
     -->
@@ -2381,7 +2388,7 @@ Render the Lightstreamer configuration file.
          in this case, the delivery could be slow. However, the Server tries
          to detect these cases and temporarily enlarge the buffer.
          Hence, the factory setting is very small and it is comparable with
-         a typical packet size. There shouldn't be any need for an even smaller
+         a typical packet size. There shouldn{{"'"}}t be any need for an even smaller
          value; also note that the system may force a minimum size.
          Higher values should make sense only if the expected throughput is
          high and responsive updates are desired.
@@ -2411,7 +2418,7 @@ Render the Lightstreamer configuration file.
          If no updates have been sent after this time, then a small
          keep-alive message is sent.
          Note that the Server also tries other types of checks of the
-         availability of current sockets, which don't involve writing data
+         availability of current sockets, which don{{"'"}}t involve writing data
          to the sockets.
          This setting can be overridden by the Client.
          The optional "randomize" attribute, when set to Y, causes keepalives
@@ -2491,7 +2498,7 @@ Render the Lightstreamer configuration file.
     <!-- Optional. Configure the Mobile Push Notification (MPN) module.
          This module is able to receive updates
          from an item subscription on behalf of a user, and forward them to a
-         mobile push notification service, such as Apple's APNs or Google's FCM.
+         mobile push notification service, such as Apple{{"'"}}s APNs or Google{{"'"}}s FCM.
          If not defined, the MPN module will not start in any case, and all
          requests related to mobile push notifications will be rejected.
          Mobile Push Notification support is an optional feature, available
@@ -2678,7 +2685,7 @@ Render the Lightstreamer configuration file.
         -->
     {{- end }}
 
-        <!-- Optional. Sizes of request processor's ("MPN EXECUTOR") thread pool.
+        <!-- Optional. Sizes of request processor{{"'"}}s ("MPN EXECUTOR") thread pool.
              The <max_size> parameter specifies the maximum number of threads
              the pool may use, while <max_free> specifies the maximum number
              of idle threads the pool may have.
@@ -2758,7 +2765,7 @@ Render the Lightstreamer configuration file.
         -->
     {{- end }}
 
-        <!-- Optional. Size of the notifiers' "MPN XXX NOTIFIER" internal
+        <!-- Optional. Size of the notifiers{{"'"}} "MPN XXX NOTIFIER" internal
              thread pool, which is devoted to composing the notifications
              payload, sending them to the notification service and processing
              the response. This task does not include blocking operations;
@@ -3588,12 +3595,12 @@ Render the Lightstreamer configuration file.
         excluding ports with the "WSF_only" attribute set as "Y".
         The setting is meant to be used in configurations which define
         a CREATE_ONLY port in http and a CONTROL_ONLY port in https,
-        to serve clients that don't perform websocket-first creations.
+        to serve clients that don{{"'"}}t perform websocket-first creations.
         In these cases, and when a massive client reconnection is occurring,
         the number of pending bind operations can grow so much that the
         needed TLS handshakes can take arbitrarily long and cause the
         clients to time-out and restart session establishment from scratch.
-        However, consider that the presence of many clients that don't
+        However, consider that the presence of many clients that don{{"'"}}t
         perform their bind in due time could keep other clients blocked.
         Note that, if defined, the setting will also inhibit
         <handshake_pool_max_queue> and <https_auth_pool_max_queue>
@@ -3618,7 +3625,7 @@ Render the Lightstreamer configuration file.
              wasted conversions, in case an event is filtered out later by all
              interested clients or in case a field is not subscribed to by any
              client.
-             Note that events which don't provide an iterator (see the Data
+             Note that events which don{{"'"}}t provide an iterator (see the Data
              Adapter interface documentation) cannot be managed in this way.
         - N: causes field conversion to be performed only as soon as it is
              needed; in this case, as the same event object may be shared by
