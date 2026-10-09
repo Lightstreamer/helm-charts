@@ -477,7 +477,7 @@ Render the Lightstreamer Kafka Connector configuration file.
 
         <!-- Optional. The maximum delay between invocations of poll() when using consumer group
              management. This places an upper bound on the amount of time that the consumer can be
-             idle before  fetching more records.
+             idle before fetching more records.
 
              The parameter sets the value of the "max.poll.interval.ms" key to configure the
              internal Kafka Consumer.
@@ -532,8 +532,8 @@ Render the Lightstreamer Kafka Connector configuration file.
         -->
         {{- end }}
 
-        {{- include "lightstreamer.kafka-connector.configuration.record.evaluator" (list $ $connection "key" $key) | nindent 8 }}
-        {{- include "lightstreamer.kafka-connector.configuration.record.evaluator" (list $ $connection "value" $key) | nindent 8 }}
+        {{- include "lightstreamer.kafka-connector.configuration.record.evaluator" (list $ $connection.record "key" $key) | nindent 8 }}
+        {{- include "lightstreamer.kafka-connector.configuration.record.evaluator" (list $ $connection.record "value" $key) | nindent 8 }}
 
         <!-- Optional but forced to "IGNORE_AND_CONTINUE" when "item.snapshot.enabled.mode" is set
              to any value other than "NONE". The error handling strategy to be used if an error
@@ -563,7 +563,7 @@ Render the Lightstreamer Kafka Connector configuration file.
 
         {{- with required (printf "connectors.kafkaConnector.connections.%s.routing must be set" $key) $connection.routing }}
 
-        <!-- Multiple and Optional. Define an item template expression, which is made of:
+        <!-- Multiple and optional. Define an item template expression, which is made of:
 
              - ITEM_PREFIX: the prefix of the item name
              - BINDABLE_EXPRESSIONS: a sequence of bindable extraction expressions. See
@@ -572,11 +572,11 @@ Render the Lightstreamer Kafka Connector configuration file.
           {{- range $key, $itemTemplate := .itemTemplates }}
             {{- if not (quote $itemTemplate | empty) }}
         <param name="item-template.{{ $key }}">{{ $itemTemplate }}</param>
-            {{- else }}
+            {{- end }}
+          {{- else }}
         <!--
         <param name="item-template.TEMPLATE_NAME">ITEM_PREFIX-BINDABLE_EXPRESSIONS</param>
         -->
-            {{- end }}
           {{- end }}
 
         <!-- Multiple and mandatory. Maps the Kafka topic TOPIC_NAME to:
@@ -590,8 +590,18 @@ Render the Lightstreamer Kafka Connector configuration file.
              <param name="map.TOPIC_NAME.to">item1,item2,itemN,...</param>
 
              At least one mapping must be provided. -->
+        <!-- Example 1:
+        <param name="map.aTopicName.to">item1,item2,itemN,...</param>
+        -->
+        <!-- Example 2:
+        <param name="map.aTopicName.to">item-template.template-name1,item-template.template-name2...</param>
+        -->
+        <!-- Example 3:
+        <param name="map.aTopicName.to">item-template.template-name1,item1,item-template.template-name2,item2,...</param>
+        -->
           {{- $itemTemplates := .itemTemplates }}
           {{- $usedTopicNames := list }}
+          {{- $alreadyCommentedPartitions := false }}
           {{- range $mappingKey, $mapping := .topicMappings }}
             {{- if not $mapping }}
               {{- printf "connectors.kafkaConnector.connections.%s.routing.topicMappings.%s must be set" $key $mappingKey | fail }}
@@ -601,7 +611,6 @@ Render the Lightstreamer Kafka Connector configuration file.
               {{- fail (printf "connectors.kafkaConnector.connections.%s.routing.topicMappings.%s.topic %s already mapped" $key $mappingKey $topic) }}
             {{- end }}
             {{- $usedTopicNames = append $usedTopicNames $topic }}
-
             {{- $templateRefs := list }}
             {{- $itemsList := list }}
             {{- range $mapping.itemTemplateRefs }}
@@ -612,16 +621,35 @@ Render the Lightstreamer Kafka Connector configuration file.
             {{- else }}
               {{- $itemsList = required (printf "Either specify %s.itemTemplateRefs or %s.items" $mappingKey $mappingKey) $mapping.items }}
             {{- end }}
+            {{- if $alreadyCommentedPartitions }}
+            {{- "\n" }}
+            {{- end }}
         <param name="map.{{ $topic }}.to">{{ join "," (concat ($templateRefs) $itemsList) }}</param>
-            {{- if eq $consumerMode "MANUAL" }}
-              {{- $partitions := join "," $mapping.fromPartitions }}
-              {{- if $partitions }}
+
+            {{- if not $alreadyCommentedPartitions}}
+              {{- $alreadyCommentedPartitions = true }}
+
+        <!-- Optional but only effective if "consumer.mode" is set to "MANUAL". Lists the partitions
+             of the topic TOPIC_NAME to be manually assigned to this consumer.
+
+             The value is a comma-separated list of non-negative partition numbers and inclusive
+             ranges (e.g. "0,2,4-6").
+
+             If omitted, all partitions of the topic are assigned. -->
+        <!-- Example 1:
+        <param name="map.aTopicName.from.partitions">0,1,2,3</param>
+        -->
+        <!-- Example 2:
+        <param name="map.aTopicName.from.partitions">0-3,4-6,9</param>
+        -->
+            {{- end}} 
+            {{- $partitions := join "," $mapping.fromPartitions }}
+            {{- if and (eq $consumerMode "MANUAL") $partitions }}
         <param name="map.{{ $topic }}.from.partitions">{{ $partitions }}</param>
-              {{- end }}
             {{- end }}
           {{- else }}
             {{- fail (printf "connectors.kafkaConnector.connections.%s.routing.topicMappings must be set" $key) }}
-          {{- end }} {{/* of .topicMappings */}}
+          {{- end }}
 
         <!-- Optional. Enables the "TOPIC_NAME" part of the "map.TOPIC_NAME.to" parameter to be
              treated as a regular expression rather than of a literal topic name.
@@ -644,7 +672,7 @@ Render the Lightstreamer Kafka Connector configuration file.
         <!-- ##### RECORD MAPPING SETTINGS ##### -->
         {{- with required (printf "connectors.kafkaConnector.connections.%s.fields must be set" $key) $connection.fields }}
 
-        <!-- Multiple and Mandatory. Maps the value extracted through "extraction_expression" to
+        <!-- Multiple and mandatory. Maps the value extracted through "extraction_expression" to
              field FIELD_NAME. The expression is written in the Data Extraction Language. See
              documentation at: https://github.com/lightstreamer/Lightstreamer-kafka-connector?tab=readme-ov-file#record-mapping-fieldfield_name
 
@@ -788,8 +816,8 @@ Render the Lightstreamer Kafka Connector configuration file.
 
         <!-- ##### SCHEMA REGISTRY SETTINGS ##### -->
 
-        {{- $schemaRegistryRef := $connection.record.schemaRegistryRef  }}
-        {{- $schemaRegistry := $connection.record.schemaRegistry }}
+        {{- $schemaRegistryRef := ($connection.record).schemaRegistryRef  }}
+        {{- $schemaRegistry := ($connection.record).schemaRegistry }}
         {{- $isConfluent := eq ($schemaRegistry.provider | default "CONFLUENT") "CONFLUENT" }}
 
         <!-- Optional. Specifies the Schema Registry provider to use. Can be one of the following:
@@ -798,7 +826,8 @@ Render the Lightstreamer Kafka Connector configuration file.
              - AZURE:     Use the Azure Schema Registry.
 
              Default value: CONFLUENT. -->
-        {{- if and ($connection.record).renderSchemaRegistry (not (quote $schemaRegistry.provider | empty) )}} {{/* Flag set by the "lightstreamer.kafka-connector.configuration.record.evaluator" function */}}
+        {{- /* Flag set by the "lightstreamer.kafka-connector.configuration.record.evaluator" function */ -}}
+        {{- if and ($connection.record).renderSchemaRegistry (not (quote $schemaRegistry.provider | empty) )}}
         <param name="schema.registry.provider">{{ $schemaRegistry.provider }}</param>
         {{- else }}
         <!--
@@ -810,7 +839,7 @@ Render the Lightstreamer Kafka Connector configuration file.
              (either Confluent Schema Registry or Azure Schema Registry).
 
              An encrypted connection is enabled by specifying the "https" protocol. -->
-        {{- if $connection.record.renderSchemaRegistry }}
+        {{- if ($connection.record).renderSchemaRegistry }}
         <param name="schema.registry.url">{{ $schemaRegistry.url }}</param>
         {{- else }}
         <!-- Example for the Confluent Schema Registry:
