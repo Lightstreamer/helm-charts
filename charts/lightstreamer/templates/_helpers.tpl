@@ -503,7 +503,6 @@ Create the logging level attribute for subloggers.
 {{- end }}
 {{- end }}
 
-
 {{/*
 Create the name of the logs folder for the Lightstreamer Server and the connectors.
 */}}
@@ -568,7 +567,7 @@ Create the name of the temp directory to use for storing the connectors' source 
 {{- end }}
 
 {{/*
-  Create the name of the temp directory to use for storing the Lightstreamer Kafka Connector source configuration files
+Create the name of the temp directory to use for storing the Lightstreamer Kafka Connector source configuration files
 */}}
 {{- define "lightstreamer.connectors.source-config.kafka-connector.dir" -}}
 {{ print (include "lightstreamer.connectors.source-config.dir" .) "/kafka" }}
@@ -582,7 +581,7 @@ Create the name of the temp directory to use for storing the connectors' source 
 {{- end }}
 
 {{/*
-  Create the name of the temp directory to use for storing the Kafka Connector source zip archive
+Create the name of the temp directory to use for storing the Kafka Connector source zip archive
 */}}
 {{- define "lightstreamer.kafka.connector.source-archive.dir" -}}
 {{ print (include "lightstreamer.connectors.source-archives.dir" .) "/kafka" }}
@@ -656,6 +655,10 @@ Create the name of the deployment folder the Lightstreamer Kafka Connector.
 {{- printf "schemas" }}
 {{- end }}
 
+{{- define "lightstreamer.kafka-connector.keytabs.dir.name" -}}
+{{- printf "keytabs" }}
+{{- end }}
+
 {{/*
 Create the name of the logs folder for the Lightstreamer Kafka Connector.
 */}}
@@ -666,105 +669,143 @@ Create the name of the logs folder for the Lightstreamer Kafka Connector.
 {{/*
 Render the truststore settings for the Lightstreamer Kafka Connector configuration file.
 */}}
-{{- define "lightstreamer.kafka-connector.configuration.truststore" -}}
-{{- $prefix := index . 0 -}}
-{{- $top := index . 1 -}}
-{{- $key := index . 2 -}}
-{{- $keyStore := required (printf "keystores.%s not defined" $key) (get $top $key) -}}
-
-<param name="{{ $prefix }}.path">{{ include "lightstreamer.keystores.dir" . }}/{{ $key }}/{{ required (printf "keystores.%s.keystoreFileSecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</param>
-
-<!-- Optional. The password of the trust store.
-
-     If not set, checking the integrity of the trust store file configured will not
-     be possible. -->
-<param name="{{ $prefix }}.password">$env.LS_KEYSTORE_{{ $key | upper |replace "-" "_" }}_PASSWORD</param>
-
-{{- if not (quote $keyStore.type | empty) }}
-  {{- if not (mustHas $keyStore.type (list "JKS" "PKCS12")) }}
-    {{- fail (printf "keystores.%s.type must be one of: \"JKS\", \"PKCS12\"" $key) }}
-  {{- end }}
+{{- define "lightstreamer.kafka-connector.configuration.truststore" }}
+{{- $keyStores := index . 0 }}
+{{- $top := index . 1 }}
+<!-- Optional. The path of the trust store file, relative to the deployment folder
+     (LS_HOME/adapters/lightstreamer-kafka-connector-<version>), or as an absolute path.
+     The trust store is used to validate the certificates provided by the Kafka brokers. -->
+{{- $keyStore := dict }}
+{{- if $top.truststoreRef }}
+  {{- $keyStore = required (printf "keystores.%s not defined" $top.truststoreRef) (get $keyStores $top.truststoreRef) }}
+<param name="encryption.truststore.path">{{ include "lightstreamer.keystores.dir" . }}/{{ $top.truststoreRef }}/{{ required (printf "keystores.%s.keystoreFileSecretRef.key must be set" $top.truststoreRef) ($keyStore.keystoreFileSecretRef).key }}</param>
+{{- else }}
+<!--
+<param name="encryption.truststore.path">secrets/kafka-connector.truststore.jks</param>
+-->
+{{- end }}
 
 <!-- Optional. The type of the trust store. Can be one of the following:
 
-      - JKS
-      - PKCS12
+     - JKS
+     - PKCS12
 
-      Default value: JKS. -->
-<param name="{{ $prefix }}.type">{{ $keyStore.type }}</param>
-{{- end -}}
-{{- end -}}
+     Default value: JKS. -->
+{{- if and $top.truststoreRef (not (quote $keyStore.type | empty)) }}
+  {{- if not (mustHas $keyStore.type (list "JKS" "PKCS12")) }}
+    {{- fail (printf "keystores.%s.type must be one of: \"JKS\", \"PKCS12\"" $top.truststoreRef) }}
+  {{- end }}
+<param name="encryption.truststore.type">{{ $keyStore.type }}</param>
+{{- else }}
+<!--
+<param name="encryption.truststore.type">PKCS12</param>
+-->
+{{- end }}
+
+<!-- Optional. The password of the trust store.
+
+     If not set, checking the integrity of the trust store file configured will not be
+     possible. -->
+{{- if $top.truststoreRef }}
+<param name="encryption.truststore.password">$env.LS_KEYSTORE_{{ $top.truststoreRef | upper |replace "-" "_" }}_PASSWORD</param>
+{{- else }}
+<!--
+<param name="encryption.truststore.password">kafka-connector-truststore-password</param>
+-->
+{{- end }}
+{{- end }}
 
 {{/*
 Render the keystore settings for the Lightstreamer Kafka Connector configuration file.
 */}}
-{{- define "lightstreamer.kafka-connector.configuration.keystore" -}}
-{{- $prefix := index . 0 -}}
-{{- $top := index . 1 -}}
-{{- $key := index . 2 -}}
-{{- $keyStore := required (printf "keystores.%s not defined" $key) (get $top $key) -}}
-<!-- Optional. Enable a key store. Can be one of the following:
-      - true
-      - false
+{{- define "lightstreamer.kafka-connector.configuration.keystore" }}
+{{- $keyStores := index . 0 }}
+{{- $top := index . 1 }}
+<!-- Optional. Enables a key store. Can be one of the following:
 
-      A key store is required if the mutual TLS is enabled on Kafka.
+     - true
+     - false
 
-      If enabled, the following parameters configure the key store settings:
-      - encryption.keystore.path
-      - encryption.keystore.type
-      - encryption.keystore.password
-      - encryption.keystore.key.password
+     A key store is required if the mutual TLS is enabled on Kafka.
 
-      Default value: false. -->
-<param name="{{ $prefix }}.enable">true</param>
+     If enabled, the following parameters configure the key store settings:
 
-<!-- Mandatory if key store is enabled. The path of the key store file, relative to
-      the deployment folder (LS_HOME/adapters/lightstreamer-kafka-connector-<version>). -->
-<param name="{{ $prefix }}.path">{{ include "lightstreamer.keystores.dir" . }}/{{ $key }}/{{ required (printf "keystores.%s.keystoreFilesecretRef.key must be set" $key) ($keyStore.keystoreFileSecretRef).key }}</param>
+     - encryption.keystore.path
+     - encryption.keystore.type
+     - encryption.keystore.password
+     - encryption.keystore.key.password
+
+     Default value: false. -->
+{{- $keyStore := dict }}
+{{- if $top.keystoreRef }}
+  {{- $keyStore = required (printf "keystores.%s not defined" $top.keystoreRef) (get $keyStores $top.keystoreRef) }}
+<param name="encryption.keystore.enable">true</param>
+{{- else }}
+<!--
+<param name="encryption.keystore.enable">true</param>
+-->
+{{- end }}
+
+<!-- Mandatory if key store is enabled. The path of the key store file, relative to the
+     deployment folder (LS_HOME/adapters/lightstreamer-kafka-connector-<version>), or as an
+     absolute path. -->
+{{- if $top.keystoreRef }}
+<param name="encryption.keystore.path">{{ include "lightstreamer.keystores.dir" . }}/{{ $top.keystoreRef }}/{{ required (printf "keystores.%s.keystoreFilesecretRef.key must be set" $top.keystoreRef) ($keyStore.keystoreFileSecretRef).key }}</param>
+{{- else }}
+<!--
+<param name="encryption.keystore.path">secrets/kafka-connector.keystore.jks</param>
+-->
+{{- end }}
+
+<!-- Optional. The type of the key store. Can be one of the following:
+
+     - JKS
+     - PKCS12
+
+     Default value: JKS. -->
+{{- if and $top.keystoreRef (not (quote $keyStore.type | empty)) }}
+  {{- if not (mustHas $keyStore.type (list "JKS" "PKCS12")) }}
+    {{- fail (printf "keystores.%s.type must be one of: \"JKS\", \"PKCS12\"" $top.keystoreRef) }}
+  {{- end }}
+<param name="encryption.keystore.type">{{ $keyStore.type }}</param>
+{{- else }}
+<!--
+<param name="encryption.keystore.type">PKCS12</param>
+-->
+{{- end }}
 
 <!-- Optional. The password of the key store.
 
-      If not set, checking the integrity of the key store file configured
-      will not be possible. -->
-<param name="{{ $prefix }}.password">$env.LS_KEYSTORE_{{ $key | upper |replace "-" "_" }}_PASSWORD</param>
-
-{{- if $keyStore.keyPasswordSecretRef }}
-
-<!-- Optional. The password of the private key in the key store file. -->
-<param name="{{ $prefix }}.key.password">$env.LS_KEYSTORE_{{ $key | upper |replace "-" "_" }}_KEY_PASSWORD</param>
+     If not set, checking the integrity of the key store file configured will not be
+     possible. -->
+{{- if $top.keystoreRef }}
+<param name="encryption.keystore.password">$env.LS_KEYSTORE_{{ $top.keystoreRef | upper |replace "-" "_" }}_PASSWORD</param>
+{{- else }}
+<!--
+<param name="encryption.keystore.password">kafka-connector-password</param>
+-->
 {{- end }}
 
-{{- if not (quote $keyStore.type | empty) }}
-  {{- if not (mustHas $keyStore.type (list "JKS" "PKCS12")) }}
-    {{- fail (printf "keystores.%s.type must be one of: \"JKS\", \"PKCS12\"" $key) }}
-  {{- end }}
-
-<!-- Optional. The type of the key store.
-      Can be one of the following:
-      - JKS
-      - PKCS12
-
-      Default value: JKS. -->
-<param name="{{ $prefix }}.keystore.type">{{ $keyStore.type }}</param>
-{{- end -}}
-{{- end -}}
+<!-- Optional. The password of the private key in the key store file. -->
+{{- if and $top.keystoreRef (not (quote $keyStore.keyPasswordSecretRef | empty)) }}
+<param name="encryption.keystore.key.password">$env.LS_KEYSTORE_{{ $top.keystoreRef | upper |replace "-" "_" }}_KEY_PASSWORD</param>
+{{- else }}
+<!--
+<param name="encryption.keystore.key.password">kafka-connector-private-key-password</param>
+-->
+{{- end }}
+{{- end }}
 
 {{/*
 Render the key/value record evaluator settings for the Lightstreamer Kafka Connector configuration file.
 */}}
-{{- define "lightstreamer.kafka-connector.configuration.record.evaluator" -}}
-{{- $ := index . 0 -}}
-{{- $connection := index . 1 -}}
-{{- $keyOrValue := index . 2 -}}
-{{- $evaluator := get $connection.record (printf "%sEvaluator" $keyOrValue) }}
-{{- if $evaluator }}
-  {{- $localSchemaFiles := $.Values.connectors.kafkaConnector.localSchemaFiles }}
-  {{- $key := index . 3 -}}
-  {{- $type := $evaluator.type | default "STRING" }}
-  {{- $protobufMessageType := $evaluator.protobufMessageType }}
-  {{- if not (mustHas $type (list "AVRO" "JSON" "PROTOBUF" "KVP" "STRING" "INTEGER" "BOOLEAN" "BYTE_ARRAY" "BYTE_BUFFER" "BYTES" "DOUBLE" "FLOAT" "LONG" "SHORT" "UUID")) }}
-    {{- fail (printf "connectors.kafkaConnector.connections.%s.record.%sEvaluator.type must be one of: \"AVRO\", \"JSON\", \"PROTOBUF\", \"KVP\", \"STRING\", \"INTEGER\", \"BOOLEAN\", \"BYTE_ARRAY\", \"BYTE_BUFFER\", \"BYTES\", \"DOUBLE\", \"FLOAT\", \"LONG\", \"SHORT\", \"UUID\"" $key $keyOrValue) }}
-  {{- end }}
+{{- define "lightstreamer.kafka-connector.configuration.record.evaluator" }}
+{{- $ := index . 0 }}
+{{- $record := (index . 1) | default (dict) }}
+{{- $keyOrValue := index . 2 }}
+{{- $key := index . 3 -}}
+{{- $evaluator := (get $record (printf "%sEvaluator" $keyOrValue)) | default dict }}
+{{- $localSchemaFiles := $.Values.connectors.kafkaConnector.localSchemaFiles | default dict}}
 <!-- Optional. The format to be used to deserialize respectively the key and value of a
      Kafka record. Can be one of the following:
 
@@ -785,86 +826,212 @@ Render the key/value record evaluator settings for the Lightstreamer Kafka Conne
      - UUID
 
      Default: STRING -->
+{{- $type := $evaluator.type }}
+{{- $protobufMessageType := $evaluator.protobufMessageType }}
+{{- if not (quote $type | empty) }}
+  {{- if not (mustHas $type (list "AVRO" "JSON" "PROTOBUF" "KVP" "STRING" "INTEGER" "BOOLEAN" "BYTE_ARRAY" "BYTE_BUFFER" "BYTES" "DOUBLE" "FLOAT" "LONG" "SHORT" "UUID")) }}
+    {{- fail (printf "connectors.kafkaConnector.connections.%s.record.%sEvaluator.type must be one of: \"AVRO\", \"JSON\", \"PROTOBUF\", \"KVP\", \"STRING\", \"INTEGER\", \"BOOLEAN\", \"BYTE_ARRAY\", \"BYTE_BUFFER\", \"BYTES\", \"DOUBLE\", \"FLOAT\", \"LONG\", \"SHORT\", \"UUID\"" $key $keyOrValue) }}
+  {{- end }}
 <param name="record.{{ $keyOrValue }}.evaluator.type">{{ $type }}</param>
+{{- else }}
+<!--
+<param name="record.{{ $keyOrValue }}.evaluator.type">STRING</param>
+-->
+{{- end }}
 
-  {{- if has $type (list "AVRO" "JSON" "PROTOBUF") -}}
-    {{- if $evaluator.enableSchemaRegistry }}
-      {{- $schemaRegistryRef := $connection.record.schemaRegistryRef }}
-      {{- if not $schemaRegistryRef }}
-        {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.record.schemaRegistryRef or disable connectors.kafkaConnector.connections.%s.record.%sEvaluator.enableSchemaRegistry" $key $key $keyOrValue) }}
-      {{- end }}
+<!-- Mandatory if evaluator type is set to "AVRO" or "PROTOBUF" and no Schema Registry is
+     enabled. The path of the local schema (or binary descriptor) file, relative to the
+     deployment folder (LS_HOME/adapters/lightstreamer-kafka-connector-<version>) or as an
+     absolute path, for message validation respectively of the key and the value.
 
-      {{- $schemaRegistry := required (printf "connectors.kafkaConnector.schemaRegistries.%s not defined" $schemaRegistryRef) (get ($.Values.connectors.kafkaConnector.schemaRegistries | default (dict)) $schemaRegistryRef) }}
-      {{- $schemaRegistryProvider := $schemaRegistry.provider | default "CONFLUENT" }}
-      {{- $_ := set $schemaRegistry "provider" $schemaRegistryProvider }}
+     This parameter takes precedence over the homologous
+     "record.key/value.evaluator.schema.registry.enable" parameter: if a local schema path
+     is set, it is used for deserialization even when the Schema Registry is enabled. -->     
+{{- if $evaluator.localSchemaFilePathRef }}
+  {{- $localSchema := required (printf "connectors.kafkaConnector.localSchemaFiles.%s not defined" $evaluator.localSchemaFilePathRef ) (get $localSchemaFiles $evaluator.localSchemaFilePathRef) }}
+<param name="record.{{ $keyOrValue }}.evaluator.schema.path">{{ include "lightstreamer.kafka-connector.schemas.dir.name" . }}/{{ $evaluator.localSchemaFilePathRef }}/{{ required (printf "connectors.kafkaConnector.localSchemaFiles.%s.key must be set" .) $localSchema.key }}</param>
+{{- else}}
+  {{- if and (has $type (list "AVRO" "PROTOBUF")) (not $evaluator.enableSchemaRegistry) }}
+    {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.record.%sEvaluator.localSchemaFilePathRef or enable connectors.kafkaConnector.connections.%s.record.%sEvaluator.enableSchemaRegistry" $key $keyOrValue $key $keyOrValue) }}
+  {{- end }}
+<!--
+<param name="record.{{ $keyOrValue }}.evaluator.schema.path">schemas/record_{{ $keyOrValue }}.avsc</param>
+-->
+{{- end }}
 
-      {{- if not (mustHas $schemaRegistryProvider (list "CONFLUENT" "AZURE")) }}
-        {{- fail (printf "connectors.kafkaConnector.schemaRegistries.%s.provider must be one of: \"CONFLUENT\", \"AZURE\"" $schemaRegistryRef) }}
-      {{- end }}
-      {{- $_ := required (printf "connectors.kafkaConnector.schemaRegistries.%s.url must be set" $schemaRegistryRef) $schemaRegistry.url }}
+<!-- Mandatory if the evaluator type is set to "PROTOBUF" and a binary descriptor file is
+     provided through the "record.key/value.evaluator.schema.path" parameters. Specifies the
+     name of the Protobuf message type to be used for deserializing the key and value of a
+     Kafka record.
+-->
+{{- if and (eq $type "PROTOBUF") $evaluator.localSchemaFilePathRef }}
+<param name="record.{{ $keyOrValue }}.evaluator.protobuf.message.type">{{ required (printf "connectors.kafkaConnector.connections.%s.record.%sEvaluator.protobufMessageType must be set" $key $keyOrValue) $protobufMessageType }}</param>
+{{- else }}
+<!--
+<param name="record.{{ $keyOrValue }}.evaluator.protobuf.message.type">aMessageTypeFor{{ $keyOrValue | title }}</param>
+-->
+{{- end }}
 
-      {{- if and (eq $schemaRegistryProvider "AZURE") (eq $type "PROTOBUF") }}
-        {{- fail (printf "connectors.kafkaConnector.schemaRegistries.%s with provider AZURE does not support PROTOBUF evaluator type" $schemaRegistryRef) }}
-      {{- end }}
-
-      {{- /* Triggers rendering of the Schema Registry settings */ -}}
-      {{- $_ := set $connection.record "renderSchemaRegistry" true }}
-      {{- /* Set the whole schema registry configuration in the current context, to be used for rendering the schema registry settings */ -}}
-      {{- $_ := set $connection.record "schemaRegistry" $schemaRegistry }}
-
-<!-- Mandatory when the evaluator type is set to "AVRO" or "PROTOBUF" and no local schema
+<!-- Mandatory if the evaluator type is set to "AVRO" or "PROTOBUF" and no local schema
      paths are provided. Enables the use of a Schema Registry for validation respectively of
      the key and value. Can be one of the following:
 
      - true
      - false
 
-      Default value: false. -->
+     The homologous "record.key/value.evaluator.schema.path" parameter takes precedence: if
+     a local schema path is also set, it is used for deserialization instead.
+
+     Default value: false. -->
+{{- if not (quote $evaluator.enableSchemaRegistry | empty) }}
+  {{- if and $evaluator.enableSchemaRegistry }}
+    {{- $schemaRegistryRef := $record.schemaRegistryRef }}
+    {{- if not $schemaRegistryRef }}
+      {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.record.schemaRegistryRef or disable connectors.kafkaConnector.connections.%s.record.%sEvaluator.enableSchemaRegistry" $key $key $keyOrValue) }}
+    {{- end }}
+
+    {{- $schemaRegistry := required (printf "connectors.kafkaConnector.schemaRegistries.%s not defined" $schemaRegistryRef) (get ($.Values.connectors.kafkaConnector.schemaRegistries | default (dict)) $schemaRegistryRef) }}
+    {{- $schemaRegistryProvider := $schemaRegistry.provider | default "CONFLUENT" }}
+    {{- $_ := set $schemaRegistry "provider" $schemaRegistryProvider }}
+
+    {{- if not (mustHas $schemaRegistryProvider (list "CONFLUENT" "AZURE")) }}
+      {{- fail (printf "connectors.kafkaConnector.schemaRegistries.%s.provider must be one of: \"CONFLUENT\", \"AZURE\"" $schemaRegistryRef) }}
+    {{- end }}
+    {{- $_ := required (printf "connectors.kafkaConnector.schemaRegistries.%s.url must be set" $schemaRegistryRef) $schemaRegistry.url }}
+    {{- if and (eq $schemaRegistryProvider "AZURE") (eq $type "PROTOBUF") }}
+      {{- fail (printf "connectors.kafkaConnector.schemaRegistries.%s with provider AZURE does not support PROTOBUF evaluator type" $schemaRegistryRef) }}
+     {{- end }}
+    {{- /* Triggers rendering of the Schema Registry settings */ -}}
+    {{- $_ := set $record "renderSchemaRegistry" true }}
+    {{- /* Set the whole schema registry configuration in the current context, to be used for rendering the schema registry settings */ -}}
+    {{- $_ := set $record "schemaRegistry" $schemaRegistry }}
+  {{- end }}
+<param name="record.{{ $keyOrValue }}.evaluator.schema.registry.enable">{{ $evaluator.enableSchemaRegistry | ternary "true" "false" }}</param>
+{{- else }}
+<!--
 <param name="record.{{ $keyOrValue }}.evaluator.schema.registry.enable">true</param>
-    {{- else }}
-      {{- with $evaluator.localSchemaFilePathRef }}
-        {{ $localSchema := required (printf "connectors.kafkaConnector.localSchemaFiles.%s not defined" . ) (get ($localSchemaFiles | default dict) .) }}
-
-<!-- Mandatory if evaluator type is set to "AVRO" or "PROTOBUF" and no Schema Registry is
-     enabled. The path of the local schema (or binary descriptor) file, relative to the
-     deployment folder (LS_HOME/adapters/lightstreamer-kafka-connector-<version>) or as an
-     absolute path, for message validation respectively of the key and the value. -->
-<param name="record.{{ $keyOrValue }}.evaluator.schema.path">{{ include "lightstreamer.kafka-connector.schemas.dir.name" . }}/{{ . }}/{{ required (printf "connectors.kafkaConnector.localSchemaFiles.%s.key must be set" .) $localSchema.key }}</param>
-        {{ if (eq $type "PROTOBUF") }}
-
-<!-- Mandatory when the evaluator type is set to "PROTOBUF" and a binary descriptor file is
-     provided through the "record.key/value.evaluator.schema.path" parameters. Specifies the
-     name of the Protobuf message type to be used for deserializing the key and value of a
-     Kafka record.
 -->
-<param name="record.{{ $keyOrValue }}.evaluator.protobuf.message.type">{{ required (printf "connectors.kafkaConnector.connections.%s.record.%sEvaluator.protobufMessageType must be set" $key $keyOrValue) $protobufMessageType }}</param>
-        {{- end }}
-      {{- else }}
-        {{- if has $type (list "AVRO" "PROTOBUF") }}
-          {{- fail (printf "Either set connectors.kafkaConnector.connections.%s.record.%sEvaluator.localSchemaFilePathRef or enable connectors.kafkaConnector.connections.%s.record.%sEvaluator.enableSchemaRegistry" $key $keyOrValue $key $keyOrValue) }}
-        {{- end }}
-      {{- end }} {{/* of .localSchemaFilePathRef */}}
-    {{- end }} {{/* of .enableSchemaRegistry */}}
-  {{- else if eq $type "KVP" }}
-    {{- $keyValueSeparator := ($evaluator.kvp).keyValueSeparator | default "=" }}
-    {{- $pairSeparator := ($evaluator.kvp).pairsSeparator | default "," }}
+{{- end }}
 
-<!-- Optional but only effective when "record.key/value.evaluator.type" is set to "KVP".
+<!-- Optional but only effective if "record.key/value.evaluator.type" is set to "KVP".
      Specifies the symbol used to separate keys from values in a record key (or record
      value) serialized in the KVP format.
 
      Default value: "=".
 -->
-<param name="record.{{ $keyOrValue }}.evaluator.kvp.key-value.separator">{{ $keyValueSeparator }}</param>
+{{- if and (eq $type "KVP") (not (quote ($evaluator.kvp).keyValueSeparator | empty ))}}
+<param name="record.{{ $keyOrValue }}.evaluator.kvp.key-value.separator">{{ $evaluator.kvp.keyValueSeparator  }}</param>
+{{- else }}
+<!--
+<param name="record.{{ $keyOrValue }}.evaluator.kvp.key-value.separator">-</param>
+-->
+{{- end }}
 
-<!-- Optional but only effective when "record.key/value.evaluator.type" is set to "KVP".
+<!-- Optional but only effective if "record.key/value.evaluator.type" is set to "KVP".
      Specifies the symbol used to separate multiple key-value pairs in a record key (or
      record value) serialized in the KVP format.
 
      Default value: ",".
 -->
-<param name="record.{{ $keyOrValue }}.evaluator.kvp.pairs.separator">{{ $pairSeparator }}</param>
-  {{- end }} {{/* of has $type (list "AVRO" "JSON" "PROTOBUF") */}}
+{{- if and (eq $type "KVP") (not (quote ($evaluator.kvp).pairsSeparator | empty ))}}
+<param name="record.{{ $keyOrValue }}.evaluator.kvp.pairs.separator">{{ $evaluator.kvp.pairsSeparator }}</param>
+{{- else }}
+<!--
+<param name="record.{{ $keyOrValue }}.evaluator.kvp.pairs.separator">;</param>
+-->
+{{- end }}
+{{- end }}
+
+{{/*
+Render the truststore configuration for the Confluent Schema Registry.
+*/}}
+{{- define "lightstreamer.kafka-connector.configuration.schema-registry.confluent.truststore" }}
+{{- $keyStores := index . 0 }}
+{{- $top := index . 1 }}
+{{- $keyStore := dict }}
+{{- $renderedComments := dict "path" "secrets/kafka-connector.truststore.jks" "type" "JKS" "password" "kafka-connector-truststore-password" }}
+<!-- If required, configure the trust store to trust the Confluent Schema Registry
+     certificates -->
+{{- if $top.truststoreRef }}
+  {{- $_ := unset $renderedComments "path" }}
+  {{- $keyStore = required (printf "keystores.%s not defined" $top.truststoreRef) (get $keyStores $top.truststoreRef) }}
+<param name="schema.registry.confluent.encryption.truststore.path">{{ include "lightstreamer.keystores.dir" . }}/{{ $top.truststoreRef }}/{{ required (printf "keystores.%s.keystoreFileSecretRef.key must be set" $top.truststoreRef) ($keyStore.keystoreFileSecretRef).key }}</param>
+
+  {{- if not (quote $keyStore.type | empty) }}
+    {{- $_ := unset $renderedComments "type" }}
+    {{- if not (mustHas $keyStore.type (list "JKS" "PKCS12")) }}
+      {{- fail (printf "keystores.%s.type must be one of: \"JKS\", \"PKCS12\"" $top.truststoreRef) }}
+    {{- end }}
+<param name="schema.registry.confluent.encryption.truststore.type">{{ $keyStore.type }}</param>
+  {{- end }}
+  {{- $_ := unset $renderedComments "password" }}
+<param name="schema.registry.confluent.encryption.truststore.password">$env.LS_KEYSTORE_{{ $top.truststoreRef | upper |replace "-" "_" }}_PASSWORD</param>
+{{- end }}
+
+{{- if $renderedComments }}
+<!--
+  {{- if hasKey $renderedComments "path" }}
+<param name="schema.registry.confluent.encryption.truststore.path">{{ get $renderedComments "path" }}</param>
+  {{- end }}
+  {{- if hasKey $renderedComments "type" }}
+<param name="schema.registry.confluent.encryption.truststore.type">{{ get $renderedComments "type" }}</param>
+  {{- end }}
+  {{- if hasKey $renderedComments "password" }}
+<param name="schema.registry.confluent.encryption.truststore.password">{{ get $renderedComments "password" }}</param>
+  {{- end }}
+-->
+{{- end }}
+{{- end }}
+
+{{/*
+Render the keystore configuration for the Confluent Schema Registry.
+*/}}
+{{- define "lightstreamer.kafka-connector.configuration.schema-registry.confluent.keystore" }}
+{{- $keyStores := index . 0 }}
+{{- $top := index . 1 }}
+{{- $keyStore := dict }}
+{{- $renderedComments := dict "enable" "true" "path" "secrets/kafka-connector.keystore.jks" "type" "JKS" "password" "kafka-connector-password" "key.password" "kafka-connector-private-key-password" }}
+<!-- If mutual TLS is enabled on the Confluent Schema Registry, enable and configure the key
+     store -->
+{{- if $top.keystoreRef }}
+  {{- $_ := unset $renderedComments "enable" }}
+<param name="schema.registry.confluent.encryption.keystore.enable">true</param>
+  {{- $_ := unset $renderedComments "path" }}
+  {{- $keyStore = required (printf "keystores.%s not defined" $top.keystoreRef) (get $keyStores $top.keystoreRef) }}
+<param name="schema.registry.confluent.encryption.keystore.path">{{ include "lightstreamer.keystores.dir" . }}/{{ $top.keystoreRef }}/{{ required (printf "keystores.%s.keystoreFileSecretRef.key must be set" $top.keystoreRef) ($keyStore.keystoreFileSecretRef).key }}</param>
+  {{- if not (quote $keyStore.type | empty) }}
+    {{- $_ := unset $renderedComments "type" }}
+    {{- if not (mustHas $keyStore.type (list "JKS" "PKCS12")) }}
+      {{- fail (printf "keystores.%s.type must be one of: \"JKS\", \"PKCS12\"" $top.keystoreRef) }}
+    {{- end }}
+<param name="schema.registry.confluent.encryption.keystore.type">{{ $keyStore.type }}</param>
+  {{- end }}
+  {{- $_ := unset $renderedComments "password" }}
+<param name="schema.registry.confluent.encryption.keystore.password">$env.LS_KEYSTORE_{{ $top.keystoreRef | upper |replace "-" "_" }}_PASSWORD</param>
+  {{- if not (quote $keyStore.keyPasswordSecretRef | empty) }}
+    {{- $_ := unset $renderedComments "key.password" }}
+<param name="schema.registry.confluent.encryption.keystore.key.password">$env.LS_KEYSTORE_{{ $top.keystoreRef | upper |replace "-" "_" }}_KEY_PASSWORD</param>
+  {{- end }}
+{{- end }}
+
+{{- if $renderedComments }}
+<!--
+  {{- if hasKey $renderedComments "enable" }}
+<param name="schema.registry.confluent.encryption.keystore.enable">{{ get $renderedComments "enable" }}</param>
+  {{- end }}
+  {{- if hasKey $renderedComments "path" }}
+<param name="schema.registry.confluent.encryption.keystore.path">{{ get $renderedComments "path" }}</param>
+  {{- end }}
+  {{- if hasKey $renderedComments "type" }}
+<param name="schema.registry.confluent.encryption.keystore.type">{{ get $renderedComments "type" }}</param>
+  {{- end }}
+  {{- if hasKey $renderedComments "password" }}
+<param name="schema.registry.confluent.encryption.keystore.password">{{ get $renderedComments "password" }}</param>
+  {{- end }}
+  {{- if hasKey $renderedComments "key.password" }}
+<param name="schema.registry.confluent.encryption.keystore.key.password">{{ get $renderedComments "key.password" }}</param>
+  {{- end }}
+-->
 {{- end }}
 {{- end }}
 
@@ -887,7 +1054,6 @@ Validate all the adapter set configurations, ensuring that:
 {{- define "lightstreamer.adapters.validateAllAdapterSets" -}}
 {{- $userAdapterIds := list }}
 {{- $usedPorts := list }}
-{{- /*$ := . */}}
 {{- range $adapterName, $adapterSet := .Values.adapters}}
   {{- if not $adapterSet }}
     {{- fail (printf "adapters.%s must be set" $adapterName) }}
@@ -904,6 +1070,8 @@ Validate all the adapter set configurations, ensuring that:
     {{- $metadataProvider := required (printf "adapters.%s.metadataProvider must be set" $adapterName) $adapterSet.metadataProvider -}}
     {{- $inProcess := $metadataProvider.inProcessMetadataAdapter }}
     {{- if $inProcess }}
+      {{/* Unset the proxyMetadataAdapter to ensure only one type is defined */}}
+      {{- $_ := unset $metadataProvider "proxyMetadataAdapter" }}
       {{/* Check the in-process metadata adapter class name */}}
       {{- $adapterClass := required (printf "adapters.%s.metadataProvider.inProcessMetadataAdapter.adapterClass must be set" $adapterName) $inProcess.adapterClass }}
       {{- $requireProvisioning = not (eq $adapterClass "com.lightstreamer.adapters.metadata.LiteralBasedProvider") }}
@@ -947,6 +1115,8 @@ Validate all the adapter set configurations, ensuring that:
         {{- $enabledDataProviders = append $enabledDataProviders $dataProviderName }}
 
         {{- if $dataProvider.inProcessDataAdapter }}
+          {{/* Unset the proxyDataAdapter to ensure only one type is defined */}}
+          {{- $_ := unset $dataProvider "proxyDataAdapter" }}
           {{- $requireProvisioning = true }}
           {{- $inProcess := $dataProvider.inProcessDataAdapter | default dict }}
           {{/* Check the in-process data adapter class name */}}
@@ -1114,7 +1284,7 @@ Create the port reference for a proxy adapter configuration.
 {{/*
 Create the Java class name of the Proxy Meta/Data Adapter.
 */}}
-{{- define "lightstreamer.adapters.proxy.common.class" -}}
+{{- define "lightstreamer.adapters.proxy.common.class" }}
 {{- .enableRobustAdapter | default false | ternary "ROBUST_PROXY_FOR_REMOTE_ADAPTER" "PROXY_FOR_REMOTE_ADAPTER" -}}
 {{- end }}
 
@@ -1166,7 +1336,7 @@ Render the <messages_pool> block for the in-process Metadata Adapter.
 {{- define "lightstreamer.adapters.in-process.metadata-provider.messagesPool" }}
 <!-- Optional. Configures the specific "MSG" thread pool,
      expressly devoted to the calls of the method which handles
-     messa     ges sent by the client, against this Metadata Adapter.
+     messages sent by the client, against this Metadata Adapter.
      Note that the message-processing method is "notifyUserMessage"
      for Adapters leveraging the old callback-based
      Java In-Process Adapter SDK and
@@ -1236,8 +1406,11 @@ Render the custom initialization parameters for the in-process Metadata Adapter.
      - adapters_conf.id
      Note that this parameter is reserved and cannot be overridden
      by configuration.
-{{- range $paramName, $paramValue := .initParams }} -->
+{{- if .initParams -}}
+-->
+  {{- range $paramName, $paramValue := .initParams }}
 <param name="{{ $paramName }}">{{ $paramValue }}</param>
+  {{- end }}
 {{- else }}
 
      Below are configurations of sample parameters, meant to be handled
@@ -1346,7 +1519,7 @@ Render the <mpn_pool> block for the Proxy Metadata Adapter.
 {{/*
 Render the <authenticationPool> block for the Metadata Adapter.
 */}}
-{{- define "lightstreamer.adapters.metadata-provider.authenticationPool" -}}
+{{- define "lightstreamer.adapters.metadata-provider.authenticationPool" }}
 {{- $isRemote := index . 0 }}
 {{- $parent := index . 1 }}
 {{- with $parent.authenticationPool }}
@@ -1378,7 +1551,12 @@ Render the <authenticationPool> block for the Metadata Adapter.
 <authentication_pool>
     <max_size>1</max_size>
     <max_free>1</max_free>
+{{- if $isRemote }}
+    <max_pending_remote_requests>100</max_pending_remote_requests>
+{{- else }}
     <max_pending_requests>100</max_pending_requests>
+    <task_timeout_millis>0</task_timeout_millis>
+{{- end }}
     <max_queue>100</max_queue>
 </authentication_pool>
 -->
@@ -1420,7 +1598,12 @@ Render the <messages_pool> block for the Metadata Adapter.
 <messages_pool>
     <max_size>1</max_size>
     <max_free>1</max_free>
+{{- if $isRemote }}
+    <max_pending_remote_requests>100</max_pending_remote_requests>
+{{- else }}
     <max_pending_requests>100</max_pending_requests>
+    <task_timeout_millis>0</task_timeout_millis>
+{{- end }}
     <max_queue>100</max_queue>
 </messages_pool>
 -->
@@ -1457,7 +1640,7 @@ Render the common parameters for the proxy adapters.
 {{- $proxy := index . 2 }}
 {{- $isRobust := $proxy.enableRobustAdapter | default false }}
 {{- $metaOrData := $isDataAdapter | ternary "Data" "Metadata" }}
-{{- $commentSuffix := $isRobust | ternary (printf " for all Robust Proxy %s Adapters" $metaOrData) "" }}
+{{- $commentSuffix := $isRobust | ternary (printf " for all Proxy %s Adapters" $metaOrData) "" }}
 <!-- Mandatory{{ $commentSuffix }}.
 {{- if $isDataAdapter }}
      The request/reply port to listen on. The connection on this port will
@@ -1511,7 +1694,7 @@ Render the common parameters for the proxy adapters.
      - tls.enforce_server_cipher_suite_preference.order
      - tls.force_client_auth
      - remote_address_whitelist
-     Note, in particular, that the keystore parameters are parameters are available, though
+     Note, in particular, that the keystore parameters are available, though
      optional. This allows for authentication of the Proxy Adapter by the
      Remote Server by requesting the Proxy Adapter{{"'"}}s TLS client certificate. -->
 {{- else }}
@@ -1565,10 +1748,7 @@ Render the tls parameters for the proxy adapters.
 {{- $proxy := index . 3 }}
 {{- $isRobust := $proxy.enableRobustAdapter | default false }}
 {{- $metaOrData := $isDataAdapter | ternary "Data" "Metadata" }}
-{{- $commentSuffix := $isRobust | ternary (printf " for all Robust Proxy %s Adapters" $metaOrData) "" }}
-{{- $sslConfig := $proxy.sslConfig | default dict }}
-<!-- TLS SETTINGS -->
-
+{{- $commentSuffix := $isRobust | ternary (printf " for all Proxy %s Adapters" $metaOrData) "" }}
 <!-- Optional{{ $commentSuffix }}.
 {{- if $isDataAdapter }}
      If Y, enforces TLS on the listening port.
@@ -1578,6 +1758,7 @@ Render the tls parameters for the proxy adapters.
      the same for both ports.
      See the available parameters below and find their meanings in the
      corresponding configuration elements in the Server configuration file.
+
      Note that the parameters with multiple values should be distinguished
      from one another by adding a dot-suffix
      (see for instance "tls.remove_cipher_suites" below).
@@ -1585,6 +1766,7 @@ Render the tls parameters for the proxy adapters.
      "tls.enforce_server_cipher_suite_preference.order", then only numeric
      suffixes (not necessarily consecutive) will be accepted
      for "tls.allow_cipher_suite", to express the ordering.
+
      If N, the port configuration parameters below are ignored.
      Default: N. -->
 {{- else }}
@@ -1593,6 +1775,7 @@ Render the tls parameters for the proxy adapters.
      to the TLS configuration in the Server{{"'"}}s <https_server> blocks.
      See the available parameters below and find their meanings in the
      corresponding configuration elements in the Server configuration file.
+
      Note that the parameters with multiple values should be distinguished
      from one another by adding a dot-suffix
      (see for instance "tls.remove_cipher_suites" below).
@@ -1600,14 +1783,21 @@ Render the tls parameters for the proxy adapters.
      "tls.enforce_server_cipher_suite_preference.order", then only numeric
      suffixes (not necessarily consecutive) will be accepted
      for "tls.allow_cipher_suite", to express the ordering.
+
      If N, the port configuration parameters below are ignored.
      Default: N. -->
 {{- end }}
+{{- $sslConfig := $proxy.sslConfig | default dict }}
 {{- if $sslConfig.enabled }}
 <param name="tls">Y</param>
   {{- $keystoreRef := required (printf "adapters.%s.{...}.sslConfig.keystoreRef must be set" $adapterName) $sslConfig.keystoreRef }}
   {{- include "lightstreamer.adapters.proxy.keystore" (list $keystores $sslConfig.keystoreRef) | nindent 0 }}
   {{- $counter := 0}}
+
+  {{- if and $sslConfig.allowCipherSuites $sslConfig.removeCipherSuites }}
+    {{ printf "adapters.%s.{...}.sslConfig.allowCipherSuites and adapters.%s.{...}.sslConfig.removeCipherSuites cannot be used together" $adapterName $adapterName | fail }}
+  {{- end }}
+
   {{- range $index, $cipherSuite := $sslConfig.allowCipherSuites }}
     {{- $counter = add1 $counter }}
 <param name="tls.allow_cipher_suite.{{ $counter }}">{{ required (printf "adapters.%s.{...}.sslConfig.allowCipherSuites[%d] must be set" $adapterName $index) $cipherSuite }}</param>
@@ -1635,13 +1825,18 @@ Render the tls parameters for the proxy adapters.
 -->
   {{- end }}
 
-  {{- if ($sslConfig.enforceServerCipherSuitePreference).enabled }}
-<param name="tls.enforce_server_cipher_suite_preference">Y</param>
-    {{- if not (quote $sslConfig.enforceServerCipherSuitePreference.order | empty )}}
-<param name="tls.enforce_server_cipher_suite_preference.order">{{ $sslConfig.enforceServerCipherSuitePreference.order }}</param>
+  {{- $enabled := not (eq ($sslConfig.enforceServerCipherSuitePreference).enabled false) }}
+  {{- if $enabled }}
+    {{- $order := ($sslConfig.enforceServerCipherSuitePreference).order | default "JVM" }}
+    {{- if not (mustHas $order (list "JVM" "config")) }}
+      {{- fail (printf "adapters.%s.{...}.sslConfig.enforceServerCipherSuitePreference must be one of: \"JVM\", \"config\"" $adapterName) }}
     {{- end }}
+    {{- if and (eq $order "config") (not $sslConfig.allowCipherSuites) }}
+      {{- fail (printf "adapters.%s.{...}.sslConfig.enforceServerCipherSuitePreference.order cannot be set to 'config' if adapters.%s.{...}.sslConfig.allowCipherSuites is not specified" $adapterName $adapterName) }}
+    {{- end }}
+<param name="tls.enforce_server_cipher_suite_preference">Y</param>
+<param name="tls.enforce_server_cipher_suite_preference.order">{{ $order }}</param>
   {{- else }}
-
 <!--
 <param name="tls.enforce_server_cipher_suite_preference">Y</param>
 <param name="tls.enforce_server_cipher_suite_preference.order">JVM</param>
@@ -1653,7 +1848,6 @@ Render the tls parameters for the proxy adapters.
     {{- $counter = add1 $counter }}
 <param name="tls.allow_protocol.{{ $counter }}">{{ required (printf "adapters.%s.{...}.sslConfig.allowProtocols[%d] must be set" $adapterName $index) $allowProtocol }}</param>
   {{- else }}
-
 <!--
 <param name="tls.allow_protocol.2">TLSv1.1</param>
 -->
@@ -1667,7 +1861,6 @@ Render the tls parameters for the proxy adapters.
     {{- $counter = add1 $counter }}
 <param name="tls.remove_protocols.{{ $counter }}">{{ required (printf "adapters.%s.{...}.sslConfig.removeProtocols[%d] must be set" $adapterName $index) $removeProtocol }}</param>
   {{- else }}
-
 <!--
 <param name="tls.remove_protocols.1">TLSv1$</param>
 -->
@@ -1679,7 +1872,6 @@ Render the tls parameters for the proxy adapters.
   {{- if $sslConfig.enableMandatoryClientAuth }}
 <param name="tls.force_client_auth">{{ $sslConfig.enableMandatoryClientAuth | ternary "Y" "N"}}</param>
   {{- else }}
-
 <!--
 <param name="tls.force_client_auth">Y</param>
 -->
@@ -1687,9 +1879,22 @@ Render the tls parameters for the proxy adapters.
 
   {{- if $sslConfig.truststoreRef }}
   {{- include "lightstreamer.adapters.proxy.truststore" (list $keystores $sslConfig.truststoreRef) | nindent 0 }}
+  {{- else }}
+<!--
+<param name="tls.truststore.type">JKS</param>
+-->
+<!--
+<param name="tls.truststore.truststore_file">../../conf/myserver.truststore</param>
+-->
+<!--
+<param name="tls.truststore.truststore_password.type">file</param>
+-->
+<!--
+<param name="tls.truststore.truststore_password">../../conf/myserver.trustpass</param>
+-->
   {{- end }}
 
-<!-- Optional{{ if $isRobust }} for all Proxy Metadata Adapters{{ end }}.
+<!-- Optional{{ $commentSuffix }}.
      Only used if "remote_host" is configured and "tls" is Y.
      If Y, suppresses the check of the hostname in the TLS certificate,
      which, in this context, is received from the Remote Server.
@@ -1706,6 +1911,7 @@ Render the tls parameters for the proxy adapters.
 <!--
 <param name="tls">Y</param>
 -->
+
 <!--
 <param name="tls.keystore.type">JKS</param>
 -->
@@ -1761,19 +1967,29 @@ Render the tls parameters for the proxy adapters.
 <!--
 <param name="tls.truststore.truststore_password">../../conf/myserver.trustpass</param>
 -->
+
+<!-- Optional{{ $commentSuffix }}.
+     Only used if "remote_host" is configured and "tls" is Y.
+     If Y, suppresses the check of the hostname in the TLS certificate,
+     which, in this context, is received from the Remote Server.
+     The setting is only meant to be used in a development/test scenario.
+     Default: N. -->
+<!--
+<param name="tls.skip_hostname_check">N</param>
+-->
 {{- end }}
 {{- end }}
 
 {{/*
 Render the authentication parameters for the proxy adapters.
 */}}
-{{- define "lightstreamer.adapters.proxy.common.authentication" -}}
+{{- define "lightstreamer.adapters.proxy.common.authentication" }}
 {{- $adapterName := index . 0 }}
 {{- $isDataAdapter := index . 1 }}
 {{- $proxy := index . 2 }}
 {{- $isRobust := $proxy.enableRobustAdapter | default false }}
 {{- $metaOrData := $isDataAdapter | ternary "Data" "Metadata" }}
-{{- $commentSuffix := $isRobust | ternary (printf " for all Robust Proxy %s Adapters" $metaOrData) "" }}
+{{- $commentSuffix := $isRobust | ternary (printf " for all Proxy %s Adapters" $metaOrData) "" }}
 {{- $authentication := $proxy.authentication | default dict }}
 <!-- Optional{{ $commentSuffix }}.
 {{- if $isDataAdapter }}
@@ -1833,12 +2049,12 @@ Render the authentication parameters for the proxy adapters.
 {{/*
 Render the connection-related timeout settings for the proxy adapters.
 */}}
-{{- define "lightstreamer.adapters.proxy.common.connection" -}}
+{{- define "lightstreamer.adapters.proxy.common.connection" }}
 {{- $isDataAdapter := index . 0 }}
 {{- $proxy := index . 1 }}
 {{- $isRobust := $proxy.enableRobustAdapter | default false }}
 {{- $metaOrData := $isDataAdapter | ternary "Data" "Metadata" }}
-{{- $commentSuffix := $isRobust | ternary (printf " for all Robust Proxy %s Adapters" $metaOrData) "" }}
+{{- $commentSuffix := $isRobust | ternary (printf " for all Proxy %s Adapters" $metaOrData) "" }}
 <!-- Optional{{ $commentSuffix }}.
      Only used if "remote_host" is configured. Delay to be enforced
      before retrying a connection attempt to the Remote Server,
@@ -1854,7 +2070,7 @@ Render the connection-related timeout settings for the proxy adapters.
 
 {{- if $isRobust }}
 
-<!-- Optional{{ $commentSuffix }}.
+<!-- Optional.
      The timeout for initialization errors. After an unsuccessful attempt
      to achieve a connection from a remote server due to an error
      in configuration, network access or initialization, the Proxy Adapter
@@ -1879,8 +2095,15 @@ Render the connection-related timeout settings for the proxy adapters.
      A negative value stands for an unlimited timeout.
      Note that, when Lightstreamer Server startup completes,
      as long as a connection to a remote server is still missing,
+  {{- if $isDataAdapter}}
+     all subscription requests will get an empty snapshot; then, when the
+     connection is established, the data flow will be restored according
+     to the "events_recovery" setting.
+     Default: 0. -->
+  {{- else }}
      all client requests will be refused.
      Default: -1. -->
+  {{- end }}
   {{- if not (quote $proxy.firstConnectionTimeoutMillis | empty) }}
 <param name="first_connection_timeout_millis">{{ int $proxy.firstConnectionTimeoutMillis }}</param>
   {{- else }}
@@ -1898,7 +2121,6 @@ Render the notification parameters for the Proxy Metadata Adapter.
 {{- $adapterName := index . 0 }}
 {{- $proxy := index . 1 }}
 {{- $isRobust := $proxy.enableRobustAdapter | default false }}
-{{- if $isRobust }}
 <!-- Optional.
      The strategy to be adopted whenever a new remote server is available
      in order to resend the state change notifications that could not
@@ -1913,6 +2135,7 @@ Render the notification parameters for the Proxy Metadata Adapter.
      Hence, no perfect recovery is possible and the remote server must
      be able to deal with an imperfect notification sequence.
      Currently, the only available options are:
+
      - pessimistic
        All notifications since the first one that could not or may not
        have been processed by the previous remote server are resent
@@ -1923,9 +2146,11 @@ Render the notification parameters for the Proxy Metadata Adapter.
        in order to preserve the original sequence.
        Note that timed out requests (see the "timeout" setting) are
        considered as processed.
+
      - optimistic
        Only notifications after the last one that got an answer by the
        previous remote server are resent to the new one.
+
      - unneeded
        No notifications are resent. In case the close notifications
        are ignored by the remote server implementation, this can save
@@ -1933,6 +2158,7 @@ Render the notification parameters for the Proxy Metadata Adapter.
        Note that table notifications, for both opening and closing, are
        already omitted, unless requested by the remote server through
        the wantsTablesNotification method.
+
      Default: pessimistic. -->
   {{- if not (quote $proxy.closeNotificationsRecovery | empty) -}}
     {{- $possibleValues := list "pessimistic" "optimistic" "unneeded" -}}
@@ -1951,18 +2177,22 @@ Render the notification parameters for the Proxy Metadata Adapter.
      for a new Session (through notifyUser) cannot be carried out
      because of the unavailability of the Remote Metadata Adapter.
      Can be one of the following:
+
      - fail
        The request will fail as though an unexpected error had been
        occurred.
+
      - force_retry
        The request will fail, but the server should also instruct
        the client to retry the request.
+
      - send_code
        The request will be refused by throwing a CreditsException
        with a custom error code that has to be specified through the
        "notify_user_disconnection_code" parameter; in this way,
        the code will be communicated to the client as a Metadata Adapter
        custom refusal code.
+
      Default: either send_code or fail, depending on whether or not
      the "notify_user_disconnection_code" parameter is supplied. -->
   {{- if not (quote $proxy.notifyUserOnDisconnection | empty) -}}
@@ -1978,7 +2208,7 @@ Render the notification parameters for the Proxy Metadata Adapter.
   {{- end }}
 
 <!-- Optional when "notify_user_on_disconnection" is not supplied;
-     mandatory when "notify_user_on_disconnection" is send_code;
+     mandatory if "notify_user_on_disconnection" is send_code;
      otherwise forbidden.
      An integer to be supplied as a custom error code by notifyUser,
      through a CreditsException, when the request is being refused
@@ -1990,14 +2220,14 @@ Render the notification parameters for the Proxy Metadata Adapter.
   {{- $disconnectionCodeMandatory := eq $proxy.notifyUserOnDisconnection "send_code" }}
   {{- if not (quote $proxy.notifyUserDisconnectionCode | empty) }}
     {{- if (has $proxy.notifyUserOnDisconnection (list "force_retry" "fail")) }}
-      {{ printf "adapters.%s.proxyMetadataAdapter.notifyUserDisconnectionCode cannot be set when notifyUserOnDisconnection is 'force_retry' or 'fail'" $adapterName | fail }}
+      {{ printf "adapters.%s.proxyMetadataAdapter.notifyUserDisconnectionCode cannot be set if notifyUserOnDisconnection is 'force_retry' or 'fail'" $adapterName | fail }}
     {{- end }}
     {{- if gt (int $proxy.notifyUserDisconnectionCode) 0 }}
       {{ printf "adapters.%s.proxyMetadataAdapter.notifyUserDisconnectionCode must be a non positive integer" $adapterName | fail }}
     {{- end }}
 <param name="notify_user_disconnection_code">{{ int $proxy.notifyUserDisconnectionCode }}</param>
   {{- else if $disconnectionCodeMandatory }}
-    {{ printf "adapters.%s.proxyMetadataAdapter.notifyUserDisconnectionCode is mandatory when adapters.%s.proxyMetadataAdapter.notifyUserOnDisconnection is set to 'send_code'" $adapterName $adapterName | fail }}
+    {{ printf "adapters.%s.proxyMetadataAdapter.notifyUserDisconnectionCode is mandatory if adapters.%s.proxyMetadataAdapter.notifyUserOnDisconnection is set to 'send_code'" $adapterName $adapterName | fail }}
   {{- else }}
 <!--
 <param name="notify_user_disconnection_code">-10</param>
@@ -2020,7 +2250,6 @@ Render the notification parameters for the Proxy Metadata Adapter.
 -->
   {{- end }}
 {{- end }}
-{{- end }}
 
 {{/*
 Render the remote parameters and timeout settings for the proxy adapters.
@@ -2031,8 +2260,13 @@ Render the remote parameters and timeout settings for the proxy adapters.
 {{- $proxy := index . 2 }}
 {{- $isRobust := $proxy.enableRobustAdapter | default false }}
 {{- $metaOrData := $isDataAdapter | ternary "Data" "Metadata" }}
-{{- $commentSuffix := $isRobust | ternary (printf " for all Robust Proxy %s Adapters" $metaOrData) "" }}
-<!-- Optional{{ $commentSuffix }}.
+{{- $commentSuffix := $isRobust | ternary (printf " for all Proxy %s Adapters" $metaOrData) "" }}
+{{- if $isRobust }}
+<!-- Optional for all Proxy {{ $metaOrData}} Adapters, extended by the Robust
+     Proxy {{ $metaOrData }} Adapter.
+{{- else }}
+<!-- Optional.
+{{- end -}}
 {{- if $isDataAdapter }}
      Determines the custom initialization parameters to be sent to the
      remote counterpart.
@@ -2049,10 +2283,12 @@ Render the remote parameters and timeout settings for the proxy adapters.
      - adapters_conf.id
      - data_provider.name
      - server.instance_id
+  {{- if $isRobust }}
      - proxy.instance_id
      where the latter is added by the Robust Proxy Data Adapter and
      allows a Remote Data Adapter to detect if it is in replacement
      of a previous instance for the same Proxy Adapter instance.
+  {{- end }}
      Default: if not defined, no custom initialization parameters
      will be sent. -->
 {{- else}}
@@ -2070,12 +2306,14 @@ Render the remote parameters and timeout settings for the proxy adapters.
      - keepalive_hint.millis (optional)
      - adapters_conf.id
      - server.instance_id
+  {{- if $isRobust }}
      - proxy.instance_id
      where the latter is added by the Robust Proxy Metadata Adapter
      and allows a Remote Metadata Adapter to detect if it is in
      replacement of a previous instance for the same Proxy Adapter
      instance, and to possibly recover the state, including the currently
      active sessions and the related users.
+  {{- end }}
      Default: if not defined, no custom initialization parameters
      will be sent. -->
 {{- end }}
@@ -2124,7 +2362,7 @@ Render the common closing parameters for the proxy adapters.
 {{- $proxy := index . 2 }}
 {{- $isRobust := $proxy.enableRobustAdapter | default false }}
 {{- $metaOrData := $isDataAdapter | ternary "Data" "Metadata" }}
-{{- $commentSuffix := $isRobust | ternary (printf " for all Robust Proxy %s Adapters" $metaOrData) "" }}
+{{- $commentSuffix := $isRobust | ternary (printf " for all Proxy %s Adapters" $metaOrData) "" }}
 <!-- Optional{{ $commentSuffix }}.
      Specifies a comma-separated list of hosts allowed to connect to this proxy adapter
      in order to act as remote adapters.
@@ -2140,33 +2378,38 @@ Render the common closing parameters for the proxy adapters.
 {{- end }}
 
 <!-- Optional{{ $commentSuffix }}.
+     Timeout for inactivity on the connection with respect to messages coming
+     from the Remote {{ $metaOrData }} Adapter.
 {{- if $isDataAdapter }}
-     Timeout for inactivity on the connection with respect to messages coming
-     from the Remote Metadata Adapter.
-     If neither replies nor keepalives are received within the specified
-     timeout, the TCP connection will be considered broken and will be closed;
-     as a consequence, a connection with a new Remote Metadata Adapter will be attempted.
-     Setting a timeout is only meaningful if the Remote Metadata Adapter
-     is configured to either send keepalive messages at a shorter interval, or obey
-     the keepalive interval requested by this Proxy (see "keepalive_hint_millis").
-     A zero or negative value stands for an unlimited timeout.
-     Default: -1 (unlimited timeout). -->
-{{- else }}
-     Timeout for inactivity on the connection with respect to messages coming
-     from the Remote Data Adapter.
      If neither replies/notifications nor keepalives are received within the specified
      timeout, the TCP connection will be considered broken and will be closed;
-     as a consequence, a connections with a new Remote Data Adapter will be attempted.
+  {{- if $isRobust }}
+     as a consequence, a connection with a new Remote Data Adapter will be attempted.
+  {{- else }}
+     as a consequence, the whole Server will be shut down.
+  {{- end }}
      In case of two-ports configuration, the timeout applies to both connections
      independently.
-     Setting a timeout is only meaningful if the Remote Data Adapter
+{{- else }}
+     If neither replies nor keepalives are received within the specified
+     timeout, the TCP connection will be considered broken and will be closed;
+  {{- if $isRobust }}
+     as a consequence, a connection with a new Remote Metadata Adapter will be attempted.
+  {{- else }}
+     as a consequence, the whole Server will be shut down.
+  {{- end }}
+{{- end }}
+     Setting a timeout is only meaningful if the Remote {{ $metaOrData }} Adapter
      is configured to either send keepalive messages at a shorter interval, or obey
      the keepalive interval requested by this Proxy (see "keepalive_hint_millis").
      A zero or negative value stands for an unlimited timeout.
      Default: -1 (unlimited timeout). -->
-{{- end }}
 {{- if not (quote $proxy.keepaliveTimeoutMillis | empty) }}
 <param name="keepalive_timeout_millis">{{ int $proxy.keepaliveTimeoutMillis }}</param>
+{{- else }}
+<!--
+<param name="keepalive_timeout_millis">10000</param>
+-->
 {{- end }}
 
 <!-- Optional{{ $commentSuffix }}.
@@ -2241,8 +2484,11 @@ Render the custom initialization parameters for the in-process Data Adapter.
      - data_provider.name
      Note that these parameters are reserved and cannot be overridden
      by configuration.
-{{- range $paramName, $paramValue := .initParams }} -->
+{{- if .initParams -}}
+-->
+  {{- range $paramName, $paramValue := .initParams }}
 <param name="{{ $paramName }}">{{ $paramValue }}</param>
+  {{- end }}
 {{- else }}
 
     Below are configurations of sample parameters, meant to be handled
@@ -2283,7 +2529,7 @@ Render the <dataAdapterPool> block for the proxy Data Adapter.
 {{/*
 Render the <data_adapter_pool> block for the Data Adapter.
 */}}
-{{- define "lightstreamer.adapters.data-provider.dataAdapterPool" -}}
+{{- define "lightstreamer.adapters.data-provider.dataAdapterPool" }}
 {{- $adapterName := index . 0 }}
 {{- $dataProviderName := index . 1 }}
 {{- $parent := index . 2 }}
@@ -2305,7 +2551,7 @@ Render the <data_adapter_pool> block for the Data Adapter.
 {{/*
 Render the keystore settings for the proxy adapters.
 */}}
-{{- define "lightstreamer.adapters.proxy.keystore" -}}
+{{- define "lightstreamer.adapters.proxy.keystore" }}
 {{- $top := index . 0 -}}
 {{- $key := index . 1 -}}
 {{- $keyStore := required (printf "keystores.%s not defined" $key) (get $top $key) -}}
@@ -2332,7 +2578,7 @@ Render the keystore settings for the proxy adapters.
 {{/*
 Render the truststore settings for the proxy adapters.
 */}}
-{{- define "lightstreamer.adapters.proxy.truststore" -}}
+{{- define "lightstreamer.adapters.proxy.truststore" }}
 {{- $top := index . 0 -}}
 {{- $key := index . 1 -}}
 {{- $keyStore := required (printf "keystores.%s not defined" $key) (get $top $key) -}}
@@ -2359,13 +2605,14 @@ Render the truststore settings for the proxy adapters.
 {{/*
 Render the events recovery settings for the proxy Data Adapters.
 */}}
-{{- define "lightstreamer.adapters.proxy.data-provider.events-recovery" -}}
+{{- define "lightstreamer.adapters.proxy.data-provider.events-recovery" }}
 {{- $adapterName := index . 0 -}}
 {{- $dataProviderName := index . 1 -}}
 {{- $proxy := index . 2 }}
 {{- $isRobust := $proxy.enableRobustAdapter | default false }}
 
 {{- if $isRobust }}
+
 <!-- Optional.
       The strategy to be adopted whenever a new remote server is available
       in order to restore the data flow for items that were subscribed to
@@ -2428,21 +2675,21 @@ Render the events recovery settings for the proxy Data Adapters.
 {{- end }}
 
 <!-- Optional.
-      Specifies an item name to be managed by the Proxy Adapter for
-      carrying information about the availability of the Remote Data Adapter.
-      This item will only supply one field, named "status", whose value
-      may only be one of the following:
-      - "connecting" if no connection with a remote server has taken place yet;
-      - "connected" if a connection with a remote server is currently in place;
-      - "reconnecting" if a connection with a remote server has been lost.
-      The item will support subscriptions in MERGE or RAW mode and requests
-      for the snapshot will also be supported.
+     Specifies an item name to be managed by the Proxy Adapter for
+     carrying information about the availability of the Remote Data Adapter.
+     This item will only supply one field, named "status", whose value
+     may only be one of the following:
+     - "connecting" if no connection with a remote server has taken place yet;
+     - "connected" if a connection with a remote server is currently in place;
+     - "reconnecting" if a connection with a remote server has been lost.
+     The item will support subscriptions in MERGE or RAW mode and requests
+     for the snapshot will also be supported.
 
-      Note that the chosen name should be such that no conflicts with the
-      item names supplied by the Remote Data Adapter can be possible.
-      Also note that the Metadata Adapter must be aware of this item when
-      performing permission checks.
-      Default: no item is added for carrying status information. -->
+     Note that the chosen name should be such that no conflicts with the
+     item names supplied by the Remote Data Adapter can be possible.
+     Also note that the Metadata Adapter must be aware of this item when
+     performing permission checks.
+     Default: no item is added for carrying status information. -->
 {{- if not (quote $proxy.statusItem | empty) }}
 <param name="status_item">{{ $proxy.statusItem}}</param>
 {{- else }}
@@ -2450,6 +2697,15 @@ Render the events recovery settings for the proxy Data Adapters.
 <param name="status_item">remote_adapter_status</param>
 -->
 {{- end }}
+
+<!-- Optional for all Proxy Data Adapters.
+     Timeout that is activated in case of two-ports configuration,
+     when the first connection, to either port, has been received.
+     If the second connection is not received within this time,
+     the first connection is also invalidated.
+     A zero or negative value stands for an unlimited timeout.
+     Default: -1. -->
+<param name="missing_connection_timeout_millis">10000</param>
 {{- end }}
 {{- end }}
 
