@@ -70,9 +70,9 @@ Build the producer image using the provided [`producer.Dockerfile`](producer.Doc
   > docker build -f producer.Dockerfile -t quickstart-producer:latest .
   > eval $(minikube docker-env --unset)
   > ```
-  > Use `quickstart-producer:latest` as the image reference in `producer.yaml` and add `imagePullPolicy: Never` to the container spec.
 
-  Then edit [`producer.yaml`](producer.yaml), replace `<your-registry>/quickstart-producer:latest` with your image reference, and apply:
+  Then edit [`producer.yaml`](producer.yaml), replace `<your-registry>/quickstart-producer:latest` with your image reference, and apply. If you used the Minikube shortcut, use `quickstart-producer:latest` and add `imagePullPolicy: Never` to the container spec.
+
   ```sh
   kubectl apply -f producer.yaml
   kubectl rollout status deployment/quickstart-producer -n lightstreamer
@@ -101,7 +101,7 @@ Build the producer image using the provided [`producer.Dockerfile`](producer.Doc
 
 - **Any Kubernetes distribution**:
   ```sh
-  helm install lightstreamer lightstreamer/lightstreamer \
+  helm install lightstreamer ../../charts/lightstreamer \
     -f values.yaml \
     --namespace lightstreamer
   kubectl rollout status deployment/lightstreamer -n lightstreamer
@@ -123,30 +123,22 @@ The provided [`values.yaml`](values.yaml) configures the Kafka Connector with th
 
 ## Accessing the web client
 
-The `ghcr.io/lightstreamer/lightstreamer-kafka-connector` image does **not** include the QuickStart web client. The provided [`values.yaml`](values.yaml) handles this automatically: an init container downloads the web client from GitHub into a shared volume, which `webServer.pagesVolume` mounts as the web server root so the page is served at `/QuickStart`.
+The `ghcr.io/lightstreamer/lightstreamer-kafka-connector` image does **not** include the QuickStart web client. The provided [`values.yaml`](values.yaml) handles this automatically: an init container downloads the web client from GitHub into a shared volume, which `webServer.pagesVolume` mounts as the web server root so the page is served at `/QuickStart`. To try it, forward the service port to your machine:
 
-- **Any Kubernetes distribution** — forward the service port and open the page in your browser:
-
+- **Any Kubernetes distribution**:
   ```sh
   kubectl port-forward svc/lightstreamer-service 8080:8080 -n lightstreamer
   ```
 
-  Then open <http://localhost:8080/QuickStart>.
-
-  > [!NOTE]
-  > `kubectl port-forward` does not support streaming protocols (WebSocket or HTTP chunked), so updates will arrive slowly via recovery polling. For real-time performance, expose the service through an Ingress or a load balancer that supports streaming connections.
-
-- **OpenShift** — expose the service as a Route and open the generated URL:
-
+- **OpenShift**:
   ```sh
-  oc expose svc/lightstreamer-service -n lightstreamer
+  oc port-forward svc/lightstreamer-service 8080:8080 -n lightstreamer
   ```
 
-  Then open `http://<route-hostname>/QuickStart`, where `<route-hostname>` is printed by:
+Then open <http://127.0.0.1:8080/QuickStart>. The provided [`values.yaml`](values.yaml) allows the `http://127.0.0.1:8080` origin, so the page can connect to Lightstreamer.
 
-  ```sh
-  oc get route lightstreamer-service -n lightstreamer -o jsonpath='{.spec.host}'
-  ```
+> [!NOTE]
+> Port forwarding is intended for local testing only, as it tunnels traffic through the Kubernetes API server and lasts only as long as the command runs. To make Lightstreamer reachable by real clients, expose the service through an Ingress or a load balancer.
 
 ## Cleanup
 
@@ -168,7 +160,6 @@ The steps below remove only the resources created by this example — the `light
   helm uninstall lightstreamer --namespace lightstreamer
   oc delete -f producer.yaml
   oc delete -f kafka.yaml
-  oc delete route/lightstreamer-service -n lightstreamer --ignore-not-found
   oc delete bc/quickstart-producer -n lightstreamer --ignore-not-found
   oc delete is/quickstart-producer -n lightstreamer --ignore-not-found
   ```
