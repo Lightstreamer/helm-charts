@@ -105,7 +105,8 @@ Install the chart using the provided [`values.yaml`](values.yaml), overriding th
 - **Any Kubernetes distribution** — use the image reference from your registry:
   ```sh
   helm install lightstreamer lightstreamer/lightstreamer \
-    -f values.yaml \
+  helm install lightstreamer ../../../charts/lightstreamer \
+    -f ../values.yaml \
     --set image.repository=lightstreamer-example-adapter-set \
     --set image.tag=1.0.0 \
     --namespace lightstreamer
@@ -116,7 +117,8 @@ Install the chart using the provided [`values.yaml`](values.yaml), overriding th
 - **OpenShift** — use the image reference printed by `build.sh`, for example:
   ```sh
   helm install lightstreamer lightstreamer/lightstreamer \
-    -f values.yaml \
+  helm install lightstreamer ../../../charts/lightstreamer \
+    -f ../values.yaml \
     --set image.repository=image-registry.openshift-image-registry.svc:5000/lightstreamer/lightstreamer-example-adapter-set \
     --set image.tag=1.0.0 \
     --namespace lightstreamer
@@ -130,25 +132,22 @@ The provided [`values.yaml`](values.yaml) defines the Adapter Set with the two I
 
 ## Accessing the web client
 
-The included [`index.html`](example-adapter-set/index.html) page is also baked into the custom image and served by Lightstreamer's built-in web server. To try it:
+To access the [`index.html`](example-adapter-set/index.html) web client, served by Lightstreamer's built-in web server, forward the service port to your machine:
 
-- **Any Kubernetes distribution** — forward the service port and open it in your browser:
+- **Any Kubernetes distribution**:
   ```sh
   kubectl port-forward svc/lightstreamer-service 8080:8080 -n lightstreamer
   ```
-  Then open <http://localhost:8080/index.html>.
 
-  > [!NOTE]
-  > `kubectl port-forward` does not support streaming protocols (WebSocket or HTTP chunked), so updates will arrive slowly via recovery polling. For real-time performance, expose the service through an Ingress or a load balancer that supports streaming connections.
+- **OpenShift**:
+  ```sh
+  oc port-forward svc/lightstreamer-service 8080:8080 -n lightstreamer
+  ```
 
-- **OpenShift** — expose the service as a Route and open the generated URL:
-  ```sh
-  oc expose svc/lightstreamer-service -n lightstreamer
-  ```
-  Then open `http://<route-hostname>/index.html`, where `<route-hostname>` is printed by:
-  ```sh
-  oc get route lightstreamer-service -n lightstreamer -o jsonpath='{.spec.host}'
-  ```
+Then open <http://127.0.0.1:8080/index.html>. The provided [`values.yaml`](values.yaml) allows the `http://127.0.0.1:8080` origin, so the page can connect to Lightstreamer.
+
+> [!NOTE]
+> Port forwarding is intended for local testing only, as it tunnels traffic through the Kubernetes API server and lasts only as long as the command runs. To make Lightstreamer reachable by real clients, expose the service through an Ingress or a load balancer.
 
 ## Cleanup
 
@@ -179,7 +178,4 @@ Then remove the image build resources from the [`example-adapter-set/`](example-
   ```sh
   ./undeploy.sh openshift
   ```
-  Removes the BuildConfig and ImageStream from the cluster. If you created a Route, remove it too:
-  ```sh
-  oc delete route lightstreamer-service -n lightstreamer
-  ```
+  Removes the BuildConfig and ImageStream from the cluster.
