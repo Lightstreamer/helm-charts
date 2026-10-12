@@ -260,7 +260,7 @@ Render the Lightstreamer Kafka Connector configuration file.
 
         <!-- In the case of "PLAIN", "SCRAM-SHA-256", and "SCRAM-SHA-512" mechanisms, the
              credentials must be configured through the following mandatory parameters:
-        {{- if has ($authentication.mechanism | default "PLAIN") (list "PLAIN" "SCRAM-SHA-256" "SCRAM-SHA-512") -}}-->
+        {{- if and $authentication.enabled (has ($authentication.mechanism | default "PLAIN") (list "PLAIN" "SCRAM-SHA-256" "SCRAM-SHA-512")) -}}-->
         <param name="authentication.username">$env.LS_KAFKA_PLAIN_AUTH_{{ required (printf "connectors.kafkaConnector.connections.%s.authentication.credentialsSecretRef must be set" $key) $authentication.credentialsSecretRef | upper | replace "-" "_" }}_USERNAME</param>
         <param name="authentication.password">$env.LS_KAFKA_PLAIN_AUTH_{{ required (printf "connectors.kafkaConnector.connections.%s.authentication.credentialsSecretRef must be set" $key) $authentication.credentialsSecretRef | upper | replace "-" "_" }}_PASSWORD</param>
         {{- else }}
