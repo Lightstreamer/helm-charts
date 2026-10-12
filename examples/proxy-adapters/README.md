@@ -104,12 +104,24 @@ At the end, the script prints the command to deploy the remote adapter (used in 
 
 ### 2. Install the Lightstreamer Helm chart
 
-Install the chart using the provided [`values.yaml`](values.yaml), which configures the Proxy Data Adapter:
+Create a ConfigMap from the [`index.html`](example-proxy-adapter-set/index.html) web client, which the provided [`values.yaml`](values.yaml) mounts as the root of Lightstreamer's built-in web server:
+
+- **Any Kubernetes distribution**:
+  ```sh
+  kubectl create configmap example-proxy-adapter-pages --from-file=index.html -n lightstreamer
+  ```
+
+- **OpenShift**:
+  ```sh
+  oc create configmap example-proxy-adapter-pages --from-file=index.html -n lightstreamer
+  ```
+
+Then install the chart using the provided [`values.yaml`](values.yaml), which configures the Proxy Data Adapter:
 
 - **Any Kubernetes distribution**:
   ```sh
   helm install lightstreamer lightstreamer/lightstreamer \
-    -f values.yaml \
+    -f ../values.yaml \
     --namespace lightstreamer
   kubectl rollout status deployment/lightstreamer -n lightstreamer
   kubectl logs -l app.kubernetes.io/name=lightstreamer -n lightstreamer
@@ -118,7 +130,7 @@ Install the chart using the provided [`values.yaml`](values.yaml), which configu
 - **OpenShift**:
   ```sh
   helm install lightstreamer lightstreamer/lightstreamer \
-    -f values.yaml \
+    -f ../values.yaml \
     --namespace lightstreamer
   oc rollout status deployment/lightstreamer -n lightstreamer
   oc logs -l app.kubernetes.io/name=lightstreamer -n lightstreamer
@@ -150,26 +162,32 @@ This generates the Deployment manifest from [`deployment.yaml.tmpl`](example-pro
 
 ## Accessing the web client
 
-The included [`index.html`](example-proxy-adapter-set/index.html) page can be used to verify data flow end-to-end. Forward the service port so the page can reach Lightstreamer, then open `index.html` directly from the local filesystem in your browser:
+To access the [`index.html`](example-proxy-adapter-set/index.html) web client, served by Lightstreamer's built-in web server, forward the service port to your machine:
 
-```sh
-kubectl port-forward svc/lightstreamer-service 8080:8080 -n lightstreamer
-```
+- **Any Kubernetes distribution**:
+  ```sh
+  kubectl port-forward svc/lightstreamer-service 8080:8080 -n lightstreamer
+  ```
+
+- **OpenShift**:
+  ```sh
+  oc port-forward svc/lightstreamer-service 8080:8080 -n lightstreamer
+  ```
+
+Then open <http://127.0.0.1:8080/index.html>. The provided [`values.yaml`](values.yaml) allows the `http://127.0.0.1:8080` origin, so the page can connect to Lightstreamer.
 
 > [!NOTE]
-> Unlike the [In-Process Adapter example](../in-process-adapters/), the test page is not baked into the Lightstreamer image — open the local file directly in your browser while port-forward is running. This applies to both Kubernetes and OpenShift (`oc port-forward` can be used as well).
-
-> [!NOTE]
-> `kubectl port-forward` does not support streaming protocols (WebSocket or HTTP chunked), so updates will arrive slowly via recovery polling. For real-time performance, expose the service through an Ingress or a load balancer that supports streaming connections.
+> Port forwarding is intended for local testing only, as it tunnels traffic through the Kubernetes API server and lasts only as long as the command runs. To make Lightstreamer reachable by real clients, expose the service through an Ingress or a load balancer.
 
 ## Cleanup
 
 The steps below remove only the resources created by this example — the `lightstreamer` namespace/project is left in place, so this workflow is safe on shared or admin-provisioned projects where you don't have delete rights.
 
-Uninstall the Helm chart first to stop the pods:
+Uninstall the Helm chart first to stop the pods, then remove the web client ConfigMap:
 
 ```sh
 helm uninstall lightstreamer --namespace lightstreamer
+kubectl delete configmap example-proxy-adapter-pages -n lightstreamer
 ```
 
 Then remove the NodeJS adapter resources from the [`example-proxy-adapter-set/`](example-proxy-adapter-set/) folder:
