@@ -30,7 +30,7 @@ The Node.js Remote Adapter connects to Lightstreamer on port `6661` and pushes H
 ```yaml
 args:
   - lightstreamer-adapters.lightstreamer.svc   # Lightstreamer service hostname
-  - "6661"                                     # Proxy adapter port
+  - "6661"                                     # Proxy Adapter port
 ```
 
 ## The Remote Adapter example project
@@ -203,7 +203,7 @@ Then remove the Node.js adapter resources from the [`example-proxy-adapter-set/`
   > eval $(minikube docker-env)
   > ./undeploy.sh kubernetes
   > ```
-  > Run `eval $(minikube docker-env --unset)` to restore your shell's Docker environment afterwards.  
+  > Run `eval $(minikube docker-env --unset)` to restore your shell's Docker environment afterwards.
 
 - **OpenShift**:
   ```sh
