@@ -101,7 +101,7 @@ Build the producer image using the provided [`producer.Dockerfile`](producer.Doc
 
 - **Any Kubernetes distribution**:
   ```sh
-  helm install lightstreamer ../../charts/lightstreamer \
+  helm install lightstreamer lightstreamer/lightstreamer \
     -f values.yaml \
     --namespace lightstreamer
   kubectl rollout status deployment/lightstreamer -n lightstreamer
