@@ -105,19 +105,17 @@ Install the chart using the provided [`values.yaml`](values.yaml), overriding th
 - **Any Kubernetes distribution** — use the image reference from your registry:
   ```sh
   helm install lightstreamer lightstreamer/lightstreamer \
-  helm install lightstreamer ../../../charts/lightstreamer \
     -f ../values.yaml \
     --set image.repository=lightstreamer-example-adapter-set \
     --set image.tag=1.0.0 \
     --namespace lightstreamer
   kubectl rollout status deployment/lightstreamer -n lightstreamer
-    
+  kubectl logs -l app.kubernetes.io/name=lightstreamer -n lightstreamer
   ```
 
 - **OpenShift** — use the image reference printed by `build.sh`, for example:
   ```sh
   helm install lightstreamer lightstreamer/lightstreamer \
-  helm install lightstreamer ../../../charts/lightstreamer \
     -f ../values.yaml \
     --set image.repository=image-registry.openshift-image-registry.svc:5000/lightstreamer/lightstreamer-example-adapter-set \
     --set image.tag=1.0.0 \
