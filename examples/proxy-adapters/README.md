@@ -1,6 +1,6 @@
 # Proxy Adapter example
 
-This example demonstrates how to deploy the Lightstreamer Helm chart with a **Proxy Data Adapter**, which delegates data production to a separate remote adapter process running in its own Kubernetes pod.
+This example demonstrates how to deploy the Lightstreamer Helm chart with a **Proxy Data Adapter**, which delegates data production to a separate Remote Adapter process running in its own Kubernetes pod.
 
 ## Architecture
 
@@ -23,9 +23,9 @@ flowchart LR
 
 Lightstreamer is configured with:
 - an **In-Process** Metadata Adapter (`LiteralBasedProvider`, provided by the Lightstreamer SDK)
-- a **Proxy Data Adapter** listening on port `6661` for incoming connections from the remote adapter
+- a **Proxy Data Adapter** listening on port `6661` for incoming connections from the Remote Adapter
 
-The NodeJS remote adapter connects to Lightstreamer on port `6661` and pushes Hello World–style real-time data (alternating "Hello" / "World" messages), as configured by the arguments in [`deployment.yaml.tmpl`](example-proxy-adapter-set/deployment.yaml.tmpl):
+The Node.js Remote Adapter connects to Lightstreamer on port `6661` and pushes Hello World–style real-time data (alternating "Hello" / "World" messages), as configured by the arguments in [`deployment.yaml.tmpl`](example-proxy-adapter-set/deployment.yaml.tmpl):
 
 ```yaml
 args:
@@ -33,13 +33,13 @@ args:
   - "6661"                                     # Proxy adapter port
 ```
 
-## The example remote adapter project
+## The Remote Adapter example project
 
-The [`example-proxy-adapter-set/`](example-proxy-adapter-set/) folder contains a NodeJS remote adapter that produces sample real-time data. The project is organized as follows:
+The [`example-proxy-adapter-set/`](example-proxy-adapter-set/) folder contains a Node.js Remote Adapter that produces sample real-time data. The project is organized as follows:
 
-```
+```sh
 example-proxy-adapter-set/
-├── adapter.cjs                          # NodeJS adapter source code
+├── adapter.cjs                          # Node.js adapter source code
 ├── Dockerfile                           # Packages the adapter into a container
 ├── deployment.yaml.tmpl                 # Kubernetes Deployment manifest template
 ├── index.html                           # Test page — subscribes to the example Adapter Set
@@ -47,9 +47,9 @@ example-proxy-adapter-set/
 └── undeploy.sh                          # Clean up deployment and images
 ```
 
-**Build pipeline** — `build.sh` automates the full chain:
+**Build pipeline**: `build.sh` automates the full chain:
 
-1. Builds a Docker image using the Dockerfile, which installs the `lightstreamer-adapter` NPM package into a NodeJS base image and copies the adapter source:
+1. Builds a Docker image using the Dockerfile, which installs the `lightstreamer-adapter` NPM package into a Node.js base image and copies the adapter source:
    ```dockerfile
    FROM node
    WORKDIR /app
@@ -68,13 +68,13 @@ example-proxy-adapter-set/
   helm repo add lightstreamer https://lightstreamer.github.io/helm-charts
   helm repo update
   ```
-- A container registry accessible by the cluster nodes (e.g. Docker Hub, a private registry, or a local registry) — required for the `kubernetes` target
+- A container registry accessible by the cluster nodes (e.g. Docker Hub, a private registry, or a local registry), required for the `kubernetes` target
 - `docker` on your PATH for local image builds
-- A namespace named `lightstreamer` (called a "project" on OpenShift) — all resources deploy into it. Create it with `kubectl create namespace lightstreamer` or, on OpenShift, `oc new-project lightstreamer`; ask your cluster admin if you don't have permission. To use a different name, update [`deployment.yaml.tmpl`](example-proxy-adapter-set/deployment.yaml.tmpl) to match, as the namespace is part of the Lightstreamer service DNS hostname the remote adapter connects to.
+- A namespace named `lightstreamer` (called a "project" on OpenShift). All resources deploy into it. Create it with `kubectl create namespace lightstreamer` or, on OpenShift, `oc new-project lightstreamer`; ask your cluster admin if you don't have permission. To use a different name, update [`deployment.yaml.tmpl`](example-proxy-adapter-set/deployment.yaml.tmpl) to match, as the namespace is part of the Lightstreamer service DNS hostname the Remote Adapter connects to.
 
 ## Deployment
 
-### 1. Build the remote adapter image
+### 1. Build the Remote Adapter image
 
 From the [`example-proxy-adapter-set/`](example-proxy-adapter-set/) folder, run `build.sh` with the appropriate target. Optionally edit [`adapter.cjs`](example-proxy-adapter-set/adapter.cjs) beforehand to customise the adapter logic.
 
@@ -82,7 +82,7 @@ From the [`example-proxy-adapter-set/`](example-proxy-adapter-set/) folder, run 
 cd example-proxy-adapter-set/
 ```
 
-- **Any Kubernetes distribution** — build and push the image to a registry accessible by your cluster nodes:
+- **Any Kubernetes distribution**: build and push the image to a registry accessible by your cluster nodes:
   ```sh
   REGISTRY=myregistry.example.com/myorg ./build.sh kubernetes
   ```
@@ -95,12 +95,12 @@ cd example-proxy-adapter-set/
   > ```
   > Run `eval $(minikube docker-env --unset)` to restore your shell's Docker environment afterwards.
 
-- **OpenShift** — no local Docker build is needed. The script uploads the source directory and triggers a server-side build via a binary BuildConfig:
+- **OpenShift**: no local Docker build is needed. The script uploads the source directory and triggers a server-side build via a binary BuildConfig:
   ```sh
   ./build.sh openshift
   ```
 
-At the end, the script prints the command to deploy the remote adapter (used in step 3).
+At the end, the script prints the command to deploy the Remote Adapter (used in step 3).
 
 ### 2. Install the Lightstreamer Helm chart
 
@@ -138,11 +138,11 @@ Then install the chart using the provided [`values.yaml`](values.yaml), which co
 
 Check the logs to confirm the Proxy Data Adapter is listening on port `6661`.
 
-The provided [`values.yaml`](values.yaml) defines an Adapter Set with an In-Process Metadata Adapter (`LiteralBasedProvider`, provided by the Lightstreamer SDK) and a Proxy Data Adapter listening on port `6661` for incoming connections from the remote adapter.
+The provided [`values.yaml`](values.yaml) defines an Adapter Set with an In-Process Metadata Adapter (`LiteralBasedProvider`, provided by the Lightstreamer SDK) and a Proxy Data Adapter listening on port `6661` for incoming connections from the Remote Adapter.
 
-### 3. Deploy the remote adapter
+### 3. Deploy the Remote Adapter
 
-Once Lightstreamer is running and the Proxy Data Adapter is ready to accept connections, deploy the remote adapter by running the command printed by `build.sh` in step 1. For example:
+Once Lightstreamer is running and the Proxy Data Adapter is ready to accept connections, deploy the Remote Adapter by running the command printed by `build.sh` in step 1. For example:
 
 - **Any Kubernetes distribution**:
   ```sh
@@ -151,14 +151,14 @@ Once Lightstreamer is running and the Proxy Data Adapter is ready to accept conn
   kubectl logs -l app=example-proxy-adapter -n lightstreamer
   ```
 
-- **OpenShift** — use the image reference printed by `build.sh`, for example:
+- **OpenShift**: use the image reference printed by `build.sh`, for example:
   ```sh
   IMAGE_REF=image-registry.openshift-image-registry.svc:5000/lightstreamer/example-proxy-adapter:1.0.0 envsubst '${IMAGE_REF}' < deployment.yaml.tmpl | kubectl apply -f -
   oc rollout status deployment/example-proxy-adapter -n lightstreamer
   oc logs -l app=example-proxy-adapter -n lightstreamer
   ```
 
-This generates the Deployment manifest from [`deployment.yaml.tmpl`](example-proxy-adapter-set/deployment.yaml.tmpl) with the resolved image reference and applies it to the cluster. The remote adapter pod will start and connect to Lightstreamer on port `6661`. Check the logs to confirm the remote adapter has connected successfully.
+This generates the Deployment manifest from [`deployment.yaml.tmpl`](example-proxy-adapter-set/deployment.yaml.tmpl) with the resolved image reference and applies it to the cluster. The Remote Adapter pod will start and connect to Lightstreamer on port `6661`. Check the logs to confirm the Remote Adapter has connected successfully.
 
 ## Accessing the web client
 
@@ -181,7 +181,7 @@ Then open <http://127.0.0.1:8080/index.html>. The provided [`values.yaml`](value
 
 ## Cleanup
 
-The steps below remove only the resources created by this example — the `lightstreamer` namespace/project is left in place, so this workflow is safe on shared or admin-provisioned projects where you don't have delete rights.
+The steps below remove only the resources created by this example. The `lightstreamer` namespace/project is left in place, so this workflow is safe on shared or admin-provisioned projects where you don't have delete rights.
 
 Uninstall the Helm chart first to stop the pods, then remove the web client ConfigMap:
 
@@ -190,13 +190,13 @@ helm uninstall lightstreamer --namespace lightstreamer
 kubectl delete configmap example-proxy-adapter-pages -n lightstreamer
 ```
 
-Then remove the NodeJS adapter resources from the [`example-proxy-adapter-set/`](example-proxy-adapter-set/) folder:
+Then remove the Node.js adapter resources from the [`example-proxy-adapter-set/`](example-proxy-adapter-set/) folder:
 
 - **Any Kubernetes distribution**:
   ```sh
   REGISTRY=myregistry.example.com/myorg ./undeploy.sh kubernetes
   ```
-  Deletes the NodeJS adapter deployment and removes the local Docker image (if `REGISTRY` is set).
+  Deletes the Node.js adapter deployment and removes the local Docker image (if `REGISTRY` is set).
 
   > **Minikube shortcut**: If you built the image inside Minikube's Docker daemon, point your shell at it again before running the script so that the image is removed from the correct daemon:
   > ```sh
@@ -209,5 +209,5 @@ Then remove the NodeJS adapter resources from the [`example-proxy-adapter-set/`]
   ```sh
   ./undeploy.sh openshift
   ```
-  Deletes the NodeJS adapter deployment, the BuildConfig, and the ImageStream from the cluster.
+  Deletes the Node.js adapter deployment, the BuildConfig, and the ImageStream from the cluster.
 
