@@ -18,7 +18,7 @@ flowchart LR
   KC -- "consumes stocks" --> K
 ```
 
-Lightstreamer is configured with the **Kafka Connector** consuming from the `stocks` Kafka topic. Incoming stock events — published as JSON values with an `INTEGER` key (the stock index) — are routed to Lightstreamer items following the `stock-[index=N]` template and streamed in real time to the web client served at `/QuickStart`.
+Lightstreamer is configured with the **Kafka Connector** consuming from the `stocks` Kafka topic. Incoming stock events, published as JSON values with an `INTEGER` key (the stock index), are routed to Lightstreamer items following the `stock-[index=N]` template and streamed in real time to the web client served at `/QuickStart`.
 
 The simulated producer continuously publishes stock market events (price changes, bids, asks, etc.) to the `stocks` topic on behalf of 30 different instruments.
 
@@ -31,14 +31,14 @@ The simulated producer continuously publishes stock market events (price changes
   helm repo add lightstreamer https://lightstreamer.github.io/helm-charts
   helm repo update
   ```
-- `docker` on your PATH and a container registry accessible by the cluster nodes, for building and pushing the producer image (not required on OpenShift — the image can be built server-side)
-- A namespace named `lightstreamer` (called a "project" on OpenShift) — all resources in this example deploy into it. Create it with `kubectl create namespace lightstreamer` or, on OpenShift, `oc new-project lightstreamer`; ask your cluster admin if you don't have permission. To use a different name, update the `namespace:` fields and the DNS hostnames in [`kafka.yaml`](kafka.yaml) and [`producer.yaml`](producer.yaml) to match.
+- `docker` on your PATH and a container registry accessible by the cluster nodes, for building and pushing the producer image (not required on OpenShift, where the image can be built server-side)
+- A namespace named `lightstreamer` (called a "project" on OpenShift). All resources in this example deploy into it. Create it with `kubectl create namespace lightstreamer` or, on OpenShift, `oc new-project lightstreamer`; ask your cluster admin if you don't have permission. To use a different name, update the `namespace:` fields and the DNS hostnames in [`kafka.yaml`](kafka.yaml) and [`producer.yaml`](producer.yaml) to match.
 
 ## Deployment
 
 ### 1. Deploy Kafka
 
-Deploy a single-node Apache Kafka broker in KRaft mode using the official [`apache/kafka`](https://hub.docker.com/r/apache/kafka) Docker image — the same image used in the original docker-compose quickstart:
+Deploy a single-node Apache Kafka broker in KRaft mode using the official [`apache/kafka`](https://hub.docker.com/r/apache/kafka) Docker image, the same image used in the original docker-compose quickstart:
 
 - **Any Kubernetes distribution**:
   ```sh
@@ -56,9 +56,9 @@ This creates a combined controller/broker pod named `kafka-0`, reachable within 
 
 ### 2. Build and deploy the producer
 
-Build the producer image using the provided [`producer.Dockerfile`](producer.Dockerfile) (no local JDK required — the build runs inside Docker), then deploy it.
+Build the producer image using the provided [`producer.Dockerfile`](producer.Dockerfile) (no local JDK required, as the build runs inside Docker), then deploy it.
 
-- **Any Kubernetes distribution** — build and push the image to a registry accessible by your cluster nodes:
+- **Any Kubernetes distribution**: build and push the image to a registry accessible by your cluster nodes:
   ```sh
   docker build -f producer.Dockerfile -t <your-registry>/quickstart-producer:latest .
   docker push <your-registry>/quickstart-producer:latest
@@ -79,7 +79,7 @@ Build the producer image using the provided [`producer.Dockerfile`](producer.Doc
   kubectl logs -l app=quickstart-producer -n lightstreamer
   ```
 
-- **OpenShift** — build the image server-side by embedding the Dockerfile in a BuildConfig. Because [`producer.Dockerfile`](producer.Dockerfile) clones its own sources from GitHub, no binary upload or local Docker daemon is required:
+- **OpenShift**: build the image server-side by embedding the Dockerfile in a BuildConfig. Because [`producer.Dockerfile`](producer.Dockerfile) clones its own sources from GitHub, no binary upload or local Docker daemon is required:
   ```sh
   oc new-build --name=quickstart-producer --dockerfile="$(cat producer.Dockerfile)" -n lightstreamer
   oc logs -f bc/quickstart-producer -n lightstreamer
@@ -142,7 +142,7 @@ Then open <http://127.0.0.1:8080/QuickStart>. The provided [`values.yaml`](value
 
 ## Cleanup
 
-The steps below remove only the resources created by this example — the `lightstreamer` namespace/project is left in place, so this workflow is safe on shared or admin-provisioned projects where you don't have delete rights.
+The steps below remove only the resources created by this example. The `lightstreamer` namespace/project is left in place, so this workflow is safe on shared or admin-provisioned projects where you don't have delete rights.
 
 - **Any Kubernetes distribution**:
   ```sh
