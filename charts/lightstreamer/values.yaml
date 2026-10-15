@@ -716,7 +716,6 @@ servers:
     # by the Unified Client SDKs through the `serverSocketName` property in the
     # `ConnectionDetails` class. It must be an ASCII string with no control
     # characters and it must be unique among all server configurations.
-    # The name must be unique among all server configurations.
     name: "Lightstreamer HTTP Server"
 
     # -- (int) Mandatory. Listening TCP port.
@@ -1945,7 +1944,8 @@ management:
   # `/dashboard`).
   jmx:
 
-    # -- Optional. JMX Service configuration.
+    # -- Deprecated, will be removed in a future major release; see DEPLOYMENT.md.
+    # Optional. JMX Service configuration.
     # If enabled, creates a dedicated Kubernetes Service that exposes JMX
     # connector ports (RMI and/or JMXMP). The chart auto-discovers which
     # connectors are enabled and includes their ports in the Service.
@@ -5275,7 +5275,7 @@ connectors:
             # -- Mandatory if `type` is set to `PROTOBUF` and a binary
             # descriptor file is provided through `localSchemaFilePathRef`.
             # Specifies the name of the Protobuf message type to be used for
-            # deserializing the key a Kafka record.
+            # deserializing the key of a Kafka record.
             protobufMessageType:
 
             # -- Optional but only effective if `type` is set to `KVP`.
