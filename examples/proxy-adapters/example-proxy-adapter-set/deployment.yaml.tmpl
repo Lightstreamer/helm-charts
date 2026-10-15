@@ -1,6 +1,6 @@
-# Deployment template for the NodeJS remote adapter.
+# Deployment template for the Node.js Remote Adapter.
 # This file is a template: ${IMAGE_REF} is substituted at deploy time by build.sh
-# using envsubst. Do not apply this file directly — use build.sh instead.
+# using envsubst. Do not apply this file directly; use build.sh instead.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -28,9 +28,9 @@ spec:
             # Resolves to the headless service created by the Helm chart.
             - lightstreamer-adapters.lightstreamer.svc
             # Port on which the Proxy Data Adapter listens for incoming connections
-            # from remote adapters. Must match proxyDataAdapter.requestReplyPort
+            # from Remote Adapters. Must match proxyDataAdapter.requestReplyPort
             # in values.yaml.
             - "6661"
           ports:
-            # Informational: the port exposed by the NodeJS adapter process.
+            # Informational: the port exposed by the Node.js adapter process.
             - containerPort: 3000
