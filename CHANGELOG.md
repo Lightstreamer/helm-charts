@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.2] - 2026-10-12
+
+### Fixed
+
+- Fixed the Kafka Connector PLAIN/SCRAM credentials, which were rendered (with `credentialsSecretRef` required) even when `connectors.kafkaConnector.connections.*.authentication.enabled` was `false` or unset; they are now rendered only when authentication is enabled. ([#7](https://github.com/Lightstreamer/helm-charts/pull/7))
+
 ## [1.1.1] - 2026-10-06
 
 ### Changed

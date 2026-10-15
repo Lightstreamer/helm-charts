@@ -1,6 +1,6 @@
 # Lightstreamer Helm Chart Specification
 
-![Version: 1.1.1](https://img.shields.io/badge/Version-1.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 7.4.9](https://img.shields.io/badge/AppVersion-7.4.9-informational?style=flat-square)
+![Version: 1.1.2](https://img.shields.io/badge/Version-1.1.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 7.4.9](https://img.shields.io/badge/AppVersion-7.4.9-informational?style=flat-square)
 
 This Helm chart provides a structured and efficient way to deploy and manage Lightstreamer Broker on Kubernetes.
 
