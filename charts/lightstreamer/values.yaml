@@ -704,6 +704,8 @@ license:
 servers:
 
   # -- The default HTTP server socket configuration.
+  # Its default values also apply to any other server socket defined in 
+  # `servers` for the settings it doesn't specify, except for `name` and `port`.
   defaultServer:
 
     # -- Optional. Enables this socket configuration.
@@ -791,6 +793,7 @@ servers:
       # specified `name` and `value`, both of which are mandatory.
       # The suggested setting for _X-Accel-Buffering_ may help to enable
       # streaming support when proxies of several types are involved.
+      # Set to `[]` to add no headers.
       add:
         - name: "X-Accel-Buffering"
           value: "no"
@@ -921,7 +924,7 @@ servers:
       # fully supported by the Conscrypt provider.
       # See the `keystores.myServerKeystore` settings for general details on
       # keystore configuration.
-      keystoreRef: myServerKeystore
+      keystoreRef:
 
       # -- Optional but forbidden if `removeCipherSuites` is used.
       # Specifies all the cipher suites allowed for the TLS/SSL interaction,
@@ -1013,6 +1016,7 @@ servers:
       # logged at startup by the
       # `logging.loggers.lightstreamerLogger.subLoggers.io.ssl` logger at
       # `DEBUG` level.
+      # Set to `[]` to remove no protocols.
       removeProtocols:
         - SSL
         - TLSv1$
