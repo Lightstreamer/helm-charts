@@ -5049,14 +5049,14 @@ connectors:
         # - `GROUP`: The internal Kafka Consumer joins a consumer group and uses
         #   the group coordination protocol (partition assignment, offset
         #   commits via __consumer_offsets). The consumer group is identified by
-        #   the `group.id` parameter.
+        #   the `groupId` parameter.
         # - `MANUAL`: The internal Kafka Consumer operates independently, using
         #   manual partition assignment without joining any consumer group and
-        #   without persisting offsets to Kafka. The `group.id` parameter is
+        #   without persisting offsets to Kafka. The `groupId` parameter is
         #   ignored.
         consumerMode: GROUP
 
-        # -- (string) Optional but only effective if `consumer.mode` is set to
+        # -- (string) Optional but only effective if `consumerMode` is set to
         # `GROUP`. The name of the consumer group this connection belongs to.
         # Sets the value for the `group.id` key used to configure the internal
         # Kafka Consumer.
@@ -5391,7 +5391,7 @@ connectors:
                 # - "stockTemplate"
                 # - "anotherTemplate"
 
-              # -- Optional but only effective if `consumer.mode` is set to
+              # -- Optional but only effective if `consumerMode` is set to
               # `MANUAL`. Lists the partitions of the topic to be manually
               # assigned to this consumer.
               # Every entry in the list must be a valid partition number or an
@@ -5405,7 +5405,7 @@ connectors:
           # -- Optional. Enables treating
           # `connectors.kafkaConnector.routing.topicMappings.{}.topic` as a
           # regular expression instead of a literal topic name. Not supported
-          # if `consumer.mode` is set to `MANUAL`.
+          # if `consumerMode` is set to `MANUAL`.
           enableTopicRegEx: false
 
         # -- Mandatory. Record mappings configuration.
