@@ -73,6 +73,7 @@ Render the Lightstreamer configuration file.
 {{- include "lightstreamer.configuration.servers.validateAllServers" . -}}
 {{- range $serverKey, $server :=.Values.servers }}
   {{- if $server.enabled }}
+
     <!-- Optional and cumulative (but at least one from <http_server> and
          <https_server> should be defined). HTTP server socket configuration.
          Multiple listening sockets can be defined, by specifying multiple
@@ -158,15 +159,15 @@ Render the Lightstreamer configuration file.
              HTTP headers; only custom or non-critical fields should be used.
              The header names involved are always converted to lower case. -->
         <response_http_headers>
-  {{- with .responseHttpHeaders}}
+  {{- $addHeaders := kindIs "invalid" (.responseHttpHeaders).add | ternary (list (dict "name" "X-Accel-Buffering" "value" "no")) (.responseHttpHeaders).add }}
 
             <!-- Optional and cumulative. Requests to look for any header
                  lines for the specified field name on the HTTP request header
                  and to copy them to the HTTP response header.
                  The "name" attribute is mandatory; a final ":" is optional.
                  The value should be left empty. -->
-    {{- range .echo }}
-            <echo name={{ . | quote }} />
+    {{- range $index, $echo := (.responseHttpHeaders).echo }}
+            <echo name={{ required (printf "servers.%s.responseHttpHeaders.echo[%d] must be set" $serverKey $index) $echo | quote }} />
     {{- else }}
             <!--
             <echo name="cookie" />
@@ -178,7 +179,7 @@ Render the Lightstreamer configuration file.
                  The "name" attribute is mandatory; a final ":" is optional.
                  The suggested setting for "X-Accel-Buffering" may help to enable
                  streaming support when proxies of several types are involved. -->
-    {{- range $index, $add:= .add }}
+    {{- range $index, $add:= $addHeaders }}
       {{- $name := required (printf "servers.%s.responseHttpHeaders.add[%d].name must be set" $serverKey $index) ($add).name }}
       {{- $value := required (printf "servers.%s.responseHttpHeaders.add[%d].value must be set" $serverKey $index) $add.value }}
             <add name="{{ $name  }}">{{ $value }}</add>
@@ -187,7 +188,7 @@ Render the Lightstreamer configuration file.
             <add name="my-header">MyValue</add>
             -->
     {{- end }}
-  {{ end }}
+
         </response_http_headers>
 
         <!-- Optional. Can be used on a multihomed host to specify the IP address
@@ -347,7 +348,7 @@ Render the Lightstreamer configuration file.
              Instructions on how to setup a JKS keystore are provided in the
              TLS/SSL Certificates document. -->
       {{- with required (printf "servers.%s.sslConfig.keystoreRef must be set" $serverKey) .keystoreRef }}
-        {{- include "lightstreamer.configuration.keystore" (list $.Values.keystores .)  | nindent 8 }}
+        {{- include "lightstreamer.configuration.keystore" (list $.Values.keystores .)  | indent 8 }}
       {{- end }}
 
       {{- if and .allowCipherSuites .removeCipherSuites }}
@@ -447,7 +448,7 @@ Render the Lightstreamer configuration file.
         -->
       {{- end }}
 
-      {{- $removeProtocols := hasKey . "removeProtocols" | ternary .removeProtocols (list "SSL" "TLSv1$" "TLSv1.1") }}
+      {{- $removeProtocols := kindIs "invalid" .removeProtocols | ternary (list "SSL" "TLSv1$" "TLSv1.1") .removeProtocols }}
       {{- if and .allowProtocols $removeProtocols }}
         {{ printf "servers.%s.sslConfig.allowProtocols and servers.%s.sslConfig.removeProtocols cannot be used together" $serverKey $serverKey | fail }}
       {{- end }}      
@@ -485,8 +486,8 @@ Render the Lightstreamer configuration file.
              the "supported" protocols. The default set of the "enabled" protocols
              is logged at startup by the LightstreamerLogger.io.ssl
              logger at DEBUG level. -->
-      {{- range $index, $value := .removeProtocols }}
-        <remove_protocols>{{ required (printf "servers.%s.sslConfig.removeProtocols[] must be set" $serverKey) $value }}</remove_protocols>
+      {{- range $index, $value := $removeProtocols }}
+        <remove_protocols>{{ required (printf "servers.%s.sslConfig.removeProtocols[%d] must be set" $serverKey $index) $value }}</remove_protocols>
       {{- else }}
         <!--
         <remove_protocols>SSL</remove_protocols>
@@ -614,7 +615,7 @@ Render the Lightstreamer configuration file.
              Moreover, the handling of keystore replacement doesn't apply here. -->
       {{- if or .enableClientAuth .enableMandatoryClientAuth }}
           {{- with required "sslConfig.truststoreRef must be set since either sslConfig.enableClientAuth or sslConfig.enableMandatoryClientAuth are enabled " .truststoreRef }}
-               {{- include "lightstreamer.configuration.truststore" (list $.Values.keystores .)  | nindent 8 }}
+               {{- include "lightstreamer.configuration.truststore" (list $.Values.keystores .) | indent 8 }}
           {{- end }}
       {{- else }}
         <!--
@@ -1198,7 +1199,7 @@ Render the Lightstreamer configuration file.
         {{- if or $rmiPortEnableSsl $rmiDataPortEnableSsl }}
         {{- with required (printf "management.jmx.rmiConnector.sslConfig must be set") .sslConfig }}
           {{- with required "management.jmx.rmiConnector.sslConfig.keystoreRef must be set" .keystoreRef }}
-            {{- include "lightstreamer.configuration.keystore" (list $.Values.keystores .) | nindent 12 }}
+            {{- include "lightstreamer.configuration.keystore" (list $.Values.keystores .) | indent 12 }}
           {{- end }}
 
           {{- if and .allowCipherSuites .removeCipherSuites }}
@@ -1428,7 +1429,7 @@ Render the Lightstreamer configuration file.
         <jmxtree_enabled>{{ .enableJmxTree | ternary "Y" "N" }}</jmxtree_enabled>
       {{- else }}
         <!--
-        <jmxtree_enabled>true</jmxtree_enabled>
+        <jmxtree_enabled>Y</jmxtree_enabled>
         -->
       {{- end }}
 
@@ -1444,7 +1445,6 @@ Render the Lightstreamer configuration file.
                   will not be accessible in any way.
              Default: N. -->
       
-      {{- $enablePublicAccess := not (eq .enablePublicAccess false) }}
       {{- if not (quote .enablePublicAccess | empty )  }}
         <public>{{ .enablePublicAccess | ternary "Y" "N" }}</public>
       {{- else }}
@@ -1496,7 +1496,7 @@ Render the Lightstreamer configuration file.
         <available_on_all_servers>{{ .enableAvailabilityOnAllServers | ternary "Y" "N" }}</available_on_all_servers>
       {{- else }}
         <!--
-        <available_on_all_servers>true</available_on_all_servers>
+        <available_on_all_servers>Y</available_on_all_servers>
         -->
       {{- end }}
 
@@ -2050,7 +2050,7 @@ Render the Lightstreamer configuration file.
              computes the difference in JSON Patch format, provided that the
              values are valid JSON representations;
          - diff_match_patch
-             computes the difference with Google{"'"}s "diff-match-patch" algorithm
+             computes the difference with Google{{"'"}}s "diff-match-patch" algorithm
              (the result is then serialized to the custom "TLCP-diff" format).
          Note that trying "diff" algorithms on unsuitable data may waste
          resources. For this reason, the default algorithm list is empty,
@@ -2674,7 +2674,7 @@ Render the Lightstreamer configuration file.
         <enabled>{{ .enabled | ternary "Y" "N"}}</enabled>
         {{- else }}
         <!--
-        <enabled>true</enabled>
+        <enabled>Y</enabled>
         -->
         {{- end }}
 
