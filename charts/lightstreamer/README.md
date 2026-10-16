@@ -4790,7 +4790,7 @@ Mandatory. The Kafka Cluster bootstrap server endpoint expressed as the list of 
 **Default:** `nil`
 ### [connectors.kafkaConnector.connections.aConnectionConfiguration.consumerMode](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5057)
      
-Optional. The consumer mode for this connection. Possible values: - `GROUP`: The internal Kafka Consumer joins a consumer group and uses   the group coordination protocol (partition assignment, offset   commits via __consumer_offsets). The consumer group is identified by   the `group.id` parameter. - `MANUAL`: The internal Kafka Consumer operates independently, using   manual partition assignment without joining any consumer group and   without persisting offsets to Kafka. The `group.id` parameter is   ignored.
+Optional. The consumer mode for this connection. Possible values: - `GROUP`: The internal Kafka Consumer joins a consumer group and uses   the group coordination protocol (partition assignment, offset   commits via __consumer_offsets). The consumer group is identified by   the `groupId` parameter. - `MANUAL`: The internal Kafka Consumer operates independently, using   manual partition assignment without joining any consumer group and   without persisting offsets to Kafka. The `groupId` parameter is   ignored.
 
 **Type:** string
 
@@ -4847,7 +4847,7 @@ At least one must be provided. Maps a Lightstreamer field (key) to data extracte
 **Default:** `"#{extraction_expression}"`
 ### [connectors.kafkaConnector.connections.aConnectionConfiguration.groupId](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5068)
      
-Optional but only effective if `consumer.mode` is set to `GROUP`. The name of the consumer group this connection belongs to. Sets the value for the `group.id` key used to configure the internal Kafka Consumer. See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_group.id for details. If not specified, the default value is `kafkaConnector.adapterSetId + name + randomly generated suffix`. Example: `a-consumer-group`
+Optional but only effective if `consumerMode` is set to `GROUP`. The name of the consumer group this connection belongs to. Sets the value for the `group.id` key used to configure the internal Kafka Consumer. See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_group.id for details. If not specified, the default value is `kafkaConnector.adapterSetId + name + randomly generated suffix`. Example: `a-consumer-group`
 
 **Type:** string
 
@@ -5088,7 +5088,7 @@ Mandatory. Record routings settings.
 ```
 ### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.enableTopicRegEx](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5409)
      
-Optional. Enables treating `connectors.kafkaConnector.routing.topicMappings.{}.topic` as a regular expression instead of a literal topic name. Not supported if `consumer.mode` is set to `MANUAL`.
+Optional. Enables treating `connectors.kafkaConnector.routing.topicMappings.{}.topic` as a regular expression instead of a literal topic name. Not supported if `consumerMode` is set to `MANUAL`.
 
 **Type:** bool
 
@@ -5124,7 +5124,7 @@ At least one must be provided. Maps a Kafka topic as follows: - to one or more s
 ```
 ### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.topicMappings.aTopicMapping.fromPartitions](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5399)
      
-Optional but only effective if `consumer.mode` is set to `MANUAL`. Lists the partitions of the topic to be manually assigned to this consumer. Every entry in the list must be a valid partition number or an inclusive range (e.g. "0", "1", "2-4").
+Optional but only effective if `consumerMode` is set to `MANUAL`. Lists the partitions of the topic to be manually assigned to this consumer. Every entry in the list must be a valid partition number or an inclusive range (e.g. "0", "1", "2-4").
 
 **Type:** list
 
