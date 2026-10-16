@@ -119,28 +119,28 @@ Service Account settings. See https://kubernetes.io/docs/concepts/security/servi
 ```
 ### [serviceAccount.annotations](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L60)
      
-Annotations to add to the service account.
+Annotations to add to the ServiceAccount.
 
 **Type:** object
 
 **Default:** `{}`
 ### [serviceAccount.automount](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L57)
      
-Specifies whether a service account should automatically mount a ServiceAccount's API credentials.
+Specifies whether a ServiceAccount should automatically mount a ServiceAccount's API credentials.
 
 **Type:** bool
 
 **Default:** `true`
 ### [serviceAccount.create](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L53)
      
-Specifies whether a service account should be created.
+Specifies whether a ServiceAccount should be created.
 
 **Type:** bool
 
 **Default:** `true`
 ### [serviceAccount.name](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L65)
      
-The name of the service account to use. If not set and `create` is `true`, a name is generated using the fullname template.
+The name of the ServiceAccount to use. If not set and `create` is `true`, a name is generated using the fullname template.
 
 **Type:** string
 
@@ -471,14 +471,14 @@ Optional. Additional Service annotations.
 **Default:** `{}`
 ### [service.clusterIP](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L296)
      
-Optional. The IP address of the service.
+Optional. The IP address of the Service.
 
 **Type:** string
 
 **Default:** `Allocated by the Kubernetes control plane`
 ### [service.externalTrafficPolicy](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L322)
      
-Optional. The external traffic policy for the service. Applies when `type` is `NodePort` or `LoadBalancer`. Set to `Local` to preserve the client source IP and keep traffic on the receiving node; set to `Cluster` (default) to allow kube-proxy to forward traffic to any pod in the cluster. See https://kubernetes.io/docs/concepts/services-networking/service/#traffic-policies.
+Optional. The external traffic policy for the Service. Applies when `type` is `NodePort` or `LoadBalancer`. Set to `Local` to preserve the client source IP and keep traffic on the receiving node; set to `Cluster` (default) to allow kube-proxy to forward traffic to any Pod in the cluster. See https://kubernetes.io/docs/concepts/services-networking/service/#traffic-policies.
 
 **Type:** string
 
@@ -499,14 +499,14 @@ The load balancer implementation when the `type` is set to `LoadBalancer`. See h
 **Default:** `nil`
 ### [service.name](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L279)
      
-Optional. The name of the service.
+Optional. The name of the Service.
 
 **Type:** string
 
 **Default:** `generated using the fullname template`
 ### [service.ports](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L299)
      
-At least one must be provided. List of ports exposed by the service.
+At least one must be provided. List of ports exposed by the Service.
 
 **Type:** list
 
@@ -517,7 +517,7 @@ At least one must be provided. List of ports exposed by the service.
 ```
 ### [service.ports[0].name](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L315)
      
-Optional but mandatory if more than one port is defined. The name of the service port.
+Optional but mandatory if more than one port is defined. The name of the Service port.
 
 **Type:** string
 
@@ -545,7 +545,7 @@ Mandatory. The reference to a server socket configuration (defined in `servers.{
 **Default:** `"defaultServer"`
 ### [service.type](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L292)
      
-Optional. The service type. See https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types.
+Optional. The Service type. See https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types.
 
 **Type:** string
 
@@ -563,28 +563,28 @@ Service Account settings. See https://kubernetes.io/docs/concepts/security/servi
 ```
 ### [serviceAccount.annotations](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L60)
      
-Annotations to add to the service account.
+Annotations to add to the ServiceAccount.
 
 **Type:** object
 
 **Default:** `{}`
 ### [serviceAccount.automount](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L57)
      
-Specifies whether a service account should automatically mount a ServiceAccount's API credentials.
+Specifies whether a ServiceAccount should automatically mount a ServiceAccount's API credentials.
 
 **Type:** bool
 
 **Default:** `true`
 ### [serviceAccount.create](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L53)
      
-Specifies whether a service account should be created.
+Specifies whether a ServiceAccount should be created.
 
 **Type:** bool
 
 **Default:** `true`
 ### [serviceAccount.name](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L65)
      
-The name of the service account to use. If not set and `create` is `true`, a name is generated using the fullname template.
+The name of the ServiceAccount to use. If not set and `create` is `true`, a name is generated using the fullname template.
 
 **Type:** string
 
@@ -617,7 +617,7 @@ Optional. The name of the Ingress class.
 **Default:** `nil`
 ### [ingress.defaultBackend](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L371)
      
-Optional. Name of the service port to use as the default backend, for requests that do not match any rule. Must match one of the names defined in `service.ports`. Can coexist with `rules`. Required when `rules` is not set and multiple service ports are defined. Must not be set when the single service port has no name (auto-defaulted in that case). See https://kubernetes.io/docs/concepts/services-networking/ingress/#default-backend.
+Optional. Name of the Service port to use as the default backend, for requests that do not match any rule. Must match one of the names defined in `service.ports`. Can coexist with `rules`. Required when `rules` is not set and multiple Service ports are defined. Must not be set when the single Service port has no name (auto-defaulted in that case). See https://kubernetes.io/docs/concepts/services-networking/ingress/#default-backend.
 
 **Type:** string
 
@@ -638,7 +638,7 @@ Additional Ingress labels.
 **Default:** `{}`
 ### [ingress.rules](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L352)
      
-Optional. List of Ingress rules. If not set and a single service port is defined, a default backend is automatically configured to route all traffic to that port, unless `defaultBackend` is explicitly specified, in which case that value is used. If not set and multiple service ports are defined, `defaultBackend` must be explicitly specified. See https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-rules.
+Optional. List of Ingress rules. If not set and a single Service port is defined, a default backend is automatically configured to route all traffic to that port, unless `defaultBackend` is explicitly specified, in which case that value is used. If not set and multiple Service ports are defined, `defaultBackend` must be explicitly specified. See https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-rules.
 
 **Type:** list
 
@@ -2333,7 +2333,7 @@ Mandatory. Enables the standard RMI Connector, which is used by the provided "st
 ```
 ### [management.jmx.rmiConnector.credentialSecrets](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2010)
      
-Optional but ineffective if `enablePublicAccess` is set to `true`. The reference to the secrets containing the credentials of the users enabled to access the RMI Connector. Every Secret must contains the keys `user` and `password`. If `enablePublicAccess` is set to `false`, at least one set of credentials should be supplied in order to allow access through the connector. This is also needed if you wish to use the provided "stop" script; the script will always use the first user supplied.
+Optional but ineffective if `enablePublicAccess` is set to `true`. The reference to the Secrets containing the credentials of the users enabled to access the RMI Connector. Every Secret must contain the keys `user` and `password`. If `enablePublicAccess` is set to `false`, at least one set of credentials should be supplied in order to allow access through the connector. This is also needed if you wish to use the provided "stop" script; the script will always use the first user supplied.
 
 **Type:** list
 
@@ -2509,7 +2509,7 @@ Optional. Additional Service labels.
 **Default:** `{}`
 ### [management.jmx.service.type](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L1967)
      
-Optional. The service type. ClusterIP is recommended to keep management traffic internal to the cluster. See https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types.
+Optional. The Service type. ClusterIP is recommended to keep management traffic internal to the cluster. See https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types.
 
 **Type:** string
 
@@ -3130,7 +3130,7 @@ Mandatory. The Hibernate JDBC properties. The provided values are used to show a
 ```
 ### [mpn.hibernateConfig.connection.credentialsSecretRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L2792)
      
-Mandatory. The name of the Secret containing the credentials. The Secret must contain the keys `user` and `password`. The `hsql-hibernate-secret` Secret is provided out of the box and contains the default `SA` user with empty password.
+Mandatory. The name of the Secret containing the credentials. The Secret must contain the keys `user` and `password`. The `hsql-factory-secret` Secret is provided out of the box and contains the default `SA` user with empty password.
 
 **Type:** string
 
@@ -3770,7 +3770,7 @@ Optional. Authentication settings for the connection.
 **Default:** `{"credentialSecrets":[],"enabled":false}`
 ### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.authentication.credentialSecrets](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4611)
      
-Mandatory if `enabled` is set to `true`. The reference to the secrets containing the credentials of the users allowed to connect. Every Secret must contains the keys `user` and `password`.
+Mandatory if `enabled` is set to `true`. The reference to the Secrets containing the credentials of the users allowed to connect. Every Secret must contain the keys `user` and `password`.
 
 **Type:** list
 
@@ -4200,7 +4200,7 @@ Optional. Authentication settings for the connection.
 **Default:** `{"credentialSecrets":[],"enabled":false}`
 ### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.authentication.credentialSecrets](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4166)
      
-Optional but ineffective if `enabled` is set to `false`. The reference to the secrets containing the credentials of the users allowed to connect. Every secret must contains the keys `user` and `password`.
+Optional but ineffective if `enabled` is set to `false`. The reference to the Secrets containing the credentials of the users allowed to connect. Every Secret must contain the keys `user` and `password`.
 
 **Type:** list
 
