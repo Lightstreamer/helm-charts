@@ -546,7 +546,7 @@ Render the Lightstreamer logging configuration file
   </logger>
     {{- end }}
     {{- with (get . "com.sun.jmx.remote") }}
-  <logger name="com.sun.jmx.remote" level={{ .level | quote }}>
+  <logger name="com.sun.jmx.remote" level={{ include "lightstreamer.configuration.log.level" . | quote }}>
       {{- include "lightstreamer.configuration.log.appender_ref" (list $.Values.logging.appenders .) | indent 4 }}
   </logger>
     {{- end }}
