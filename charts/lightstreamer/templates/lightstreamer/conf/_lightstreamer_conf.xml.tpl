@@ -248,7 +248,7 @@ Render the Lightstreamer configuration file.
              If the whole block is omitted, this just means that all settings
              are at their defaults. -->
 
-  {{- $enablePrivate := (.clientIdentification).enablePrivate | default false }}
+  {{- $enablePrivate := (not (eq (.clientIdentification).enablePrivate false)) }}
   {{- $enableProxyProtocol := (.clientIdentification).enableProxyProtocol | default false }}
   {{- $proxyProtocolTimeoutMillis := int (not (quote (.clientIdentification).proxyProtocolTimeoutMillis | empty) | ternary (.clientIdentification).proxyProtocolTimeoutMillis 5000) }}
   {{- $enableForwardsLogging := (.clientIdentification).enableForwardsLogging | default false }}
@@ -359,7 +359,7 @@ Render the Lightstreamer configuration file.
              Instructions on how to setup a JKS keystore are provided in the
              TLS/SSL Certificates document. -->
       {{- with required (printf "servers.%s.sslConfig.keystoreRef must be set" $serverKey) .keystoreRef }}
-        {{- include "lightstreamer.configuration.keystore" (list $.Values.keystores .)  | nindent 8 }}
+        {{- include "lightstreamer.configuration.keystore" (list $.Values.keystores .)  | indent 8 }}
       {{- end }}
 
       {{- if and .allowCipherSuites .removeCipherSuites }}
@@ -435,10 +435,10 @@ Render the Lightstreamer configuration file.
       {{- if $enabled }}
         {{- $order := (.enforceServerCipherSuitePreference).order | default "JVM" }}
         {{- if not (mustHas $order (list "JVM" "config")) }}
-          {{- fail (printf "server.%s.sslConfig.enforceServerCipherSuitePreference must be one of: \"JVM\", \"config\"" $serverKey) }}
+          {{- fail (printf "servers.%s.sslConfig.enforceServerCipherSuitePreference must be one of: \"JVM\", \"config\"" $serverKey) }}
         {{- end }}
         {{- if and (eq $order "config") (not .allowCipherSuites) }}
-            {{- fail (printf "server.%s.sslConfig.enforceServerCipherSuitePreference.order cannot be set to 'config' if server.%s.sslConfig.allowCipherSuites is not used" $serverKey $serverKey) }}
+            {{- fail (printf "servers.%s.sslConfig.enforceServerCipherSuitePreference.order cannot be set to 'config' if servers.%s.sslConfig.allowCipherSuites is not used" $serverKey $serverKey) }}
         {{- end }}
         <enforce_server_cipher_suite_preference order="{{ $order }}">{{ $enabled | ternary "Y" "N" }}</enforce_server_cipher_suite_preference>
       {{- else }}
@@ -461,6 +461,11 @@ Render the Lightstreamer configuration file.
         <disable_TLS_renegotiation>Y</disable_TLS_renegotiation>
         -->
       {{- end }}
+
+      {{- $removeProtocols := kindIs "invalid" .removeProtocols | ternary (list "SSL" "TLSv1$" "TLSv1.1") .removeProtocols }}
+      {{- if and .allowProtocols $removeProtocols }}
+        {{ printf "servers.%s.sslConfig.allowProtocols and servers.%s.sslConfig.removeProtocols cannot be used together" $serverKey $serverKey | fail }}
+      {{- end }}            
 
         <!-- Optional and cumulative, but forbidden if <remove_protocols> is used.
              Specifies one or more protocols allowed for the TLS/SSL interaction,
@@ -495,13 +500,13 @@ Render the Lightstreamer configuration file.
              the "supported" protocols. The default set of the "enabled" protocols
              is logged at startup by the LightstreamerLogger.io.ssl
              logger at DEBUG level. -->
-      {{- range .removeProtocols | default (list "SSL" "TLSv1$" "TLSv1.1") }}
-        <remove_protocols>{{ required "sslConfig.removeProtocols[] must be set" . }}</remove_protocols>
+      {{- range $index, $value := $removeProtocols }}
+        <remove_protocols>{{ required (printf "servers.%s.sslConfig.removeProtocols[%d] must be set" $serverKey $index) $value }}</remove_protocols>
       {{- else }}
         <!--
         <remove_protocols>SSL</remove_protocols>
         -->
-      {{- end }}
+      {{- end }}             
 
         <!-- Optional. Instructs the underlying Security Provider on whether to use
              stateless (when Y) or stateful (when N) session resumption on this port,
@@ -818,7 +823,13 @@ Render the Lightstreamer configuration file.
               Adapter implementation, but can be enforced by setting
               <forward_cookies> to N.
          Default: Y. -->
-    <use_protected_js>{{ .enableProtectedJs | default false | ternary "Y" "N" }}</use_protected_js>
+{{- if not (quote .enableProtectedJs | empty ) }}   
+    <use_protected_js>{{ .enableProtectedJs | ternary "Y" "N" }}</use_protected_js>
+    {{- else }}
+    <!--
+    <use_protected_js>N</use_protected_js>
+    -->
+    {{- end }}
 
     <!-- Optional. Use this setting to enable the forwarding of the cookies to
          the Metadata Adapter upon calls to the authentication method.
@@ -893,14 +904,17 @@ Render the Lightstreamer configuration file.
              Note that by setting three *{{"'"}}s any origin will be accepted, without
              performing any check. In particular, any scheme will be accepted,
              not just http and https. -->
+     {{- $renderAllowAccessExamples := true}}
       {{- range $key, $value := .allowAccessFrom }}
-        {{- if $value }}
-          {{- $scheme := required (printf "security.crossDomainPolicy.allowsAccess.%s.scheme must be set" $key) $value.scheme }}
-          {{- $host := required (printf "security.crossDomainPolicy.allowsAccess.%s.host must be set" $key) $value.host }}
-          {{- $port := required (printf "security.crossDomainPolicy.allowsAccess.%s.port must be set" $key) $value.port }}
+        {{- if ($value).enabled }}
+          {{- $renderAllowAccessExamples = false }}
+          {{- $scheme := required (printf "security.crossDomainPolicy.allowAccessFrom.%s.scheme must be set" $key) $value.scheme }} 
+          {{- $host := required (printf "security.crossDomainPolicy.allowAccessFrom.%s.host must be set" $key) $value.host }} 
+          {{- $port := required (printf "security.crossDomainPolicy.allowAccessFrom.%s.port must be set" $key) $value.port }} 
         <allow_access_from scheme={{ $scheme | quote }} host={{ $host | quote }} port={{ $port | quote }} />
         {{- end }}
-      {{- else }}
+     {{- end }}
+     {{- if $renderAllowAccessExamples }}
         <!--
         <allow_access_from scheme="https" host="www.my-domain.com" port="443" />
         -->
@@ -916,7 +930,7 @@ Render the Lightstreamer configuration file.
         <!--
         <allow_access_from scheme="*" host="2001:0db8:aaaa::dddd:eeee:0" port="*" />
         -->
-      {{- end }}
+      {{- end }}             
 
     </cross_domain_policy>
     {{- end }}
@@ -1218,7 +1232,7 @@ Render the Lightstreamer configuration file.
 
           {{- with required (printf "management.jmx.rmiConnector.sslConfig must be set") .sslConfig }}
             {{- with required "management.jmx.rmiConnector.sslConfig.keystoreRef must be set" .keystoreRef }}
-              {{- include "lightstreamer.configuration.keystore" (list $.Values.keystores .) | nindent 12 }}
+              {{- include "lightstreamer.configuration.keystore" (list $.Values.keystores .) | indent 12 }}
   
             {{- end }}
 
@@ -1567,7 +1581,7 @@ Render the Lightstreamer configuration file.
         <add_jmxtree_domain>{{ required (printf "management.dashboard.jmxTree.additionalDomains[%d] must be set" $index) $additionalDomain }}</add_jmxtree_domain>
               {{- end }}
             {{- else }} 
-       <!--
+        <!--
         <add_jmxtree_domain>com.my_app</add_jmxtree_domain>
         -->
         <!--
@@ -1619,7 +1633,7 @@ Render the Lightstreamer configuration file.
                   If no "user" elements are defined, the Monitoring Dashboard
                   will not be accessible in any way.
              Default: N. -->
-        {{- $enablePublicAccess := not (eq .enablePublicAccess false) }}
+        {{- $enablePublicAccess := .enablePublicAccess | default false }}
         {{- $_ := set . "enablePublicAccess" $enablePublicAccess }}
         <public>{{ $enablePublicAccess | ternary "Y" "N" }}</public>
 
@@ -1669,14 +1683,20 @@ Render the Lightstreamer configuration file.
              The optional "jmxtree_visible" attribute (whose default is "Y")
              allows for restriction of the access to the JMX Tree on a TCP port
              basis; it is only effective if <jmxtree_enabled> is set to "Y". -->
+        {{- $renderAvailableOnServerExamples := true }}
         {{- if and (not $enableAvailabilityOnAllServers) .availableOnServers }}
           {{- range $index, $value := .availableOnServers }}
-            {{- include "lightstreamer.configuration.servers.validateServerRef" (list $ (printf "management.dashboard.availableOnServers[%d].serverRef" (int $index)) $value.serverRef) }}
-            {{- $serverRef := (get $.Values.servers $value.serverRef).name }}
-            {{- $enableJmxTreeVisibility := not (eq $value.enableJmxTreeVisibility false) }}
-        <available_on_server name="{{ $serverRef }}" jmxtree_visible="{{ $enableJmxTreeVisibility | ternary "Y" "N" }}" />
+            {{- $serverRef := ($value).serverRef }}
+            {{- if $serverRef }}
+              {{- $renderAvailableOnServerExamples = false }}
+              {{- include "lightstreamer.configuration.servers.validateServerRef" (list $ (printf "management.dashboard.availableOnServers[%d].serverRef" (int $index)) $value.serverRef) }}
+              {{- $serverRefName := (get $.Values.servers $value.serverRef).name }}
+              {{- $enableJmxTreeVisibility := not (eq $value.enableJmxTreeVisibility false) }}
+        <available_on_server name="{{ $serverRefName }}" jmxtree_visible="{{ $enableJmxTreeVisibility | ternary "Y" "N" }}" />
+            {{- end }}
           {{- end }}
-        {{- else}}
+        {{- end }}
+        {{- if $renderAvailableOnServerExamples }}
         <!--
         <available_on_server name="Lightstreamer HTTPS Server" />
         -->
@@ -1748,12 +1768,17 @@ Render the Lightstreamer configuration file.
              is set to "Y").
              Specific server sockets for which healthcheck requests can be issued,
              that can be identified through the mandatory "name" attribute. -->
+      {{- $renderHealthCheckAvailableOnServersExample := true }}
       {{- if and (not .enableAvailabilityOnAllServers) .availableOnServers }}
         {{- range $index, $value := .availableOnServers }}
-          {{- include "lightstreamer.configuration.servers.validateServerRef" (list $ (printf "management.healthCheck.availableOnServers[%d]" (int $index)) $value) }}
+          {{- if $value }}
+            {{- $renderHealthCheckAvailableOnServersExample = false }}
+            {{- include "lightstreamer.configuration.servers.validateServerRef" (list $ (printf "management.healthCheck.availableOnServers[%d]" (int $index)) $value) }}
         <available_on_server name={{ (get $.Values.servers $value).name | quote }} />
+          {{- end }}
         {{- end }}
-      {{- else }}
+      {{- end }}
+      {{- if $renderHealthCheckAvailableOnServersExample }}
         <!--
         <available_on_server name="Lightstreamer HTTP Server" />
         -->
