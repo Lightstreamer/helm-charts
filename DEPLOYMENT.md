@@ -576,7 +576,7 @@ ingress:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
 
-  rules:
+  rules:  
     - host: lightstreamer.example.com
       paths:
         - path: /
@@ -2252,9 +2252,9 @@ connectors:
 
 **Bootstrap servers**: Specify one or more Kafka broker addresses using [`bootstrapServers`](charts/lightstreamer/values.yaml#L5045). For Kafka deployed in Kubernetes, use the service DNS name, for example `kafka-0.kafka-headless.kafka:9092`.
 
-**Consumer group**: The optional [`groupId`](charts/lightstreamer/values.yaml#L5068) sets the Kafka `group.id` for the internal consumer. If not specified, the connector generates a default value from `adapterSetId`, the connection name, and a random suffix.
+**Consumer mode**: [`consumerMode`](charts/lightstreamer/values.yaml#L5057) selects how the internal Kafka consumer gets its partitions: `GROUP` (default) joins the consumer group set by [`groupId`](charts/lightstreamer/values.yaml#L5068), while `MANUAL` assigns the partitions explicitly, optionally restricted through [`routing.topicMappings.<name>.fromPartitions`](charts/lightstreamer/values.yaml#L5399). See [`consumer.mode`](https://github.com/Lightstreamer/Lightstreamer-kafka-connector#consumermode) in the Kafka Connector documentation for details.
 
-In a multi-replica deployment, every Lightstreamer Broker instance must receive the full stream of messages from the subscribed topics. Otherwise, clients connected to different replicas would see only partial data, depending on which broker they happen to reach. To achieve this, each replica must use a **unique** `groupId` so that Kafka treats each one as an independent consumer rather than distributing partitions among members of the same group.
+In a multi-replica deployment, every Lightstreamer Broker instance must receive the full stream of messages from the subscribed topics. Otherwise, clients connected to different replicas would see only partial data, depending on which broker they happen to reach. With `MANUAL`, all replicas read the same partitions, so no extra configuration is needed. With `GROUP`, each replica must use a **unique** `groupId`; otherwise, Kafka distributes the partitions among the replicas.
 
 Any value that differs across pods works, for example the pod name, the pod IP, or the node name. Inject it via the Kubernetes Downward API and reference it with the `$env.<VAR>` substitution syntax (see [Environment and initialization](#environment-and-initialization)):
 
@@ -2271,6 +2271,7 @@ connectors:
     ...
     connections:
       myKafkaCluster:
+        consumerMode: GROUP
         groupId: "ls-kafka-$env.POD_NAME"
 ```
 
@@ -2318,7 +2319,7 @@ connectors:
 [`consumeFrom`](charts/lightstreamer/values.yaml#L5196) (default: `LATEST`) sets the initial offset. Use `EARLIEST` to replay all existing messages on first connection.
 
 > [!WARNING]
-> `consumeFrom` maps to Kafka's `auto.offset.reset` and only takes effect when no committed offsets exist for the consumer group. If `groupId` includes a value that changes across pod replacements or restarts, each new value produces a new group ID with no committed offsets. Combined with `EARLIEST`, this triggers a full replay of all topic partitions. Keep the default `LATEST` in multi-replica deployments where the group ID is not stable.
+> In `GROUP` mode, `consumeFrom` maps to Kafka's `auto.offset.reset` and only takes effect when no committed offsets exist for the consumer group. If `groupId` includes a value that changes across pod replacements or restarts, each new value produces a new group ID with no committed offsets. In `MANUAL` mode, offsets are never committed, so `consumeFrom` applies on every startup. In both cases, `EARLIEST` triggers a full replay of all topic partitions. Keep the default `LATEST` unless the replay is intended. If [`snapshot.mode`](charts/lightstreamer/values.yaml#L5493) is set to a value other than `NONE`, the connector manages the partition positions itself and ignores `consumeFrom`.
 
 [`consumeWithThreadNumber`](charts/lightstreamer/values.yaml#L5228) (default: `1`) controls parallelism for processing deserialized records. If you use more than one thread, [`consumeWithOrderStrategy`](charts/lightstreamer/values.yaml#L5239) determines ordering guarantees: `ORDER_BY_PARTITION` (default), `ORDER_BY_KEY`, or `UNORDERED`.
 
