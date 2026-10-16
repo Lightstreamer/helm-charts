@@ -760,7 +760,6 @@ servers:
     # by the Unified Client SDKs through the `serverSocketName` property in the
     # `ConnectionDetails` class. It must be an ASCII string with no control
     # characters and it must be unique among all server configurations.
-    # The name must be unique among all server configurations.
     name: "Lightstreamer HTTP Server"
 
     # -- Mandatory. Listening TCP port.
@@ -894,7 +893,7 @@ servers:
       # For instance, the flag can and should be set to `true` in case the
       # identification of the remote address is not properly tuned and the
       # determined address may be a local one.
-      enablePrivate: false
+      enablePrivate: true
 
       # -- Optional. If set to `true`, instructs the Server that the connection
       # endpoint is a reverse proxy or load balancer that sends client address
@@ -1298,7 +1297,7 @@ security:
   # the Server-generated session ID. For session-creation requests, this depends
   # on the Metadata Adapter implementation, but can be enforced by setting
   # `enableForwardCookies` to `false`.
-  enableProtectedJs: false
+  enableProtectedJs: true
 
   # -- Optional. Use this setting to enable the forwarding of the cookies to
   # the Metadata Adapter upon calls to the authentication method.
@@ -1367,6 +1366,9 @@ security:
       # -- Optional. Defines a rule against which Origin headers will be
       # checked.
       fromEveryWhere:
+
+        # -- Optional. Enables this specific cross-origin rule.
+        enabled: false
 
         # -- Mandatory. A valid scheme name (usually http or https) or `*`; the
         # latter matches both http and https scheme, but it doesn't match other
@@ -1441,7 +1443,7 @@ security:
   # - for Enterprise edition, as `Lightstreamer Server`;
   # - for Community edition, as `Lightstreamer Server (Lightstreamer Push Server
   # - www.lightstreamer.com) COMMUNITY edition`.
-  serverIdentificationPolicy: FULL
+  serverIdentificationPolicy: MINIMAL
 
 # -- Mandatory. Logging configuration for the Lightstreamer Broker.
 logging:
@@ -2071,6 +2073,23 @@ management:
       # -- Optional. Enables the RMI Connector.
       enabled: true
 
+      # -- Optional. Enables the RMI Connector access without credentials.
+      # If set to `true`, requests to the RMI Connector are always allowed.
+      # If set to `false`, requests to the RMI Connector are subject to user
+      # authentication; the allowed users are set in the "user" elements.
+      enablePublicAccess: false
+
+      # -- Optional but ineffective if `enablePublicAccess` is set to `true`.
+      # The reference to the secrets containing the credentials of the users
+      # enabled to access the RMI Connector.
+      # Every secret must contains the keys `user` and `password`.
+      # If `enablePublicAccess` is set to `false`, at least one set of
+      # credentials should be supplied in order to allow access through the
+      # connector.
+      # This is also needed if you wish to use the provided "stop" script; the
+      # script will always use the first user supplied.
+      credentialSecrets: []      
+
       # -- Mandatory if `enabled` is set to `true`. TCP port configuration.
       port:
 
@@ -2201,23 +2220,6 @@ management:
           - TLSv1$
           - TLSv1.1
 
-      # -- Optional. Enables the RMI Connector access without credentials.
-      # If set to `true`, requests to the RMI Connector are always allowed.
-      # If set to `false`, requests to the RMI Connector are subject to user
-      # authentication; the allowed users are set in the "user" elements.
-      enablePublicAccess: false
-
-      # -- Optional but ineffective if `enablePublicAccess` is set to `true`.
-      # The reference to the secrets containing the credentials of the users
-      # enabled to access the RMI Connector.
-      # Every secret must contains the keys `user` and `password`.
-      # If `enablePublicAccess` is set to `false`, at least one set of
-      # credentials should be supplied in order to allow access through the
-      # connector.
-      # This is also needed if you wish to use the provided "stop" script; the
-      # script will always use the first user supplied.
-      credentialSecrets: []
-
     # -- Optional. JMXMP Connector configuration.
     # The connector is supported by the Server only if Sun/Oracle's JMXMP
     # implementation library is added to the Server classpath; see `README.TXT`
@@ -2320,7 +2322,7 @@ management:
       # If set to `false`, the Server ignores requests for JMX Tree pages,
       # regardless of the credentials supplied and the server socket in use; the
       # Dashboard tab will just show a "disabled page" notification.
-      enabled: true
+      enabled: false
 
       # -- Optional. Configuration of the support in the JMX Tree page of
       # session-related mbeans, the ones identified by type="Session", which are
@@ -2428,7 +2430,7 @@ management:
     # the browser may prompt the user to enter credentials. If no `credentials`
     # settings are defined, the Monitoring Dashboard will not be accessible in
     # any way.
-    enablePublicAccess: true
+    enablePublicAccess: false
 
     # -- Optional but ineffective if `enablePublicAccess` is set to `true`.
     # Credentials of users authorized to access the Monitoring Dashboard.
@@ -2445,9 +2447,9 @@ management:
         # one, containing a different user and password.
         secretRef:
 
-        # -- Optional but only effective if `dashboard.enableJmxTree` is set to
-        # `true`. Allows for restriction of the access to the JMX Tree on a user
-        # basis.
+        # -- Optional but only effective if `dashboard.jmxTree.enabled` is set
+        # to `true`. Allows for restriction of the access to the JMX Tree on a
+        # user basis.
         enableJmxTreeVisibility: true
 
     # -- Optional. Enables the access to the Monitoring Dashboard pages through
@@ -2462,20 +2464,20 @@ management:
     # Disabling the Dashboard on a server socket causes the internal "MONITOR"
     # Adapter Set to also become unavailable from that socket. This does not
     # affect in any way the special "MONITOR" Data Adapter.
-    enableAvailabilityOnAllServers: true
+    enableAvailabilityOnAllServers: false
 
     # -- Optional but ineffective if `enableAvailabilityOnAllServers` is set to
     # `true`. List of server socket configurations (defined in `servers.{}`) for
     # which requests to the Monitoring Dashboard will be allowed.
     availableOnServers:
 
-      - # -- Mandatory. The reference to the allowed server socket
+      - # -- (string) Optional. The reference to the allowed server socket
         # configuration.
-        serverRef: defaultServer
+        serverRef:
 
-        # -- Optional but only effective if `dashboard.enableJmxTree` is set to
-        # `true`. Allows for restriction of the access to the JMX Tree on a TCP
-        # port basis.
+        # -- Optional but only effective if `dashboard.jmxTree.enabled` is set
+        # to `true`. Allows for restriction of the access to the JMX Tree on a
+        # TCP port basis.
         enableJmxTreeVisibility: true
 
     # -- Optional. URL path to map the Monitoring Dashboard pages to.
