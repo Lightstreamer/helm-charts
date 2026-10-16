@@ -130,7 +130,7 @@ The provided [`values.yaml`](values.yaml) defines the Adapter Set with the two I
 
 ## Accessing the web client
 
-To access the [`index.html`](example-adapter-set/index.html) web client, served by Lightstreamer's built-in web server, forward the service port to your machine:
+To access the [`index.html`](example-adapter-set/index.html) web client, served by Lightstreamer's built-in web server, forward the Service port to your machine:
 
 - **Any Kubernetes distribution**:
   ```sh
@@ -145,13 +145,13 @@ To access the [`index.html`](example-adapter-set/index.html) web client, served 
 Then open <http://127.0.0.1:8080/index.html>. The provided [`values.yaml`](values.yaml) allows the `http://127.0.0.1:8080` origin, so the page can connect to Lightstreamer.
 
 > [!NOTE]
-> Port forwarding is intended for local testing only, as it tunnels traffic through the Kubernetes API server and lasts only as long as the command runs. To make Lightstreamer reachable by real clients, expose the service through an Ingress or a load balancer.
+> Port forwarding is intended for local testing only, as it tunnels traffic through the Kubernetes API server and lasts only as long as the command runs. To make Lightstreamer reachable by real clients, expose the Service through an Ingress or a load balancer.
 
 ## Cleanup
 
 The steps below remove only the resources created by this example. The `lightstreamer` namespace/project is left in place, so this workflow is safe on shared or admin-provisioned projects where you don't have delete rights.
 
-Uninstall the Helm chart first to stop the pods:
+Uninstall the Helm chart first to stop the Pods:
 
 ```sh
 helm uninstall lightstreamer --namespace lightstreamer

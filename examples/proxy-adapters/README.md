@@ -1,6 +1,6 @@
 # Proxy Adapter example
 
-This example demonstrates how to deploy the Lightstreamer Helm chart with a **Proxy Data Adapter**, which delegates data production to a separate Remote Adapter process running in its own Kubernetes pod.
+This example demonstrates how to deploy the Lightstreamer Helm chart with a **Proxy Data Adapter**, which delegates data production to a separate Remote Adapter process running in its own Kubernetes Pod.
 
 ## Architecture
 
@@ -70,7 +70,7 @@ example-proxy-adapter-set/
   ```
 - A container registry accessible by the cluster nodes (e.g. Docker Hub, a private registry, or a local registry), required for the `kubernetes` target
 - `docker` on your PATH for local image builds
-- A namespace named `lightstreamer` (called a "project" on OpenShift). All resources deploy into it. Create it with `kubectl create namespace lightstreamer` or, on OpenShift, `oc new-project lightstreamer`; ask your cluster admin if you don't have permission. To use a different name, update [`deployment.yaml.tmpl`](example-proxy-adapter-set/deployment.yaml.tmpl) to match, as the namespace is part of the Lightstreamer service DNS hostname the Remote Adapter connects to.
+- A namespace named `lightstreamer` (called a "project" on OpenShift). All resources deploy into it. Create it with `kubectl create namespace lightstreamer` or, on OpenShift, `oc new-project lightstreamer`; ask your cluster admin if you don't have permission. To use a different name, update [`deployment.yaml.tmpl`](example-proxy-adapter-set/deployment.yaml.tmpl) to match, as the namespace is part of the Lightstreamer Service DNS hostname the Remote Adapter connects to.
 
 ## Deployment
 
@@ -158,11 +158,11 @@ Once Lightstreamer is running and the Proxy Data Adapter is ready to accept conn
   oc logs -l app=example-proxy-adapter -n lightstreamer
   ```
 
-This generates the Deployment manifest from [`deployment.yaml.tmpl`](example-proxy-adapter-set/deployment.yaml.tmpl) with the resolved image reference and applies it to the cluster. The Remote Adapter pod will start and connect to Lightstreamer on port `6661`. Check the logs to confirm the Remote Adapter has connected successfully.
+This generates the Deployment manifest from [`deployment.yaml.tmpl`](example-proxy-adapter-set/deployment.yaml.tmpl) with the resolved image reference and applies it to the cluster. The Remote Adapter Pod will start and connect to Lightstreamer on port `6661`. Check the logs to confirm the Remote Adapter has connected successfully.
 
 ## Accessing the web client
 
-To access the [`index.html`](example-proxy-adapter-set/index.html) web client, served by Lightstreamer's built-in web server, forward the service port to your machine:
+To access the [`index.html`](example-proxy-adapter-set/index.html) web client, served by Lightstreamer's built-in web server, forward the Service port to your machine:
 
 - **Any Kubernetes distribution**:
   ```sh
@@ -177,13 +177,13 @@ To access the [`index.html`](example-proxy-adapter-set/index.html) web client, s
 Then open <http://127.0.0.1:8080/index.html>. The provided [`values.yaml`](values.yaml) allows the `http://127.0.0.1:8080` origin, so the page can connect to Lightstreamer.
 
 > [!NOTE]
-> Port forwarding is intended for local testing only, as it tunnels traffic through the Kubernetes API server and lasts only as long as the command runs. To make Lightstreamer reachable by real clients, expose the service through an Ingress or a load balancer.
+> Port forwarding is intended for local testing only, as it tunnels traffic through the Kubernetes API server and lasts only as long as the command runs. To make Lightstreamer reachable by real clients, expose the Service through an Ingress or a load balancer.
 
 ## Cleanup
 
 The steps below remove only the resources created by this example. The `lightstreamer` namespace/project is left in place, so this workflow is safe on shared or admin-provisioned projects where you don't have delete rights.
 
-Uninstall the Helm chart first to stop the pods, then remove the web client ConfigMap:
+Uninstall the Helm chart first to stop the Pods, then remove the web client ConfigMap:
 
 ```sh
 helm uninstall lightstreamer --namespace lightstreamer
@@ -196,7 +196,7 @@ Then remove the Node.js adapter resources from the [`example-proxy-adapter-set/`
   ```sh
   REGISTRY=myregistry.example.com/myorg ./undeploy.sh kubernetes
   ```
-  Deletes the Node.js adapter deployment and removes the local Docker image (if `REGISTRY` is set).
+  Deletes the Node.js adapter Deployment and removes the local Docker image (if `REGISTRY` is set).
 
   > **Minikube shortcut**: If you built the image inside Minikube's Docker daemon, point your shell at it again before running the script so that the image is removed from the correct daemon:
   > ```sh
@@ -209,5 +209,5 @@ Then remove the Node.js adapter resources from the [`example-proxy-adapter-set/`
   ```sh
   ./undeploy.sh openshift
   ```
-  Deletes the Node.js adapter deployment, the BuildConfig, and the ImageStream from the cluster.
+  Deletes the Node.js adapter Deployment, the BuildConfig, and the ImageStream from the cluster.
 

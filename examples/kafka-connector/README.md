@@ -52,7 +52,7 @@ Deploy a single-node Apache Kafka broker in KRaft mode using the official [`apac
   oc rollout status statefulset/kafka -n lightstreamer
   ```
 
-This creates a combined controller/broker pod named `kafka-0`, reachable within the cluster at `kafka-0.kafka.lightstreamer.svc.cluster.local:9092`.
+This creates a combined controller/broker Pod named `kafka-0`, reachable within the cluster at `kafka-0.kafka.lightstreamer.svc.cluster.local:9092`.
 
 ### 2. Build and deploy the producer
 
@@ -123,7 +123,7 @@ The provided [`values.yaml`](values.yaml) configures the Kafka Connector with th
 
 ## Accessing the web client
 
-The `ghcr.io/lightstreamer/lightstreamer-kafka-connector` image does **not** include the QuickStart web client. The provided [`values.yaml`](values.yaml) handles this automatically: an init container downloads the web client from GitHub into a shared volume, which `webServer.pagesVolume` mounts as the web server root so the page is served at `/QuickStart`. To try it, forward the service port to your machine:
+The `ghcr.io/lightstreamer/lightstreamer-kafka-connector` image does **not** include the QuickStart web client. The provided [`values.yaml`](values.yaml) handles this automatically: an init container downloads the web client from GitHub into a shared volume, which `webServer.pagesVolume` mounts as the web server root so the page is served at `/QuickStart`. To try it, forward the Service port to your machine:
 
 - **Any Kubernetes distribution**:
   ```sh
@@ -138,7 +138,7 @@ The `ghcr.io/lightstreamer/lightstreamer-kafka-connector` image does **not** inc
 Then open <http://127.0.0.1:8080/QuickStart>. The provided [`values.yaml`](values.yaml) allows the `http://127.0.0.1:8080` origin, so the page can connect to Lightstreamer.
 
 > [!NOTE]
-> Port forwarding is intended for local testing only, as it tunnels traffic through the Kubernetes API server and lasts only as long as the command runs. To make Lightstreamer reachable by real clients, expose the service through an Ingress or a load balancer.
+> Port forwarding is intended for local testing only, as it tunnels traffic through the Kubernetes API server and lasts only as long as the command runs. To make Lightstreamer reachable by real clients, expose the Service through an Ingress or a load balancer.
 
 ## Cleanup
 
