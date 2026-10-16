@@ -20,9 +20,10 @@ full/relative path pattern used in the document.
 
 Usage:
   python3 check-refs.py                  # check only
-  python3 check-refs.py --fix            # fix wrong line numbers in place
-  python3 check-refs.py --fix --base REV # values.yaml the doc was last in sync with:
-                                         # git revision (default: HEAD) or file path
+  python3 check-refs.py --fix            # fix wrong line numbers in place; ambiguous links
+                                         # follow the shift of nearby unambiguous ones
+  python3 check-refs.py --fix --base REV # also track keys from the values.yaml the doc was
+                                         # last in sync with: git revision or file path
   python3 check-refs.py --no-style       # skip naming-convention warnings
   python3 check-refs.py --doc FILE --values FILE   # check other copies
 """
@@ -152,13 +153,16 @@ def common_prefix(a: str, b: str) -> int:
     return n
 
 
-def find_fix(link, paths, base_paths, context):
+def find_fix(link, paths, base_paths, context, shifts=()):
     """Return (new_line, note) or (None, reason)."""
     cands = sorted(no for no, p in paths.items() if link.ok(p))
     if len(cands) == 1:
         return cands[0], "unique match"
     if not cands:
         return None, "no key matches the link"
+    for delta in shifts:
+        if link.ref + delta in cands:
+            return link.ref + delta, f"same shift ({delta:+d}) as the nearest unambiguous fixes"
     if base_paths is not None:
         old = base_paths.get(link.ref)
         exact = [no for no in cands if paths[no] == old]
@@ -237,7 +241,7 @@ def style_warnings(links, paths):
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--fix", action="store_true")
-    ap.add_argument("--base", default="HEAD")
+    ap.add_argument("--base")
     ap.add_argument("--no-style", action="store_true")
     ap.add_argument("--doc", type=Path, default=DEPLOYMENT)
     ap.add_argument("--values", type=Path, default=VALUES)
@@ -251,11 +255,13 @@ def main() -> int:
 
     base_paths = None
     base_lines = None
-    if args.fix:
+    if args.fix and args.base:
         base_file = Path(args.base)
         base_lines = (base_file.read_text().splitlines() if base_file.is_file()
                       else git_show(args.base, VALUES_REL))
-        base_paths = index_paths(base_lines) if base_lines is not None else None
+        if base_lines is None:
+            sys.exit(f"--base {args.base}: not a file or a git revision containing {VALUES_REL}")
+        base_paths = index_paths(base_lines)
 
     errors = fixed = 0
     fixes: dict[int, list[tuple[int, int, int]]] = {}
@@ -264,6 +270,17 @@ def main() -> int:
     for l in links:
         if l.kind != "unverified" and l.ok(paths.get(l.ref)):
             valid_by_sec.setdefault(l.section_path, []).append(paths[l.ref])
+    # Line shifts (old ref -> delta) observed on broken links with a single candidate.
+    anchors = sorted({l.ref: n - l.ref for l in links
+                      if l.kind != "unverified" and not l.ok(paths.get(l.ref))
+                      for n in [c for c in paths if l.ok(paths[c])]
+                      if sum(1 for c in paths if l.ok(paths[c])) == 1}.items())
+
+    def nearby_shifts(ref):
+        before = [d for r, d in anchors if r <= ref]
+        after = [d for r, d in anchors if r > ref]
+        return list(dict.fromkeys(([before[-1]] if before else []) + ([after[0]] if after else [])))
+
     for l in links:
         if l.kind == "unverified":
             target = values_lines[l.ref - 1].strip() if 0 < l.ref <= len(values_lines) else "<out of range>"
@@ -276,6 +293,14 @@ def main() -> int:
                     fixed += 1
                     moved = f"  (moved L{l.ref} -> L{hits[0]}, same line text as base)"
                     target = old
+            elif args.fix and not base_lines:
+                s = nearby_shifts(l.ref)
+                if len(s) == 1 and s[0]:
+                    new = l.ref + s[0]
+                    fixes.setdefault(l.line_no - 1, []).append((l.m.start(3), l.m.end(3), new))
+                    fixed += 1
+                    moved = f"  (moved L{l.ref} -> L{new}, same shift as the surrounding links)"
+                    target = values_lines[new - 1].strip() if 0 < new <= len(values_lines) else target
             unverified.append(f"DEPLOYMENT.md:{l.line_no}  [{l.text}] -> L{l.ref}  "
                               f"{paths.get(l.ref) or target[:70]}{moved}")
             continue
@@ -287,7 +312,7 @@ def main() -> int:
         print(f"DEPLOYMENT.md:{l.line_no}  [{l.text}] -> L{l.ref}")
         print(f"  expected {l.rule[1]}, found: {found}")
         context = [p for s, ps in valid_by_sec.items() if l.section_path[:len(s)] == s for p in ps]
-        new, note = find_fix(l, paths, base_paths if args.fix else None, context)
+        new, note = find_fix(l, paths, base_paths if args.fix else None, context, nearby_shifts(l.ref))
         if new:
             print(f"  {'fix' if args.fix else 'suggestion'}: L{new}  {paths[new]}  ({note})")
             if args.fix:
