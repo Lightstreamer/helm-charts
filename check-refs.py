@@ -87,7 +87,7 @@ def text_regex(text: str) -> re.Pattern:
 
 
 class Link:
-    def __init__(self, line_no, line, m, section, section_path):
+    def __init__(self, line_no, line, m, section, section_path, section_levels):
         self.line_no = line_no
         self.line = line
         self.m = m
@@ -96,6 +96,7 @@ class Link:
         self.ref = int(m.group(3))
         self.section = section
         self.section_path = section_path  # heading texts, outermost first
+        self.section_levels = section_levels  # heading levels, parallel to section_path
         self.kind, self.rule = self._classify()
 
     def _classify(self):
@@ -131,7 +132,7 @@ def parse_links(doc_lines):
             continue
         for m in LINK_RE.finditer(line):
             links.append(Link(no, line, m, heads[-1][1] if heads else "",
-                              tuple(t for _, t in heads)))
+                              tuple(t for _, t in heads), tuple(lv for lv, _ in heads)))
     return links
 
 
@@ -153,13 +154,34 @@ def common_prefix(a: str, b: str) -> int:
     return n
 
 
-def find_fix(link, paths, base_paths, context, shifts=()):
+def same_parent(link, paths, cands, base_levels):
+    """Pick the candidate whose parent path matches the base of the section's other links.
+
+    base_levels lists the bases of nearby valid links, narrowest scope first.
+    """
+    if link.kind != "key":
+        return None
+    rx = text_regex(link.text)
+    for bases in base_levels:
+        bases = {b for b in bases if b}
+        top = [no for no in cands if rx.sub("", paths[no]) in bases]
+        if len(top) == 1:
+            return top[0]
+        if top:
+            return None
+    return None
+
+
+def find_fix(link, paths, base_paths, context, shifts=(), base_levels=()):
     """Return (new_line, note) or (None, reason)."""
     cands = sorted(no for no, p in paths.items() if link.ok(p))
     if len(cands) == 1:
         return cands[0], "unique match"
     if not cands:
         return None, "no key matches the link"
+    new = same_parent(link, paths, cands, base_levels)
+    if new:
+        return new, "same parent as the section's other links"
     for delta in shifts:
         if link.ref + delta in cands:
             return link.ref + delta, f"same shift ({delta:+d}) as the nearest unambiguous fixes"
@@ -267,9 +289,26 @@ def main() -> int:
     fixes: dict[int, list[tuple[int, int, int]]] = {}
     unverified = []
     valid_by_sec: dict[tuple, list[str]] = {}
+    bases_by_sec: dict[tuple, list[tuple[int, str]]] = {}
     for l in links:
         if l.kind != "unverified" and l.ok(paths.get(l.ref)):
             valid_by_sec.setdefault(l.section_path, []).append(paths[l.ref])
+            if l.kind == "key":
+                base = text_regex(l.text).sub("", paths[l.ref])
+                bases_by_sec.setdefault(l.section_path, []).append((l.line_no, base))
+
+    def base_levels(l):
+        """Bases of other valid links: own section and ancestors first, then wider
+        sibling scopes, never above a ### heading."""
+        sp, lv = l.section_path, l.section_levels
+        def collect(match):
+            return [b for s, bs in bases_by_sec.items() if match(s) for n, b in bs if n != l.line_no]
+        levels = [collect(lambda s: sp[:len(s)] == s)]
+        for k in range(len(sp) - 1, 0, -1):
+            if lv[k - 1] < 3:
+                break
+            levels.append(collect(lambda s, k=k: s[:k] == sp[:k]))
+        return levels
     # Line shifts (old ref -> delta) observed on broken links with a single candidate.
     anchors = sorted({l.ref: n - l.ref for l in links
                       if l.kind != "unverified" and not l.ok(paths.get(l.ref))
@@ -306,13 +345,32 @@ def main() -> int:
             continue
         path = paths.get(l.ref)
         if l.ok(path):
+            # A relative link into a top-level block the section doesn't otherwise use is
+            # usually an earlier wrong fix; relocate it if the section pins one parent.
+            if not (args.fix and l.kind == "key"):
+                continue
+            base = text_regex(l.text).sub("", path)
+            ctx = [p for s, ps in valid_by_sec.items() if l.section_path[:len(s)] == s for p in ps]
+            top = path.split(".")[0]
+            if not base or sum(1 for c in ctx if c.split(".")[0] == top) >= 2:
+                continue
+            cands = sorted(no for no, p in paths.items() if l.ok(p))
+            new = same_parent(l, paths, cands, base_levels(l))
+            if not new or new == l.ref:
+                continue
+            print(f"DEPLOYMENT.md:{l.line_no}  [{l.text}] -> L{l.ref}")
+            print(f"  found `{path}`, outside the scope of the section's other links")
+            print(f"  fix: L{new}  {paths[new]}  (same parent as the section's other links)\n")
+            fixes.setdefault(l.line_no - 1, []).append((l.m.start(3), l.m.end(3), new))
+            fixed += 1
             continue
         errors += 1
         found = path or (values_lines[l.ref - 1].strip()[:70] if 0 < l.ref <= len(values_lines) else "<out of range>")
         print(f"DEPLOYMENT.md:{l.line_no}  [{l.text}] -> L{l.ref}")
         print(f"  expected {l.rule[1]}, found: {found}")
         context = [p for s, ps in valid_by_sec.items() if l.section_path[:len(s)] == s for p in ps]
-        new, note = find_fix(l, paths, base_paths if args.fix else None, context, nearby_shifts(l.ref))
+        new, note = find_fix(l, paths, base_paths if args.fix else None, context,
+                             nearby_shifts(l.ref), base_levels(l))
         if new:
             print(f"  {'fix' if args.fix else 'suggestion'}: L{new}  {paths[new]}  ({note})")
             if args.fix:
