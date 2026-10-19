@@ -346,7 +346,7 @@ This sets `lightstreamer` as the base name used across all resources, regardless
 
 ### Common labels
 
-The [`commonLabels`](charts/lightstreamer/values.yaml#L29) setting accepts a map of labels that are applied to every resource created by the chart. This is useful for integrating with monitoring tools, cost attribution systems, or organisational tagging policies.
+The [`commonLabels`](charts/lightstreamer/values.yaml#L29) setting accepts a map of labels that are applied to every resource created by the chart. This is useful for integrating with monitoring tools, cost attribution systems, or organizational tagging policies.
 
 ```yaml
 commonLabels:
@@ -421,7 +421,7 @@ For production cluster sizing, including why CPU limits are best omitted, see [R
 - `serverRef`: routes the probe through the built-in Lightstreamer endpoint on the referenced server socket: `/lightstreamer/healthcheck` for `startup` and `liveness` (see [Health check](#health-check)), `/lightstreamer/readiness_check` for `readiness` (see [Readiness check](#readiness-check)). The corresponding endpoint must be available on that server or the chart will fail at render time.
 - `default`: a raw Kubernetes probe spec (e.g. `httpGet`, `tcpSocket`) for custom setups.
 
-The `readiness` probe accepts one additional field on top of `serverRef`: [`checkScriptRef`](charts/lightstreamer/values.yaml#L205), a reference to a ConfigMap containing a shell script. When set, the chart renders the probe as an `exec` probe that runs, inside the container, `curl <endpoint> | <script>`: the JSON body returned by `/lightstreamer/readiness_check` is piped into the script on standard input, and the Pod is marked ready when the script exits `0`. Use this when the endpoint's HTTP status is not enough and readiness has to be decided from the Adapter Set state carried in the JSON body. Without `checkScriptRef`, a `serverRef`-based readiness probe issues a plain HTTP `GET` and passes as long as the server returns HTTP `200`.
+The `readiness` probe accepts one additional field on top of `serverRef`: [`checkScriptRef`](charts/lightstreamer/values.yaml#L205), a reference to a ConfigMap containing a shell script. If set, the chart renders the probe as an `exec` probe that runs, inside the container, `curl <endpoint> | <script>`: the JSON body returned by `/lightstreamer/readiness_check` is piped into the script on standard input, and the Pod is marked ready when the script exits `0`. Use this when the endpoint's HTTP status is not enough and readiness has to be decided from the Adapter Set state carried in the JSON body. Without `checkScriptRef`, a `serverRef`-based readiness probe issues a plain HTTP `GET` and passes as long as the server returns HTTP `200`.
 
 Probe tuning fields (`initialDelaySeconds`, `periodSeconds`, `failureThreshold`, etc.) are set directly on the probe, alongside the mode.
 
@@ -760,7 +760,7 @@ See the [`license`](charts/lightstreamer/values.yaml#L441) section of `values.ya
 
 The [`servers`](charts/lightstreamer/values.yaml#L751) section defines the HTTP/S listening sockets exposed by the Broker. The chart ships with one pre-configured entry, `defaultServer`, listening on port `8080` (`enableHttps: false`, name `"Lightstreamer HTTP Server"`), which the default [`service.ports[0].targetPort`](charts/lightstreamer/values.yaml#L348) already references. So a minimal deployment exposes one working socket without further configuration.
 
-There are two ways to customize the socket layout:
+There are three ways to customize the socket layout:
 
 #### Reconfigure the default server
 
@@ -976,7 +976,7 @@ globalSocket:
 
 ### Security
 
-The [`security`](charts/lightstreamer/values.yaml#L1280) section controls the cross-origin policies for browser-based clients and the server identification behaviour.
+The [`security`](charts/lightstreamer/values.yaml#L1280) section controls the cross-origin policies for browser-based clients and the server identification behavior.
 
 By default, the Broker refuses access from any web page, even one on the local host:
 
@@ -1094,7 +1094,7 @@ logging:
     # ... existing appenders ...
     anotherConsoleAppender:
       type: Console
-      pattern: "[My Custom Appender]|%-27.27t|%m%"
+      pattern: "[My Custom Appender]|%-27.27t|%m%n"
 ```
 
 To use the new appender, reference it in a logger:
@@ -1362,7 +1362,7 @@ management:
       - defaultServer
 ```
 
-When using the Helm chart's built-in probe configuration with `serverRef` (see [Probes](#probes)), the referenced server must have the health check available, otherwise the chart will fail at render time.
+If using the Helm chart's built-in probe configuration with `serverRef` (see [Probes](#probes)), the referenced server must have the health check available, otherwise the chart will fail at render time.
 
 See the [`management.healthCheck`](charts/lightstreamer/values.yaml#L2489) section of `values.yaml` for full details.
 
@@ -1395,14 +1395,14 @@ See the [`management.readinessCheck`](charts/lightstreamer/values.yaml#L2535) se
 
 ### Push session
 
-The [`pushSession`](charts/lightstreamer/values.yaml#L2551) section tunes HTTP streaming and session behaviour.
+The [`pushSession`](charts/lightstreamer/values.yaml#L2551) section tunes HTTP streaming and session behavior.
 
 Key settings to consider for production:
 
 - `maxBufferSize` (default: `1000`): caps the number of update events kept per `ItemEventBuffer`. Applies to `RAW` and `COMMAND` mode and to any unfiltered subscription. Lower this to contain memory usage when many items are subscribed; raise it if bursts of updates must be preserved without loss.
 - `sessionRecoveryMillis` (default: `13000`): how long the server keeps sent-event history after a network-level interruption so the client can recover transparently. Tune in concert with client-side stalled-connection timeouts.
 - `subscriptionTimeoutConfig.timeoutMillis` (default: `5000`): how long subscriptions are kept alive after a session closes abruptly, avoiding unnecessary unsubscribe/resubscribe cycles when a client is simply refreshing the page. The companion `subscriptionTimeoutConfig.scope` (default: `INTERRUPTION`) controls whether the delay applies only to session-interruption unsubscribes or to every unsubscribe.
-- `defaultKeepaliveMillis.value` (default: `5000`): longest write-inactivity time allowed on a streaming socket before a keepalive is sent. Clients can override this, but it sets the server-side baseline. In clustered deployments, the related `minKeepaliveMillis` and `probeTimeoutMillis` settings must be tuned in concert.
+- `defaultKeepaliveMillis.value` (default: `5000`): longest write-inactivity time allowed on a streaming socket before a keepalive is sent. Clients can override this within the [`minKeepaliveMillis`](charts/lightstreamer/values.yaml#L2924) and [`maxKeepaliveMillis`](charts/lightstreamer/values.yaml#L2928) bounds.
 
 ```yaml
 pushSession:
@@ -1519,9 +1519,9 @@ Actual sizing depends on the workload; see [Resource sizing](#resource-sizing) f
 
 Each broker instance should run on a dedicated node for the following reasons:
 
-- **Resource isolation**: the Lightstreamer Broker is designed to fully utilise available CPU and memory. Sharing a node with another replica, or with other workloads, introduces contention on CPU scheduling, garbage collection pauses, and network I/O, degrading throughput and latency for both instances.
+- **Resource isolation**: the Lightstreamer Broker is designed to fully utilize available CPU and memory. Sharing a node with another replica, or with other workloads, introduces contention on CPU scheduling, garbage collection pauses, and network I/O, degrading throughput and latency for both instances.
 - **Fault tolerance**: if a node fails, only one replica is lost. The remaining replicas continue serving their sessions without disruption.
-- **Predictable performance**: dedicated nodes eliminate noisy-neighbour effects, making capacity planning and load testing results reproducible.
+- **Predictable performance**: dedicated nodes eliminate noisy-neighbor effects, making capacity planning and load testing results reproducible.
 
 Use a hard Pod anti-affinity rule to enforce one replica per node:
 
@@ -1783,13 +1783,13 @@ You can configure In-Process Metadata Adapters and Data Adapters by populating t
 
 The following settings are available in one or both sections. Where a setting exists in both, links point to the Metadata Adapter entry first, followed by the Data Adapter equivalent:
 
-- `adapterClass` ([Metadata Adapter](charts/lightstreamer/values.yaml#L4008), [Data Adapter](charts/lightstreamer/values.yaml#L4802)): The fully qualified name of the Java class implementing the Adapter.
+- `adapterClass` ([Metadata Adapter](charts/lightstreamer/values.yaml#L4008), [Data Adapter](charts/lightstreamer/values.yaml#L4802)): the fully qualified name of the Java class implementing the Adapter.
 
-- `installDir` ([Metadata Adapter](charts/lightstreamer/values.yaml#L4017), [Data Adapter](charts/lightstreamer/values.yaml#L4811)): The directory where the Adapter's own `lib` and `classes` folders are located in the provisioning source. Optional, but mandatory when `classLoader` is set to `dedicated`. The full path is available at `/deployed_adapters/<adapter-set-folder>/<installDir>` in the container.
+- `installDir` ([Metadata Adapter](charts/lightstreamer/values.yaml#L4017), [Data Adapter](charts/lightstreamer/values.yaml#L4811)): the directory where the Adapter's own `lib` and `classes` folders are located in the provisioning source. Optional, but mandatory when `classLoader` is set to `dedicated`. The full path is available at `/deployed_adapters/<adapter-set-folder>/<installDir>` in the container.
 
-- `classLoader` ([Metadata Adapter](charts/lightstreamer/values.yaml#L4054), [Data Adapter](charts/lightstreamer/values.yaml#L4822)): The ClassLoader strategy for loading the Adapter's classes. See [ClassLoader types](#classloader-types) for details.
+- `classLoader` ([Metadata Adapter](charts/lightstreamer/values.yaml#L4054), [Data Adapter](charts/lightstreamer/values.yaml#L4822)): the ClassLoader strategy for loading the Adapter's classes. See [ClassLoader types](#classloader-types) for details.
 
-- `configMapRef` ([Metadata Adapter](charts/lightstreamer/values.yaml#L4024), [Data Adapter](charts/lightstreamer/values.yaml#L4818)): An optional reference to a Kubernetes ConfigMap whose files are copied into the adapter's deployment directory at startup. This is useful for injecting adapter-specific configuration files without rebuilding the container image.
+- `configMapRef` ([Metadata Adapter](charts/lightstreamer/values.yaml#L4024), [Data Adapter](charts/lightstreamer/values.yaml#L4818)): an optional reference to a Kubernetes ConfigMap whose files are copied into the adapter's deployment directory at startup. This is useful for injecting adapter-specific configuration files without rebuilding the container image.
 
   ```yaml
   adapters:
@@ -1849,7 +1849,7 @@ This ClassLoader loads classes from the `lib` and `classes` subfolders found in 
            inProcessDataAdapter:
              adapterClass: com.mycompany.adapters.data.MyDataAdapter
              classLoader: common
-            ...
+             ...
    ```
 
    The resulting directory layout:
@@ -2064,11 +2064,11 @@ The following settings are available in one or both sections. Where a setting ex
 
 - **Proxy Metadata Adapter**: [`authenticationPool`](charts/lightstreamer/values.yaml#L4369), [`messagesPool`](charts/lightstreamer/values.yaml#L4414), and [`mpnPool`](charts/lightstreamer/values.yaml#L4447), with the same tuning options as for In-Process Metadata Adapters.
 - **Proxy Data Adapter**: [`dataAdapterPool`](charts/lightstreamer/values.yaml#L4933), a dedicated thread pool for subscription/unsubscription management (`maxSize`, `maxFree`).
-- `connectionRetryMillis` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4562), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L5029)), `keepaliveTimeoutMillis` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4762), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L5198)), `keepaliveHintMillis` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4777), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L5213)), `timeoutMillis` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4711), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L5175)): Connection reliability settings.
+- `connectionRetryMillis` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4562), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L5029)), `keepaliveTimeoutMillis` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4762), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L5198)), `keepaliveHintMillis` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4777), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L5213)), `timeoutMillis` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4711), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L5175)): connection reliability settings.
 
 - `remoteAddressWhitelist` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4749), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L5185)): comma-separated list of hosts allowed to connect as Remote Adapters. If not set, any host is accepted.
 
-- `remoteParamsConfig` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4672), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L5137)): custom initialization parameters to forward to the Remote Adapter on connection. Uses a `prefix` to select which parameters to send, plus a `params` map of key/value pairs.
+- `remoteParamsConfig` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4672), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L5137)): custom initialization parameters to forward to the Remote Adapter on connection. Uses a `prefix` to select which parameters to send, plus an `initParams` map of key/value pairs.
 
 See the [`metadataProvider.proxyMetadataAdapter`](charts/lightstreamer/values.yaml#L4300) and [`dataProviders.<dataProviderName>.proxyDataAdapter`](charts/lightstreamer/values.yaml#L4898) sections of `values.yaml` for full details.
 
