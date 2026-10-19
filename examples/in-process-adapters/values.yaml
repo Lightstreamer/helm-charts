@@ -63,6 +63,19 @@ management:
   readinessCheck:
     enableAvailabilityOnAllServers: true
     
+# Serve the index.html test page baked into the custom image
+webServer:
+  enabled: true
+
+# Allow the test page reached through kubectl port-forward
+security:
+  crossDomainPolicy:
+    allowAccessFrom:
+      fromLocalhost:
+        enabled: true
+        scheme: http
+        host: 127.0.0.1
+        port: 8080
 
 adapters:
 

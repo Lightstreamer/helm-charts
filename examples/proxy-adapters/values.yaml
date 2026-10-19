@@ -9,6 +9,28 @@ logging:
 deployment:
   terminationGracePeriodSeconds: 2
 
+  # ConfigMap created from index.html before installing the chart
+  extraVolumes:
+    - name: web-volume
+      configMap:
+        name: example-proxy-adapter-pages
+
+# Serve the index.html web client from the mounted ConfigMap
+webServer:
+  enabled: true
+  pagesVolume:
+    name: web-volume
+
+# Allow the web client reached through port forwarding
+security:
+  crossDomainPolicy:
+    allowAccessFrom:
+      fromLocalhost:
+        enabled: true
+        scheme: http
+        host: 127.0.0.1
+        port: 8080
+
 adapters:
 
   # Define the adapter set

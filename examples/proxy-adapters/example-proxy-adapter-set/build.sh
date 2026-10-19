@@ -91,7 +91,7 @@ esac
 echo
 echo "==> Image ready: ${IMAGE_REF}"
 echo
-echo "    Deploy the remote adapter with:"
+echo "    Deploy the Remote Adapter with:"
 echo
 echo "    IMAGE_REF=${IMAGE_REF} envsubst '\${IMAGE_REF}' < ${MANIFEST_TMPL} | kubectl apply -f -"
 echo

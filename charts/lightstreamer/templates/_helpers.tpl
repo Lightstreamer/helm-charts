@@ -370,7 +370,7 @@ Validate a server configuration reference, ensuring that the server exists and i
 {{- $serverKey := required (printf "%s must be set" $serverKeyName) (index . 2) }}
 {{- $server := required (printf "servers.%s not defined" $serverKey) (get $.Values.servers $serverKey ) }}
 {{- if not $server.enabled }}
-  {{- printf "%s must set to an enabled server" $serverKeyName | fail }}
+  {{- printf "%s must be set to an enabled server" $serverKeyName | fail -}}
 {{- end }}
 {{- end }}
 
@@ -428,7 +428,12 @@ Render the truststore settings for the Lightstreamer configuration file.
 {{- define "lightstreamer.configuration.truststore" -}}
 {{- $top := index . 0 -}}
 {{- $key := index . 1 -}}
-{{- $keyStore := get $top $key -}}
+{{- $keyStore := required (printf "keystores.%s not defined" $key) (get $top $key) -}}
+{{- if not (quote $keyStore.type | empty) }}
+  {{- if not (has $keyStore.type (list "JKS" "PKCS12" "PKCS11" ))}}
+    {{ fail (printf "keystores.%s.type must be one of: \"JKS\", \"PKCS12\", \"PKCS11\"" $key) }}
+  {{- end }}
+{{- end }}
 <truststore type={{ $keyStore.type | quote }}>
 
     <!-- Specifies a path relative to the conf directory.

@@ -172,16 +172,15 @@ Render the Lightstreamer configuration file.
              HTTP headers; only custom or non-critical fields should be used.
              The header names involved are always converted to lower case. -->
         <response_http_headers>
-  {{- $responseHttpHeaders := hasKey . "responseHttpHeaders" | ternary .responseHttpHeaders (dict "echo" (list) "add" (list (dict "name" "X-Accel-Buffering" "value" "no"))) }}
-  {{- with $responseHttpHeaders }}
+  {{- $addHeaders := kindIs "invalid" (.responseHttpHeaders).add | ternary (list (dict "name" "X-Accel-Buffering" "value" "no")) (.responseHttpHeaders).add }}
 
             <!-- Optional and cumulative. Requests to look for any header
                  lines for the specified field name on the HTTP request header
                  and to copy them to the HTTP response header.
                  The "name" attribute is mandatory; a final ":" is optional.
                  The value should be left empty. -->
-    {{- range $index, $echoName := .echo }}
-            <echo name="{{ required (printf "servers.%s.responseHttpHeaders.echo[%d] must be set" $serverKey $index) $echoName }}" />
+    {{- range $index, $echo := (.responseHttpHeaders).echo }}
+            <echo name={{ required (printf "servers.%s.responseHttpHeaders.echo[%d] must be set" $serverKey $index) $echo | quote }} />
     {{- else }}
             <!--
             <echo name="cookie" />
@@ -192,7 +191,7 @@ Render the Lightstreamer configuration file.
                  The "name" attribute is mandatory; a final ":" is optional.
                  The suggested setting for "X-Accel-Buffering" may help to enable
                  streaming support when proxies of several types are involved. -->
-    {{- range $index, $add:= .add }}
+    {{- range $index, $add:= $addHeaders }}
       {{- $name := required (printf "servers.%s.responseHttpHeaders.add[%d].name must be set" $serverKey $index) ($add).name }}
       {{- $value := required (printf "servers.%s.responseHttpHeaders.add[%d].value must be set" $serverKey $index) $add.value }}
             <add name="{{ $name  }}">{{ $value }}</add>
@@ -201,7 +200,6 @@ Render the Lightstreamer configuration file.
             <add name="my-header">MyValue</add>
             -->
     {{- end }}
-  {{ end }} {{/* of .responseHttpHeader */}}
         </response_http_headers>
 
         <!-- Optional. Can be used on a multihomed host to specify the IP address
@@ -338,7 +336,7 @@ Render the Lightstreamer configuration file.
         <!-- Mandatory for this block. Reference to the keystore used by the HTTPS
              service. The keystore type should be specified in the optional "type"
              attribute; the currently supported types are:
-             - JKS, which is the Sun/Oracle{{ "'" }}s custom keystore type, whose
+             - JKS, which is the Sun/Oracle{{"'"}}s custom keystore type, whose
                support is made available by every Java installation;
              - PKCS12, which is supported by all recent Java installations;
              - PKCS11, which as a bridge to an external PKCS11 implementation;
@@ -406,9 +404,9 @@ Render the Lightstreamer configuration file.
              the "supported" cipher suites. The default set of the "enabled" cipher
              suites is logged at startup by the LightstreamerLogger.io.ssl
              logger at DEBUG level. -->
-      {{- range $index, $removeCipherSuite := .removeCipherSuites }}
-        <remove_cipher_suites>{{ required (printf "servers.%s.sslConfig.removeCipherSuites[%d] must be set" $serverKey (int $index)) $removeCipherSuite }}</remove_cipher_suites>
-      {{- else }}
+      {{- range $index, $cipherSuite := .removeCipherSuites }}
+        <remove_cipher_suites>{{ required (printf "servers.%s.sslConfig.removeCipherSuites[%d] must be set" $serverKey (int $index)) $cipherSuite }}</remove_cipher_suites>
+      {{- else }}             
         <!--
         <remove_cipher_suites>TLS_RSA_</remove_cipher_suites>
         -->
@@ -476,8 +474,8 @@ Render the Lightstreamer configuration file.
              If not used, the <remove_protocols> element is considered; hence, if
              <remove_protocols> is also not used, all protocols enabled by the
              Security Provider will be available. -->
-      {{- range .allowProtocols }}
-        <allow_protocol>{{ required "sslConfig.allowProtocols[] must be set" . }}</allow_protocol>
+      {{- range $index, $value := .allowProtocols }}
+        <allow_protocol>{{ required (printf "servers.%s.sslConfig.allowProtocols[%d] must be set" $serverKey $index) $value }}</allow_protocol>
       {{- else }}
         <!--
         <allow_protocol>TLSv1.2</allow_protocol>
@@ -631,7 +629,7 @@ Render the Lightstreamer configuration file.
              Moreover, the handling of keystore replacement doesn{{"'"}}t apply here. -->
       {{- if or .enableClientAuth .enableMandatoryClientAuth }}
           {{- with required "sslConfig.truststoreRef must be set since either sslConfig.enableClientAuth or sslConfig.enableMandatoryClientAuth are enabled " .truststoreRef }}
-               {{- include "lightstreamer.configuration.truststore" (list $.Values.keystores .)  | nindent 8 }}
+               {{- include "lightstreamer.configuration.truststore" (list $.Values.keystores .) | indent 8 }}
           {{- end }}
       {{- else }}
         <!--
@@ -645,7 +643,7 @@ Render the Lightstreamer configuration file.
   {{- end }}
 
     </{{ $elementType }}_server>
-  {{ end }}
+  {{- end }}
 {{- end }}
 
     <!-- GLOBAL SOCKET SETTINGS -->
@@ -823,13 +821,13 @@ Render the Lightstreamer configuration file.
               Adapter implementation, but can be enforced by setting
               <forward_cookies> to N.
          Default: Y. -->
-{{- if not (quote .enableProtectedJs | empty ) }}   
+  {{- if not (quote .enableProtectedJs | empty ) }}   
     <use_protected_js>{{ .enableProtectedJs | ternary "Y" "N" }}</use_protected_js>
-    {{- else }}
+  {{- else }}
     <!--
     <use_protected_js>N</use_protected_js>
     -->
-    {{- end }}
+  {{- end }}
 
     <!-- Optional. Use this setting to enable the forwarding of the cookies to
          the Metadata Adapter upon calls to the authentication method.
@@ -904,7 +902,7 @@ Render the Lightstreamer configuration file.
              Note that by setting three *{{"'"}}s any origin will be accepted, without
              performing any check. In particular, any scheme will be accepted,
              not just http and https. -->
-     {{- $renderAllowAccessExamples := true}}
+      {{- $renderAllowAccessExamples := true}}
       {{- range $key, $value := .allowAccessFrom }}
         {{- if ($value).enabled }}
           {{- $renderAllowAccessExamples = false }}
@@ -1229,7 +1227,6 @@ Render the Lightstreamer configuration file.
                  "javax.net.ssl.keyStore" and "javax.net.ssl.keyStorePassword"
                  JVM properties will apply. -->
         {{- if or $rmiPortEnableSsl $rmiDataPortEnableSsl }}
-
           {{- with required (printf "management.jmx.rmiConnector.sslConfig must be set") .sslConfig }}
             {{- with required "management.jmx.rmiConnector.sslConfig.keystoreRef must be set" .keystoreRef }}
               {{- include "lightstreamer.configuration.keystore" (list $.Values.keystores .) | indent 12 }}
@@ -1276,15 +1273,16 @@ Render the Lightstreamer configuration file.
                  (in case TLS/SSL is enabled for part or all the communication).
                  See notes for <enforce_server_cipher_suite_preference> under <https_server>.
                  Default: N. -->
-            {{- $enabled := not (eq (.enforceServerCipherSuitePreference).enabled false) }}
-            {{- if $enabled}}
-              {{- $order := (.enforceServerCipherSuitePreference).order | default "JVM" }}
-              {{- if not (mustHas $order (list "JVM" "config")) }}
-                {{- fail (printf "management.jmx.rmiConnector.sslConfig.enforceServerCipherSuitePreference must be one of: \"JVM\", \"config\"") }}
-              {{- end }}
-              {{- if and (eq $order "config") (not .allowCipherSuites) }}
-                  {{- fail "management.jmx.rmiConnector.sslConfig.enforceServerCipherSuitePreference.order cannot be set to 'config' if management.jmx.rmiConnector.sslConfig.allowCipherSuites is not specified" }}            
-               {{- end }}
+          {{- $order := (.enforceServerCipherSuitePreference).order | default "JVM" }}
+          {{- $enabled := not (eq (.enforceServerCipherSuitePreference).enabled false) }}
+          {{- if not (mustHas $order (list "JVM" "config")) }}
+            {{- fail (printf "management.jmx.rmiConnector.sslConfig.enforceServerCipherSuitePreference must be one of: \"JVM\", \"config\"") }}
+          {{- end }}
+          {{- if and $enabled (eq $order "config") }}
+            {{- if not .allowCipherSuites }}
+              {{- fail "management.jmx.rmiConnector.sslConfig.enforceServerCipherSuitePreference.order cannot be set to 'config' if management.jmx.rmiConnector.sslConfig.allowCipherSuites is not specified" }}            
+            {{- end }}
+          {{- end }}
             <enforce_server_cipher_suite_preference order={{ $order | quote }}>{{ $enabled | ternary "Y" "N" }}</enforce_server_cipher_suite_preference>
             {{- else }}
             <!--
@@ -1633,9 +1631,13 @@ Render the Lightstreamer configuration file.
                   If no "user" elements are defined, the Monitoring Dashboard
                   will not be accessible in any way.
              Default: N. -->
-        {{- $enablePublicAccess := .enablePublicAccess | default false }}
-        {{- $_ := set . "enablePublicAccess" $enablePublicAccess }}
-        <public>{{ $enablePublicAccess | ternary "Y" "N" }}</public>
+      {{- if not (quote .enablePublicAccess | empty )  }}
+        <public>{{ .enablePublicAccess | ternary "Y" "N" }}</public>
+      {{- else }}
+        <!--
+        <public>Y</public>
+        -->
+      {{- end }}
 
         <!-- Optional and cumulative (but ineffective if "public" is set to "Y").
              Credentials of the users enabled to access the Monitoring Dashboard.
@@ -1643,13 +1645,17 @@ Render the Lightstreamer configuration file.
              The optional "jmxtree_visible" attribute (whose default is "Y")
              allows for restriction of the access to the JMX Tree on a user basis;
              it is only effective if <jmxtree_enabled> is set to "Y". -->
-        {{- if and .credentials (not $enablePublicAccess) }}
-          {{- range $index, $credential := .credentials }}
-            {{- $secretRef := required (printf "management.dashboard.credentials[%d].secretRef must be set" $index) ($credential).secretRef }}
+      {{- $renderDashboardCredentialExamples := true }}
+      {{- if and .credentials (not .enablePublicAccess) }}
+        {{- range $index, $credential := .credentials }}
+          {{- if $credential.secretRef }}
+            {{- $renderDashboardCredentialExamples = false }}
             {{- $enableJmxTreeVisibility := not (eq $credential.enableJmxTreeVisibility false) }}
         <user id="$env.LS_DASHBOARD_CREDENTIAL_{{ $credential.secretRef | upper | replace "-" "_" }}_USER" password="$env.LS_DASHBOARD_CREDENTIAL_{{ .secretRef | upper | replace "-" "_"}}_PASSWORD" jmxtree_visible={{ $enableJmxTreeVisibility | ternary "Y" "N" | quote }} />
           {{- end }}
-        {{- else}}
+        {{- end }}
+      {{- end}}
+      {{- if $renderDashboardCredentialExamples }}
         <!--
         <user id="put_your_dashboard_user_here" password="put_your_dashboard_password_here" />
         -->
@@ -1672,8 +1678,13 @@ Render the Lightstreamer configuration file.
              Adapter Set to also become unavailable from that socket. This does not
              affect in any way the special "MONITOR" Data Adapter.
              Default: N. -->
-        {{- $enableAvailabilityOnAllServers := not (eq .enableAvailabilityOnAllServers false) }}
-        <available_on_all_servers>{{ $enableAvailabilityOnAllServers | ternary "Y" "N" }}</available_on_all_servers>
+      {{- if not (quote .enableAvailabilityOnAllServers | empty) }}
+        <available_on_all_servers>{{ .enableAvailabilityOnAllServers | ternary "Y" "N" }}</available_on_all_servers>
+      {{- else }}
+        <!--
+        <available_on_all_servers>Y</available_on_all_servers>
+        -->
+      {{- end }}
 
         <!-- Optional and cumulative (but ineffective if "available_on_all_servers"
              is set to "Y").
@@ -1683,27 +1694,27 @@ Render the Lightstreamer configuration file.
              The optional "jmxtree_visible" attribute (whose default is "Y")
              allows for restriction of the access to the JMX Tree on a TCP port
              basis; it is only effective if <jmxtree_enabled> is set to "Y". -->
-        {{- $renderAvailableOnServerExamples := true }}
-        {{- if and (not $enableAvailabilityOnAllServers) .availableOnServers }}
-          {{- range $index, $value := .availableOnServers }}
-            {{- $serverRef := ($value).serverRef }}
-            {{- if $serverRef }}
-              {{- $renderAvailableOnServerExamples = false }}
-              {{- include "lightstreamer.configuration.servers.validateServerRef" (list $ (printf "management.dashboard.availableOnServers[%d].serverRef" (int $index)) $value.serverRef) }}
-              {{- $serverRefName := (get $.Values.servers $value.serverRef).name }}
-              {{- $enableJmxTreeVisibility := not (eq $value.enableJmxTreeVisibility false) }}
-        <available_on_server name="{{ $serverRefName }}" jmxtree_visible="{{ $enableJmxTreeVisibility | ternary "Y" "N" }}" />
-            {{- end }}
+      {{- $renderAvailableOnServerExamples := true }}
+      {{- if not .enableAvailabilityOnAllServers }}
+        {{- range $index, $value := .availableOnServers }}
+          {{- $serverRef := ($value).serverRef }}
+          {{- if $serverRef }}
+            {{- $renderAvailableOnServerExamples = false }}
+            {{- include "lightstreamer.configuration.servers.validateServerRef" (list $ (printf "management.dashboard.availableOnServers[%d].serverRef" (int $index)) $serverRef) }}
+            {{- $server := (get $.Values.servers $serverRef).name }}
+            {{- $enableJmxTreeVisibility := not (eq $value.enableJmxTreeVisibility false) }}
+        <available_on_server name={{ $server | quote }} jmxtree_visible={{ $enableJmxTreeVisibility | ternary "Y" "N" | quote }} />            
           {{- end }}
         {{- end }}
-        {{- if $renderAvailableOnServerExamples }}
+      {{- end }} 
+      {{- if $renderAvailableOnServerExamples }}
         <!--
         <available_on_server name="Lightstreamer HTTPS Server" />
         -->
         <!--
         <available_on_server name="Lightstreamer HTTP Server" jmxtree_visible="N" />
         -->
-        {{- end }}
+      {{- end }}
 
         <!-- Optional. URL path to map the Monitoring Dashboard pages to.
              An absolute path must be specified.
@@ -1762,22 +1773,28 @@ Render the Lightstreamer configuration file.
                   sockets specified in the "available_on_server" elements,
                   if any.
              Default: N. -->
-        <available_on_all_servers>{{ .enableAvailabilityOnAllServers | default false | ternary "Y" "N" }}</available_on_all_servers>
+      {{- if not (quote .enableAvailabilityOnAllServers | empty) }}
+        <available_on_all_servers>{{ .enableAvailabilityOnAllServers | ternary "Y" "N" }}</available_on_all_servers>      
+      {{- else }}
+        <!--
+        <available_on_all_servers>Y</available_on_all_servers>
+        -->
+      {{- end }}
 
         <!-- Optional and cumulative (but ineffective if "available_on_all_servers"
              is set to "Y").
              Specific server sockets for which healthcheck requests can be issued,
              that can be identified through the mandatory "name" attribute. -->
       {{- $renderHealthCheckAvailableOnServersExample := true }}
-      {{- if and (not .enableAvailabilityOnAllServers) .availableOnServers }}
+      {{- if not .enableAvailabilityOnAllServers }}
         {{- range $index, $value := .availableOnServers }}
           {{- if $value }}
             {{- $renderHealthCheckAvailableOnServersExample = false }}
             {{- include "lightstreamer.configuration.servers.validateServerRef" (list $ (printf "management.healthCheck.availableOnServers[%d]" (int $index)) $value) }}
-        <available_on_server name={{ (get $.Values.servers $value).name | quote }} />
+        <available_on_server name="{{ (get $.Values.servers $value).name }}" />            
           {{- end }}
         {{- end }}
-      {{- end }}
+      {{- end }} 
       {{- if $renderHealthCheckAvailableOnServersExample }}
         <!--
         <available_on_server name="Lightstreamer HTTP Server" />
@@ -2917,9 +2934,13 @@ Render the Lightstreamer configuration file.
              - Y: the Server accepts requests for file resources;
              - N: the Server ignores requests for file resources.
              Default: N. -->
-  {{- $webServerEnabled := not (eq .enabled false) }}
-  {{- $_:= set . "enabled" $webServerEnabled }}
-        <enabled>{{ $webServerEnabled | ternary "Y" "N"}}</enabled>
+        {{- if not (quote .enabled | empty) }}
+        <enabled>{{ .enabled | ternary "Y" "N"}}</enabled>
+        {{- else }}
+        <!--
+        <enabled>Y</enabled>
+        -->
+        {{- end }}
 
         <!-- Optional. Path of the file system directory to be used
              by the Internal Web Server as the root for URL path mapping.

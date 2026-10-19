@@ -1,7 +1,7 @@
 image:
   # -- Remote registry from which to pull the Lightstreamer Kafka Connector Docker image
   repository: ghcr.io/lightstreamer/lightstreamer-kafka-connector
-  tag: "2.1.0"
+  tag: "2.1.1"
 
 deployment:
   # Download the QuickStart web client from GitHub into a shared volume,
@@ -17,7 +17,7 @@ deployment:
           cd /tmp/repo
           git sparse-checkout set examples/compose-templates/web
           cp -r examples/compose-templates/web/. /web/QuickStart/
-          sed -i 's|"http://localhost:8080"|document.location.orgin|g' /web/QuickStart/index.html
+          # sed -i 's|"http://localhost:8080"|document.location.origin|g' /web/QuickStart/index.html
       volumeMounts:
         - name: web-volume
           mountPath: /web
@@ -27,8 +27,19 @@ deployment:
       emptyDir: {}
 
 webServer:
+  enabled: true
   pagesVolume:
     name: web-volume
+
+# Allow the QuickStart page reached through kubectl port-forward
+security:
+  crossDomainPolicy:
+    allowAccessFrom:
+      fromLocalhost:
+        enabled: true
+        scheme: http
+        host: 127.0.0.1
+        port: 8080
 
 connectors:
   kafkaConnector:

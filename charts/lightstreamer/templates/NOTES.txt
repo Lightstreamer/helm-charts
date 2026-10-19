@@ -26,6 +26,11 @@ Access the broker locally via port-forward:
 
 Then open http://localhost:{{ $firstPort.port }}
 {{- end }}
+{{- if (.Values.management.jmx.service).enabled }}
+
+WARNING: management.jmx.service is deprecated and will be removed in a future
+major release. See the "Network access" section of DEPLOYMENT.md.
+{{- end }}
 
 For full deployment documentation, see:
   https://github.com/Lightstreamer/helm-charts/blob/main/DEPLOYMENT.md
