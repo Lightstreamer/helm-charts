@@ -1031,7 +1031,7 @@ logging:
 
 #### Other loggers
 
-The default configuration includes loggers for third-party libraries used by the Broker. These loggers typically do not require modification. Refer to the comments in the [values.yaml](charts/lightstreamer/values.yaml#L1510) file for more details.
+The default configuration includes loggers for third-party libraries used by the Broker. These loggers typically do not require modification. Refer to the comments in the [values.yaml](charts/lightstreamer/values.yaml#L1750) file for more details.
 
 ```yaml
 logging:
@@ -1075,7 +1075,7 @@ logging:
     # ... existing appenders ...
     anotherConsoleAppender:
       type: Console
-      pattern: "[My Custom Appender]|%-27.27t|%m%"
+      pattern: "[My Custom Appender]|%-27.27t|%m%n"
 ```
 
 To use the new appender, reference it in a logger:
@@ -1801,7 +1801,7 @@ This ClassLoader loads classes from the `lib` and `classes` subfolders found in 
            inProcessDataAdapter:
              adapterClass: com.mycompany.adapters.data.MyDataAdapter
              classLoader: common
-            ...
+             ...
    ```
 
    The resulting directory layout:
@@ -2020,7 +2020,7 @@ The following settings are available in one or both sections. Where a setting ex
 
 - `remoteAddressWhitelist` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4362), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4775)): comma-separated list of hosts allowed to connect as Remote Adapters. If not set, any host is accepted.
 
-- `remoteParamsConfig` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4283), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4725)): custom initialization parameters to forward to the Remote Adapter on connection. Uses a `prefix` to select which parameters to send, plus a `params` map of key/value pairs.
+- `remoteParamsConfig` ([Proxy Metadata Adapter](charts/lightstreamer/values.yaml#L4283), [Proxy Data Adapter](charts/lightstreamer/values.yaml#L4725)): custom initialization parameters to forward to the Remote Adapter on connection. Uses a `prefix` to select which parameters to send, plus an `initParams` map of key/value pairs.
 
 See the [`metadataProvider.proxyMetadataAdapter`](charts/lightstreamer/values.yaml#L3932) and [`dataProviders.<dataProviderName>.proxyDataAdapter`](charts/lightstreamer/values.yaml#L4485) sections of `values.yaml` for full details.
 
