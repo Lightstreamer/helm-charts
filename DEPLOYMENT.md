@@ -1031,7 +1031,7 @@ logging:
 
 #### Other loggers
 
-The default configuration includes loggers for third-party libraries used by the Broker. These loggers typically do not require modification. Refer to the comments in the [values.yaml](charts/lightstreamer/values.yaml#L1750) file for more details.
+The default configuration includes loggers for third-party libraries used by the Broker. These loggers typically do not require modification. Refer to the comments in the [values.yaml](charts/lightstreamer/values.yaml#L1510) file for more details.
 
 ```yaml
 logging:
@@ -1354,7 +1354,8 @@ Key settings to consider for production:
 - `maxBufferSize` (default: `1000`): caps the number of update events kept per `ItemEventBuffer`. Applies to `RAW` and `COMMAND` mode and to any unfiltered subscription. Lower this to contain memory usage when many items are subscribed; raise it if bursts of updates must be preserved without loss.
 - `sessionRecoveryMillis` (default: `13000`): how long the server keeps sent-event history after a network-level interruption so the client can recover transparently. Tune in concert with client-side stalled-connection timeouts.
 - `subscriptionTimeoutMillis` (default: `5000`): how long subscriptions are kept alive after a session closes abruptly, avoiding unnecessary unsubscribe/resubscribe cycles when a client is simply refreshing the page.
-- `defaultKeepaliveMillis.value` (default: `5000`): longest write-inactivity time allowed on a streaming socket before a keepalive is sent. Clients can override this, but it sets the server-side baseline. In clustered deployments, the related `minKeepaliveMillis` and `probeTimeoutMillis` settings must be tuned in concert.
+- `defaultKeepaliveMillis.value` (default: `5000`): longest write-inactivity time allowed on a streaming socket before a keepalive is sent. Clients can override this within the [`minKeepaliveMillis`](charts/lightstreamer/values.yaml#L2684) and [`maxKeepaliveMillis`](charts/lightstreamer/values.yaml#L2689) bounds.
+
 
 ```yaml
 pushSession:
@@ -1544,7 +1545,7 @@ sequenceDiagram
 
 If the load balancer provides sticky sessions (cookie-based or IP-hash), all requests from the same client are automatically routed to the same replica and `controlLinkAddress` is not needed.
 
-If sticky sessions are not available, `controlLinkAddress` must resolve to a specific replica. The most common approaches to achieve per-pod addressability are:
+If sticky sessions are not available, `controlLinkAddress` must resolve to a specific replica. The most common approaches to achieve per-Pod addressability are:
 
 - **Ingress with sticky sessions**: configure the Ingress controller to enable session affinity so all requests from a given client stick to the same backend Pod. For example, with nginx:
 
