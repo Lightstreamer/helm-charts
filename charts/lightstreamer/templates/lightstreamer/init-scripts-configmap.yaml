@@ -101,7 +101,7 @@ data:
   */}}
   setup-adapters.sh: |
     #!/bin/bash
-    set -euo pipefail
+    set -exuo pipefail
 
     # Copy the adapter resources from source to destination
     function copy_resources {
@@ -233,7 +233,7 @@ data:
     # Setup the Adapters
     /lightstreamer/bin/init-scripts/setup-adapters.sh
 
-    {{- if .Values.deployment.preCommands }}
+    {{- if (.Values.deployment).preCommands }}
     # Launch the pre-commands
       {{- range .Values.deployment.preCommands }}
     {{ . }}

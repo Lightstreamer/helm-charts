@@ -19,6 +19,10 @@ limitations under the License.
 <!-- Do not remove this line. File tag: apple_notif_conf-APV-20200124. -->
 
 <apple_notifier_conf>
+
+   <!-- Note: A very simple variable-expansion feature is available,
+        similarly to lightstreamer_conf.xml. See the related comment there. -->
+
 {{- with .Values.mpn.appleNotifierConfig }}
   <env_prefix>env.</env_prefix>
 
@@ -30,7 +34,7 @@ limitations under the License.
         it too much, and subsequently sending notifications with a high
         frequency, may cause Apple's Push Notification Service ("APNs")
         to close the connection and ban (temporarily or permanently) any
-        successive notifications.
+        successive notification.
         Mobile push notifications fired by a trigger are not subject to
         this limit and may be sent at higher pace.
         Default: 1000 (1 sec) -->
@@ -67,6 +71,8 @@ limitations under the License.
    -->
   {{- end }}
 
+  {{- if .apps }}
+
    <!-- Optional and cumulative.
         Configuration of a specific app that should receive mobile push
         notifications. As per documentation, each app has a specific
@@ -77,7 +83,7 @@ limitations under the License.
         ID must begin with "web.", e.g.: "web.com.mydomain.myapp". -->
   {{- range $appName, $app := .apps }}
     {{- if ($app).enabled }}
-   <app id={{ (required (printf "mpn.appleNotifierConfig.apps.%s.id must be set" $appName) $app.id) | quote }}>
+   <app id="{{ (required (printf "mpn.appleNotifierConfig.apps.%s.id must be set" $appName) $app.id)}}">
 
       <!-- Mandatory. Specifies the intended service level for the
            current app ID, must be one of: test, development, production.
@@ -127,13 +133,8 @@ limitations under the License.
            the General Concepts document for more information on how to produce
            this file. -->
       {{- if hasPrefix "web." $app.id }}
-        {{- if $app.pushPackageFileRef }}
-          {{- $name := required (printf "mpn.appleNotifierConfig.apps.%s.pushPackageFileRef.name must be set" $appName) $app.pushPackageFileRef.name }}
-          {{- $key := required (printf "mpn.appleNotifierConfig.apps.%s.pushPackageFileRef.key must be set" $appName) $app.pushPackageFileRef.key }}
+        {{- $key := required (printf "mpn.appleNotifierConfig.apps.%s.pushPackageFileRef.key must be set" $appName) $app.pushPackageFileRef.key }}
       <push_package_file>{{ $appName }}/{{ $key }}</push_package_file>
-        {{- else }}
-          {{- fail (printf "mpn.appleNotifierConfig.apps.%s.pushPackageFileRef must be set for a web app" $appName) }}
-        {{- end }}
       {{- else }}
       <!--
       <push_package_file>pushPackage.zip</push_package_file>
@@ -147,7 +148,7 @@ limitations under the License.
            is at least one match.
            Remember that the MPN Module supports, as trigger, any Java boolean
            expression, including use of JDK classes and methods, with the addition
-           of field references syntax (see the iOS Client SDK for more information).
+           of field references syntax (see the Client API in use for more information).
            Hence, this check is a safety measure required to avoid that clients
            can request triggers potentially dangerous for the Server, as each
            trigger may contain arbitrary Java code.
@@ -164,7 +165,8 @@ limitations under the License.
            not the "${name}" format. -->
       {{- if $app.triggerExpressions }}
       <trigger_expressions>
-        {{- range $trigger := $app.triggerExpressions }}
+        {{- range $index, $trigger := $app.triggerExpressions }}
+          {{- $_ := required (printf "mpn.appleNotifierConfig.apps.%s.triggerExpressions[%d] must be set" $appName $index) $trigger }}
          <accept>{{ $trigger | replace "<" "&lt;" | replace ">" "&gt;" }}</accept>
         {{- end }}
       </trigger_expressions>
@@ -177,8 +179,9 @@ limitations under the License.
       {{- end }}
    </app>
 
-    {{- end }} {{/* if ($app).enabled */}}
-  {{- end }} {{/* range .apps */}}
+    {{- end }} {{/* of if ($app).enabled */}}
+  {{- end }} {{/* of range .apps */}}
+  {{- end }} {{/* of if .apps */}}
 {{- end }} {{/* with Values.mpn.appleNotifierConfig */}}
 </apple_notifier_conf>
 {{- end }}

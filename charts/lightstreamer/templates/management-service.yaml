@@ -59,7 +59,7 @@ spec:
       targetPort: jmx-port
       protocol: TCP
       name: jmx
-    {{- $dataPortValue := (.dataPort).value | default $rmiPortValue | int }}
+    {{- $dataPortValue := (quote (.dataPort).value | empty) | ternary $rmiPortValue (int .dataPort.value) }}
     {{- if ne $dataPortValue $rmiPortValue }}
     - port: {{ $dataPortValue }}
       targetPort: jmx-data-port

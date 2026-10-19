@@ -18,7 +18,7 @@ flowchart LR
   KC -- "consumes stocks" --> K
 ```
 
-Lightstreamer is configured with the **Kafka Connector** consuming from the `stocks` Kafka topic. Incoming stock events — published as JSON values with an `INTEGER` key (the stock index) — are routed to Lightstreamer items following the `stock-[index=N]` template and streamed in real time to the web client served at `/QuickStart`.
+Lightstreamer is configured with the **Kafka Connector** consuming from the `stocks` Kafka topic. Incoming stock events, published as JSON values with an `INTEGER` key (the stock index), are routed to Lightstreamer items following the `stock-[index=N]` template and streamed in real time to the web client served at `/QuickStart`.
 
 The simulated producer continuously publishes stock market events (price changes, bids, asks, etc.) to the `stocks` topic on behalf of 30 different instruments.
 
@@ -31,14 +31,14 @@ The simulated producer continuously publishes stock market events (price changes
   helm repo add lightstreamer https://lightstreamer.github.io/helm-charts
   helm repo update
   ```
-- `docker` on your PATH and a container registry accessible by the cluster nodes, for building and pushing the producer image (not required on OpenShift — the image can be built server-side)
-- A namespace named `lightstreamer` (called a "project" on OpenShift) — all resources in this example deploy into it. Create it with `kubectl create namespace lightstreamer` or, on OpenShift, `oc new-project lightstreamer`; ask your cluster admin if you don't have permission. To use a different name, update the `namespace:` fields and the DNS hostnames in [`kafka.yaml`](kafka.yaml) and [`producer.yaml`](producer.yaml) to match.
+- `docker` on your PATH and a container registry accessible by the cluster nodes, for building and pushing the producer image (not required on OpenShift, where the image can be built server-side)
+- A namespace named `lightstreamer` (called a "project" on OpenShift). All resources in this example deploy into it. Create it with `kubectl create namespace lightstreamer` or, on OpenShift, `oc new-project lightstreamer`; ask your cluster admin if you don't have permission. To use a different name, update the `namespace:` fields and the DNS hostnames in [`kafka.yaml`](kafka.yaml) and [`producer.yaml`](producer.yaml) to match.
 
 ## Deployment
 
 ### 1. Deploy Kafka
 
-Deploy a single-node Apache Kafka broker in KRaft mode using the official [`apache/kafka`](https://hub.docker.com/r/apache/kafka) Docker image — the same image used in the original docker-compose quickstart:
+Deploy a single-node Apache Kafka broker in KRaft mode using the official [`apache/kafka`](https://hub.docker.com/r/apache/kafka) Docker image, the same image used in the original docker-compose quickstart:
 
 - **Any Kubernetes distribution**:
   ```sh
@@ -56,9 +56,9 @@ This creates a combined controller/broker pod named `kafka-0`, reachable within 
 
 ### 2. Build and deploy the producer
 
-Build the producer image using the provided [`producer.Dockerfile`](producer.Dockerfile) (no local JDK required — the build runs inside Docker), then deploy it.
+Build the producer image using the provided [`producer.Dockerfile`](producer.Dockerfile) (no local JDK required, as the build runs inside Docker), then deploy it.
 
-- **Any Kubernetes distribution** — build and push the image to a registry accessible by your cluster nodes:
+- **Any Kubernetes distribution**: build and push the image to a registry accessible by your cluster nodes:
   ```sh
   docker build -f producer.Dockerfile -t <your-registry>/quickstart-producer:latest .
   docker push <your-registry>/quickstart-producer:latest
@@ -70,16 +70,16 @@ Build the producer image using the provided [`producer.Dockerfile`](producer.Doc
   > docker build -f producer.Dockerfile -t quickstart-producer:latest .
   > eval $(minikube docker-env --unset)
   > ```
-  > Use `quickstart-producer:latest` as the image reference in `producer.yaml` and add `imagePullPolicy: Never` to the container spec.
 
-  Then edit [`producer.yaml`](producer.yaml), replace `<your-registry>/quickstart-producer:latest` with your image reference, and apply:
+  Then edit [`producer.yaml`](producer.yaml), replace `<your-registry>/quickstart-producer:latest` with your image reference, and apply. If you used the Minikube shortcut, use `quickstart-producer:latest` and add `imagePullPolicy: Never` to the container spec.
+
   ```sh
   kubectl apply -f producer.yaml
   kubectl rollout status deployment/quickstart-producer -n lightstreamer
   kubectl logs -l app=quickstart-producer -n lightstreamer
   ```
 
-- **OpenShift** — build the image server-side by embedding the Dockerfile in a BuildConfig. Because [`producer.Dockerfile`](producer.Dockerfile) clones its own sources from GitHub, no binary upload or local Docker daemon is required:
+- **OpenShift**: build the image server-side by embedding the Dockerfile in a BuildConfig. Because [`producer.Dockerfile`](producer.Dockerfile) clones its own sources from GitHub, no binary upload or local Docker daemon is required:
   ```sh
   oc new-build --name=quickstart-producer --dockerfile="$(cat producer.Dockerfile)" -n lightstreamer
   oc logs -f bc/quickstart-producer -n lightstreamer
@@ -123,34 +123,26 @@ The provided [`values.yaml`](values.yaml) configures the Kafka Connector with th
 
 ## Accessing the web client
 
-The `ghcr.io/lightstreamer/lightstreamer-kafka-connector` image does **not** include the QuickStart web client. The provided [`values.yaml`](values.yaml) handles this automatically: an init container downloads the web client from GitHub into a shared volume, which `webServer.pagesVolume` mounts as the web server root so the page is served at `/QuickStart`.
+The `ghcr.io/lightstreamer/lightstreamer-kafka-connector` image does **not** include the QuickStart web client. The provided [`values.yaml`](values.yaml) handles this automatically: an init container downloads the web client from GitHub into a shared volume, which `webServer.pagesVolume` mounts as the web server root so the page is served at `/QuickStart`. To try it, forward the service port to your machine:
 
-- **Any Kubernetes distribution** — forward the service port and open the page in your browser:
-
+- **Any Kubernetes distribution**:
   ```sh
   kubectl port-forward svc/lightstreamer-service 8080:8080 -n lightstreamer
   ```
 
-  Then open <http://localhost:8080/QuickStart>.
-
-  > [!NOTE]
-  > `kubectl port-forward` does not support streaming protocols (WebSocket or HTTP chunked), so updates will arrive slowly via recovery polling. For real-time performance, expose the service through an Ingress or a load balancer that supports streaming connections.
-
-- **OpenShift** — expose the service as a Route and open the generated URL:
-
+- **OpenShift**:
   ```sh
-  oc expose svc/lightstreamer-service -n lightstreamer
+  oc port-forward svc/lightstreamer-service 8080:8080 -n lightstreamer
   ```
 
-  Then open `http://<route-hostname>/QuickStart`, where `<route-hostname>` is printed by:
+Then open <http://127.0.0.1:8080/QuickStart>. The provided [`values.yaml`](values.yaml) allows the `http://127.0.0.1:8080` origin, so the page can connect to Lightstreamer.
 
-  ```sh
-  oc get route lightstreamer-service -n lightstreamer -o jsonpath='{.spec.host}'
-  ```
+> [!NOTE]
+> Port forwarding is intended for local testing only, as it tunnels traffic through the Kubernetes API server and lasts only as long as the command runs. To make Lightstreamer reachable by real clients, expose the service through an Ingress or a load balancer.
 
 ## Cleanup
 
-The steps below remove only the resources created by this example — the `lightstreamer` namespace/project is left in place, so this workflow is safe on shared or admin-provisioned projects where you don't have delete rights.
+The steps below remove only the resources created by this example. The `lightstreamer` namespace/project is left in place, so this workflow is safe on shared or admin-provisioned projects where you don't have delete rights.
 
 - **Any Kubernetes distribution**:
   ```sh
@@ -168,7 +160,6 @@ The steps below remove only the resources created by this example — the `light
   helm uninstall lightstreamer --namespace lightstreamer
   oc delete -f producer.yaml
   oc delete -f kafka.yaml
-  oc delete route/lightstreamer-service -n lightstreamer --ignore-not-found
   oc delete bc/quickstart-producer -n lightstreamer --ignore-not-found
   oc delete is/quickstart-producer -n lightstreamer --ignore-not-found
   ```
