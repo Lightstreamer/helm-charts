@@ -26,7 +26,7 @@ This document describes how to publish a new version of the Lightstreamer Helm c
    ./generate-docs.sh
    ```
 
-3. **Update the CHANGELOG** — document the changes in the new version.
+3. **Update the CHANGELOG** — document the changes in the new version. While the release is pending, its heading is `## [<version>] - Unreleased`; replace `Unreleased` with the release date (`YYYY-MM-DD`) before committing.
 
 4. **Lint and validate** — verify the chart renders correctly:
    ```sh
