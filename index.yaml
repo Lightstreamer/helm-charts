@@ -2,6 +2,23 @@ apiVersion: v1
 entries:
   lightstreamer:
   - apiVersion: v2
+    appVersion: 7.4.9
+    created: "2026-10-20T08:20:14.315989774Z"
+    description: Lightstreamer Helm Chart
+    digest: 3e295465a7e3d106e52ba30b2f260397afe39d41957829a8077554e9fb8cd4af
+    home: https://github.com/Lightstreamer/helm-charts
+    icon: https://avatars.githubusercontent.com/u/684315
+    maintainers:
+    - email: support@lightstreamer.com
+      name: The Lightstreamer support team
+    name: lightstreamer
+    sources:
+    - https://github.com/Lightstreamer/helm-charts/tree/main/charts/lightstreamer
+    type: application
+    urls:
+    - https://github.com/Lightstreamer/helm-charts/releases/download/lightstreamer-1.2.0/lightstreamer-1.2.0.tgz
+    version: 1.2.0
+  - apiVersion: v2
     appVersion: 7.4.8
     created: "2026-10-12T16:33:59.478100039Z"
     description: Lightstreamer Helm Chart
@@ -199,4 +216,4 @@ entries:
     urls:
     - https://github.com/Lightstreamer/helm-charts/releases/download/lightstreamer-0.1.0/lightstreamer-0.1.0.tgz
     version: 0.1.0
-generated: "2026-10-12T16:33:59.478156775Z"
+generated: "2026-10-20T08:20:14.316086526Z"
