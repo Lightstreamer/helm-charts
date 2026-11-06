@@ -243,5 +243,5 @@ data:
     if [ -n "${LS_HIBERNATE_SYSTEM_PROPERTIES}" ]; then
        JAVA_OPTS="${JAVA_OPTS} ${LS_HIBERNATE_SYSTEM_PROPERTIES}"
     fi
-    ./LS.sh run
-
+    # exec so the JVM becomes PID 1 and receives SIGTERM directly on pod termination
+    exec ./LS.sh run
