@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.1] - Unreleased
+
+### Fixed
+
+- Fixed pod termination always waiting for the full `terminationGracePeriodSeconds` before being killed: the launch script now `exec`s the Lightstreamer Server, so the JVM runs as PID 1 and receives `SIGTERM` directly, allowing a prompt graceful shutdown. ([#9](https://github.com/Lightstreamer/helm-charts/pull/9))
+
 ## [1.2.0] - 2026-10-30
 
 ### Changed
