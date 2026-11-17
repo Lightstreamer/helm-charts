@@ -1,6 +1,6 @@
 # Lightstreamer Helm Chart Specification
 
-![Version: 1.2.1](https://img.shields.io/badge/Version-1.2.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 7.4.9](https://img.shields.io/badge/AppVersion-7.4.9-informational?style=flat-square)
+![Version: 1.2.2](https://img.shields.io/badge/Version-1.2.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 7.4.9](https://img.shields.io/badge/AppVersion-7.4.9-informational?style=flat-square)
 
 This Helm chart provides a structured and efficient way to deploy and manage Lightstreamer Broker on Kubernetes.
 
@@ -3389,23 +3389,23 @@ Optional. If set and positive, defines a maximum duration to be enforced on each
  
 ### [load](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3348)
      
-Optional. Load configuration.
+Mandatory. Load configuration.
 
 **Type:** object
 
 **Default:**
 
 ```
-{"acceptPoolMaxQueue":-1,"acceptPoolMaxSize":null,"eventsPoolSize":null,"forceEarlyConversions":true,"handshakePoolMaxQueue":100,"handshakePoolSize":null,"httpsAuthPoolMaxFree":null,"httpsAuthPoolMaxQueue":100,"httpsAuthPoolMaxSize":null,"maxCommonNioBufferAllocation":200000000,"maxCommonPumpBufferAllocation":200000000,"maxMpnDevices":null,"maxSessions":null,"prestartedMaxQueue":-1,"pumpPoolMaxQueue":-1,"pumpPoolSize":null,"selectorMaxLoad":0,"selectorPoolSize":null,"serverPoolMaxFree":null,"serverPoolMaxQueue":100,"serverPoolMaxSize":1000,"snapshotPoolSize":null,"timerPoolSize":1}
+{"acceptPoolMaxQueue":-1,"acceptPoolMaxSize":null,"eventsPoolSize":null,"forceEarlyConversions":true,"handshakePoolMaxQueue":100,"handshakePoolSize":null,"httpsAuthPoolMaxFree":null,"httpsAuthPoolMaxQueue":100,"httpsAuthPoolMaxSize":null,"maxCommonNioBufferAllocation":200000000,"maxCommonPumpBufferAllocation":200000000,"maxMpnDevices":null,"maxSessions":null,"prestartedMaxQueue":-1,"pumpPoolMaxQueue":-1,"pumpPoolSize":null,"selectorMaxLoad":0,"selectorPoolSize":null,"serverPoolMaxFree":10,"serverPoolMaxQueue":100,"serverPoolMaxSize":1000,"snapshotPoolSize":null,"timerPoolSize":1}
 ```
-### [load.acceptPoolMaxQueue](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3523)
+### [load.acceptPoolMaxQueue](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3519)
      
 Optional. Maximum number of tasks allowed to be queued to enter the `ACCEPT` thread pool before undertaking backpressure actions. The setting only affects the listening sockets with `servers.{}.portType` configured as `CREATE_ONLY`. As long as the number is exceeded, the accept loops of these sockets will be kept waiting. By suspending the accept loop, some SYN packets from the clients may be discarded; the effect may vary depending on the backlog settings. Note that, in the absence of sockets configured as `CREATE_ONLY`, no backpressure action will take place. A long queue on the `ACCEPT` pool may be the consequence of a CPU shortage during (or caused by) a high client connection activity. A negative value disables the check.
 
 **Type:** int
 
 **Default:** `-1`
-### [load.acceptPoolMaxSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3508)
+### [load.acceptPoolMaxSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3504)
      
 Optional. Maximum number of threads allowed for the `ACCEPT` internal pool, which is devoted to the parsing of the client requests. This task does not involve blocking operations; however, on multiprocessor machines, allocating multiple threads may be beneficial. Only in corner cases, it is possible that some operations turn out to be blocking; in particular: - `getHostName`, only if banned hostnames are configured- - Socket close, only if banned hostnames are configured. - Read from the "proxy protocol", only if configured. - Service of requests on a "priority port", only available for internal use. Settings to `0` allows a potentially unlimited number of threads.
 
@@ -3419,42 +3419,42 @@ Optional. Size of the `EVENTS` internal thread pool, which is devoted to dispatc
 **Type:** int
 
 **Default:** `the number of available total cores, as detected by the JVM`
-### [load.forceEarlyConversions](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3619)
+### [load.forceEarlyConversions](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3615)
      
 Optional. Policy to be adopted in order to manage the extraction of the field values from the item events and their conversion to If set to `true`, causes field conversion to be performed before the events are dispatched to the various sessions; this may lead to some wasted conversions, in case an event is filtered out later by all interested clients or in case a field is not subscribed to by any client. Note that events which don't provide an iterator (see the Data Adapter interface documentation) cannot be managed in this way. If set to `false`, causes field conversion to be performed only as soon as it is needed; in this case, as the same event object may be shared by many sessions, some synchronization logic is needed and this may lead to poor scaling in case many clients subscribe to the same item.
 
 **Type:** bool
 
 **Default:** `true`
-### [load.handshakePoolMaxQueue](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3561)
+### [load.handshakePoolMaxQueue](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3557)
      
 Optional. Maximum number of tasks allowed to be queued to enter the `TLS-SSL HANDSHAKE` thread pool before undertaking backpressure actions. The setting only regards the listening sockets specified through the `servers.{}` configuration (with `enableHttps` set to `true`) that are not configured to request the client certificate. More precisely: - If there are https sockets with `servers.{}.portType` configured as   `CREATE_ONLY`, then, as long as the number is exceeded, the accept loops   of these sockets will be kept waiting.   By suspending the accept loop, some SYN packets from the clients may be   discarded; the effect may vary depending on the backlog settings. - Otherwise, if there are https sockets configured as `CONTROL_ONLY`and   none is configured as the default `GENERAL_PURPOSE`, then, as long as the   number is exceeded, the accept loops of these sockets will be kept   waiting instead.   Additionally, the same action on the accept loops associated with the   `load.acceptPoolMaxQueue` check will be performed (regardless that   `load.acceptPoolMaxQueue` itself is set). Note that the latter action may    affect both http and https sockets. Note that, in the absence of sockets configured as specified above, no backpressure action will take place. A negative value disables the check.
 
 **Type:** int
 
 **Default:** `100`
-### [load.handshakePoolSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3536)
+### [load.handshakePoolSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3532)
      
 Optional. Size of the `TLS-SSL HANDSHAKE` internal pool, which is devoted to the management of operations needed to accomplish TLS/SSL handshakes on the listening sockets specified through the `servers.{}` configuration with `enableHttps` set to `true`. In particular, this pool is only used when the socket is not configured to request the client certificate (see `servers.{}.sslConfig.enableClientAuth` and `servers.{}.security.enableMandatoryClientAuth`); in this case, the tasks are not expected to be blocking. Note that the operation may be CPU-intensive; hence, it is advisable to set a value smaller than the number of available cores.
 
 **Type:** int
 
 **Default:** `half the number of total cores, as detected by the JVM`
-### [load.httpsAuthPoolMaxFree](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3574)
+### [load.httpsAuthPoolMaxFree](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3570)
      
 Optional. Maximum number of idle threads allowed for the `TLS-SSL AUTHENTICATION` internal pool. It behaves in the same way as the `load.serverPoolMaxFree` setting.
 
 **Type:** int
 
 **Default:** `the same as configured for the SERVER thread pool`
-### [load.httpsAuthPoolMaxQueue](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3585)
+### [load.httpsAuthPoolMaxQueue](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3581)
      
 Optional. Maximum number of tasks allowed to be queued to enter the `TLS-SSL AUTHENTICATION` thread pool before undertaking backpressure actions. The effect is similar to the more common `load.handShakePoolMaxQueue`, with the difference that it regards listening sockets specified through `server.httpsServer` that are configured to request the client certificate (see `servers.{}.sslConfig.enableClientAuth` and `servers.{}.sslConfig.enableMandatoryClientAuth`). A negative value disables the check.
 
 **Type:** int
 
 **Default:** `100`
-### [load.httpsAuthPoolMaxSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3568)
+### [load.httpsAuthPoolMaxSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3564)
      
 Optional. Size of the `TLS-SSL AUTHENTICATION` internal pool, which is used instead of the `TLS-SSL HANDSHAKE` pool for listening sockets that are configured to request the client certificate. This kind of task may exhibit a blocking behavior in some cases.
 
@@ -3489,7 +3489,7 @@ Optional. Maximum number of concurrent client sessions allowed. New session requ
 **Type:** int
 
 **Default:** `unlimited number of concurrent client sessions`
-### [load.prestartedMaxQueue](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3605)
+### [load.prestartedMaxQueue](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3601)
      
 Optional. Maximum number of sessions that can be left in "prestarted" state, that is, waiting for the first bind or control operation, before undertaking backpressure actions. In particular, the same restrictive actions associated with the `load.serverPoolMaxQueue` check will be performed (regardless that `load.serverPoolMaxQueue` itself is set). The setting is meant to be used in configurations which define a `CREATE_ONLY` port in http and a `CONTROL_ONLY` port in https. In these cases, and when a massive client reconnection is occurring, the number of pending bind operations can grow so much that the needed TLS handshakes can take arbitrarily long and cause the clients to time-out and restart session establishment from scratch. However, consider that the presence of many clients that don't perform their bind in due time could keep other clients blocked. Note that, if defined, the setting will also inhibit `load.handshakePoolMaxQueue` and `load.httpsAuthPoolMaxQueue` from affecting the accept loop of `CONTROL_ONLY` ports in https. A negative value disables the check.
 
@@ -3524,14 +3524,14 @@ Optional. Number of distinct NIO selectors (each one with its own thread) that w
 **Type:** int
 
 **Default:** `the number of available total cores, as detected by the JVM`
-### [load.serverPoolMaxFree](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3481)
+### [load.serverPoolMaxFree](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3477)
      
-Optional but mandatory if `load.serverPoolMaxSize` is set to `0`. Maximum number of idle threads allowed for the `SERVER` internal pool, which is devoted to the management of the client requests. Put in a different way, it is the minimum number of threads that can be present in the pool. To accomplish this setting, at pool initialization, suitable idle threads are created; then, each time a thread becomes idle, it is discarded only if enough threads are already in the pool. It must not be greater than `load.serverPoolMaxSize` (unless the latter is set to `0`, i.e. `unlimited`); however, it may be lower, in case `load.serverPoolMaxSize` is kept high in order to face request bursts; a zero value means no idle threads allowed in the pool, though this is not recommended for performance reasons. The default value is `10`, if `load.serverPoolMaxSize` is not defined; otherwise, the same as `load.serverPoolMaxSize`, unless the latter is set to `0`, i.e. `unlimited`, in which case this setting is mandatory
+Optional but mandatory if `load.serverPoolMaxSize` is set to `0`. Maximum number of idle threads allowed for the `SERVER` internal pool, which is devoted to the management of the client requests. Put in a different way, it is the minimum number of threads that can be present in the pool. To accomplish this setting, at pool initialization, suitable idle threads are created; then, each time a thread becomes idle, it is discarded only if enough threads are already in the pool. It must not be greater than `load.serverPoolMaxSize` (unless the latter is set to `0`, i.e. `unlimited`); however, it may be lower, in case `load.serverPoolMaxSize` is kept high in order to face request bursts; a zero value means no idle threads allowed in the pool, though this is not recommended for performance reasons.
 
 **Type:** int
 
-**Default:** `see description`
-### [load.serverPoolMaxQueue](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3494)
+**Default:** `10`
+### [load.serverPoolMaxQueue](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3490)
      
 Optional. Maximum number of tasks allowed to be queued to enter the `SERVER` thread pool before undertaking backpressure actions. In particular, as long as the number is exceeded, the creation of new sessions will be refused and made to fail; additionally, the same restrictive action on the accept loops associated with the `load.acceptPoolMaxQueue` check will be performed (regardless that `load.acceptPoolMaxQueue` itself is set). On the other hand, if the `MPN DEVICE HANDLER` pool is defined in `mpn` it also overrides the `SERVER` or dedicated pools, but its queue is not included in the check. Setting this to a negative value disables the check.
 
@@ -3562,7 +3562,7 @@ Optional. Number of threads used to parallelize the implementation of the intern
 
 ## Shared dir settings
  
-### [sharedDir](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3626)
+### [sharedDir](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3622)
      
 Optional. Provisioning of the shared directory, which contains Java classes and JAR files shared by all Adapter Sets through the Global ClassLoader. Classes and JAR files must be placed under the `classes` and `lib` subdirectories, respectively. Either specify one of `fromPathInImage` or `fromVolume`.
 
@@ -3573,28 +3573,28 @@ Optional. Provisioning of the shared directory, which contains Java classes and 
 ```
 {"fromPathInImage":null,"fromVolume":{"name":null,"path":null}}
 ```
-### [sharedDir.fromPathInImage](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3630)
+### [sharedDir.fromPathInImage](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3626)
      
 Optional. The path to the shared directory already present in the container image, e.g.: `/lightstreamer/shared`.
 
 **Type:** string
 
 **Default:** `nil`
-### [sharedDir.fromVolume](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3634)
+### [sharedDir.fromVolume](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3630)
      
 Optional. The reference to a volume where the shared resources are stored. The volume must be defined in `deployment.extraVolumes`.
 
 **Type:** object
 
 **Default:** `{"name":null,"path":null}`
-### [sharedDir.fromVolume.name](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3638)
+### [sharedDir.fromVolume.name](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3634)
      
 Mandatory. The name of the volume, as defined in `deployment.extraVolumes`.
 
 **Type:** string
 
 **Default:** `nil`
-### [sharedDir.fromVolume.path](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3642)
+### [sharedDir.fromVolume.path](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3638)
      
 Optional. The path within the volume to the directory containing the `lib` and `classes` subdirectories.
 
@@ -3604,7 +3604,7 @@ Optional. The path within the volume to the directory containing the `lib` and `
 
 ## Adapters settings
  
-### [adapters](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3647)
+### [adapters](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3643)
      
 Optional. Map of Adapter Set configurations. Every entry in the map defines a specific configuration of an Adapter Set pluggable into the Lightstreamer Broker.
 
@@ -3615,7 +3615,7 @@ Optional. Map of Adapter Set configurations. Every entry in the map defines a sp
 ```
 {"myAdapterSet":{"adapterSetPool":{"maxFree":null,"maxSize":null},"dataProviders":{"myDataProvider":{"enabled":false,"inProcessDataAdapter":{"adapterClass":null,"classLoader":"common","configMapRef":null,"dataAdapterPool":{"maxFree":null,"maxSize":null},"initParams":null,"installDir":"."},"name":"DEFAULT","proxyDataAdapter":{"authentication":{"credentialSecrets":[],"enabled":false},"connectionRecoveryTimeoutMillis":-1,"connectionRetryMillis":10000,"dataAdapterPool":{"maxFree":null,"maxSize":null},"enableRobustAdapter":false,"eventsRecovery":"use_snapshot","firstConnectionTimeoutMillis":0,"interface":null,"keepaliveHintMillis":null,"keepaliveTimeoutMillis":null,"remoteAddressWhitelist":null,"remoteHost":null,"remoteParamsConfig":{"initParams":null,"prefix":null},"requestReplyPort":6661,"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":true,"enableMandatoryClientAuth":null,"enabled":false,"enforceServerCipherSuitePreference":null,"keystoreRef":null,"removeCipherSuites":[],"removeProtocols":[],"truststoreRef":null},"statusItem":null,"timeoutMillis":10000}}},"enableMetadataInitializedFirst":true,"enabled":false,"id":null,"metadataProvider":{"inProcessMetadataAdapter":{"adapterClass":null,"authenticationPool":{"maxFree":1,"maxPendingRequests":0,"maxQueue":null,"maxSize":1},"classLoader":"common","configMapRef":null,"enableTableNotificationsSequentialization":false,"initParams":null,"installDir":".","messagesPool":{"maxFree":1,"maxPendingRequests":0,"maxQueue":null,"maxSize":1},"mpnPool":{"maxFree":null,"maxSize":null}},"proxyMetadataAdapter":{"authentication":{"credentialSecrets":[],"enabled":false},"authenticationPool":{"maxFree":1,"maxPendingRemoteRequests":0,"maxQueue":null,"maxSize":1},"closeNotificationsRecovery":"pessimistic","connectionRecoveryTimeoutMillis":-1,"connectionRetryMillis":10000,"enableClearingOnNewRemote":false,"enableClearingOnSessionClose":true,"enableRobustAdapter":false,"enableTableNotificationsSequentialization":false,"firstConnectionTimeoutMillis":-1,"interface":null,"keepaliveHintMillis":null,"keepaliveTimeoutMillis":-1,"messagesPool":{"maxFree":1,"maxPendingRemoteRequests":0,"maxQueue":null,"maxSize":1},"mpnPool":{"maxFree":null,"maxSize":null},"notifyUserDisconnectionCode":null,"notifyUserDisconnectionMsg":null,"notifyUserOnDisconnection":null,"remoteAddressWhitelist":"","remoteHost":null,"remoteParamsConfig":{"initParams":null,"prefix":null},"requestReplyPort":6663,"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":true,"enableMandatoryClientAuth":false,"enabled":false,"enforceServerCipherSuitePreference":null,"keystoreRef":null,"removeCipherSuites":[],"removeProtocols":[],"truststoreRef":null},"timeoutMillis":10000,"userDataTimeoutMillis":10000}},"provisioning":{"fromPathInImage":null,"fromVolume":{"name":null,"path":null}}},"welcomeAdapterSet":{"dataProviders":{"chat":{"enabled":true,"inProcessDataAdapter":{"adapterClass":"com.lightstreamer.examples.chat_demo.adapters.ChatDataAdapter","installDir":"chat"},"name":"CHAT"},"roomBall":{"enabled":true,"inProcessDataAdapter":{"adapterClass":"com.lightstreamer.examples.roomball_demo.adapters.RoomBallAdapter","initParams":{"frameRate":10,"stepsPerFrame":4},"installDir":"roomball"},"name":"ROOMBALL"},"stocks":{"enabled":true,"inProcessDataAdapter":{"adapterClass":"com.lightstreamer.examples.stocklist_demo.adapters.StockQuotesDataAdapter","installDir":"stocklist"},"name":"STOCKS"},"telemetry":{"enabled":true,"inProcessDataAdapter":{"adapterClass":"com.lightstreamer.examples.race_telemetry_demo.adapters.DataProviderImpl","installDir":"telemetry"},"name":"TELEMETRY"}},"enabled":false,"id":"WELCOME","metadataProvider":{"inProcessMetadataAdapter":{"adapterClass":"com.lightstreamer.welcome.adapters.metadata.MixedMetadataAdapter","initParams":{"distinct_snapshot_length":30,"item_family_3":"chat_room","item_family_4":"item.*","item_family_5":"L_driver_1","item_family_6":"P_driver_1","item_family_7":"Players_list*","max_players":100,"modes_for_item_family_3":"DISTINCT","modes_for_item_family_4":"MERGE","modes_for_item_family_5":"DISTINCT","modes_for_item_family_6":"MERGE","modes_for_item_family_7":"COMMAND","word_size_x":478,"word_size_y":200},"installDir":"metadata"}},"provisioning":{"fromPathInImage":"/lightstreamer/adapters/welcome_res"}}}
 ```
-### [adapters.myAdapterSet](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3650)
+### [adapters.myAdapterSet](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3646)
      
 Optional. An Adapter Set configuration.
 
@@ -3626,28 +3626,28 @@ Optional. An Adapter Set configuration.
 ```
 {"adapterSetPool":{"maxFree":null,"maxSize":null},"dataProviders":{"myDataProvider":{"enabled":false,"inProcessDataAdapter":{"adapterClass":null,"classLoader":"common","configMapRef":null,"dataAdapterPool":{"maxFree":null,"maxSize":null},"initParams":null,"installDir":"."},"name":"DEFAULT","proxyDataAdapter":{"authentication":{"credentialSecrets":[],"enabled":false},"connectionRecoveryTimeoutMillis":-1,"connectionRetryMillis":10000,"dataAdapterPool":{"maxFree":null,"maxSize":null},"enableRobustAdapter":false,"eventsRecovery":"use_snapshot","firstConnectionTimeoutMillis":0,"interface":null,"keepaliveHintMillis":null,"keepaliveTimeoutMillis":null,"remoteAddressWhitelist":null,"remoteHost":null,"remoteParamsConfig":{"initParams":null,"prefix":null},"requestReplyPort":6661,"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":true,"enableMandatoryClientAuth":null,"enabled":false,"enforceServerCipherSuitePreference":null,"keystoreRef":null,"removeCipherSuites":[],"removeProtocols":[],"truststoreRef":null},"statusItem":null,"timeoutMillis":10000}}},"enableMetadataInitializedFirst":true,"enabled":false,"id":null,"metadataProvider":{"inProcessMetadataAdapter":{"adapterClass":null,"authenticationPool":{"maxFree":1,"maxPendingRequests":0,"maxQueue":null,"maxSize":1},"classLoader":"common","configMapRef":null,"enableTableNotificationsSequentialization":false,"initParams":null,"installDir":".","messagesPool":{"maxFree":1,"maxPendingRequests":0,"maxQueue":null,"maxSize":1},"mpnPool":{"maxFree":null,"maxSize":null}},"proxyMetadataAdapter":{"authentication":{"credentialSecrets":[],"enabled":false},"authenticationPool":{"maxFree":1,"maxPendingRemoteRequests":0,"maxQueue":null,"maxSize":1},"closeNotificationsRecovery":"pessimistic","connectionRecoveryTimeoutMillis":-1,"connectionRetryMillis":10000,"enableClearingOnNewRemote":false,"enableClearingOnSessionClose":true,"enableRobustAdapter":false,"enableTableNotificationsSequentialization":false,"firstConnectionTimeoutMillis":-1,"interface":null,"keepaliveHintMillis":null,"keepaliveTimeoutMillis":-1,"messagesPool":{"maxFree":1,"maxPendingRemoteRequests":0,"maxQueue":null,"maxSize":1},"mpnPool":{"maxFree":null,"maxSize":null},"notifyUserDisconnectionCode":null,"notifyUserDisconnectionMsg":null,"notifyUserOnDisconnection":null,"remoteAddressWhitelist":"","remoteHost":null,"remoteParamsConfig":{"initParams":null,"prefix":null},"requestReplyPort":6663,"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":true,"enableMandatoryClientAuth":false,"enabled":false,"enforceServerCipherSuitePreference":null,"keystoreRef":null,"removeCipherSuites":[],"removeProtocols":[],"truststoreRef":null},"timeoutMillis":10000,"userDataTimeoutMillis":10000}},"provisioning":{"fromPathInImage":null,"fromVolume":{"name":null,"path":null}}}
 ```
-### [adapters.myAdapterSet.adapterSetPool](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3705)
+### [adapters.myAdapterSet.adapterSetPool](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3701)
      
 Optional. Requests the creation of a specific `SET` thread pool, devoted to the management of all the client requests pertaining to sessions based on this Adapter Set. Only requests related to the special Data Adapter used to supply the state of the MPN Module (if enabled) are not included and fall into the global `SERVER` pool. Note, however, that the `AUTHENTICATION` and `MSG` pools are always created, hence they don't contribute to this pool.  If undefined, these requests are managed by the global `SERVER thread pool. If defined, the `maxSize` and `maxFree` settings are mandatory, with meaning similar to that of the global `load.serverPoolMaxSize` and `load.serverPoolMaxFree` settings. Note that `maxSize` also indicates the maximum number of pending requests to the Remote Adapters in case Proxy Adapters are defined. Using a specific thread pool is advisable if the implementation of any of the Adapter methods introduces delays and more specific thread pools are not being used.
 
 **Type:** object
 
 **Default:** `{}`
-### [adapters.myAdapterSet.adapterSetPool.maxFree](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3713)
+### [adapters.myAdapterSet.adapterSetPool.maxFree](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3709)
      
 Mandatory. Maximum number of idle threads allowed for the `SET` thread pool.
 
 **Type:** int
 
 **Default:** `nil`
-### [adapters.myAdapterSet.adapterSetPool.maxSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3709)
+### [adapters.myAdapterSet.adapterSetPool.maxSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3705)
      
 Mandatory. Maximum number of threads allowed for the `SET` thread pool.
 
 **Type:** int
 
 **Default:** `nil`
-### [adapters.myAdapterSet.dataProviders](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4393)
+### [adapters.myAdapterSet.dataProviders](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4389)
      
 Mandatory. List of data provider configurations.
 
@@ -3658,7 +3658,7 @@ Mandatory. List of data provider configurations.
 ```
 {"myDataProvider":{"enabled":false,"inProcessDataAdapter":{"adapterClass":null,"classLoader":"common","configMapRef":null,"dataAdapterPool":{"maxFree":null,"maxSize":null},"initParams":null,"installDir":"."},"name":"DEFAULT","proxyDataAdapter":{"authentication":{"credentialSecrets":[],"enabled":false},"connectionRecoveryTimeoutMillis":-1,"connectionRetryMillis":10000,"dataAdapterPool":{"maxFree":null,"maxSize":null},"enableRobustAdapter":false,"eventsRecovery":"use_snapshot","firstConnectionTimeoutMillis":0,"interface":null,"keepaliveHintMillis":null,"keepaliveTimeoutMillis":null,"remoteAddressWhitelist":null,"remoteHost":null,"remoteParamsConfig":{"initParams":null,"prefix":null},"requestReplyPort":6661,"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":true,"enableMandatoryClientAuth":null,"enabled":false,"enforceServerCipherSuitePreference":null,"keystoreRef":null,"removeCipherSuites":[],"removeProtocols":[],"truststoreRef":null},"statusItem":null,"timeoutMillis":10000}}}
 ```
-### [adapters.myAdapterSet.dataProviders.myDataProvider](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4396)
+### [adapters.myAdapterSet.dataProviders.myDataProvider](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4392)
      
 At least one must be provided. Data Adapter configuration.
 
@@ -3669,14 +3669,14 @@ At least one must be provided. Data Adapter configuration.
 ```
 {"enabled":false,"inProcessDataAdapter":{"adapterClass":null,"classLoader":"common","configMapRef":null,"dataAdapterPool":{"maxFree":null,"maxSize":null},"initParams":null,"installDir":"."},"name":"DEFAULT","proxyDataAdapter":{"authentication":{"credentialSecrets":[],"enabled":false},"connectionRecoveryTimeoutMillis":-1,"connectionRetryMillis":10000,"dataAdapterPool":{"maxFree":null,"maxSize":null},"enableRobustAdapter":false,"eventsRecovery":"use_snapshot","firstConnectionTimeoutMillis":0,"interface":null,"keepaliveHintMillis":null,"keepaliveTimeoutMillis":null,"remoteAddressWhitelist":null,"remoteHost":null,"remoteParamsConfig":{"initParams":null,"prefix":null},"requestReplyPort":6661,"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":true,"enableMandatoryClientAuth":null,"enabled":false,"enforceServerCipherSuitePreference":null,"keystoreRef":null,"removeCipherSuites":[],"removeProtocols":[],"truststoreRef":null},"statusItem":null,"timeoutMillis":10000}}
 ```
-### [adapters.myAdapterSet.dataProviders.myDataProvider.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4399)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4395)
      
 Optional. Enables this Data Provider configuration.
 
 **Type:** bool
 
 **Default:** `false`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.inProcessDataAdapter](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4411)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.inProcessDataAdapter](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4407)
      
 One of this or `proxyDataAdapter` must be provided. Configuration of an in-process Data Adapter. If both `inProcessDataAdapter` and `proxyDataAdapter` are provided, this setting takes precedence.
 
@@ -3687,70 +3687,70 @@ One of this or `proxyDataAdapter` must be provided. Configuration of an in-proce
 ```
 {"adapterClass":null,"classLoader":"common","configMapRef":null,"dataAdapterPool":{"maxFree":null,"maxSize":null},"initParams":null,"installDir":"."}
 ```
-### [adapters.myAdapterSet.dataProviders.myDataProvider.inProcessDataAdapter.adapterClass](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4414)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.inProcessDataAdapter.adapterClass](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4410)
      
 Mandatory. Java class name of the Data Adapter.
 
 **Type:** string
 
 **Default:** `nil`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.inProcessDataAdapter.classLoader](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4434)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.inProcessDataAdapter.classLoader](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4430)
      
 Optional. See `adapters.{}.metadataProvider.inProcessMetadataAdapter.classLoader`.
 
 **Type:** string
 
 **Default:** `"common"`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.inProcessDataAdapter.configMapRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4430)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.inProcessDataAdapter.configMapRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4426)
      
 Optional. The reference to a ConfigMap containing extra configuration files of the in-process Data Adapter. At startup, the files will be copied to the `/deployed_adapters/<adapter-set-folder>/<installDir>` directory in the directory in the container.
 
 **Type:** string
 
 **Default:** `nil`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.inProcessDataAdapter.dataAdapterPool](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4453)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.inProcessDataAdapter.dataAdapterPool](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4449)
      
 Optional. Requests the creation of a specific `DATA` thread pool, expressly devoted to the management of table subscription and unsubscription requests for all the tables based on this Data Adapter. This involves the various calls to the Data Adapter and some calls to the Metadata Adapter. Among the latter, the most critical are `getItems`, `getSchema`, and `notifyNewTables`; the pool associated with each Metadata Adapter call can be found in the related API documentation.  If not specified, these requests are managed by the thread pool related to the Adapter Set, if, in turn, defined. If defined, the `maxSize` and `maxFree` settings are mandatory, with meaning similar to that of the global `load.serverPoolMaxSize` and `load`.serverPoolMaxFree settings. Using a specific thread pool is advisable if the implementation of any of the involved Adapter methods introduces delays.
 
 **Type:** object
 
 **Default:** `{}`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.inProcessDataAdapter.dataAdapterPool.maxFree](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4461)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.inProcessDataAdapter.dataAdapterPool.maxFree](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4457)
      
 Mandatory. Maximum number of idle threads allowed for the `DATA` thread pool.
 
 **Type:** int
 
 **Default:** `nil`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.inProcessDataAdapter.dataAdapterPool.maxSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4457)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.inProcessDataAdapter.dataAdapterPool.maxSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4453)
      
 Mandatory. Maximum number of threads allowed for the `DATA` thread pool.
 
 **Type:** int
 
 **Default:** `nil`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.inProcessDataAdapter.initParams](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4474)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.inProcessDataAdapter.initParams](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4470)
      
 Optional. Map of initialization parameters specific to the adapter. The various parameters are not interpreted by Lightstreamer, but they are forwarded to the `init` method of the adapter.  In addition, the following parameters, with obvious meaning, are always provided by the Server: - `adapters_conf.id` - `data_provider.name` Note that these parameters are reserved and cannot be overridden by configuration.
 
 **Type:** object
 
 **Default:** `nil`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.inProcessDataAdapter.installDir](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4423)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.inProcessDataAdapter.installDir](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4419)
      
 Optional but mandatory if `classLoader` is set to `dedicated`. Specifies the directory where the Data Adapter's own `lib` and `classes` folders are located in the provisioning source. The full path will be then available at `/deployed_adapters/<adapter-set-folder>/<installDir>` in the container. See `classLoader` for more details.
 
 **Type:** string
 
 **Default:** `"."`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.name](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4405)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.name](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4401)
      
 Mandatory if multiple Data Adapters (either proxy or in-process) are defined in the same Adapter Set. The name of the Data Adapter. Example: `MY_REMOTE`
 
 **Type:** string
 
 **Default:** `"DEFAULT"`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4485)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4481)
      
 One of this or `inProcessDataAdapter` must be provided. Configuration of the Proxy Data Adapter, which is embedded in the Lightstreamer Broker and available out of the box. The Proxy Data Adapter communicates with its remote counterpart through standard TCP sockets. It listens on a configurable port (see `requestReplyPort` setting) and waits for its counterpart to connect. `inProcessDataAdapter` takes precedence over this setting if both are provided.
 
@@ -3761,147 +3761,147 @@ One of this or `inProcessDataAdapter` must be provided. Configuration of the Pro
 ```
 {"authentication":{"credentialSecrets":[],"enabled":false},"connectionRecoveryTimeoutMillis":-1,"connectionRetryMillis":10000,"dataAdapterPool":{"maxFree":null,"maxSize":null},"enableRobustAdapter":false,"eventsRecovery":"use_snapshot","firstConnectionTimeoutMillis":0,"interface":null,"keepaliveHintMillis":null,"keepaliveTimeoutMillis":null,"remoteAddressWhitelist":null,"remoteHost":null,"remoteParamsConfig":{"initParams":null,"prefix":null},"requestReplyPort":6661,"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":true,"enableMandatoryClientAuth":null,"enabled":false,"enforceServerCipherSuitePreference":null,"keystoreRef":null,"removeCipherSuites":[],"removeProtocols":[],"truststoreRef":null},"statusItem":null,"timeoutMillis":10000}
 ```
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.authentication](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4598)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.authentication](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4594)
      
 Optional. Authentication settings for the connection.
 
 **Type:** object
 
 **Default:** `{"credentialSecrets":[],"enabled":false}`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.authentication.credentialSecrets](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4611)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.authentication.credentialSecrets](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4607)
      
 Mandatory if `enabled` is set to `true`. The reference to the Secrets containing the credentials of the users allowed to connect. Every Secret must contain the keys `user` and `password`.
 
 **Type:** list
 
 **Default:** `[]`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.authentication.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4605)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.authentication.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4601)
      
 Optional. If set to `true`, enforces Remote Adapter authentication on the connection based on a user/password credential check. Note that the user names will be used in log messages at `INFO` level or above, whereas the passwords won't.
 
 **Type:** bool
 
 **Default:** `false`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.connectionRecoveryTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4627)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.connectionRecoveryTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4623)
      
 Optional but only effective if `enableRobustAdapter` is set to `true`. The timeout for initialization errors. After an unsuccessful attempt to achieve a connection from a remote server due to an error in configuration, network access or initialization, the Proxy Adapter will be allowed to retry listening for connections only after ensuring that at least this time has elapsed since the previous attempt. A negative value prevents further attempts, so that no remote server will be available.
 
 **Type:** int
 
 **Default:** `-1`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.connectionRetryMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4616)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.connectionRetryMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4612)
      
 Optional but only effective if `remoteHost` is set. Delay to be enforced before retrying a connection attempt to the Remote  Server, to prevent a possible strict loop of unsuccessful attempts.
 
 **Type:** int
 
 **Default:** `10000`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.dataAdapterPool](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4520)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.dataAdapterPool](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4516)
      
 Optional. Requests the creation of a specific `DATA` thread pool, expressly devoted to the submission to the Remote Data Adapter of table subscription and unsubscription requests for all the tables based on this Data Adapter. This involves the calls of Subscribe and Unsubscribe to the Remote Data Adapter and the calls of Get Items, Get Schema, Get Item Data, Get User Item Data, Notify New Tables, and the MPN-related methods to the Remote Metadata Adapter.  If not defined, these requests are managed by the thread pool related to the Adapter Set, if, in turn, defined. If defined, the `maxSize` and `maxFree` settings are mandatory, with meaning similar to that of the global `load.serverPoolMaxSize` and and `load.serverPoolMaxFree` settings. Note that `maxSize` also indicates the maximum number of pending requests to the Remote Adapters. Using a specific thread pool is advisable if the implementation of any of the involved Adapter methods introduces delays.
 
 **Type:** object
 
 **Default:** `{}`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.dataAdapterPool.maxFree](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4528)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.dataAdapterPool.maxFree](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4524)
      
 Mandatory. Maximum number of idle threads allowed for the `DATA` thread pool.
 
 **Type:** int
 
 **Default:** `nil`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.dataAdapterPool.maxSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4524)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.dataAdapterPool.maxSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4520)
      
 Mandatory. Maximum number of threads allowed for the `DATA` thread pool.
 
 **Type:** int
 
 **Default:** `nil`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.enableRobustAdapter](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4499)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.enableRobustAdapter](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4495)
      
 Optional. Enables the Robust Proxy Data Adapter to manage the case in which the remote counterpart is missing by accepting subscriptions and sending empty snapshots to the clients, when requested (note that the clients should be able to manage null field values for items subscribed to in `MERGE` mode). This Data Adapter also manages failures of the remote counterpart, by waiting for connection from a new Remote Server, then trying to to recover the data flow by resubmitting all the pending subscription requests. However, if the remote counterpart needs to retrieve and restore the state of the previously connected instance, this will be its own burden; for how to identify the involved Server instance, see `remoteParams.prefix`.
 
 **Type:** bool
 
 **Default:** `false`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.eventsRecovery](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4696)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.eventsRecovery](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4692)
      
 Optional but only effective if `enableRobustAdapter` is set to `true`. The strategy to be adopted whenever a new remote server is available in order to restore the data flow for items that were subscribed to while no remote server was available. No sophisticated recovery algorithms are available, as they could only depend on the specific item meanings. Currently, the only available options are:  - `leave_hole`   The real time update flow is just restarted; this may give rise   to an inconsistent overall flow:   for `RAW` and `DISTINCT` subscriptions, there will be a hole in   the event sequence;   for `MERGE` and `COMMAND` subscriptions, out of date field values   might be mixed with up to date field values on the same item or   key;   for `COMMAND` subscriptions, some keys might be missing for some   time and others might remain garbage for long time; some harmless   warning messages might also be issued by the Server.  - `use_snapshot`   The snapshot of the item is requested to the remote server and it   is sent in the update flow "as is"; this strategy is suitable   for `MERGE` subscriptions, while in other cases it may give rise   to an inconsistent overall flow:   for `RAW` subscriptions, there will be a hole in the event   sequence and possible spurious entries;   for `DISTINCT` subscriptions, there might be either a hole or some   duplicates in the event sequence;   for `COMMAND` subscriptions, some keys might just remain garbage   for long time; some harmless warning messages might also be   issued by the Server.  - `enforce_snapshot`   Upon interruption, a ClearSnapshot event is sent. Then, upon   reconnection, the snapshot of the item is requested to the remote   server and it is sent in the update flow as though it was a   sequence of real-time updates; this strategy successfully restores   the correct state for `MERGE` and `COMMAND` subscriptions, but it   must be considered that:   for `MERGE` subscriptions, the clients will see null values during   the interruption;   for `RAW` subscriptions, there will be a hole in the event   sequence and possible spurious entries;   for `DISTINCT` subscriptions, there might be either a hole or some   duplicates in the event sequence, but the ClearSnapshot signal may   act as a warning of the issue;   for `COMMAND` subscriptions, the clients will see an empty list   during the interruption, then the fictitious `ADD`s to restore the   list, but the ClearSnapshot signal may act as a warning of the   issue.  The configured strategy will be applied with all items.
 
 **Type:** string
 
 **Default:** `"use_snapshot"`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.firstConnectionTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4641)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.firstConnectionTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4637)
      
 Optional but only effective if `enableRobustAdapter` is set to `true`. The timeout for the first connection attempt. Upon the Proxy Adapter initialization at the Lightstreamer Broker startup, if remote server connection is not available, the Lightstreamer Broker startup can be delayed until this timeout expires. A negative value stands for an unlimited timeout. Note that, when the Lightstreamer Broker startup completes, as long as a connection to a remote server is still missing, all subscription requests will get an empty snapshot; then, when the connection is established, the data flow will be restored according to the `eventsRecovery` setting.
 
 **Type:** int
 
 **Default:** `0`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.interface](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4559)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.interface](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4555)
      
 Optional. The local network interface to bind to. Example: `192.168.1.1`
 
 **Type:** string
 
 **Default:** `will bind to any available interface`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.keepaliveHintMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4804)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.keepaliveHintMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4800)
      
 Optional. Keepalive interval to be requested to the Remote Data Adapter. The value should be low enough to ensure that, if obeyed, the connection will pass the timeout checks (see `keepaliveTimeoutMillis`). A zero or negative value stands for no keepalive request, which still allows the Remote Data Adapter to send keepalives for its own purpose. The default depends on the setting of `keepaliveTimeoutMillis`: - if not configured: `-1` - if less than `4` seconds: half the `keepaliveTimeoutMillis` - otherwise: `2` seconds less than the `keepaliveTimeoutMillis`
 
 **Type:** int
 
 **Default:** `see description`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.keepaliveTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4789)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.keepaliveTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4785)
      
 Optional. Timeout for inactivity on the connection with respect to messages coming from the Remote Data Adapter. If neither replies nor keepalives are received within the specified timeout, the TCP connection will be considered broken and will be closed; as a consequence, a connection with a new Remote Data Adapter will be attempted. Setting a timeout is only meaningful if the Remote Metadata Adapter is configured to either send keepalive messages at a shorter interval, or obey the keepalive interval requested by this Proxy (see `keepaliveHintMillis`). A zero or negative value stands for an unlimited timeout.
 
 **Type:** int
 
 **Default:** `-1`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.remoteAddressWhitelist](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4775)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.remoteAddressWhitelist](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4771)
      
 Optional. Specifies a comma-separated list of hosts allowed to connect to this proxy adapter in order to act as remote adapters. If a list is specified, connections received from addresses not in the list will be turned down, otherwise any connection will be accepted. The addresses can be in any form accepted by the Java `InetAddress.getByName` method. Example: `localhost,192.168.0.190`
 
 **Type:** string
 
 **Default:** `""`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.remoteHost](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4554)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.remoteHost](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4550)
      
 Optional. If set, inverts the normal connection establishment behavior, by having the Proxy Adapter open a client socket on the configured request/reply port towards the Remote Adapter, using the host address specified here. This is not the preferred setting but it can be useful in some scenarios. See a discussion in the Adapter Remoting Infrastructure architecture document. Obviously, the setting requires a corresponding behavior by the Remote Server. When this setting is leveraged, most of the other elements and parameters are still valid (in particular, `sslConfig`), although some of their descriptions refer to the listening port case and should be reinterpreted; only the following ones are ignored: - `interface` - sslConfig.enforceServerCipherSuitePreference - sslConfig.enableClientAuth - remoteAddressWhitelist Note, in particular, that the keystore parameters are available, though optional. This allows for authentication of the Proxy Adapter by the Remote Server by requesting the Proxy Adapter's TLS client certificate.
 
 **Type:** string
 
 **Default:** `nil`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.remoteParamsConfig](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4725)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.remoteParamsConfig](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4721)
      
 Optional. Configuration of the custom initialization parameters to be sent to the remote.
 
 **Type:** object
 
 **Default:** `{"initParams":null,"prefix":null}`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.remoteParamsConfig.initParams](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4756)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.remoteParamsConfig.initParams](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4752)
      
 Optional but only effective if `prefix` is set. Map of custom initialization parameters to be sent to the remote counterpart. Every key is the name of the parameter and must start with the value specified in the `prefix` setting.
 
 **Type:** object
 
 **Default:** `nil`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.remoteParamsConfig.prefix](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4749)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.remoteParamsConfig.prefix](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4745)
      
 Optional. Determines the custom initialization parameters to be sent to the remote counterpart. The supplied value is meant as a prefix, such that all parameters supplied to this Proxy Adapter and whose names start with this prefix will be sent. The value must contain a ':' character, as all parameter names that don't contain a ':' character are reserved. Hence, the normal configuration parameters will not be sent to the remote counterpart, unless explicitly duplicated with a prefixed name. Anyway, the following parameters, with obvious meaning, will be provided by the Proxy Adapter and will also be sent: - `ARI.version` - `keepalive_hint.millis` (optional) - `adapters_conf.id` - `data_provider.name` - `server.instance_id` - `proxy.instance_id` where the latter is added by the Robust Proxy Data Adapter and allows a Remote Data Adapter to detect if it is in replacement of a previous instance for the same Proxy Adapter instance. Example: `remote:`
 
 **Type:** string
 
 **Default:** `"" (no custom initialization parameters will be sent)`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.requestReplyPort](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4532)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.requestReplyPort](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4528)
      
 Mandatory. The request/reply port to listen on. The connection on this port will carry the requests/replies channels.
 
 **Type:** int
 
 **Default:** `6661`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.sslConfig](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4562)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.sslConfig](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4558)
      
 Optional. TLS/SSL settings for the connection.
 
@@ -3912,112 +3912,112 @@ Optional. TLS/SSL settings for the connection.
 ```
 {"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":true,"enableMandatoryClientAuth":null,"enabled":false,"enforceServerCipherSuitePreference":null,"keystoreRef":null,"removeCipherSuites":[],"removeProtocols":[],"truststoreRef":null}
 ```
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.sslConfig.allowCipherSuites](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4574)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.sslConfig.allowCipherSuites](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4570)
      
 See `servers.{}.sslConfig.allowCipherSuites`.
 
 **Type:** list
 
 **Default:** `[]`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.sslConfig.allowProtocols](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4583)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.sslConfig.allowProtocols](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4579)
      
 See `servers.{}.sslConfig.allowProtocols`.
 
 **Type:** list
 
 **Default:** `[]`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.sslConfig.enableHostnameVerification](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4595)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.sslConfig.enableHostnameVerification](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4591)
      
 See `adapters.{}.metadataProvider.proxyMetadataAdapter.sslConfig.enableHostnameVerification`.
 
 **Type:** bool
 
 **Default:** `true`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.sslConfig.enableMandatoryClientAuth](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4589)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.sslConfig.enableMandatoryClientAuth](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4585)
      
 . See `servers.{}.sslConfig.enableMandatoryClientAuth`.
 
 **Type:** bool
 
 **Default:** `nil`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.sslConfig.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4565)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.sslConfig.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4561)
      
 Optional. Enables the encryption.
 
 **Type:** bool
 
 **Default:** `false`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.sslConfig.enforceServerCipherSuitePreference](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4580)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.sslConfig.enforceServerCipherSuitePreference](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4576)
      
 . See `servers.{}.sslConfig.enforceServerCipherSuitePreference`.
 
 **Type:** object
 
 **Default:** `nil`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.sslConfig.keystoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4571)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.sslConfig.keystoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4567)
      
 Mandatory. The reference to a keystore configuration (defined in `keystores`). See the `keystores.myServerKeystore` settings for general details on keystore configuration.
 
 **Type:** string
 
 **Default:** `nil`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.sslConfig.removeCipherSuites](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4577)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.sslConfig.removeCipherSuites](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4573)
      
 See `servers.{}.sslConfig.removeCipherSuites`.
 
 **Type:** list
 
 **Default:** `[]`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.sslConfig.removeProtocols](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4586)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.sslConfig.removeProtocols](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4582)
      
 See `servers.{}.sslConfig.removeProtocols`.
 
 **Type:** list
 
 **Default:** `[]`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.sslConfig.truststoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4592)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.sslConfig.truststoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4588)
      
 See `adapters.{}.metadataProvider.proxyMetadataAdapter.sslConfig.truststoreRef`.
 
 **Type:** string
 
 **Default:** `nil`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.statusItem](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4721)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.statusItem](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4717)
      
 Optional but only effective if `enableRobustAdapter` is set to `true`. Specifies an item name to be managed by the Proxy Adapter for carrying information about the availability of the Remote Data Adapter. This item will only supply one field, named `status`, whose value may only be one of the following:  - `connecting` if no connection with a remote server has taken place    yet;  - `connected` if a connection with a remote server is currently in   place;  - `reconnecting` if a connection with a remote server has been lost.  The item will support subscriptions in `MERGE` or `RAW` mode and requests for the snapshot will also be supported.  Note that the chosen name should be such that no conflicts with the item names supplied by the Remote Data Adapter can be possible. Also note that the Metadata Adapter must be aware of this item when performing permission checks.
 
 **Type:** string
 
 **Default:** `no item is added for carrying status information`
-### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.timeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4763)
+### [adapters.myAdapterSet.dataProviders.myDataProvider.proxyDataAdapter.timeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4759)
      
 Optional. Timeout for sent requests. A negative value stands for an unlimited timeout. Timed out requests are considered as failed and later answers are ignored.
 
 **Type:** int
 
 **Default:** `10000`
-### [adapters.myAdapterSet.enableMetadataInitializedFirst](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3726)
+### [adapters.myAdapterSet.enableMetadataInitializedFirst](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3722)
      
 Optional. If set to `true`, ensures that the initialization of the Metadata Adapter ends before any initialization of the Data Adapters is performed. Otherwise the Metadata Adapter is initialized in parallel with all the other Data Adapters. In case of a Remote Adapter, the initialization consists of an invocation of the Metadata Init or Data Init method. Note that, if this flag is set to `true` and there is any Remote Data Adapter in the Adapter Set, then, until the Metadata Adapter initialization is complete, the listening ports for these Remote Data Adapters will not be open and any connection attempt by the Remote Data Adapters will fail.
 
 **Type:** bool
 
 **Default:** `true`
-### [adapters.myAdapterSet.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3653)
+### [adapters.myAdapterSet.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3649)
      
 Optional. Enables this Adapter Set.
 
 **Type:** bool
 
 **Default:** `false`
-### [adapters.myAdapterSet.id](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3658)
+### [adapters.myAdapterSet.id](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3654)
      
 Mandatory and unique across all adapter sets. Defines the Adapter Set ID. Example: `MY_ADAPTER_SET`.
 
 **Type:** string
 
 **Default:** `nil`
-### [adapters.myAdapterSet.metadataProvider](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3729)
+### [adapters.myAdapterSet.metadataProvider](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3725)
      
 Mandatory. Metadata Adapter Configuration.
 
@@ -4028,7 +4028,7 @@ Mandatory. Metadata Adapter Configuration.
 ```
 {"inProcessMetadataAdapter":{"adapterClass":null,"authenticationPool":{"maxFree":1,"maxPendingRequests":0,"maxQueue":null,"maxSize":1},"classLoader":"common","configMapRef":null,"enableTableNotificationsSequentialization":false,"initParams":null,"installDir":".","messagesPool":{"maxFree":1,"maxPendingRequests":0,"maxQueue":null,"maxSize":1},"mpnPool":{"maxFree":null,"maxSize":null}},"proxyMetadataAdapter":{"authentication":{"credentialSecrets":[],"enabled":false},"authenticationPool":{"maxFree":1,"maxPendingRemoteRequests":0,"maxQueue":null,"maxSize":1},"closeNotificationsRecovery":"pessimistic","connectionRecoveryTimeoutMillis":-1,"connectionRetryMillis":10000,"enableClearingOnNewRemote":false,"enableClearingOnSessionClose":true,"enableRobustAdapter":false,"enableTableNotificationsSequentialization":false,"firstConnectionTimeoutMillis":-1,"interface":null,"keepaliveHintMillis":null,"keepaliveTimeoutMillis":-1,"messagesPool":{"maxFree":1,"maxPendingRemoteRequests":0,"maxQueue":null,"maxSize":1},"mpnPool":{"maxFree":null,"maxSize":null},"notifyUserDisconnectionCode":null,"notifyUserDisconnectionMsg":null,"notifyUserOnDisconnection":null,"remoteAddressWhitelist":"","remoteHost":null,"remoteParamsConfig":{"initParams":null,"prefix":null},"requestReplyPort":6663,"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":true,"enableMandatoryClientAuth":false,"enabled":false,"enforceServerCipherSuitePreference":null,"keystoreRef":null,"removeCipherSuites":[],"removeProtocols":[],"truststoreRef":null},"timeoutMillis":10000,"userDataTimeoutMillis":10000}}
 ```
-### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3735)
+### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3731)
      
 One of this or `proxyMetadataAdapter` must be provided. Configuration of an in-process Metadata Adapter. If both `inProcessMetadataAdapter` and `proxyMetadataAdapter` are provided, this setting takes precedence.
 
@@ -4039,14 +4039,14 @@ One of this or `proxyMetadataAdapter` must be provided. Configuration of an in-p
 ```
 {"adapterClass":null,"authenticationPool":{"maxFree":1,"maxPendingRequests":0,"maxQueue":null,"maxSize":1},"classLoader":"common","configMapRef":null,"enableTableNotificationsSequentialization":false,"initParams":null,"installDir":".","messagesPool":{"maxFree":1,"maxPendingRequests":0,"maxQueue":null,"maxSize":1},"mpnPool":{"maxFree":null,"maxSize":null}}
 ```
-### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.adapterClass](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3738)
+### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.adapterClass](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3734)
      
 Mandatory. Java class name of the Metadata Adapter.
 
 **Type:** string
 
 **Default:** `nil`
-### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.authenticationPool](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3813)
+### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.authenticationPool](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3809)
      
 Optional. Configures the specific `AUTHENTICATION` thread pool, expressly devoted to the calls of `notifyUser` against this Metadata Adapter. This pool is always created and the `notifyUser` calls to the Metadata Adapters are performed asynchronously, hence they are not supposed to keep threads engaged. In order to keep track of the pending asynchronous requests, they are counted in the global statistics as part of the pool task queue (but not as contributing to the pool queue wait).  By default, the pool has one fixed thread. If this setting is defined, its `maxSize` and `maxFree` values, with meaning similar to that of the global `load.serverPoolMaxSize` and `load.serverPoolMaxFree`, are optional, both with default `1`. In fact, it is not expected that more than one thread will ever be needed, since the implementations of `notifyUser` are require to be fast and non-blocking and to perform any slow processing asynchronously. On the other hand, configuring the pool is recommended, to constrain the maximum number of pending requests to the Metadata Adapter through the optional `maxPendingRequests` setting (if set <= 0, it poses no limitation; this is also the default). The optional `maxQueue` setting is also available, with meaning similar to the global `load.serverPoolMaxQueue`. If defined, the length of the queue of this pool, instead of being added to the length checked by `load.serverPoolMaxQueue, will be checked against this limit, but with the same consequent backpressure actions.
 
@@ -4057,70 +4057,70 @@ Optional. Configures the specific `AUTHENTICATION` thread pool, expressly devote
 ```
 {"maxFree":1,"maxPendingRequests":0,"maxQueue":null,"maxSize":1}
 ```
-### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.authenticationPool.maxFree](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3821)
+### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.authenticationPool.maxFree](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3817)
      
 Optional. Maximum number of idle threads allowed for the `AUTHENTICATION` thread pool.
 
 **Type:** int
 
 **Default:** `1`
-### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.authenticationPool.maxPendingRequests](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3825)
+### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.authenticationPool.maxPendingRequests](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3821)
      
 Optional. Maximum number pending requests to the Metadata Adapter.
 
 **Type:** int
 
 **Default:** `0`
-### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.authenticationPool.maxQueue](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3830)
+### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.authenticationPool.maxQueue](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3826)
      
 Optional. Maximum number of tasks allowed to be queued to enter the `AUTHENTICATION` thread pool before undertaking backpressure actions.
 
 **Type:** int
 
 **Default:** `nil`
-### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.authenticationPool.maxSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3817)
+### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.authenticationPool.maxSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3813)
      
 Optional. Maximum number of threads allowed for the `AUTHENTICATION` thread pool.
 
 **Type:** int
 
 **Default:** `1`
-### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.classLoader](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3784)
+### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.classLoader](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3780)
      
 Optional. Determines the ClassLoader to be used to load the Adapter related classes. Possible values are:  - `common`: The common ClassLoader assigned to the whole Adapter Set   is used; this ClassLoader already includes all the classes found in   the common `lib` and `classes` folders; it also inherits from a   global ClassLoader that includes all the classes found under the   `shared/lib` and `shared/classes` folders. If a specific   `installDir` is assigned to the Adapter, classes found in its `lib`   and `classes` subfolders are added to the Adapter Set ClassLoader.  - `dedicated`: A dedicated ClassLoader, which still inherits from the   Adapter Set ClassLoader, is used. In this case, it is mandatory that   a specific `installDir` is assigned to the Adapter; hence, classes   found in its `lib` and `classes` subfolders are added to the   dedicated ClassLoader.  - `log-enabled`: A dedicated ClassLoader which also includes the   `slf4j` library used by the Server is used; hence the Adapter shares   the log configuration with the Server. However, in this case, the   Adapter ClassLoader does not inherit from the Adapter Set   ClassLoader, hence no sharing of classes with other Adapters is   possible. If no specific `installDir` is assigned to the Adapter,   then the dedicated ClassLoader will be added all classes found in   the common `lib` and `classes` folders.  The determined ClassLoader is also set as the "context ClassLoader" in all Adapter method invocations.
 
 **Type:** string
 
 **Default:** `"common"`
-### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.configMapRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3754)
+### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.configMapRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3750)
      
 Optional. The reference to a ConfigMap containing extra configuration files of the in-process Metadata Adapter. At startup, the files will be copied to the `/deployed_adapters/<adapter-set-folder>/<installDir>` directory in the container.
 
 **Type:** string
 
 **Default:** `nil`
-### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.enableTableNotificationsSequentialization](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3909)
+### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.enableTableNotificationsSequentialization](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3905)
      
 Optional. If set to `true`, ensures that all Table (i.e. Subscription) notifications (that is, all the invocations to `notifyNewTables` and `notifyTablesClose`) pertaining to the same session will be sequential, with no overlapping; if set to `false`, then concurrent invocations will be possible. Note that the final invocation to `notifySessionClose` is always guaranteed to occur after all the above notifications have terminated.
 
 **Type:** bool
 
 **Default:** `false`
-### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.initParams](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3921)
+### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.initParams](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3917)
      
 Optional. Map of initialization parameters specific to the adapter. The various settings are not interpreted by Lightstreamer, but they are forwarded to the `init` method of the adapter.  In addition, the following parameter, with obvious meaning, is always provided by the Server: - `adapters_conf.id` Note that this parameter is reserved and cannot be overridden by configuration.
 
 **Type:** object
 
 **Default:** `nil`
-### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.installDir](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3747)
+### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.installDir](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3743)
      
 Optional but mandatory if `classLoader` is set to `dedicated`. Specifies the directory where the Metadata Adapter's own `lib` and `classes` folders are located in the provisioning source. The full path will be then available at `/deployed_adapters/<adapter-set-folder>/<installDir>` in the container. See `classLoader` for more details.
 
 **Type:** string
 
 **Default:** `"."`
-### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.messagesPool](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3859)
+### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.messagesPool](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3855)
      
 Optional. Configures the specific `MSG` thread pool, expressly devoted to the calls of `notifyUserMessage`, which handle messages sent by the client, against this Metadata Adapter. This pool is always created and the `notifyUserMessage` calls to the Metadata Adapters are performed asynchronously, hence they are not supposed to keep threads engaged. In order to keep track of the pending asynchronous requests, they are counted in the global statistics as part of the pool task queue (but not as contributing to the pool queue wait).  By default, the pool has one fixed thread. If this setting is defined, its `maxSize` and `maxFree` values, with meaning similar to that of the global `load.serverPoolMaxSize` and `load.serverPoolMaxFree` settings, are optional, both with default `1`. In fact, it is not expected that more than one thread will ever be needed, since the implementations of `notifyUserMessage` are require to be fast and non-blocking and to perform any slow processing asynchronously. On the other hand, configuring the pool is recommended, to constrain the maximum number of pending requests to the Metadata Adapter through the optional `maxPendingRequests` setting (if set <= 0, it poses no limitation; this is also the default). The optional `maxQueue` subelement is also available, with meaning similar to the global `load.serverPoolMaxQueue`. If defined, the length of the queue of this pool, instead of being added to the length checked by `load.serverPoolMaxQueue`, will be checked against this limit, but with the same consequent backpressure actions.
 
@@ -4131,56 +4131,56 @@ Optional. Configures the specific `MSG` thread pool, expressly devoted to the ca
 ```
 {"maxFree":1,"maxPendingRequests":0,"maxQueue":null,"maxSize":1}
 ```
-### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.messagesPool.maxFree](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3867)
+### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.messagesPool.maxFree](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3863)
      
 Optional. Maximum number of idle threads allowed for the `MSG` thread pool.
 
 **Type:** int
 
 **Default:** `1`
-### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.messagesPool.maxPendingRequests](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3871)
+### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.messagesPool.maxPendingRequests](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3867)
      
 Optional. Maximum number pending requests to the Metadata Adapter.
 
 **Type:** int
 
 **Default:** `0`
-### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.messagesPool.maxQueue](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3875)
+### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.messagesPool.maxQueue](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3871)
      
 Optional. Maximum number of tasks allowed to be queued to enter the `MSG` thread pool before undertaking backpressure actions.
 
 **Type:** int
 
 **Default:** `nil`
-### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.messagesPool.maxSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3863)
+### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.messagesPool.maxSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3859)
      
 Optional. Maximum number of threads allowed for the `MSG` thread pool.
 
 **Type:** int
 
 **Default:** `1`
-### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.mpnPool](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3892)
+### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.mpnPool](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3888)
      
 Optional. Requests the creation of a specific `MPN REQUESTS` thread pool, devoted to the submission to the Remote Metadata Adapter of all the mobile push notification requests pertaining to sessions based on this Adapter Set.  If not defined, these calls are managed by the thread pool related to the Adapter Set, if, in turn, defined. If defined, the `maxSize` and `maxFree` settings are mandatory, with meaning similar to that of the global `load.serverPoolMaxSize` and `load.serverPoolMaxFree` settings. Note that `maxSize` also indicates the maximum number of pending requests to the Remote Metadata Adapter. Using a specific thread pool is advisable if the implementation of MPN operations (like `notifyMpnSubscriptionActivation` etc.) may introduce delays.
 
 **Type:** object
 
 **Default:** `{}`
-### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.mpnPool.maxFree](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3900)
+### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.mpnPool.maxFree](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3896)
      
 Mandatory. Maximum number of idle threads allowed for the `MPN REQUESTS` thread pool.
 
 **Type:** int
 
 **Default:** `nil`
-### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.mpnPool.maxSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3896)
+### [adapters.myAdapterSet.metadataProvider.inProcessMetadataAdapter.mpnPool.maxSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3892)
      
 Mandatory. Maximum number of threads allowed for the `MPN REQUESTS` thread pool.
 
 **Type:** int
 
 **Default:** `nil`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3932)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3928)
      
 One of this or `inProcessMetadataAdapter` must be provided. Configuration of the Proxy Metadata Adapter, which is embedded in the Lightstreamer Broker and available out of the box. The Proxy Metadata Adapter communicates with its remote counterpart through standard TCP sockets. It listens on a configurable port (see `requestReplyPort` setting) and waits its counterpart to connect. `inProcessMetadataAdapter` takes precedence over this setting if both are provided.
 
@@ -4191,28 +4191,28 @@ One of this or `inProcessMetadataAdapter` must be provided. Configuration of the
 ```
 {"authentication":{"credentialSecrets":[],"enabled":false},"authenticationPool":{"maxFree":1,"maxPendingRemoteRequests":0,"maxQueue":null,"maxSize":1},"closeNotificationsRecovery":"pessimistic","connectionRecoveryTimeoutMillis":-1,"connectionRetryMillis":10000,"enableClearingOnNewRemote":false,"enableClearingOnSessionClose":true,"enableRobustAdapter":false,"enableTableNotificationsSequentialization":false,"firstConnectionTimeoutMillis":-1,"interface":null,"keepaliveHintMillis":null,"keepaliveTimeoutMillis":-1,"messagesPool":{"maxFree":1,"maxPendingRemoteRequests":0,"maxQueue":null,"maxSize":1},"mpnPool":{"maxFree":null,"maxSize":null},"notifyUserDisconnectionCode":null,"notifyUserDisconnectionMsg":null,"notifyUserOnDisconnection":null,"remoteAddressWhitelist":"","remoteHost":null,"remoteParamsConfig":{"initParams":null,"prefix":null},"requestReplyPort":6663,"sslConfig":{"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":true,"enableMandatoryClientAuth":false,"enabled":false,"enforceServerCipherSuitePreference":null,"keystoreRef":null,"removeCipherSuites":[],"removeProtocols":[],"truststoreRef":null},"timeoutMillis":10000,"userDataTimeoutMillis":10000}
 ```
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.authentication](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4153)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.authentication](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4149)
      
 Optional. Authentication settings for the connection.
 
 **Type:** object
 
 **Default:** `{"credentialSecrets":[],"enabled":false}`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.authentication.credentialSecrets](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4166)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.authentication.credentialSecrets](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4162)
      
 Optional but ineffective if `enabled` is set to `false`. The reference to the Secrets containing the credentials of the users allowed to connect. Every Secret must contain the keys `user` and `password`.
 
 **Type:** list
 
 **Default:** `[]`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.authentication.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4160)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.authentication.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4156)
      
 Optional. If set to `true`, enforces Remote Adapter authentication on the connection based on a user/password credential check. Note that the user names will be used in messages at `INFO` level or above, whereas the passwords won't.
 
 **Type:** bool
 
 **Default:** `false`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.authenticationPool](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3978)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.authenticationPool](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3974)
      
 Optional. Configures the specific `AUTHENTICATION` thread pool, expressly devoted to the calls of Notify User against the Remote Metadata Adapter. This pool is always created and the Notify User calls to Proxy Adapters are performed asynchronously, hence they are not supposed to keep threads engaged. In order to keep track of the pending asynchronous requests, they are counted in the global statistics as part of the pool task queue (but not as contributing to the pool queue wait).  By default, the pool has one fixed thread. If this setting is defined, its `maxSize` and `maxFree` values, with meaning similar to that of the global `load.serverPoolMaxSize` and `load.serverPoolMaxFree`, are optional, both with default `1`. In fact, it is not expected that more than one thread will ever be needed, since the pool's only task is to forward the Notify User requests. On the other hand, configuring the pool is recommended, to constrain the maximum number of pending requests to the Remote Metadata Adapter through the optional `maxPendingRemoteRequests` settings (if set <= 0, it poses no limitation; this is also the default). The optional `maxQueue` setting is also available, with meaning similar to the global `load.serverPoolMaxQueue`. If defined, the length of the queue of this pool, instead of being added to the length checked by `load.serverPoolMaxQueue`, will be checked against this limit, but with the same consequent backpressure actions.
 
@@ -4223,112 +4223,112 @@ Optional. Configures the specific `AUTHENTICATION` thread pool, expressly devote
 ```
 {"maxFree":1,"maxPendingRemoteRequests":0,"maxQueue":null,"maxSize":1}
 ```
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.authenticationPool.maxFree](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3986)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.authenticationPool.maxFree](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3982)
      
 Optional. Maximum number of idle threads allowed for the `AUTHENTICATION` thread pool.
 
 **Type:** int
 
 **Default:** `1`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.authenticationPool.maxPendingRemoteRequests](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3990)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.authenticationPool.maxPendingRemoteRequests](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3986)
      
 Optional. Maximum number pending requests to the Remote Metadata Adapter.
 
 **Type:** int
 
 **Default:** `0`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.authenticationPool.maxQueue](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3995)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.authenticationPool.maxQueue](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3991)
      
 Optional. Maximum number of tasks allowed to be queued to enter the `AUTHENTICATION` thread pool before undertaking backpressure actions.
 
 **Type:** int
 
 **Default:** `nil`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.authenticationPool.maxSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3982)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.authenticationPool.maxSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3978)
      
 Optional. Maximum number of threads allowed for the `AUTHENTICATION` thread pool.
 
 **Type:** int
 
 **Default:** `1`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.closeNotificationsRecovery](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4234)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.closeNotificationsRecovery](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4230)
      
 Optional but only effective if `enableRobustAdapter` is set to `true`. The strategy to be adopted whenever a new remote server is available in order to resend the state change notifications that could not or might not have been sent to the previous remote server. This involves the notifications of session closing and the optional notifications of table closing. Note that the Proxy Adapter has no way of knowing exactly if a notification has been processed by a remote server if no answer had been received at the time the connection was closed. Also consider that the answers from the remote server are not expected to come in the same sequence as the requests. Hence, no perfect recovery is possible and the remote server must be able to deal with an imperfect notification sequence. Currently, the only available options are:  - `pessimistic`    All notifications since the first one that could not or may not    have been processed by the previous remote server are resent to the    new one.    This ensures that all notifications are processed at least once,    but may cause some notifications to be issued for a second time.    Even notifications that did get an answer could be resent, in order    to preserve the original sequence.    Note that timed out requests (see the `timeoutMillis` setting) are    considered as processed.  - `optimistic`    Only notifications after the last one that got an answer by the    previous remote server are resent to the new one.  - `unneeded`    No notifications are resent. In case the close notifications are    ignored by the remote server implementation, this can save a    possibly long playback of unneeded messages.    Note that table notifications, for both opening and closing, are    already omitted, unless requested by the remote server through the    `wantsTablesNotification` method.
 
 **Type:** string
 
 **Default:** `"pessimistic"`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.connectionRecoveryTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4182)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.connectionRecoveryTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4178)
      
 Optional but only effective if `enableRobustAdapter` is set to `true`. The timeout for initialization errors. After an unsuccessful attempt to achieve a connection from a remote server due to an error in configuration, network access or initialization, the Proxy Adapter will be allowed to retry listening for connections only after ensuring that at least this time has elapsed since the previous attempt. A negative value prevents further attempts, so that no remote server will be available.
 
 **Type:** int
 
 **Default:** `-1`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.connectionRetryMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4171)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.connectionRetryMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4167)
      
 Optional but only effective if `remoteHost` is set. Delay to be enforced before retrying a connection attempt to the Remote Server, to prevent a possible strict loop of unsuccessful attempts.
 
 **Type:** int
 
 **Default:** `10000`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.enableClearingOnNewRemote](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4352)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.enableClearingOnNewRemote](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4348)
      
 Optional but only effective if `enableRobustAdapter` is set to `true`. If set to `true`, enforces the clearing of all internal caches when a new Remote Metadata Adapter instance is connected after the disconnection of the previous instance. In fact, some requests to the Remote Adapter involve aggregate data and are meant to be used to fulfill multiple subsequent requests from the Server, hence their responses are cached for a few seconds. However, for requests whose responses are not supposed to change with time, the cached responses are kept longer, so as to be used to fulfill further identical requests from the Server and save the submission of the related aggregate requests to the Remote counterpart. By setting `true`, responses obtained from a previous Remote Metadata Adapter instance will never be used to fulfill requests from the Server targeted to the new instance.
 
 **Type:** bool
 
 **Default:** `false`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.enableClearingOnSessionClose](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4328)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.enableClearingOnSessionClose](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4324)
      
 Optional. If set to `false`, suppresses clearing of the cached profile data for a user when no sessions for the user are active. This is only for troubleshooting purpose, as profile data are always refreshed upon Notify User requests.
 
 **Type:** bool
 
 **Default:** `true`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.enableRobustAdapter](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3950)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.enableRobustAdapter](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3946)
      
 Optional. Enables the Robust Proxy Metadata Adapter to manage the case in which the remote counterpart is missing, by just refusing all new requests from the clients and storing all state change notifications that have to be sent to the backend (namely, session closing and table closing notifications). Meanwhile, this Metadata Adapter keeps waiting for connection from a new Remote Server; upon connection, it will flush pending notify requests, then start working normally. However, if the remote counterpart has restarted from scratch, then retrieving and restoring the state of the previously connected instance will be its own burden; for how to identify the involved Server instance, see `remoteParams.prefix`. Note that the unavailability of the Metadata Adapter is a severe issue for Lightstreamer and all client requests performed in this condition will fail with an `unexpected error` cause; this can be avoided only for requests for new sessions (see `notifyUserDisconnectionCode`).
 
 **Type:** bool
 
 **Default:** `false`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.enableTableNotificationsSequentialization](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4073)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.enableTableNotificationsSequentialization](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4069)
      
 Optional. If set to `true`, ensures that all Table (i.e. Subscription) notifications (that is, all the invocations to the Notify New Tables and Notify Tables Close methods) pertaining to the same session will be sequential, with no overlapping; if set to `false`, then concurrent invocations will be possible. Note that the final invocation to Notify Session Close is always guaranteed to occur after all the above notifications have terminated.
 
 **Type:** bool
 
 **Default:** `false`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.firstConnectionTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4193)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.firstConnectionTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4189)
      
 Optional but only effective if `enableRobustAdapter` is set to `true`. The timeout for the first connection attempt. Upon the Proxy Adapter initialization at the Lightstreamer Broker startup, if a remote server connection is not available, the Lightstreamer Broker startup can be delayed until this timeout expires. A negative value stands for an unlimited timeout. Note that, when the Lightstreamer Broker startup completes, as long as a connection to a remote server is still missing, all client requests will be refused.
 
 **Type:** int
 
 **Default:** `-1`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.interface](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4104)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.interface](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4100)
      
 Optional. The local network interface to bind to. Example: `192.168.1.1`
 
 **Type:** string
 
 **Default:** `will bind to any available interface`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.keepaliveHintMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4390)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.keepaliveHintMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4386)
      
 Optional. Keepalive interval to be requested to the Remote Metadata Adapter. The value should be low enough to ensure that, if obeyed, the connection will pass the timeout checks (see `keepaliveTimeoutMillis`). A zero or negative value stands for no keepalive request, which still allows the Remote Metadata Adapter to send keepalives for its own purpose. The default depends on the setting of `keepaliveTimeoutMillis`: - if not configured: `-1` - if less than `4` seconds: half the `keepaliveTimeoutMillis` - otherwise: `2` seconds less than the `keepaliveTimeoutMillis`
 
 **Type:** int
 
 **Default:** `see description`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.keepaliveTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4375)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.keepaliveTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4371)
      
 Optional. Timeout for inactivity on the connection with respect to messages coming from the Remote Metadata Adapter. If neither replies nor keepalives are received within the specified timeout, the TCP connection will be considered broken and will be closed; as a consequence, a connection with a new Remote Metadata Adapter will be attempted. Setting a timeout is only meaningful if the Remote Metadata Adapter is configured to either send keepalive messages at a shorter interval, or obey the keepalive interval requested by this Proxy (see `keepaliveHintMillis`). A zero or negative value stands for an unlimited timeout.
 
 **Type:** int
 
 **Default:** `-1`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.messagesPool](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4023)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.messagesPool](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4019)
      
 Optional. Configures the specific `MSG` thread pool, expressly devoted to the calls of Notify User Message, which handle messages sent by the client, against the Remote Metadata Adapter. This pool is always created and the Notify User Message calls to Proxy Adapters are performed asynchronously, hence they are not supposed to keep threads engaged. In order to keep track of the pending asynchronous requests, they are counted in the global statistics as part of the pool task queue (but not as contributing to the pool queue wait).  By default, the pool has one fixed thread. If this setting is defined, its `maxSize` and `maxFree` values, with meaning similar to that of the global `load.serverPoolMaxSize` and `load.serverPoolMaxFree` settings, are optional, both with default `1`. In fact, it is not expected that more than one thread will ever be needed, since the pool's only task is to forward the Notify User requests. On the other hand, configuring the pool is recommended, to constrain the maximum number of pending requests to the Remote Metadata Adapter through the optional `maxPendingRemoteRequests` setting (if set <= 0, it poses no limitation; this is also the default). The optional `maxQueue` setting is also available, with meaning similar to the global `load.serverPoolMaxQueue`. If defined, the length of the queue of this pool, instead of being added to the length checked by `load.serverPoolMaxQueue`, will be checked against this limit, but with the same consequent backpressure actions.
 
@@ -4339,119 +4339,119 @@ Optional. Configures the specific `MSG` thread pool, expressly devoted to the ca
 ```
 {"maxFree":1,"maxPendingRemoteRequests":0,"maxQueue":null,"maxSize":1}
 ```
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.messagesPool.maxFree](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4031)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.messagesPool.maxFree](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4027)
      
 Optional. Maximum number of idle threads allowed for the `MSG` thread pool.
 
 **Type:** int
 
 **Default:** `1`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.messagesPool.maxPendingRemoteRequests](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4035)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.messagesPool.maxPendingRemoteRequests](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4031)
      
 Optional. Maximum number pending requests to the Remote Metadata Adapter.
 
 **Type:** int
 
 **Default:** `0`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.messagesPool.maxQueue](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4039)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.messagesPool.maxQueue](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4035)
      
 Optional. Maximum number of tasks allowed to be queued to enter the `MSG` thread pool before undertaking backpressure actions.
 
 **Type:** int
 
 **Default:** `nil`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.messagesPool.maxSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4027)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.messagesPool.maxSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4023)
      
 Optional. Maximum number of threads allowed for the `MSG` thread pool.
 
 **Type:** int
 
 **Default:** `1`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.mpnPool](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4056)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.mpnPool](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4052)
      
 Optional. Requests the creation of a specific `MPN REQUESTS` thread pool, devoted to the submission to the Remote Metadata Adapter of all the mobile push notification requests pertaining to sessions based on this Adapter Set.  If not defined, these calls are managed by the thread pool related to the Adapter Set, if, in turn, defined. If defined, the `maxSize` and `maxFree` settings are mandatory, with meaning similar to that of the global `load.serverPoolMaxSize` and `load.serverPoolMaxFree` settings. Note that `maxSize` also indicates the maximum number of pending requests to the Remote Metadata Adapter. Using a specific thread pool is advisable if the implementation of MPN operations (like Notify MPN Subscription Activation etc.) may introduce delays.
 
 **Type:** object
 
 **Default:** `{}`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.mpnPool.maxFree](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4064)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.mpnPool.maxFree](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4060)
      
 Mandatory. Maximum number of idle threads allowed for the `MPN REQUESTS` thread pool.
 
 **Type:** int
 
 **Default:** `nil`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.mpnPool.maxSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4060)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.mpnPool.maxSize](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4056)
      
 Mandatory. Maximum number of threads allowed for the `MPN REQUESTS` thread pool.
 
 **Type:** int
 
 **Default:** `nil`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.notifyUserDisconnectionCode](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4269)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.notifyUserDisconnectionCode](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4265)
      
 Optional when `notifyUserOnDisconnection` is not supplied; mandatory when `notifyUserOnDisconnection` is set to `send_code`; otherwise forbidden. An integer to be supplied as a custom error code by `notifyUser`, through a `CreditsException`, when the request is being refused because of the unavailability of the Remote Metadata Adapter. The code must be zero or negative, as positive codes are reserved by the Server.
 
 **Type:** int
 
 **Default:** `no code will be used, hence notifyUserOnDisconnection will be set as fail`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.notifyUserDisconnectionMsg](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4279)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.notifyUserDisconnectionMsg](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4275)
      
 Optional but only effective if `notifyUserDisconnectionCode` is set. A string to be supplied as a custom error message by `notifyUser`, through a `CreditsException`, when the request is being refused because of the unavailability of the Remote Metadata Adapter. The message will be used in association with the error code configured through `notifyUserDisconnectionCode`.
 
 **Type:** string
 
 **Default:** `the error message is supplied by the Robust Proxy Metadata Adapter`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.notifyUserOnDisconnection](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4258)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.notifyUserOnDisconnection](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4254)
      
 Optional but only effective if `enableRobustAdapter` is set to `true`. The action to be performed when the authentication of the request for a new Session (through `notifyUser`) cannot be carried out because of the unavailability of the Remote Metadata Adapter. Can be one of the following:  - `fail`   The request will fail as though an unexpected error had been   occurred.  - `force_retry`   The request will fail, but the server should also instruct the   client to retry the request.  - `send_code`   The request will be refused by throwing a CreditsException with a   custom error code that has to be specified through the   `notifyUserDisconnectionCode` parameter; in this way, the code will   be communicated to the client as a Metadata Adapter custom refusal   code.
 
 **Type:** string
 
 **Default:** `either send_code or fail, depending on whether or not the notifyUserDisconnectionCode parameter is supplied`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.remoteAddressWhitelist](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4362)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.remoteAddressWhitelist](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4358)
      
 Optional. Specifies a comma-separated list of hosts allowed to connect to this proxy adapter in order to act as remote adapters. If a list is specified, connections received from addresses not in the list will be turned down, otherwise any connection will be accepted. The addresses can be in any form accepted by the Java `InetAddress.getByName` method. Example: `localhost,192.168.0.190`
 
 **Type:** string
 
 **Default:** `""`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.remoteHost](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4099)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.remoteHost](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4095)
      
 Optional. If set, inverts the normal connection establishment behavior, by having the Proxy Adapter open a client socket on the configured request/reply port towards the Remote Adapter, using the host address specified here. This is not the preferred setting but it can be useful in some scenarios. See a discussion in the Adapter Remoting Infrastructure architecture document. Obviously, the setting requires a corresponding behavior by the Remote Server. When this setting is leveraged, most of the other settings and parameters are still valid (in particular, `sslConfig`), although some of their descriptions refer to the listening port case and should be reinterpreted; only the following ones are ignored: - `interface` - sslConfig.enforceServerCipherSuitePreference - sslConfig.enableClientAuth - remoteAddressWhitelist Note, in particular, that the keystore parameters are available, though optional. This allows for authentication of the Proxy Adapter by the Remote Server by requesting the Proxy Adapter's TLS client certificate.
 
 **Type:** string
 
 **Default:** `nil`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.remoteParamsConfig](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4283)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.remoteParamsConfig](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4279)
      
 Optional. Configuration of the custom initialization parameters to be sent to the remote.
 
 **Type:** object
 
 **Default:** `{"initParams":null,"prefix":null}`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.remoteParamsConfig.initParams](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4315)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.remoteParamsConfig.initParams](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4311)
      
 Optional but only effective if `prefix` is set. Map of custom initialization parameters to be sent to the remote counterpart. Every key is the name of the parameter and must start with the value specified in the `prefix` setting.
 
 **Type:** object
 
 **Default:** `nil`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.remoteParamsConfig.prefix](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4308)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.remoteParamsConfig.prefix](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4304)
      
 Optional. Determines the custom initialization parameters to be sent to the remote. The supplied value is meant as a prefix, such that all parameters supplied to this Proxy Adapter and whose names start with this prefix will be sent. The value must contain a `:` character, as all parameter names that don't contain a `:` character are reserved. Hence, the normal configuration parameters will not be sent to the remote counterpart, unless explicitly duplicated with a prefixed name. Anyway, the following parameters, with obvious meaning, will be provided by the Proxy Adapter and will also be sent: - `ARI.version` - `keepalive_hint.millis` (optional) - `adapters_conf.id` - `server.instance_id` - `proxy.instance_id` where the latter is added by the Robust Proxy Metadata Adapter and allows a Remote Metadata Adapter to detect if it is in replacement of a previous instance for the same Proxy Adapter instance, and to possibly recover the state, including the currently active sessions and the related users. Example: `remote:`
 
 **Type:** string
 
 **Default:** `"" (no custom initialization parameters will be sent)`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.requestReplyPort](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4077)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.requestReplyPort](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4073)
      
 Mandatory. The request/reply port to listen on. The connection on this port will carry the requests/replies channels.
 
 **Type:** int
 
 **Default:** `6663`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.sslConfig](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4108)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.sslConfig](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4104)
      
 Optional. TLS/SSL settings for the connection to the remote Metadata Adapter.
 
@@ -4462,91 +4462,91 @@ Optional. TLS/SSL settings for the connection to the remote Metadata Adapter.
 ```
 {"allowCipherSuites":[],"allowProtocols":[],"enableHostnameVerification":true,"enableMandatoryClientAuth":false,"enabled":false,"enforceServerCipherSuitePreference":null,"keystoreRef":null,"removeCipherSuites":[],"removeProtocols":[],"truststoreRef":null}
 ```
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.sslConfig.allowCipherSuites](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4120)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.sslConfig.allowCipherSuites](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4116)
      
 See `servers.{}.sslConfig.allowCipherSuites`.
 
 **Type:** list
 
 **Default:** `[]`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.sslConfig.allowProtocols](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4129)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.sslConfig.allowProtocols](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4125)
      
 See `servers.{}.sslConfig.allowProtocols`.
 
 **Type:** list
 
 **Default:** `[]`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.sslConfig.enableHostnameVerification](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4150)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.sslConfig.enableHostnameVerification](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4146)
      
 Optional. Only used if `remoteHost` is configured. If set to `false`, suppresses the check of the hostname in the TLS certificate, which, in this context, is received from the Remote Server. Setting to `false` is only meant to be used in a development/test scenario.
 
 **Type:** bool
 
 **Default:** `true`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.sslConfig.enableMandatoryClientAuth](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4135)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.sslConfig.enableMandatoryClientAuth](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4131)
      
 See `servers.{}.sslConfig.enableMandatoryClientAuth`.
 
 **Type:** bool
 
 **Default:** `false`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.sslConfig.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4111)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.sslConfig.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4107)
      
 Optional. Enables the encryption.
 
 **Type:** bool
 
 **Default:** `false`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.sslConfig.enforceServerCipherSuitePreference](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4126)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.sslConfig.enforceServerCipherSuitePreference](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4122)
      
 See `servers.{}.sslConfig.enforceServerCipherSuitePreference`.
 
 **Type:** object
 
 **Default:** `nil`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.sslConfig.keystoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4117)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.sslConfig.keystoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4113)
      
 Mandatory. The reference to a keystore configuration (defined in `keystores`). See the `keystores.myServerKeystore` settings for general details on keystore configuration.
 
 **Type:** string
 
 **Default:** `nil`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.sslConfig.removeCipherSuites](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4123)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.sslConfig.removeCipherSuites](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4119)
      
 See `servers.{}.sslConfig.removeCipherSuites`.
 
 **Type:** list
 
 **Default:** `[]`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.sslConfig.removeProtocols](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4132)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.sslConfig.removeProtocols](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4128)
      
 See `servers.{}.sslConfig.removeProtocols`.
 
 **Type:** list
 
 **Default:** `[]`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.sslConfig.truststoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4142)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.sslConfig.truststoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4138)
      
 Mandatory if `enableMandatoryClientAuth` is set to `true`. The reference to a keystore configuration (defined in `keystores`). See the `keystores.myServerKeystore` settings for general details on keystore configuration.
 
 **Type:** string
 
 **Default:** `nil`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.timeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4322)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.timeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4318)
      
 Optional. Timeout for sent requests. A negative value stands for an unlimited timeout. Timed out requests are considered as failed and later answers are ignored.
 
 **Type:** int
 
 **Default:** `10000`
-### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.userDataTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4334)
+### [adapters.myAdapterSet.metadataProvider.proxyMetadataAdapter.userDataTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4330)
      
 Optional but ineffective if `enableClearingOnSessionClose` is set to `false`. Sets the minimum time cached profile data are kept; these cached data are needed in order to manage request processing before a session is fully started.
 
 **Type:** int
 
 **Default:** `10000`
-### [adapters.myAdapterSet.provisioning](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3665)
+### [adapters.myAdapterSet.provisioning](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3661)
      
 Optional but mandatory if either `metadataProvider.proxyMetadataAdapter` or at least one `dataProviders.{}.proxyDataAdapter` is defined. Defines the provisioning method of the Adapter Set. Either specify one of `fromPathInImage` or `fromVolume`.
 
@@ -4557,35 +4557,35 @@ Optional but mandatory if either `metadataProvider.proxyMetadataAdapter` or at l
 ```
 {"fromPathInImage":null,"fromVolume":{"name":null,"path":null}}
 ```
-### [adapters.myAdapterSet.provisioning.fromPathInImage](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3671)
+### [adapters.myAdapterSet.provisioning.fromPathInImage](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3667)
      
 The path to the Adapter Set resources in the image, e.g.: `/lightstreamer/adapters/my-adapter-set`. At startup, the path will be me mounted at the designated Adapter Set folder under the `/deployed_adapters` directory in the container.
 
 **Type:** string
 
 **Default:** `nil`
-### [adapters.myAdapterSet.provisioning.fromVolume](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3677)
+### [adapters.myAdapterSet.provisioning.fromVolume](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3673)
      
 The reference to a volume where the Adapter Set resources are stored. At startup, the resources will be copied to the designated Adapter Set folder under the `/deployed_adapters` directory in the container. The volume must be defined in `deployment.extraVolumes`.
 
 **Type:** object
 
 **Default:** `{"name":null,"path":null}`
-### [adapters.myAdapterSet.provisioning.fromVolume.name](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3680)
+### [adapters.myAdapterSet.provisioning.fromVolume.name](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3676)
      
 Mandatory. The name of the volume.
 
 **Type:** string
 
 **Default:** `nil`
-### [adapters.myAdapterSet.provisioning.fromVolume.path](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3684)
+### [adapters.myAdapterSet.provisioning.fromVolume.path](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L3680)
      
 Optional. The path to the Adapter Set resources in the volume, e.g.: `/adapters/my-adapter-set`.
 
 **Type:** string
 
 **Default:** `nil`
-### [adapters.welcomeAdapterSet](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4810)
+### [adapters.welcomeAdapterSet](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4806)
      
 Predefined Adapter Set bundled with the Lightstreamer Broker and available in the official Docker image. Populates the demos on the welcome page. Disabled by default.
 
@@ -4599,7 +4599,7 @@ Predefined Adapter Set bundled with the Lightstreamer Broker and available in th
 
 ## Connectors settings
  
-### [connectors](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4883)
+### [connectors](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4879)
      
 Optional. Connectors configuration.
 
@@ -4610,7 +4610,7 @@ Optional. Connectors configuration.
 ```
 {"kafkaConnector":{"adapterClassName":"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter","adapterSetId":"KafkaConnector","connections":{"aConnectionConfiguration":{"authentication":{"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":false,"enableStoreKey":false,"enableTicketCache":false,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null},"iam":{"credentialProfileName":null,"roleArn":null,"roleSessionName":null,"stsRegion":null},"mechanism":null},"bootstrapServers":null,"consumerMode":"GROUP","enabled":false,"fields":{"enableNonScalarValuesMapping":false,"enableSkipFailedMapping":false,"mappings":{"aLightstreamerFieldName":"#{extraction_expression}","key":"#{KEY}"}},"groupId":null,"logger":{"appenders":[],"level":null},"name":null,"record":{"consumeFrom":"LATEST","consumeWithMaxPollIntervalMillis":30000,"consumeWithMaxPollRecords":500,"consumeWithOrderStrategy":"ORDER_BY_PARTITION","consumeWithSessionTimeoutMillis":45000,"consumeWithThreadNumber":1,"extractionErrorStrategy":"IGNORE_AND_CONTINUE","keyEvaluator":{"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"}},"routing":{"enableTopicRegEx":false,"itemTemplates":null,"topicMappings":{"aTopicMapping":{"fromPartitions":[],"itemTemplateRefs":[],"items":[],"topic":null}}},"snapshot":{"distinctLength":10,"maxIdleSeconds":0,"mode":"NONE"},"sslConfig":{"allowCipherSuites":[],"allowProtocols":["TLSv1.2","TLSv1.3"],"enableHostnameVerification":false,"enabled":false,"keystoreRef":null,"protocol":"TLSv1.3","truststoreRef":null}}},"enabled":false,"localSchemaFiles":{"myKeySchema":null,"myValueSchema":null},"logging":{"appenders":{"dailyRolling":{"fileName":"kafka-connector.log","fileNamePattern":"kafka-connector-%d{yyyy-MM-dd}.log","pattern":"[%d] [%-10c{1}] %-5p %m%n","type":"DailyRollingFile","volumeRef":null},"stdout":{"pattern":"%d|%-10c{1}|%-5p|%m%n","type":"Console"}},"loggers":{"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter":{"appenders":["stdout"],"level":"INFO"},"org.apache.kafka":{"appenders":["stdout"],"level":"WARN"}}},"provisioning":{"fromGitHubRelease":null,"fromPathInImage":null,"fromUrl":null,"fromVolume":{"filePath":null,"name":null}},"schemaRegistries":{"mySchemaRegistry":{"azure":{"credentialsSecretRef":null},"confluent":{"basicAuthentication":{"credentialsSecretRef":null,"enabled":false},"sslConfig":{"allowCipherSuites":[],"allowProtocols":["TLSv1.2","TLSv1.3"],"enableHostnameVerification":false,"keystoreRef":null,"protocol":"TLSv1.3","truststoreRef":null}},"provider":"CONFLUENT","url":null}}}}
 ```
-### [connectors.kafkaConnector](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4886)
+### [connectors.kafkaConnector](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4882)
      
 Optional. Lightstreamer Kafka Connector configuration.
 
@@ -4621,21 +4621,21 @@ Optional. Lightstreamer Kafka Connector configuration.
 ```
 {"adapterClassName":"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter","adapterSetId":"KafkaConnector","connections":{"aConnectionConfiguration":{"authentication":{"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":false,"enableStoreKey":false,"enableTicketCache":false,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null},"iam":{"credentialProfileName":null,"roleArn":null,"roleSessionName":null,"stsRegion":null},"mechanism":null},"bootstrapServers":null,"consumerMode":"GROUP","enabled":false,"fields":{"enableNonScalarValuesMapping":false,"enableSkipFailedMapping":false,"mappings":{"aLightstreamerFieldName":"#{extraction_expression}","key":"#{KEY}"}},"groupId":null,"logger":{"appenders":[],"level":null},"name":null,"record":{"consumeFrom":"LATEST","consumeWithMaxPollIntervalMillis":30000,"consumeWithMaxPollRecords":500,"consumeWithOrderStrategy":"ORDER_BY_PARTITION","consumeWithSessionTimeoutMillis":45000,"consumeWithThreadNumber":1,"extractionErrorStrategy":"IGNORE_AND_CONTINUE","keyEvaluator":{"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"}},"routing":{"enableTopicRegEx":false,"itemTemplates":null,"topicMappings":{"aTopicMapping":{"fromPartitions":[],"itemTemplateRefs":[],"items":[],"topic":null}}},"snapshot":{"distinctLength":10,"maxIdleSeconds":0,"mode":"NONE"},"sslConfig":{"allowCipherSuites":[],"allowProtocols":["TLSv1.2","TLSv1.3"],"enableHostnameVerification":false,"enabled":false,"keystoreRef":null,"protocol":"TLSv1.3","truststoreRef":null}}},"enabled":false,"localSchemaFiles":{"myKeySchema":null,"myValueSchema":null},"logging":{"appenders":{"dailyRolling":{"fileName":"kafka-connector.log","fileNamePattern":"kafka-connector-%d{yyyy-MM-dd}.log","pattern":"[%d] [%-10c{1}] %-5p %m%n","type":"DailyRollingFile","volumeRef":null},"stdout":{"pattern":"%d|%-10c{1}|%-5p|%m%n","type":"Console"}},"loggers":{"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter":{"appenders":["stdout"],"level":"INFO"},"org.apache.kafka":{"appenders":["stdout"],"level":"WARN"}}},"provisioning":{"fromGitHubRelease":null,"fromPathInImage":null,"fromUrl":null,"fromVolume":{"filePath":null,"name":null}},"schemaRegistries":{"mySchemaRegistry":{"azure":{"credentialsSecretRef":null},"confluent":{"basicAuthentication":{"credentialsSecretRef":null,"enabled":false},"sslConfig":{"allowCipherSuites":[],"allowProtocols":["TLSv1.2","TLSv1.3"],"enableHostnameVerification":false,"keystoreRef":null,"protocol":"TLSv1.3","truststoreRef":null}},"provider":"CONFLUENT","url":null}}}
 ```
-### [connectors.kafkaConnector.adapterClassName](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4940)
+### [connectors.kafkaConnector.adapterClassName](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4936)
      
 Mandatory. Java class name of the Kafka Connector Metadata Adapter. It is possible to provide a custom implementation by extending the factory class. See the [dedicated section](https://github.com/Lightstreamer/Lightstreamer-kafka-connector/tree/main?tab=readme-ov-file#customizing-the-kafka-connector-metadata-adapter-class) in the _README.md_ file of the _Lightstreamer Kafka Connector_ project on GitHub.
 
 **Type:** string
 
 **Default:** `"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter"`
-### [connectors.kafkaConnector.adapterSetId](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4932)
+### [connectors.kafkaConnector.adapterSetId](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4928)
      
 Mandatory. Defines the Kafka Connector Adapter Set and its unique ID, which will be used by the Clients to request this Adapter Set while setting up the connection to a Lightstreamer Server through a LightstreamerClient object.
 
 **Type:** string
 
 **Default:** `"KafkaConnector"`
-### [connectors.kafkaConnector.connections](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5020)
+### [connectors.kafkaConnector.connections](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5016)
      
 Mandatory. Maps of connection configurations. The Kafka Connector allows the configuration of different independent connections to different Kafka broker/clusters. Every entry in the map defines a connection configuration.
 
@@ -4646,7 +4646,7 @@ Mandatory. Maps of connection configurations. The Kafka Connector allows the con
 ```
 {"aConnectionConfiguration":{"authentication":{"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":false,"enableStoreKey":false,"enableTicketCache":false,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null},"iam":{"credentialProfileName":null,"roleArn":null,"roleSessionName":null,"stsRegion":null},"mechanism":null},"bootstrapServers":null,"consumerMode":"GROUP","enabled":false,"fields":{"enableNonScalarValuesMapping":false,"enableSkipFailedMapping":false,"mappings":{"aLightstreamerFieldName":"#{extraction_expression}","key":"#{KEY}"}},"groupId":null,"logger":{"appenders":[],"level":null},"name":null,"record":{"consumeFrom":"LATEST","consumeWithMaxPollIntervalMillis":30000,"consumeWithMaxPollRecords":500,"consumeWithOrderStrategy":"ORDER_BY_PARTITION","consumeWithSessionTimeoutMillis":45000,"consumeWithThreadNumber":1,"extractionErrorStrategy":"IGNORE_AND_CONTINUE","keyEvaluator":{"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"}},"routing":{"enableTopicRegEx":false,"itemTemplates":null,"topicMappings":{"aTopicMapping":{"fromPartitions":[],"itemTemplateRefs":[],"items":[],"topic":null}}},"snapshot":{"distinctLength":10,"maxIdleSeconds":0,"mode":"NONE"},"sslConfig":{"allowCipherSuites":[],"allowProtocols":["TLSv1.2","TLSv1.3"],"enableHostnameVerification":false,"enabled":false,"keystoreRef":null,"protocol":"TLSv1.3","truststoreRef":null}}}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5026)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5022)
      
 At least one must be provided. A connection configuration. Since the Kafka Connector manages the physical connection to Kafka by wrapping an internal Kafka Consumer, several configuration settings are identical to those required by the usual Kafka Consumer configuration.
 
@@ -4657,7 +4657,7 @@ At least one must be provided. A connection configuration. Since the Kafka Conne
 ```
 {"authentication":{"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":false,"enableStoreKey":false,"enableTicketCache":false,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null},"iam":{"credentialProfileName":null,"roleArn":null,"roleSessionName":null,"stsRegion":null},"mechanism":null},"bootstrapServers":null,"consumerMode":"GROUP","enabled":false,"fields":{"enableNonScalarValuesMapping":false,"enableSkipFailedMapping":false,"mappings":{"aLightstreamerFieldName":"#{extraction_expression}","key":"#{KEY}"}},"groupId":null,"logger":{"appenders":[],"level":null},"name":null,"record":{"consumeFrom":"LATEST","consumeWithMaxPollIntervalMillis":30000,"consumeWithMaxPollRecords":500,"consumeWithOrderStrategy":"ORDER_BY_PARTITION","consumeWithSessionTimeoutMillis":45000,"consumeWithThreadNumber":1,"extractionErrorStrategy":"IGNORE_AND_CONTINUE","keyEvaluator":{"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"}},"routing":{"enableTopicRegEx":false,"itemTemplates":null,"topicMappings":{"aTopicMapping":{"fromPartitions":[],"itemTemplateRefs":[],"items":[],"topic":null}}},"snapshot":{"distinctLength":10,"maxIdleSeconds":0,"mode":"NONE"},"sslConfig":{"allowCipherSuites":[],"allowProtocols":["TLSv1.2","TLSv1.3"],"enableHostnameVerification":false,"enabled":false,"keystoreRef":null,"protocol":"TLSv1.3","truststoreRef":null}}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5110)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5106)
      
 Optional. Authentication settings for the connection.
 
@@ -4668,21 +4668,21 @@ Optional. Authentication settings for the connection.
 ```
 {"credentialsSecretRef":null,"enabled":false,"gssapi":{"enableKeytab":false,"enableStoreKey":false,"enableTicketCache":false,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null},"iam":{"credentialProfileName":null,"roleArn":null,"roleSessionName":null,"stsRegion":null},"mechanism":null}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.credentialsSecretRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5130)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.credentialsSecretRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5126)
      
 Mandatory if `mechanism` is set to `PLAIN`, `SCRAM-SHA-256`, `SCRAM-SHA-512`. The name of the Secret containing the credentials. The Secret must contain the keys `user` and `password`.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5114)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5110)
      
 Optional. Enables the authentication of the connection against the Kafka Cluster.
 
 **Type:** bool
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.gssapi](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5134)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.gssapi](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5130)
      
 Mandatory if `mechanism` is set to `GSSAPI`. The GSSAPI authentication settings.
 
@@ -4693,49 +4693,49 @@ Mandatory if `mechanism` is set to `GSSAPI`. The GSSAPI authentication settings.
 ```
 {"enableKeytab":false,"enableStoreKey":false,"enableTicketCache":false,"kerberosServiceName":null,"keytabFilePathRef":null,"principal":null}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.gssapi.enableKeytab](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5137)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.gssapi.enableKeytab](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5133)
      
 Optional. Enables the use of a keytab.
 
 **Type:** bool
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.gssapi.enableStoreKey](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5146)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.gssapi.enableStoreKey](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5142)
      
 Optional. Enables the storage of the principal key.
 
 **Type:** bool
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.gssapi.enableTicketCache](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5156)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.gssapi.enableTicketCache](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5152)
      
 Optional. Enables the use of a ticket cache.
 
 **Type:** bool
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.gssapi.kerberosServiceName](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5149)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.gssapi.kerberosServiceName](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5145)
      
 Mandatory. The name of the Kerberos service.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.gssapi.keytabFilePathRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5141)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.gssapi.keytabFilePathRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5137)
      
 Mandatory if `enableKeytab` is set to `true`. The ConfigMap name and key where the keytab file is stored.
 
 **Type:** object
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.gssapi.principal](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5153)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.gssapi.principal](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5149)
      
 Mandatory if `enableTicketCache` is set to `false`. The name of the principal to be used.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.iam](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5160)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.iam](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5156)
      
 Optional but only effective if `mechanism` is set to `AWS_MSK_IAM`.
 
@@ -4746,63 +4746,63 @@ Optional but only effective if `mechanism` is set to `AWS_MSK_IAM`.
 ```
 {"credentialProfileName":null,"roleArn":null,"roleSessionName":null,"stsRegion":null}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.iam.credentialProfileName](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5165)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.iam.credentialProfileName](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5161)
      
 Optional. The name of the AWS credential profile to use for authentication. These profiles are defined in the AWS shared credentials file.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.iam.roleArn](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5171)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.iam.roleArn](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5167)
      
 Optional. The Amazon Resource Name (ARN) of the IAM role that the Kafka Connector should assume for authentication with MSK. Use this when you want the connector to assume a specific role with temporary credentials.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.iam.roleSessionName](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5175)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.iam.roleSessionName](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5171)
      
 Optional but only effective if `roleArn` is set. The name of the session for the assumed IAM role.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.iam.stsRegion](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5180)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.iam.stsRegion](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5176)
      
 Optional but only effective if `roleArn` is set. Specifies the AWS region of the STS endpoint to use when assuming the IAM role.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.mechanism](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5124)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.authentication.mechanism](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5120)
      
 Optional. The SASL mechanism type. The Kafka Connector accepts the following authentication mechanisms: - `PLAIN` - `SCRAM-SHA-256` - `SCRAM-SHA-512` - `GSSAPI` - `AWS_MSK_IAM`
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.bootstrapServers](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5046)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.bootstrapServers](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5042)
      
 Mandatory. The Kafka Cluster bootstrap server endpoint expressed as the list of host/port pairs used to establish the initial connect. Example: `broker:9092`
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.consumerMode](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5058)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.consumerMode](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5054)
      
 Optional. The consumer mode for this connection. Possible values: - `GROUP`: The internal Kafka Consumer joins a consumer group and uses   the group coordination protocol (partition assignment, offset   commits via __consumer_offsets). The consumer group is identified by   the `groupId` parameter. - `MANUAL`: The internal Kafka Consumer operates independently, using   manual partition assignment without joining any consumer group and   without persisting offsets to Kafka. The `groupId` parameter is   ignored.
 
 **Type:** string
 
 **Default:** `"GROUP"`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5031)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5027)
      
 Enables this connection configuration. If set to `false`, the Lightstreamer Broker automatically denies all subscription requests for this connection.
 
 **Type:** bool
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.fields](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5413)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.fields](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5409)
      
 Mandatory. Record mappings configuration.
 
@@ -4813,21 +4813,21 @@ Mandatory. Record mappings configuration.
 ```
 {"enableNonScalarValuesMapping":false,"enableSkipFailedMapping":false,"mappings":{"aLightstreamerFieldName":"#{extraction_expression}","key":"#{KEY}"}}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.fields.enableNonScalarValuesMapping](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5468)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.fields.enableNonScalarValuesMapping](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5464)
      
 Optional. If set to `true`, allows mapping of non-scalar values to Lightstreamer fields.
 
 **Type:** bool
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.fields.enableSkipFailedMapping](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5464)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.fields.enableSkipFailedMapping](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5460)
      
 Optional. If set to `true`, if a field mapping fails, that specific field's value will simply be omitted from the update sent to the Lightstreamer clients, while other successfully mapped fields from the same record will still be delivered.
 
 **Type:** bool
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.fields.mappings](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5418)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.fields.mappings](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5414)
      
 Mandatory. Record data to Lightstreamer field mappings. Every entry in the map defines a mapping from the Kafka record to the Lightstreamer fields.
 
@@ -4838,49 +4838,49 @@ Mandatory. Record data to Lightstreamer field mappings. Every entry in the map d
 ```
 {"aLightstreamerFieldName":"#{extraction_expression}","key":"#{KEY}"}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.fields.mappings.aLightstreamerFieldName](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5438)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.fields.mappings.aLightstreamerFieldName](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5434)
      
 At least one must be provided. Maps a Lightstreamer field (key) to data extracted from Kafka records (value) using extraction expressions. The extraction expressions follow the Data Extraction Language syntax. For a complete reference, see: https://github.com/lightstreamer/Lightstreamer-kafka-connector?tab=readme-ov-file#record-mapping-fieldfield_name.  Example: stock_name: "#{VALUE.name}" last_price: "#{VALUE.last_price}"  Dynamic Field Discovery: Use wildcards in both the entry (`*`) and extraction expression to automatically discover and map field names at runtime from the record structure.  Example: "*": "#{VALUE.*}"  Static field mappings take precedence over wildcards.
 
 **Type:** string
 
 **Default:** `"#{extraction_expression}"`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.groupId](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5069)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.groupId](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5065)
      
 Optional but only effective if `consumerMode` is set to `GROUP`. The name of the consumer group this connection belongs to. Sets the value for the `group.id` key used to configure the internal Kafka Consumer. See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_group.id for details. If not specified, the default value is `kafkaConnector.adapterSetId + name + randomly generated suffix`. Example: `a-consumer-group`
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.logger](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5511)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.logger](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5507)
      
 Optional. Logger configuration for the connection.
 
 **Type:** object
 
 **Default:** `{"appenders":[],"level":null}`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.logger.appenders](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5515)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.logger.appenders](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5511)
      
 Optional. List of references to the appenders defined in `connectors.kafkaConnector.logging.appenders`.
 
 **Type:** list
 
 **Default:** `[]`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.logger.level](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5520)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.logger.level](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5516)
      
 Mandatory. The logger level. Example: `INFO`
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.name](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5040)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.name](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5036)
      
 Mandatory and unique across all configurations. The connection name. This value will be used by the Clients to request real-time data from this specific Kafka connection through a Subscription object. The connection name is also used to group all logging messages belonging to the same connection. Example: `a-connection-configuration`
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5184)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5180)
      
 Optional. Record processing settings. If not specified, all settings at their defaults will be used.
 
@@ -4891,56 +4891,56 @@ Optional. Record processing settings. If not specified, all settings at their de
 ```
 {"consumeFrom":"LATEST","consumeWithMaxPollIntervalMillis":30000,"consumeWithMaxPollRecords":500,"consumeWithOrderStrategy":"ORDER_BY_PARTITION","consumeWithSessionTimeoutMillis":45000,"consumeWithThreadNumber":1,"extractionErrorStrategy":"IGNORE_AND_CONTINUE","keyEvaluator":{"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"},"schemaRegistryRef":null,"valueEvaluator":{"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"}}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.consumeFrom](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5197)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.consumeFrom](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5193)
      
 Optional but ineffective if `snapshot.mode` is set to any value other than `NONE`. Specifies where to start consuming events from: - `LATEST`: Start consuming events from the end of the topic partition. - `EARLIEST`: Start consuming events from the beginning of the topic partition. Sets the value of the `auto.offset.reset` key to configure the internal Kafka Consumer. See https://kafka.apache.org/documentation/#consumerconfigs_auto.offset.reset for details.
 
 **Type:** string
 
 **Default:** `"LATEST"`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.consumeWithMaxPollIntervalMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5223)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.consumeWithMaxPollIntervalMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5219)
      
 Optional. The maximum delay between invocations of poll() when using consumer group management. This places an upper bound on the amount of time that the consumer can be idle before fetching more records. Sets the value of the `max.poll.interval.ms` key to configure the internal Kafka Consumer. See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_max.poll.interval.ms for details.
 
 **Type:** int
 
 **Default:** `30000`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.consumeWithMaxPollRecords](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5205)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.consumeWithMaxPollRecords](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5201)
      
 Optional. The maximum number of records fetched in each polling cycle. Sets the value of the `max.poll.records` key to configure the internal Kafka Consumer. See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_max.poll.records for details.
 
 **Type:** int
 
 **Default:** `500`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.consumeWithOrderStrategy](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5240)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.consumeWithOrderStrategy](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5236)
      
 Optional but only effective if `consumeWithThreadNumber` is set to a value greater than 1 (which includes the default value). The order strategy to be used for concurrent processing of the incoming deserialized records. If set to `ORDER_BY_PARTITION`, maintains the order of records within each partition. If set to `ORDER_BY_KEY`, maintains the order among the records sharing the same key. If set to `UNORDERED`, provides no ordering guarantees.
 
 **Type:** string
 
 **Default:** `"ORDER_BY_PARTITION"`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.consumeWithSessionTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5213)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.consumeWithSessionTimeoutMillis](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5209)
      
 Optional. The timeout used to detect client failures when using Kafka's group management facility. Sets the value of the `session.timeout.ms` key to configure the internal Kafka Consumer. See https://kafka.apache.org/41/configuration/consumer-configs/#consumerconfigs_session.timeout.ms for details.
 
 **Type:** int
 
 **Default:** `45000`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.consumeWithThreadNumber](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5229)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.consumeWithThreadNumber](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5225)
      
 Optional. The number of threads to be used for parallel processing of the incoming deserialized records. If set to `-1`, the number of threads will be automatically determined based on the number of available CPU cores.
 
 **Type:** int
 
 **Default:** `1`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.extractionErrorStrategy](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5349)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.extractionErrorStrategy](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5345)
      
 Optional but forced to `IGNORE_AND_CONTINUE` when `snapshot.mode` is set to any value other than `NONE`. The error handling strategy to be used if an error occurs while extracting data from incoming deserialized records. If set to `IGNORE_AND_CONTINUE`, the error is ignored and the processing of the record continues. If set to `FORCE_UNSUBSCRIPTION`, the processing of the record is stopped and the unsubscription of the items requested by all the Lightstreamer clients subscribed to this connection is forced.
 
 **Type:** string
 
 **Default:** `"IGNORE_AND_CONTINUE"`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5244)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5240)
      
 Optional. Key evaluator configuration. If not specified, all settings at their defaults will be used.
 
@@ -4951,14 +4951,14 @@ Optional. Key evaluator configuration. If not specified, all settings at their d
 ```
 {"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator.enableSchemaRegistry](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5278)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator.enableSchemaRegistry](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5274)
      
 Mandatory if `type` is set to `AVRO` or `PROTOBUF` and no local schema paths are provided. Enables the Confluent Schema Registry for validation of the key. If enabled, the reference to a Schema Registry configuration is mandatory through the `record.schemaRegistryRef` parameter.
 
 **Type:** bool
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator.kvp](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5288)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator.kvp](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5284)
      
 Optional but only effective if `type` is set to `KVP`. Specifies the configuration for the KVP (Key Value Pair) format.
 
@@ -4969,49 +4969,49 @@ Optional but only effective if `type` is set to `KVP`. Specifies the configurati
 ```
 {"keyValueSeparator":"=","pairsSeparator":","}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator.kvp.keyValueSeparator](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5292)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator.kvp.keyValueSeparator](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5288)
      
 Optional. Specifies the symbol used to separate keys from values in a record key.
 
 **Type:** string
 
 **Default:** `"="`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator.kvp.pairsSeparator](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5296)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator.kvp.pairsSeparator](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5292)
      
 Optional. Specifies the symbol used to separate multiple key-value pairs in a record key.
 
 **Type:** string
 
 **Default:** `","`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator.localSchemaFilePathRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5271)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator.localSchemaFilePathRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5267)
      
 Mandatory if `type` is set to `AVRO` or `PROTOBUF` and `enableSchemaRegistry` is set to `false`. The reference to a local schema file (defined in `connectors.kafkaConnectors.localSchemaFiles`) for message validation of the key. The setting takes precedence over `enableSchemaRegistry` if the latter is set to `true`.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator.protobufMessageType](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5284)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator.protobufMessageType](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5280)
      
 Mandatory if `type` is set to `PROTOBUF` and a binary descriptor file is provided through `localSchemaFilePathRef`. Specifies the name of the Protobuf message type to be used for deserializing the key of a Kafka record.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator.type](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5263)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.keyEvaluator.type](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5259)
      
 Optional. The format to be used to deserialize the key of a Kafka record. Possible values: - `AVRO` - `JSON` - `PROTOBUF` - `KVP` - `STRING` - `INTEGER` - `BOOLEAN` - `BYTE_ARRAY` - `BYTE_BUFFER` - `BYTES` - `DOUBLE` - `FLOAT` - `LONG` - `SHORT` - `UUID`
 
 **Type:** string
 
 **Default:** `"STRING"`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.schemaRegistryRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5355)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.schemaRegistryRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5351)
      
 Mandatory if either `record.keyEvaluator` or `record.valueEvaluator` requires a Schema Registry. The reference to a Schema Registry configuration (defined in `connectors.kafkaConnector.schemaRegistries`).
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5300)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5296)
      
 Optional. Value evaluator configuration. If not specified, all settings at their defaults will be used.
 
@@ -5022,14 +5022,14 @@ Optional. Value evaluator configuration. If not specified, all settings at their
 ```
 {"enableSchemaRegistry":false,"kvp":{"keyValueSeparator":"=","pairsSeparator":","},"localSchemaFilePathRef":null,"protobufMessageType":null,"type":"STRING"}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator.enableSchemaRegistry](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5320)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator.enableSchemaRegistry](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5316)
      
 Mandatory if `type` is set to `AVRO` or `PROTOBUF` and no local schema paths are provided. Enables the Confluent Schema Registry for validation of the value. If enabled, the reference to a Schema Registry configuration is mandatory through the `record.schemaRegistryRef` parameter.
 
 **Type:** bool
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator.kvp](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5330)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator.kvp](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5326)
      
 Optional but only effective if `type` is set to `KVP`. Specifies the configuration for the KVP (Key Value Pair) format.
 
@@ -5040,42 +5040,42 @@ Optional but only effective if `type` is set to `KVP`. Specifies the configurati
 ```
 {"keyValueSeparator":"=","pairsSeparator":","}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator.kvp.keyValueSeparator](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5334)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator.kvp.keyValueSeparator](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5330)
      
 Optional. Specifies the symbol used to separate keys from values in a record value.
 
 **Type:** string
 
 **Default:** `"="`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator.kvp.pairsSeparator](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5338)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator.kvp.pairsSeparator](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5334)
      
 Optional. Specifies the symbol used to separate multiple key-value pairs in a record value.
 
 **Type:** string
 
 **Default:** `","`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator.localSchemaFilePathRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5313)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator.localSchemaFilePathRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5309)
      
 Mandatory if `type` is set to `AVRO` or `PROTOBUF` and `enableSchemaRegistry` is set to `false`. The reference to a local schema file (defined in `connectors.kafkaConnectors.localSchemaFiles`) for message validation of the value. The setting takes precedence over `enableSchemaRegistry` if the latter is set to `true`.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator.protobufMessageType](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5326)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator.protobufMessageType](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5322)
      
 Mandatory if `type` is set to `PROTOBUF` and a binary descriptor file is provided through `localSchemaFilePathRef`. Specifies the name of the Protobuf message type to be used for deserializing the value of a Kafka record.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator.type](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5305)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.record.valueEvaluator.type](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5301)
      
 Optional. The format to be used to deserialize the value of a Kafka record. See `record.keyEvaluator.type` for the list of supported formats.
 
 **Type:** string
 
 **Default:** `"STRING"`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5358)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5354)
      
 Mandatory. Record routings settings.
 
@@ -5086,21 +5086,21 @@ Mandatory. Record routings settings.
 ```
 {"enableTopicRegEx":false,"itemTemplates":null,"topicMappings":{"aTopicMapping":{"fromPartitions":[],"itemTemplateRefs":[],"items":[],"topic":null}}}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.enableTopicRegEx](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5410)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.enableTopicRegEx](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5406)
      
 Optional. Enables treating `connectors.kafkaConnector.routing.topicMappings.{}.topic` as a regular expression instead of a literal topic name. Not supported if `consumerMode` is set to `MANUAL`.
 
 **Type:** bool
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.itemTemplates](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5365)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.itemTemplates](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5361)
      
 Optional. Maps of item template expressions. Every entry in the map defines an expression composed as follows: - ITEM_PREFIX: the prefix of the item name - BINDABLE_EXPRESSIONS: a sequence of bindable extraction   expressions
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.topicMappings](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5370)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.topicMappings](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5366)
      
 Mandatory. Maps of Kafka topic mappings. Every entry in the map defines a topic mapping.
 
@@ -5111,7 +5111,7 @@ Mandatory. Maps of Kafka topic mappings. Every entry in the map defines a topic 
 ```
 {"aTopicMapping":{"fromPartitions":[],"itemTemplateRefs":[],"items":[],"topic":null}}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.topicMappings.aTopicMapping](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5376)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.topicMappings.aTopicMapping](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5372)
      
 At least one must be provided. Maps a Kafka topic as follows: - to one or more simple items - to one or more item templates - to any combination of the above
 
@@ -5122,35 +5122,35 @@ At least one must be provided. Maps a Kafka topic as follows: - to one or more s
 ```
 {"fromPartitions":[],"itemTemplateRefs":[],"items":[],"topic":null}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.topicMappings.aTopicMapping.fromPartitions](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5400)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.topicMappings.aTopicMapping.fromPartitions](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5396)
      
 Optional but only effective if `consumerMode` is set to `MANUAL`. Lists the partitions of the topic to be manually assigned to this consumer. Every entry in the list must be a valid partition number or an inclusive range (e.g. "0", "1", "2-4").
 
 **Type:** list
 
 **Default:** `[]`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.topicMappings.aTopicMapping.itemTemplateRefs](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5391)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.topicMappings.aTopicMapping.itemTemplateRefs](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5387)
      
 Mandatory if `items` is empty. List of item templates to which the topic must be mapped.
 
 **Type:** list
 
 **Default:** `[]`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.topicMappings.aTopicMapping.items](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5385)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.topicMappings.aTopicMapping.items](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5381)
      
 Mandatory if `itemTemplateRefs` is empty. List of simple items to which the topic must be mapped.
 
 **Type:** list
 
 **Default:** `[]`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.topicMappings.aTopicMapping.topic](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5381)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.routing.topicMappings.aTopicMapping.topic](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5377)
      
 Mandatory and unique across all topic mappings. The Kafka topic name. Example: `stock`
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.snapshot](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5471)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.snapshot](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5467)
      
 Optional. Item snapshot settings
 
@@ -5161,28 +5161,28 @@ Optional. Item snapshot settings
 ```
 {"distinctLength":10,"maxIdleSeconds":0,"mode":"NONE"}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.snapshot.distinctLength](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5501)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.snapshot.distinctLength](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5497)
      
 Optional but only effective if `mode` is set to `DISTINCT`. The maximum idle time in seconds after which the snapshot of an item is discarded, so that the next incoming record starts a fresh one. Must be a non-negative integer; a value of `0` disables the idle check.
 
 **Type:** int
 
 **Default:** `10`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.snapshot.maxIdleSeconds](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5508)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.snapshot.maxIdleSeconds](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5504)
      
 Optional but only effective if `mode` is set to any value other than `NONE`. The maximum idle time in seconds after which the snapshot of an item is discarded, so that the next incoming record starts a fresh one. Must be a non-negative integer; a value of `0` disables the idle check.
 
 **Type:** int
 
 **Default:** `0`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.snapshot.mode](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5494)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.snapshot.mode](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5490)
      
 Optional. Selects the snapshot behavior for subscribed items and, when not set to `NONE`, pins the Lightstreamer subscription Mode the connector is willing to serve. Any non-`NONE` value activates the eager pipeline: the consumer starts at adapter initialization, replays the topic from the beginning to seed the Server's item store, then transitions to realtime tailing. Possible values: - `NONE`: Snapshot disabled. The consumer starts on the first client   client subscription and every record is delivered as a realtime   update. The subscription Mode is not constrained by the adapter. - `MERGE`: Snapshot enabled; subscription Mode pinned to MERGE. A   new subscriber receives a single snapshot event per item (the   current value), followed by realtime updates. - `DISTINCT`: Snapshot enabled; subscription Mode pinned to   DISTINCT. A new subscriber receives up to   `item.snapshot.distinct.length` snapshot events per item (the most   recent ones), followed by realtime updates. - `COMMAND`: Snapshot enabled; subscription Mode pinned to COMMAND.   A new subscriber receives all rows currently in the per-item   table. The connector synthesises the `command` field from each   record; you only map `field.key`.
 
 **Type:** string
 
 **Default:** `"NONE"`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5072)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5068)
      
 Optional. TLS/SSL settings for the connection.
 
@@ -5193,84 +5193,84 @@ Optional. TLS/SSL settings for the connection.
 ```
 {"allowCipherSuites":[],"allowProtocols":["TLSv1.2","TLSv1.3"],"enableHostnameVerification":false,"enabled":false,"keystoreRef":null,"protocol":"TLSv1.3","truststoreRef":null}
 ```
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig.allowCipherSuites](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5091)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig.allowCipherSuites](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5087)
      
 Optional. List of enabled secure cipher suites. If not specified, all the available cipher suites in the running JVM will be used.
 
 **Type:** list
 
 **Default:** `[]`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig.allowProtocols](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5084)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig.allowProtocols](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5080)
      
 Optional. List of enabled secure communication protocols.
 
 **Type:** list
 
 **Default:** `["TLSv1.2","TLSv1.3"]`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig.enableHostnameVerification](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5094)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig.enableHostnameVerification](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5090)
      
 Optional. Enables the hostname verification.
 
 **Type:** bool
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5075)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5071)
      
 Optional. Enables the encryption.
 
 **Type:** bool
 
 **Default:** `false`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig.keystoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5107)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig.keystoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5103)
      
 Optional. The reference to a keystore (defined in 'keystores') used if mutual TLS is enabled on Kafka brokers. See the `keystores.myServerKeystore` settings for general details on keystore configuration for the Kafka Connector.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig.protocol](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5081)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig.protocol](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5077)
      
 Optional. The SSL protocol to be used. Possible values: - `TLSv1.2` - `TLSv1.3`
 
 **Type:** string
 
 **Default:** `"TLSv1.3"`
-### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig.truststoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5101)
+### [connectors.kafkaConnector.connections.aConnectionConfiguration.sslConfig.truststoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5097)
      
 Optional. The reference to a keystore (defined in 'keystores') used to validate the certificates provided by the Kafka brokers. See the `keystores.myServerKeystore` settings for general details on keystore configuration for the Kafka Connector.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4889)
+### [connectors.kafkaConnector.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4885)
      
 Optional. Enables the Lightstreamer Kafka Connector.
 
 **Type:** bool
 
 **Default:** `false`
-### [connectors.kafkaConnector.localSchemaFiles](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5523)
+### [connectors.kafkaConnector.localSchemaFiles](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5519)
      
 Optional. Local schema files used for message validation.
 
 **Type:** object
 
 **Default:** `{"myKeySchema":null,"myValueSchema":null}`
-### [connectors.kafkaConnector.localSchemaFiles.myKeySchema](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5527)
+### [connectors.kafkaConnector.localSchemaFiles.myKeySchema](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5523)
      
 Optional. The ConfigMap name and key where the local key schema file is stored.
 
 **Type:** object
 
 **Default:** `nil`
-### [connectors.kafkaConnector.localSchemaFiles.myValueSchema](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5533)
+### [connectors.kafkaConnector.localSchemaFiles.myValueSchema](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5529)
      
 Optional. The ConfigMap name and key where the local value schema file is stored.
 
 **Type:** object
 
 **Default:** `nil`
-### [connectors.kafkaConnector.logging](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4943)
+### [connectors.kafkaConnector.logging](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4939)
      
 Mandatory. Logging configuration for the Kafka Connector.
 
@@ -5281,7 +5281,7 @@ Mandatory. Logging configuration for the Kafka Connector.
 ```
 {"appenders":{"dailyRolling":{"fileName":"kafka-connector.log","fileNamePattern":"kafka-connector-%d{yyyy-MM-dd}.log","pattern":"[%d] [%-10c{1}] %-5p %m%n","type":"DailyRollingFile","volumeRef":null},"stdout":{"pattern":"%d|%-10c{1}|%-5p|%m%n","type":"Console"}},"loggers":{"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter":{"appenders":["stdout"],"level":"INFO"},"org.apache.kafka":{"appenders":["stdout"],"level":"WARN"}}}
 ```
-### [connectors.kafkaConnector.logging.appenders](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4948)
+### [connectors.kafkaConnector.logging.appenders](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4944)
      
 Optional. Map of appender configurations. Every entry in the map defines a specific appender configuration. Every logger must refer to one or more appenders defined here.
 
@@ -5292,7 +5292,7 @@ Optional. Map of appender configurations. Every entry in the map defines a speci
 ```
 {"dailyRolling":{"fileName":"kafka-connector.log","fileNamePattern":"kafka-connector-%d{yyyy-MM-dd}.log","pattern":"[%d] [%-10c{1}] %-5p %m%n","type":"DailyRollingFile","volumeRef":null},"stdout":{"pattern":"%d|%-10c{1}|%-5p|%m%n","type":"Console"}}
 ```
-### [connectors.kafkaConnector.logging.appenders.dailyRolling](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4953)
+### [connectors.kafkaConnector.logging.appenders.dailyRolling](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4949)
      
 An appender configuration. You can use this configuration as a template to define your own appender configurations. In particular, `dailyRolling` defines a daily rolling file appender.
 
@@ -5303,42 +5303,42 @@ An appender configuration. You can use this configuration as a template to defin
 ```
 {"fileName":"kafka-connector.log","fileNamePattern":"kafka-connector-%d{yyyy-MM-dd}.log","pattern":"[%d] [%-10c{1}] %-5p %m%n","type":"DailyRollingFile","volumeRef":null}
 ```
-### [connectors.kafkaConnector.logging.appenders.dailyRolling.fileName](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4968)
+### [connectors.kafkaConnector.logging.appenders.dailyRolling.fileName](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4964)
      
 Mandatory if `type` is set to `DailyRollingFile`. The name of the log file.
 
 **Type:** string
 
 **Default:** `"kafka-connector.log"`
-### [connectors.kafkaConnector.logging.appenders.dailyRolling.fileNamePattern](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4972)
+### [connectors.kafkaConnector.logging.appenders.dailyRolling.fileNamePattern](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4968)
      
 Mandatory if `type` is set to `DailyRollingFile`. The pattern to use for the log file.
 
 **Type:** string
 
 **Default:** `"kafka-connector-%d{yyyy-MM-dd}.log"`
-### [connectors.kafkaConnector.logging.appenders.dailyRolling.pattern](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4964)
+### [connectors.kafkaConnector.logging.appenders.dailyRolling.pattern](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4960)
      
 Mandatory. The conversion pattern. See https://reload4j.qos.ch/apidocs/org/apache/log4j/PatternLayout.html for details.
 
 **Type:** string
 
 **Default:** `"[%d] [%-10c{1}] %-5p %m%n"`
-### [connectors.kafkaConnector.logging.appenders.dailyRolling.type](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4959)
+### [connectors.kafkaConnector.logging.appenders.dailyRolling.type](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4955)
      
 Mandatory. The type of appender. Possible values: - `DailyRollingFile` - `Console`
 
 **Type:** string
 
 **Default:** `"DailyRollingFile"`
-### [connectors.kafkaConnector.logging.appenders.dailyRolling.volumeRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4977)
+### [connectors.kafkaConnector.logging.appenders.dailyRolling.volumeRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4973)
      
 Optional but only effective if `type` is set to `DailyRollingFile`. The reference to a volume to use for the log file. The volume must be defined in `deployment.extraVolumes`.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.logging.appenders.stdout](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4980)
+### [connectors.kafkaConnector.logging.appenders.stdout](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4976)
      
 The console appender configuration.
 
@@ -5349,7 +5349,7 @@ The console appender configuration.
 ```
 {"pattern":"%d|%-10c{1}|%-5p|%m%n","type":"Console"}
 ```
-### [connectors.kafkaConnector.logging.loggers](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4986)
+### [connectors.kafkaConnector.logging.loggers](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4982)
      
 Optional. Global loggers configuration. Every entry in the map defines a logger configuration
 
@@ -5360,35 +5360,35 @@ Optional. Global loggers configuration. Every entry in the map defines a logger 
 ```
 {"com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter":{"appenders":["stdout"],"level":"INFO"},"org.apache.kafka":{"appenders":["stdout"],"level":"WARN"}}
 ```
-### [connectors.kafkaConnector.logging.loggers."com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5001)
+### [connectors.kafkaConnector.logging.loggers."com.lightstreamer.kafka.adapters.pub.KafkaConnectorMetadataAdapter"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4997)
      
 Logger for the default Kafka Connector Metadata Adapter implementation class.
 
 **Type:** object
 
 **Default:** `{"appenders":["stdout"],"level":"INFO"}`
-### [connectors.kafkaConnector.logging.loggers."org.apache.kafka"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4989)
+### [connectors.kafkaConnector.logging.loggers."org.apache.kafka"](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4985)
      
 Logger for the internal official Java client activities.
 
 **Type:** object
 
 **Default:** `{"appenders":["stdout"],"level":"WARN"}`
-### [connectors.kafkaConnector.logging.loggers."org.apache.kafka".appenders](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4993)
+### [connectors.kafkaConnector.logging.loggers."org.apache.kafka".appenders](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4989)
      
 Optional. List of references to the appenders to be used by the logger.
 
 **Type:** list
 
 **Default:** `["stdout"]`
-### [connectors.kafkaConnector.logging.loggers."org.apache.kafka".level](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4997)
+### [connectors.kafkaConnector.logging.loggers."org.apache.kafka".level](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4993)
      
 Mandatory. The logger level.
 
 **Type:** string
 
 **Default:** `"WARN"`
-### [connectors.kafkaConnector.provisioning](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4895)
+### [connectors.kafkaConnector.provisioning](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4891)
      
 Mandatory. Defines the provisioning method of the Lightstreamer Kafka Connector. Either specify one of `fromPathInImage`, `fromGitHubRelease`, `fromUrl`, or `fromVolume`.
 
@@ -5399,49 +5399,49 @@ Mandatory. Defines the provisioning method of the Lightstreamer Kafka Connector.
 ```
 {"fromGitHubRelease":null,"fromPathInImage":null,"fromUrl":null,"fromVolume":{"filePath":null,"name":null}}
 ```
-### [connectors.kafkaConnector.provisioning.fromGitHubRelease](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4908)
+### [connectors.kafkaConnector.provisioning.fromGitHubRelease](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4904)
      
 The Lightstreamer Kafka Connector release to download from the GitHub official repository at startup. Once downloaded, the package will be deployed to the `/deployed_adapters/kafka-connector` directory in the container. Example: "2.1.1"
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.provisioning.fromPathInImage](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4901)
+### [connectors.kafkaConnector.provisioning.fromPathInImage](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4897)
      
 The path to the Kafka Connector deployment in the image, e.g.: `/lightstreamer/adapters/lightstreamer-kafka-connector`. At startup, the deployment folder will be mounted at `/deployed_adapters/kafka-connector` in the container.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.provisioning.fromUrl](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4913)
+### [connectors.kafkaConnector.provisioning.fromUrl](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4909)
      
 The URL from which to download the Kafka Connector zip package at startup. Once downloaded, the package will be deployed to the `/deployed_adapters/kafka-connector` directory in the container.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.provisioning.fromVolume](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4919)
+### [connectors.kafkaConnector.provisioning.fromVolume](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4915)
      
 The reference to a volume where the Kafka Connector zip package is stored. At startup, the package will be deployed to the `/deployed_adapters/kafka-connector` directory in the container. The volume must be defined in `deployment.extraVolumes`.
 
 **Type:** object
 
 **Default:** `{"filePath":null,"name":null}`
-### [connectors.kafkaConnector.provisioning.fromVolume.filePath](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4926)
+### [connectors.kafkaConnector.provisioning.fromVolume.filePath](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4922)
      
 The file path to the Kafka Connector zip package in the volume, e.g.: `/connectors/lightstreamer-kafka-connector-2.1.1.zip`.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.provisioning.fromVolume.name](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4922)
+### [connectors.kafkaConnector.provisioning.fromVolume.name](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L4918)
      
 Mandatory. The name of the volume.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.schemaRegistries](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5541)
+### [connectors.kafkaConnector.schemaRegistries](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5537)
      
 Optional. Map of Schema Registry definitions. Every entry in the map defines a specific Schema Registry configuration, which can then be referenced from the connector configurations through the `connection.{}.schemaRegistryRef` setting.
 
@@ -5452,21 +5452,21 @@ Optional. Map of Schema Registry definitions. Every entry in the map defines a s
 ```
 {"mySchemaRegistry":{"azure":{"credentialsSecretRef":null},"confluent":{"basicAuthentication":{"credentialsSecretRef":null,"enabled":false},"sslConfig":{"allowCipherSuites":[],"allowProtocols":["TLSv1.2","TLSv1.3"],"enableHostnameVerification":false,"keystoreRef":null,"protocol":"TLSv1.3","truststoreRef":null}},"provider":"CONFLUENT","url":null}}
 ```
-### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.azure](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5613)
+### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.azure](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5609)
      
 Optional but only effective if `provider` is set to `AZURE`. Azure Schema Registry settings.
 
 **Type:** object
 
 **Default:** `{"credentialsSecretRef":null}`
-### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.azure.credentialsSecretRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5619)
+### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.azure.credentialsSecretRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5615)
      
 Mandatory. The name of the Secret containing the credentials for authentication with the Azure Schema Registry. The Secret must contain the keys `client_id`, `tenant_id`, and `client_secret`.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5561)
+### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5557)
      
 Optional but only effective if `provider` is set to `CONFLUENT`. Confluent Schema Registry settings.
 
@@ -5477,28 +5477,28 @@ Optional but only effective if `provider` is set to `CONFLUENT`. Confluent Schem
 ```
 {"basicAuthentication":{"credentialsSecretRef":null,"enabled":false},"sslConfig":{"allowCipherSuites":[],"allowProtocols":["TLSv1.2","TLSv1.3"],"enableHostnameVerification":false,"keystoreRef":null,"protocol":"TLSv1.3","truststoreRef":null}}
 ```
-### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.basicAuthentication](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5565)
+### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.basicAuthentication](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5561)
      
 Optional. Basic HTTP authentication of a connection against the Schema Registry.
 
 **Type:** object
 
 **Default:** `{"credentialsSecretRef":null,"enabled":false}`
-### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.basicAuthentication.credentialsSecretRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5573)
+### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.basicAuthentication.credentialsSecretRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5569)
      
 Mandatory if `enabled` is set to `true`. The name of the Secret containing the credentials. The Secret must contain the keys `user` and `password`.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.basicAuthentication.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5568)
+### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.basicAuthentication.enabled](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5564)
      
 Optional. Enables Basic HTTP authentication.
 
 **Type:** bool
 
 **Default:** `false`
-### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.sslConfig](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5577)
+### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.sslConfig](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5573)
      
 Optional but effective only if the https protocol is specified in `url`. TLS/SSL settings.
 
@@ -5509,56 +5509,56 @@ Optional but effective only if the https protocol is specified in `url`. TLS/SSL
 ```
 {"allowCipherSuites":[],"allowProtocols":["TLSv1.2","TLSv1.3"],"enableHostnameVerification":false,"keystoreRef":null,"protocol":"TLSv1.3","truststoreRef":null}
 ```
-### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.sslConfig.allowCipherSuites](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5593)
+### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.sslConfig.allowCipherSuites](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5589)
      
 Optional. List of enabled secure cipher suites. If not specified, all the available cipher suites in the running JVM will be used.
 
 **Type:** list
 
 **Default:** `[]`
-### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.sslConfig.allowProtocols](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5586)
+### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.sslConfig.allowProtocols](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5582)
      
 Optional. List of enabled secure communication protocols.
 
 **Type:** list
 
 **Default:** `["TLSv1.2","TLSv1.3"]`
-### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.sslConfig.enableHostnameVerification](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5596)
+### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.sslConfig.enableHostnameVerification](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5592)
      
 Optional. Enables the hostname verification.
 
 **Type:** bool
 
 **Default:** `false`
-### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.sslConfig.keystoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5609)
+### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.sslConfig.keystoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5605)
      
 Optional. The reference to a keystore (defined in 'keystores') used if mutual TLS is enabled on the Schema Registry. See the `keystores.myKafkaConnectorKeystore` settings for general details on keystore configuration for the Kafka Connector.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.sslConfig.protocol](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5583)
+### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.sslConfig.protocol](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5579)
      
 Optional. The SSL protocol to be used. Possible values: - `TLSv1.2`, - `TLSv1.3`
 
 **Type:** string
 
 **Default:** `"TLSv1.3"`
-### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.sslConfig.truststoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5603)
+### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.confluent.sslConfig.truststoreRef](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5599)
      
 Optional. The reference to a keystore (defined in 'keystores') used to validate the certificates provided by the Schema Registry. See the `keystores.myKafkaConnectorKeystore` settings for general details on keystore configuration for the Kafka Connector.
 
 **Type:** string
 
 **Default:** `nil`
-### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.provider](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5552)
+### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.provider](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5548)
      
 Optional. Specifies the Schema Registry provider to use. Possible values: - `CONFLUENT` - `AZURE`
 
 **Type:** string
 
 **Default:** `"CONFLUENT"`
-### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.url](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5557)
+### [connectors.kafkaConnector.schemaRegistries.mySchemaRegistry.url](https://github.com/Lightstreamer/helm-charts/blob/main/charts/lightstreamer/values.yaml#L5553)
      
 Mandatory. The URL of the Schema Registry endpoint (either Confluent Schema Registry or Azure Schema Registry). Examples: `https://schema-registry:8084`, `https://my-namespace.servicebus.windows.net`.
 

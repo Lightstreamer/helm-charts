@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.2] - 2026-11-17
+
+### Changed
+
+- Made `load` mandatory: the chart now fails with `load must be set` if it is missing or empty. The default `values.yaml` already defines it. ([#11](https://github.com/Lightstreamer/helm-charts/pull/11))
+- Set the default of `load.serverPoolMaxFree` to `10`. Previously it was unset and the Server used the value of `load.serverPoolMaxSize` (`1000` by default), so the `SERVER` pool now keeps `10` idle threads instead. Lower `load.serverPoolMaxFree` if you set `load.serverPoolMaxSize` below `10`. ([#11](https://github.com/Lightstreamer/helm-charts/pull/11))
+
+### Fixed
+
+- Fixed pods not being rolled by `helm upgrade` when only the generated configuration changes. ([#10](https://github.com/Lightstreamer/helm-charts/pull/10))
+- Fixed the chart rendering an invalid configuration when `load.serverPoolMaxSize` is `0` and `load.serverPoolMaxFree` is not set; it now fails with a clear error. ([#11](https://github.com/Lightstreamer/helm-charts/pull/11))
+
 ## [1.2.1] - 2026-11-06
 
 ### Fixed
