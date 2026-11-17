@@ -2956,7 +2956,7 @@ Render the Lightstreamer configuration file.
   ==================
 -->
 
-{{- with .Values.load }}
+{{- with required "load must be set" .Values.load }}
     <!-- Optional. Maximum number of concurrent client sessions allowed.
          Requests for new sessions received when this limit is currently
          exceeded will be refused; on the other hand, operation on sessions
@@ -3153,12 +3153,15 @@ Render the Lightstreamer configuration file.
         templates provided in the In-Process Adapter SDK for details.
         A zero value means a potentially unlimited number of threads.
         Default: 1000. -->
+    {{- $serverPoolMaxSize := .serverPoolMaxSize }}
     {{- if (quote .serverPoolMaxSize | empty) }}
+      {{- $serverPoolMaxSize = 1000 }}
     <!--
     <server_pool_max_size>100</server_pool_max_size>
     -->
     {{- else }}
     <server_pool_max_size>{{ int .serverPoolMaxSize }}</server_pool_max_size>
+      {{- $serverPoolMaxSize = int .serverPoolMaxSize }}
     {{- end }}
 
     <!--
@@ -3179,6 +3182,9 @@ Render the Lightstreamer configuration file.
         otherwise, the same as "server_pool_max_size", unless the latter
         is set to 0, i.e. unlimited, in which case this setting is mandatory. -->
     {{- if (quote .serverPoolMaxFree | empty) }}
+      {{- if eq $serverPoolMaxSize 0 }}
+        {{- fail "serverPoolMaxFree must be set if serverPoolMaxSize is 0" }}
+      {{- end }}
     <!--
     <server_pool_max_free>0</server_pool_max_free>
     -->
