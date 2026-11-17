@@ -44,8 +44,9 @@ spec:
   {{- end }}
   template:
     metadata:
-      {{- with .Values.deployment.podAnnotations }}
       annotations:
+        {{- /* User-defined pod annotations take precedence over the generated checksums */}}
+        {{- mergeOverwrite (include "lightstreamer.deployment.checksumAnnotations" . | fromYaml) (.Values.deployment.podAnnotations | default dict) | toYaml | nindent 8 }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
