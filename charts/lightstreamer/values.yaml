@@ -3344,7 +3344,7 @@ cluster:
   # @default -- unlimited maximum session duration
   maxSessionDurationMinutes:
 
-# -- Optional. Load configuration.
+# -- Mandatory. Load configuration.
 load:
 
   # -- (int) Optional. Maximum number of concurrent client sessions allowed.
@@ -3474,11 +3474,7 @@ load:
   # `load.serverPoolMaxSize` is kept high in order to face request bursts; a
   # zero value means no idle threads allowed in the pool, though this is not
   # recommended for performance reasons.
-  # The default value is `10`, if `load.serverPoolMaxSize` is not defined;
-  # otherwise, the same as `load.serverPoolMaxSize`, unless the latter is set
-  # to `0`, i.e. `unlimited`, in which case this setting is mandatory
-  # @default -- see description
-  serverPoolMaxFree:
+  serverPoolMaxFree: 10
 
   # -- (int) Optional. Maximum number of tasks allowed to be queued to enter
   # the `SERVER` thread pool before undertaking backpressure actions.
