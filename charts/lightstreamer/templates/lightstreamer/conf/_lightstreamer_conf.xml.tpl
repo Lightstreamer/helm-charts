@@ -3420,9 +3420,12 @@ Render the Lightstreamer configuration file.
         templates provided in the distribution package for details.
         A zero value means a potentially unlimited number of threads.
         Default: 1000. -->
+    {{- $serverPoolMaxSize := .serverPoolMaxSize }}        
     {{- if not (quote .serverPoolMaxSize | empty) }}
+      {{- $serverPoolMaxSize = int .serverPoolMaxSize }}
     <server_pool_max_size>{{ int .serverPoolMaxSize }}</server_pool_max_size>    
     {{- else }}
+      {{- $serverPoolMaxSize = 1000 }}
     <!--
     <server_pool_max_size>100</server_pool_max_size>
     -->
@@ -3448,6 +3451,9 @@ Render the Lightstreamer configuration file.
     {{- if not (quote .serverPoolMaxFree | empty) }}
     <server_pool_max_free>{{ int .serverPoolMaxFree }}</server_pool_max_free>    
     {{- else }}
+      {{- if eq $serverPoolMaxSize 0 }}
+        {{- fail "serverPoolMaxFree must be set if serverPoolMaxSize is 0" }}
+      {{- end }}
     <!--
     <server_pool_max_free>0</server_pool_max_free>
     -->
