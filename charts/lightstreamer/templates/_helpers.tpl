@@ -267,7 +267,7 @@ Create the port used for the health check.
 {{- end }}
 
 {{/*
-  Render the HTTP GET probe for readiness check.
+Render the HTTP GET probe for readiness check.
 */}}
 {{- define "lightstreamer.deployment.probe.readinessCheck.httpGet" }}
 {{- $ := index . 0}}
@@ -279,7 +279,7 @@ Create the port used for the health check.
 {{- end }}
 
 {{/*
-  Render the command probe for readiness check.
+Render the command probe for readiness check.
 */}}
 {{- define "lightstreamer.deployment.probe.readinessCheck.command" }}
 {{- $ := index . 0}}
@@ -326,6 +326,52 @@ Create the port used for the readiness check.
   {{- end }}
 {{- end }}
 {{- include "lightstreamer.configuration.servers.serverPortName" $serverKey -}}
+{{- end }}
+
+{{/*
+Compute the checksum of a group of rendered template files, given as a list
+(root context, list of template paths relative to the templates folder).
+Renders nothing when the files produce no output (e.g. the related feature is disabled).
+*/}}
+{{- define "lightstreamer.deployment.checksum" -}}
+{{- $ctx := index . 0 }}
+{{- $content := "" }}
+{{- range index . 1 }}
+  {{- $content = print $content (include (print $ctx.Template.BasePath "/" .) $ctx) "\n---\n" }}
+{{- end }}
+{{- if trim (replace "---" "" $content) }}
+  {{- $content | sha256sum }}
+{{- end }}
+{{- end }}
+
+{{/*
+Render the checksum annotations of the Pod, as a YAML map.
+Any change in the generated configuration, which would otherwise be invisible to the
+Deployment, changes the Pod template and triggers a rolling update. One annotation per group
+of ConfigMaps, so that the changed configuration can be spotted by comparing the annotations.
+*/}}
+{{- define "lightstreamer.deployment.checksumAnnotations" -}}
+{{- $groups := dict
+  "checksum/lightstreamer-conf" (list
+    "lightstreamer/init-scripts-configmap.yaml"
+    "lightstreamer/conf/conf-configmap.yaml"
+    "lightstreamer/conf/mpn/mpn-conf-configmap.yaml"
+    "lightstreamer/conf/mpn/mpn-apple-conf-configmap.yaml"
+    "lightstreamer/conf/mpn/mpn-google-conf-configmap.yaml")
+  "checksum/adapters" (list
+    "lightstreamer/adapters/lightstreamer-adapters-configmap.yaml")
+  "checksum/kafka-connector" (list
+    "lightstreamer/connectors/kafka-connector/kafka-connector-conf-configmap.yaml"
+    "lightstreamer/connectors/kafka-connector/kafka-connector-deployer-script-configmap.yaml")
+}}
+{{- $annotations := dict }}
+{{- range $key, $files := $groups }}
+  {{- $checksum := include "lightstreamer.deployment.checksum" (list $ $files) }}
+  {{- if $checksum }}
+    {{- $_ := set $annotations $key $checksum }}
+  {{- end }}
+{{- end }}
+{{- toYaml $annotations }}
 {{- end }}
 
 {{/*
